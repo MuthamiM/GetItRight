@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIR Tracks Console — Tamper-evident polling dashboard, station reporting, anomaly feeds, and checkpoint monitoring.">
+  <title>GIR Tracks — Integrity Operations Console</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/console.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+</head>
+<body class="console-body">
+  <div class="app-shell" id="app-shell">
+
+    <!-- ====== CLEAN SLEEK SIDEBAR ====== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand-box">
+        <a href="../index.html" class="sidebar-brand-link">
+          <img src="../assets/images/logo.jpg" alt="GIR Tracks Logo" class="sidebar-logo-img">
+          <span class="sidebar-brand-name">GIR Tracks<span>.</span></span>
+        </a>
+        <span class="sidebar-version-badge">v2.4 Prod</span>
+      </div>
+
+      <div class="sidebar-scroll">
+        <!-- Operations Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">Operations</div>
+          <a class="console-nav-link active" data-view="overview" onclick="switchView('overview')">
+            <span class="console-nav-icon" data-icon="dashboard"></span>
+            <span class="console-nav-label" data-i18n="sidebar_dashboard">Operations Center</span>
+          </a>
+          <a class="console-nav-link" data-view="polls" onclick="switchView('polls')">
+            <span class="console-nav-icon" data-icon="polls"></span>
+            <span class="console-nav-label" data-i18n="sidebar_polls">Polls &amp; Surveys</span>
+            <span class="console-nav-badge active-badge">4</span>
+          </a>
+          <a class="console-nav-link" data-view="stations" onclick="switchView('stations')">
+            <span class="console-nav-icon" data-icon="target"></span>
+            <span class="console-nav-label" data-i18n="sidebar_stations">Polling Stations</span>
+            <span class="console-nav-badge">242/250</span>
+          </a>
+          <a class="console-nav-link" data-view="observers" onclick="switchView('observers')">
+            <span class="console-nav-icon" data-icon="users"></span>
+            <span class="console-nav-label" data-i18n="sidebar_observers">Observers &amp; Keys</span>
+            <span class="console-nav-badge">482</span>
+          </a>
+        </div>
+
+        <!-- Integrity & Verification Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">Integrity &amp; Audit</div>
+          <a class="console-nav-link" data-view="ledger" onclick="switchView('ledger')">
+            <span class="console-nav-icon" data-icon="hash"></span>
+            <span class="console-nav-label" data-i18n="sidebar_ledger">Ledger Explorer</span>
+          </a>
+          <a class="console-nav-link" data-view="anomalies" onclick="switchView('anomalies')">
+            <span class="console-nav-icon" data-icon="alertCircle"></span>
+            <span class="console-nav-label" data-i18n="sidebar_anomalies">Anomaly Engine</span>
+            <span class="console-nav-badge warn-badge">3</span>
+          </a>
+          <a class="console-nav-link" data-view="disputes" onclick="switchView('disputes')">
+            <span class="console-nav-icon" data-icon="filter"></span>
+            <span class="console-nav-label" data-i18n="sidebar_disputes">Disputes &amp; Review</span>
+            <span class="console-nav-badge danger-badge">1 Frozen</span>
+          </a>
+          <a class="console-nav-link" data-view="checkpoints" onclick="switchView('checkpoints')">
+            <span class="console-nav-icon" data-icon="lock"></span>
+            <span class="console-nav-label" data-i18n="sidebar_checkpoints">Checkpoints</span>
+            <span class="console-nav-badge">#142</span>
+          </a>
+          <a class="console-nav-link" data-view="audit" onclick="switchView('audit')">
+            <span class="console-nav-icon" data-icon="activity"></span>
+            <span class="console-nav-label" data-i18n="sidebar_audit_log">Audit Trail</span>
+          </a>
+        </div>
+
+        <!-- System & Admin Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">System &amp; Admin</div>
+          <a class="console-nav-link" data-view="engines" onclick="switchView('engines')">
+            <span class="console-nav-icon" data-icon="zap"></span>
+            <span class="console-nav-label">17 Engines Health</span>
+            <span class="console-nav-badge success-badge">17/17 OK</span>
+          </a>
+          <a class="console-nav-link" data-view="analytics" onclick="switchView('analytics')">
+            <span class="console-nav-icon" data-icon="analytics"></span>
+            <span class="console-nav-label">Telemetry &amp; Reports</span>
+          </a>
+          <a class="console-nav-link" data-view="billing" onclick="switchView('billing')">
+            <span class="console-nav-icon" data-icon="clock"></span>
+            <span class="console-nav-label" data-i18n="sidebar_billing">Billing &amp; Plans</span>
+          </a>
+          <a href="../verifier.html" target="_blank" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="search"></span>
+            <span class="console-nav-label">Public Verifier &nearr;</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Compact System Health Status Bar -->
+      <div class="sidebar-engine-status">
+        <div class="sidebar-engine-header">
+          <div class="sidebar-engine-title">
+            <span class="pulse-dot-green"></span>
+            <span>Tokio Ingestion Stream</span>
+          </div>
+          <span style="font-size:10px; font-weight:700; color:#059669;">LIVE</span>
+        </div>
+        <div class="sidebar-engine-meta">
+          <span>Throughput</span>
+          <strong>1,420 msg/s</strong>
+        </div>
+        <div class="sidebar-engine-meta">
+          <span>Chain Integrity</span>
+          <strong style="color:#059669;">100% Intact</strong>
+        </div>
+      </div>
+
+      <!-- User Profile Row -->
+      <div class="sidebar-user-footer">
+        <div class="sidebar-user-profile">
+          <div class="sidebar-user-avatar">FM</div>
+          <div class="sidebar-user-meta">
+            <span class="sidebar-user-name" id="user-display-name">Faith Mwangi</span>
+            <span class="sidebar-user-role" id="user-display-role">Lead Reviewer</span>
+          </div>
+        </div>
+        <button class="sidebar-logout-btn" title="Sign out" onclick="window.location.href='../index.html'">
+          <span data-icon="logout"></span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ====== CONSOLE MAIN AREA ====== -->
+    <div class="console-main">
+      
+      <!-- Sleek Executive Topbar -->
+      <header class="console-topbar">
+        <div class="topbar-breadcrumbs">
+          <button class="topbar-icon-btn" id="menu-toggle" style="display:none;" aria-label="Toggle Navigation">
+            <span data-icon="menu"></span>
+          </button>
+          <span class="topbar-breadcrumb-root">Console</span>
+          <span class="topbar-breadcrumb-sep">/</span>
+          <span class="topbar-breadcrumb-active" id="current-view-title">Operations Center</span>
+          <span class="topbar-live-chip">
+            <span class="pulse-dot-green"></span>
+            <span>Live Stream</span>
+          </span>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Quick Search -->
+          <div class="topbar-search">
+            <span class="topbar-search-icon" data-icon="search"></span>
+            <input type="text" id="global-search" placeholder="Search station, poll, hash...">
+            <span class="topbar-search-kbd">⌘K</span>
+          </div>
+
+          <!-- Verified Authenticated Institution & User Badge (No Role Switching) -->
+          <div class="topbar-auth-profile" id="topbar-auth-profile" style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border-default); border-radius:10px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:#10B981;" title="Verified Session"></div>
+            <div style="display:flex; flex-direction:column; line-height:1.2;">
+              <span id="topbar-org-title" style="font-size:12px; font-weight:700; color:var(--text-primary);">Independent Electoral Oversight Mission</span>
+              <span id="topbar-user-sub" style="font-size:10.5px; color:var(--text-secondary);">Amb. Paul Ochieng &bull; Sovereign Guard</span>
+            </div>
+            <button onclick="handleDashboardLogout()" class="btn btn-ghost btn-xs" style="margin-left:6px; color:var(--text-muted); font-size:11px;" title="Sign Out">Sign Out</button>
+          </div>
+
+          <!-- Notification Bell -->
+          <button class="topbar-icon-btn" id="alerts-btn" title="System Alerts" onclick="App.showToast('1 High Severity Anomaly: PS-108 Frozen', 'warning')">
+            <span data-icon="bell"></span>
+            <span class="badge-dot"></span>
+          </button>
+
+          <!-- State Simulator Segmented Control -->
+          <div class="topbar-segmented" title="Simulate View States">
+            <button class="topbar-segmented-btn active" data-state="normal" onclick="setState('normal')">Live</button>
+            <button class="topbar-segmented-btn" data-state="loading" onclick="setState('loading')">Load</button>
+            <button class="topbar-segmented-btn" data-state="empty" onclick="setState('empty')">Empty</button>
+            <button class="topbar-segmented-btn" data-state="error" onclick="setState('error')">Error</button>
+          </div>
+
+          <!-- Language Selector -->
+          <div class="topbar-segmented">
+            <button class="topbar-segmented-btn active" data-lang="en" onclick="I18n.setLanguage('en'); setLangActive('en');">EN</button>
+            <button class="topbar-segmented-btn" data-lang="sw" onclick="I18n.setLanguage('sw'); setLangActive('sw');">SW</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Body Viewports -->
+      <main class="console-body-content">
+
+        <!-- ==========================================
+             VIEW 1: OPERATIONS CENTER (OVERVIEW)
+             ========================================== -->
+        <div class="console-view active" id="view-overview">
+          
+          <!-- Header Row -->
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Election &amp; Polling Operations Center</h1>
+              <p class="console-header-sub">Real-time station ingestion, dual-observer reconciliation, and cryptographic checkpointing.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="triggerManualCheckpoint()">
+                <span data-icon="lock"></span> Publish Checkpoint
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="switchView('polls')">
+                <span data-icon="plus"></span> Create New Poll
+              </button>
+            </div>
+          </div>
+
+          <!-- High-Level KPI Strip -->
+          <div class="kpi-metrics-grid">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Stations Reporting</span>
+                <div class="kpi-icon-wrap"><span data-icon="target"></span></div>
+              </div>
+              <div class="kpi-value" id="kpi-val-stations">242 <span style="font-size:14px; font-weight:500; color:var(--text-secondary);">/ 250</span></div>
+              <div class="kpi-meta">
+                <span class="kpi-trend-pos" id="kpi-trend-stations">&uarr; 96.8%</span>
+                <span id="kpi-meta-stations">Complete (8 remaining)</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Ledger Commits</span>
+                <div class="kpi-icon-wrap"><span data-icon="hash"></span></div>
+              </div>
+              <div class="kpi-value" id="kpi-val-ledger">14,210</div>
+              <div class="kpi-meta">
+                <span class="kpi-trend-pos">&bull; 100%</span>
+                <span>Hash-chain valid</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Active Field Observers</span>
+                <div class="kpi-icon-wrap"><span data-icon="users"></span></div>
+              </div>
+              <div class="kpi-value" id="kpi-val-observers">482</div>
+              <div class="kpi-meta">
+                <span class="kpi-trend-pos">ECDSA P-256</span>
+                <span>Hardware attested</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Open Anomalies</span>
+                <div class="kpi-icon-wrap warn"><span data-icon="alertCircle"></span></div>
+              </div>
+              <div class="kpi-value" id="kpi-val-anomalies" style="color:#D97706;">3</div>
+              <div class="kpi-meta">
+                <span class="kpi-trend-danger">1 Frozen Station</span>
+                <span>(Dispute review)</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Last Checkpoint</span>
+                <div class="kpi-icon-wrap"><span data-icon="lock"></span></div>
+              </div>
+              <div class="kpi-value" id="kpi-val-checkpoint">14m ago</div>
+              <div class="kpi-meta">
+                <span id="kpi-meta-checkpoint">Root #142 &bull; Block #884120</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mid Section: Submissions Velocity Chart & Station Breakdown -->
+          <div class="console-panel-grid">
+            
+            <!-- Ingestion Velocity Panel -->
+            <div class="console-card">
+              <div class="console-card-header">
+                <div>
+                  <h3 class="console-card-title">Submissions Ingestion Velocity</h3>
+                  <div class="console-card-sub">Form 34A photo packets and ballot counts processed per hour</div>
+                </div>
+                <span class="status-pill verified">Peak: 1,840/hr at 18:00</span>
+              </div>
+
+              <!-- High-Res Institutional SVG Chart -->
+              <div style="width:100%; height:190px; position:relative; margin:16px 0;">
+                <svg viewBox="0 0 700 170" preserveAspectRatio="none" style="width:100%; height:100%;">
+                  <defs>
+                    <linearGradient id="velocityGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#1E2A4A" stop-opacity="0.18"/>
+                      <stop offset="100%" stop-color="#1E2A4A" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Clean Grid Lines -->
+                  <line x1="0" y1="35" x2="700" y2="35" stroke="#EEF0F5" stroke-dasharray="3 3"/>
+                  <line x1="0" y1="80" x2="700" y2="80" stroke="#EEF0F5" stroke-dasharray="3 3"/>
+                  <line x1="0" y1="125" x2="700" y2="125" stroke="#EEF0F5" stroke-dasharray="3 3"/>
+                  <!-- Area Fill -->
+                  <path d="M 0 150 Q 120 145 220 100 T 440 25 T 560 65 L 700 45 L 700 160 L 0 160 Z" fill="url(#velocityGrad)"/>
+                  <!-- Curve Stroke -->
+                  <path d="M 0 150 Q 120 145 220 100 T 440 25 T 560 65 L 700 45" fill="none" stroke="#1E2A4A" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Peak Data Marker -->
+                  <circle cx="440" cy="25" r="5" fill="#1E2A4A" stroke="#FFFFFF" stroke-width="2"/>
+                </svg>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-secondary); border-top:1px solid var(--border-subtle); padding-top:8px;">
+                <span>12:00 Polls Close</span>
+                <span>15:00 Initial Packets</span>
+                <span>18:00 Peak Verification (1.8k/hr)</span>
+                <span>21:00 Regional Tallying</span>
+                <span>Live Now (1.4k msg/s)</span>
+              </div>
+            </div>
+
+            <!-- Station Status Breakdown Panel -->
+            <div class="console-card">
+              <div class="console-card-header">
+                <div>
+                  <h3 class="console-card-title">Station Returns Status</h3>
+                  <div class="console-card-sub">250 Physical Centers</div>
+                </div>
+                <button class="btn btn-ghost btn-xs" onclick="switchView('stations')">View All &rarr;</button>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-secondary); border-radius:8px;">
+                  <span style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500;">
+                    <span class="status-pill verified">Verified</span>
+                    <span>Dual Observers Match</span>
+                  </span>
+                  <strong style="font-family:var(--font-mono); font-size:13px;">238</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(220,38,38,0.04); border-radius:8px; border:1px solid rgba(220,38,38,0.2);">
+                  <span style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500;">
+                    <span class="status-pill frozen">Frozen</span>
+                    <span style="color:#DC2626;">Discrepancy (PS-108)</span>
+                  </span>
+                  <strong style="font-family:var(--font-mono); color:#DC2626; font-size:13px;">1</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(217,119,6,0.04); border-radius:8px; border:1px solid rgba(217,119,6,0.2);">
+                  <span style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500;">
+                    <span class="status-pill flagged">Flagged</span>
+                    <span>Statistical Anomaly</span>
+                  </span>
+                  <strong style="font-family:var(--font-mono); color:#D97706; font-size:13px;">3</strong>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--bg-secondary); border-radius:8px;">
+                  <span style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500;">
+                    <span class="status-pill pending">Pending</span>
+                    <span>Not Yet Ingested</span>
+                  </span>
+                  <strong style="font-family:var(--font-mono); color:var(--text-secondary); font-size:13px;">8</strong>
+                </div>
+              </div>
+
+              <div style="margin-top:16px;">
+                <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center;" onclick="switchView('disputes')">
+                  <span data-icon="filter"></span> Resolve Discrepancy Queue &rarr;
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Row: Recent Anomalies & Active Freeze Alert -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            
+            <!-- Active Freeze / Dispute Alert -->
+            <div class="discrepancy-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="status-pill frozen"><span data-icon="alertCircle"></span> STATION FROZEN</span>
+                  <span style="font-size:12px; font-weight:700; color:#DC2626;">Station PS-108 (Umoja Community Hall)</span>
+                </div>
+                <button class="btn btn-primary btn-xs" style="background:#DC2626; border-color:#DC2626;" onclick="switchView('disputes')">
+                  Open Resolver &rarr;
+                </button>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 10px 0;">
+                Dual observers submitted contradictory Form 34A returns. Observer Mutua reported <strong>395 votes</strong>, while Observer Wekesa reported <strong>415 votes</strong> (+20 variance on Candidate B). Station tally computation is locked until reviewed.
+              </p>
+              <div style="display:flex; justify-content:space-between; font-size:11px; font-family:var(--font-mono); background:#FFFFFF; padding:8px 12px; border-radius:6px; border:1px solid var(--border-default);">
+                <span>Form 34A SHA-256: 0x4a91...38d2</span>
+                <span style="color:#DC2626; font-weight:700;">Variance: +20 Votes</span>
+                <span>Flagged 14m ago</span>
+              </div>
+            </div>
+
+            <!-- Live Anomaly Feed -->
+            <div class="console-card">
+              <div class="console-card-header">
+                <div>
+                  <h3 class="console-card-title">Statistical Anomaly Feed</h3>
+                  <div class="console-card-sub">Continuous Benford Law and Turnout Spike checks</div>
+                </div>
+                <button class="btn btn-ghost btn-xs" onclick="switchView('anomalies')">All Rules &rarr;</button>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:8px; padding:10px 12px; font-size:12px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                    <strong style="color:var(--text-primary);">Turnout Spike (93.3% vs 68.2% Regional Avg)</strong>
+                    <span style="color:#D97706; font-weight:600;">PS-019 Mombasa</span>
+                  </div>
+                  <div style="color:var(--text-secondary);">+25.1% variance versus 14 surrounding stations in Changamwe.</div>
+                </div>
+
+                <div style="background:var(--bg-secondary); border:1px solid var(--border-subtle); border-radius:8px; padding:10px 12px; font-size:12px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                    <strong style="color:var(--text-primary);">Benford Law Second-Digit Violation</strong>
+                    <span style="color:var(--text-secondary); font-weight:600;">PS-088 Kiambu</span>
+                  </div>
+                  <div style="color:var(--text-secondary);">6 of 8 candidates recorded round multiples of 5 (p-value &lt; 0.001).</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ==========================================
+             VIEW 2: POLLING STATIONS VIEW
+             ========================================== -->
+        <div class="console-view" id="view-stations">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Physical Polling Stations (250)</h1>
+              <p class="console-header-sub">Geofenced polling centers with dual-observer hardware deployment.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="App.showToast('Exporting station roster CSV...', 'info')">
+                <span data-icon="download"></span> Export Roster
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="openStationModal('new')">
+                <span data-icon="plus"></span> Add Station
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Strip -->
+          <div class="filter-strip">
+            <div class="filter-pills">
+              <button class="filter-pill active" onclick="filterStations('all', this)">All (250)</button>
+              <button class="filter-pill" onclick="filterStations('verified', this)">Verified (238)</button>
+              <button class="filter-pill" onclick="filterStations('flagged', this)">Flagged (3)</button>
+              <button class="filter-pill" onclick="filterStations('frozen', this)">Frozen (1)</button>
+              <button class="filter-pill" onclick="filterStations('pending', this)">Pending (8)</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" class="form-input" id="station-search-box" placeholder="Filter by station code, county..." style="padding:6px 12px; font-size:12px; width:220px;" oninput="searchStations(this.value)">
+            </div>
+          </div>
+
+          <!-- Stations Table -->
+          <div class="console-table-wrap">
+            <table class="console-table">
+              <thead>
+                <tr>
+                  <th>Station Code</th>
+                  <th>Center Name</th>
+                  <th>County / Constituency</th>
+                  <th>Registered</th>
+                  <th>Votes Cast</th>
+                  <th>Turnout</th>
+                  <th>Dual Observers</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="stations-table-body">
+                <!-- Row 1: Frozen station -->
+                <tr style="background:rgba(220,38,38,0.02);">
+                  <td><strong style="font-family:var(--font-mono); color:#DC2626;">PS-108</strong></td>
+                  <td><strong>Umoja Community Hall</strong></td>
+                  <td>Nairobi &bull; Embakasi West</td>
+                  <td>650</td>
+                  <td style="font-family:var(--font-mono); color:#DC2626;">415 vs 395</td>
+                  <td>63.8%</td>
+                  <td>2 Assigned (Dispute)</td>
+                  <td><span class="status-pill frozen">Frozen (Dispute)</span></td>
+                  <td>
+                    <button class="btn btn-danger btn-xs" onclick="switchView('disputes')">Inspect</button>
+                  </td>
+                </tr>
+
+                <!-- Row 2: Verified station -->
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">PS-001</strong></td>
+                  <td>Nairobi Primary School (Stream 1)</td>
+                  <td>Nairobi &bull; Starehe</td>
+                  <td>700</td>
+                  <td style="font-family:var(--font-mono);">542</td>
+                  <td>77.4%</td>
+                  <td>2 Verified &bull; Keystore OK</td>
+                  <td><span class="status-pill verified">Verified</span></td>
+                  <td>
+                    <button class="btn btn-ghost btn-xs" onclick="openStationModal('PS-001')">View</button>
+                  </td>
+                </tr>
+
+                <!-- Row 3: Verified station -->
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">PS-002</strong></td>
+                  <td>Nairobi Primary School (Stream 2)</td>
+                  <td>Nairobi &bull; Starehe</td>
+                  <td>680</td>
+                  <td style="font-family:var(--font-mono);">520</td>
+                  <td>76.5%</td>
+                  <td>2 Verified &bull; Keystore OK</td>
+                  <td><span class="status-pill verified">Verified</span></td>
+                  <td>
+                    <button class="btn btn-ghost btn-xs" onclick="openStationModal('PS-002')">View</button>
+                  </td>
+                </tr>
+
+                <!-- Row 4: Flagged station -->
+                <tr>
+                  <td><strong style="font-family:var(--font-mono); color:#D97706;">PS-019</strong></td>
+                  <td>Changamwe Social Hall</td>
+                  <td>Mombasa &bull; Changamwe</td>
+                  <td>600</td>
+                  <td style="font-family:var(--font-mono);">560</td>
+                  <td style="color:#D97706; font-weight:700;">93.3%</td>
+                  <td>2 Verified &bull; Turnout Outlier</td>
+                  <td><span class="status-pill flagged">Flagged (Spike)</span></td>
+                  <td>
+                    <button class="btn btn-secondary btn-xs" onclick="switchView('anomalies')">Audit</button>
+                  </td>
+                </tr>
+
+                <!-- Row 5: Verified station -->
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">PS-042</strong></td>
+                  <td>Kisumu Day High School</td>
+                  <td>Kisumu &bull; Kisumu Central</td>
+                  <td>720</td>
+                  <td style="font-family:var(--font-mono);">580</td>
+                  <td>80.5%</td>
+                  <td>2 Verified &bull; Keystore OK</td>
+                  <td><span class="status-pill verified">Verified</span></td>
+                  <td>
+                    <button class="btn btn-ghost btn-xs" onclick="openStationModal('PS-042')">View</button>
+                  </td>
+                </tr>
+
+                <!-- Row 6: Flagged station -->
+                <tr>
+                  <td><strong style="font-family:var(--font-mono); color:#D97706;">PS-088</strong></td>
+                  <td>Kiambu Township Primary</td>
+                  <td>Kiambu &bull; Kiambu Town</td>
+                  <td>690</td>
+                  <td style="font-family:var(--font-mono);">495</td>
+                  <td>71.7%</td>
+                  <td>2 Verified &bull; Benford Outlier</td>
+                  <td><span class="status-pill flagged">Flagged (Digits)</span></td>
+                  <td>
+                    <button class="btn btn-secondary btn-xs" onclick="switchView('anomalies')">Audit</button>
+                  </td>
+                </tr>
+
+                <!-- Row 7: Pending station -->
+                <tr>
+                  <td><strong style="font-family:var(--font-mono); color:var(--text-secondary);">PS-248</strong></td>
+                  <td>Wajir Bor Primary</td>
+                  <td>Wajir &bull; Wajir South</td>
+                  <td>450</td>
+                  <td style="font-family:var(--font-mono); color:var(--text-secondary);">--</td>
+                  <td>--</td>
+                  <td>2 Registered (En Route)</td>
+                  <td><span class="status-pill pending">Pending (Offline)</span></td>
+                  <td>
+                    <button class="btn btn-ghost btn-xs" onclick="App.showToast('Pinging field device GPS beacon...', 'info')">Ping</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 3: OBSERVERS & HARDWARE KEYS VIEW
+             ========================================== -->
+        <div class="console-view" id="view-observers">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Field Observers &amp; Hardware Attestation (482)</h1>
+              <p class="console-header-sub">ECDSA P-256 keys bound to Android KeyStore and iOS Secure Enclaves.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="App.showToast('Refreshing hardware public key registry...', 'info')">
+                <span data-icon="refresh"></span> Sync Keystores
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="App.showToast('Enrollment QR generated', 'success')">
+                <span data-icon="plus"></span> Enroll Device
+              </button>
+            </div>
+          </div>
+
+          <div class="kpi-metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="kpi-card">
+              <div class="kpi-title">Active Devices</div>
+              <div class="kpi-value">482 <span style="font-size:12px; color:var(--text-secondary);">/ 500</span></div>
+              <div class="kpi-meta"><span class="kpi-trend-pos">96.4%</span> Online</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Hardware Secure Enclave</div>
+              <div class="kpi-value">100%</div>
+              <div class="kpi-meta"><span class="kpi-trend-pos">Non-exportable</span> Keys</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Geofence Compliance</div>
+              <div class="kpi-value">99.2%</div>
+              <div class="kpi-meta">Within 100m of Station</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">Encrypted Outbox Queue</div>
+              <div class="kpi-value">0 Backlog</div>
+              <div class="kpi-meta"><span class="kpi-trend-pos">All packets synced</span></div>
+            </div>
+          </div>
+
+          <div class="console-table-wrap">
+            <table class="console-table">
+              <thead>
+                <tr>
+                  <th>Observer ID</th>
+                  <th>Name</th>
+                  <th>Assigned Station</th>
+                  <th>Hardware Model</th>
+                  <th>Keystore Attestation</th>
+                  <th>Public Key Fingerprint</th>
+                  <th>Battery &bull; Signal</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">OBS-108A</strong></td>
+                  <td>John Mutua</td>
+                  <td>PS-108 (Umoja Hall)</td>
+                  <td>Samsung Galaxy A54</td>
+                  <td><span class="status-pill verified">Android KeyStore</span></td>
+                  <td><code style="font-family:var(--font-mono); font-size:11px;">0x8a92...fc11</code></td>
+                  <td>88% &bull; 4G LTE</td>
+                  <td><span class="status-pill frozen">Dispute Locked</span></td>
+                </tr>
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">OBS-108B</strong></td>
+                  <td>Grace Wekesa</td>
+                  <td>PS-108 (Umoja Hall)</td>
+                  <td>Google Pixel 7a</td>
+                  <td><span class="status-pill verified">Titan M2 Enclave</span></td>
+                  <td><code style="font-family:var(--font-mono); font-size:11px;">0x3e41...19a0</code></td>
+                  <td>94% &bull; 4G LTE</td>
+                  <td><span class="status-pill frozen">Dispute Locked</span></td>
+                </tr>
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">OBS-001A</strong></td>
+                  <td>Kevin Omondi</td>
+                  <td>PS-001 (Nairobi Primary)</td>
+                  <td>iPhone 14</td>
+                  <td><span class="status-pill verified">iOS Secure Enclave</span></td>
+                  <td><code style="font-family:var(--font-mono); font-size:11px;">0x7c12...b998</code></td>
+                  <td>76% &bull; 5G</td>
+                  <td><span class="status-pill verified">Reporting</span></td>
+                </tr>
+                <tr>
+                  <td><strong style="font-family:var(--font-mono);">OBS-001B</strong></td>
+                  <td>Amina Noor</td>
+                  <td>PS-001 (Nairobi Primary)</td>
+                  <td>Nokia G21</td>
+                  <td><span class="status-pill verified">Android KeyStore</span></td>
+                  <td><code style="font-family:var(--font-mono); font-size:11px;">0x55d0...44ee</code></td>
+                  <td>82% &bull; 4G LTE</td>
+                  <td><span class="status-pill verified">Reporting</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 4: LEDGER EXPLORER VIEW
+             ========================================== -->
+        <div class="console-view" id="view-ledger">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Append-Only Cryptographic Ledger</h1>
+              <p class="console-header-sub">Immutable SHA-256 hash chain. No database UPDATE or DELETE operations exist.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="App.showToast('Checking full ledger hash chain...', 'info')">
+                <span data-icon="checkCircle"></span> Validate Chain (14,210 blocks)
+              </button>
+            </div>
+          </div>
+
+          <div class="console-card" style="margin-bottom:20px;">
+            <div class="console-card-header">
+              <div>
+                <h3 class="console-card-title">Latest Block Commits (Live Stream)</h3>
+                <div class="console-card-sub">Every transaction committed with previous block hash pointer</div>
+              </div>
+              <span class="status-pill verified">Zero Fractures Detected</span>
+            </div>
+
+            <div class="console-table-wrap">
+              <table class="console-table">
+                <thead>
+                  <tr>
+                    <th>Height</th>
+                    <th>Block Hash</th>
+                    <th>Previous Hash</th>
+                    <th>Payload Type</th>
+                    <th>Leaf Count</th>
+                    <th>Timestamp</th>
+                    <th>Inclusion Proof</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong style="font-family:var(--font-mono); color:var(--accent);">#14210</strong></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px;">0x9f1a8e2...5c44</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">0x4b7c120...e981</code></td>
+                    <td><span class="status-pill verified">Form 34A Packet</span></td>
+                    <td>32 ballots</td>
+                    <td>1m ago</td>
+                    <td><button class="btn btn-ghost btn-xs" onclick="inspectProof('14210')">Verify</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong style="font-family:var(--font-mono); color:var(--accent);">#14209</strong></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px;">0x4b7c120...e981</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">0x1d22aa9...aa13</code></td>
+                    <td><span class="status-pill verified">Station Tally Receipt</span></td>
+                    <td>64 ballots</td>
+                    <td>3m ago</td>
+                    <td><button class="btn btn-ghost btn-xs" onclick="inspectProof('14209')">Verify</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong style="font-family:var(--font-mono); color:var(--accent);">#14208</strong></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px;">0x1d22aa9...aa13</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">0xfa77991...1200</code></td>
+                    <td><span class="status-pill frozen">Dispute Freeze Event</span></td>
+                    <td>1 station</td>
+                    <td>14m ago</td>
+                    <td><button class="btn btn-ghost btn-xs" onclick="inspectProof('14208')">Verify</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 5: ANOMALY ENGINE VIEW
+             ========================================== -->
+        <div class="console-view" id="view-anomalies">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Automated Statistical Anomaly Engine</h1>
+              <p class="console-header-sub">Continuous mathematical tests: Benford Law, turnout spike z-scores, and digit clustering.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="App.showToast('Recalculating Benford p-values...', 'info')">
+                <span data-icon="refresh"></span> Recalculate Distribution
+              </button>
+            </div>
+          </div>
+
+          <div class="console-panel-grid">
+            <!-- Benford Graph -->
+            <div class="console-card">
+              <div class="console-card-header">
+                <div>
+                  <h3 class="console-card-title">Benford's Law (First-Digit Distribution)</h3>
+                  <div class="console-card-sub">Expected logarithmic curve (Grey) vs Ingested Returns (Navy)</div>
+                </div>
+                <span class="status-pill verified">p-value: 0.884 (Valid)</span>
+              </div>
+
+              <!-- Interactive Benford Bars -->
+              <div class="benford-container">
+                <!-- Digit 1 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:120px;" title="Expected: 30.1%"></div>
+                    <div class="benford-bar actual" style="height:116px;" title="Actual: 29.2%"></div>
+                  </div>
+                  <span class="benford-label">1</span>
+                </div>
+                <!-- Digit 2 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:70px;" title="Expected: 17.6%"></div>
+                    <div class="benford-bar actual" style="height:72px;" title="Actual: 18.1%"></div>
+                  </div>
+                  <span class="benford-label">2</span>
+                </div>
+                <!-- Digit 3 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:50px;" title="Expected: 12.5%"></div>
+                    <div class="benford-bar actual" style="height:48px;" title="Actual: 12.1%"></div>
+                  </div>
+                  <span class="benford-label">3</span>
+                </div>
+                <!-- Digit 4 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:38px;" title="Expected: 9.7%"></div>
+                    <div class="benford-bar actual" style="height:36px;" title="Actual: 9.2%"></div>
+                  </div>
+                  <span class="benford-label">4</span>
+                </div>
+                <!-- Digit 5 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:31px;" title="Expected: 7.9%"></div>
+                    <div class="benford-bar actual alert" style="height:45px;" title="Actual: 11.4% (Outlier at PS-088)"></div>
+                  </div>
+                  <span class="benford-label">5*</span>
+                </div>
+                <!-- Digit 6 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:26px;" title="Expected: 6.7%"></div>
+                    <div class="benford-bar actual" style="height:25px;" title="Actual: 6.4%"></div>
+                  </div>
+                  <span class="benford-label">6</span>
+                </div>
+                <!-- Digit 7 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:23px;" title="Expected: 5.8%"></div>
+                    <div class="benford-bar actual" style="height:22px;" title="Actual: 5.5%"></div>
+                  </div>
+                  <span class="benford-label">7</span>
+                </div>
+                <!-- Digit 8 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:20px;" title="Expected: 5.1%"></div>
+                    <div class="benford-bar actual" style="height:19px;" title="Actual: 4.9%"></div>
+                  </div>
+                  <span class="benford-label">8</span>
+                </div>
+                <!-- Digit 9 -->
+                <div class="benford-col">
+                  <div class="benford-bars-group">
+                    <div class="benford-bar expected" style="height:18px;" title="Expected: 4.6%"></div>
+                    <div class="benford-bar actual" style="height:17px;" title="Actual: 4.3%"></div>
+                  </div>
+                  <span class="benford-label">9</span>
+                </div>
+              </div>
+
+              <div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between;">
+                <span>* Digit 5 shows localized round-number clustering (Kiambu County)</span>
+                <span>Chi-square &chi;&sup2; = 4.22</span>
+              </div>
+            </div>
+
+            <!-- Active Anomaly Flags List -->
+            <div class="console-card">
+              <div class="console-card-header">
+                <div>
+                  <h3 class="console-card-title">Flagged Stations (3)</h3>
+                  <div class="console-card-sub">Automated rule triggers</div>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="border:1px solid rgba(217,119,6,0.25); background:rgba(217,119,6,0.03); border-radius:8px; padding:12px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <strong style="color:var(--text-primary); font-size:13px;">Turnout Spike (+25.1%)</strong>
+                    <span class="status-pill flagged">PS-019 Mombasa</span>
+                  </div>
+                  <p style="font-size:11px; color:var(--text-secondary); margin:0 0 6px 0;">93.3% recorded vs 68.2% historical regional baseline across 14 neighboring centers.</p>
+                  <button class="btn btn-secondary btn-xs" onclick="App.showToast('Dispatched regional supervisor request', 'info')">Request Verification</button>
+                </div>
+
+                <div style="border:1px solid rgba(217,119,6,0.25); background:rgba(217,119,6,0.03); border-radius:8px; padding:12px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <strong style="color:var(--text-primary); font-size:13px;">Round Number Bias (x5)</strong>
+                    <span class="status-pill flagged">PS-088 Kiambu</span>
+                  </div>
+                  <p style="font-size:11px; color:var(--text-secondary); margin:0 0 6px 0;">6 of 8 candidates recorded multiples of 5, indicating potential manual estimation.</p>
+                  <button class="btn btn-secondary btn-xs" onclick="App.showToast('Form 34A high-res scan requested', 'info')">Request Rescan</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 6: DISPUTES & RECONCILIATION VIEW
+             ========================================== -->
+        <div class="console-view" id="view-disputes">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Disputes &amp; Station Reconciliation</h1>
+              <p class="console-header-sub">Parallel observer discrepancy queue and cryptographic station freeze controls.</p>
+            </div>
+            <div class="console-header-actions">
+              <span class="status-pill frozen">1 Station Frozen in Ingestion Engine</span>
+            </div>
+          </div>
+
+          <!-- Dispute Inspector Card -->
+          <div class="console-card" style="border-color:#DC2626; margin-bottom:24px;">
+            <div class="console-card-header">
+              <div>
+                <h3 class="console-card-title" style="color:#DC2626;">Dispute Case #DSP-108: PS-108 (Umoja Community Hall)</h3>
+                <div class="console-card-sub">Embakasi West Constituency &bull; Form 34A Observer Disagreement</div>
+              </div>
+              <span class="status-pill frozen">LOCKED PENDING RESOLUTION</span>
+            </div>
+
+            <div class="discrepancy-grid">
+              <!-- Observer A -->
+              <div class="discrepancy-column">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <strong>Observer A: John Mutua</strong>
+                  <span class="status-pill verified">Android KeyStore</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+                  Submission: 18:24 EAT &bull; Form 34A Photo Hash: <code style="font-family:var(--font-mono);">0x4a91...38d2</code>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-family:var(--font-mono);">
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-subtle);">
+                    <span>Candidate A:</span> <strong>210 votes</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-subtle); color:#DC2626;">
+                    <span>Candidate B:</span> <strong>395 votes (Disputed)</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-subtle);">
+                    <span>Candidate C:</span> <strong>45 votes</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; font-weight:700;">
+                    <span>Total Cast:</span> <strong>650</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Observer B -->
+              <div class="discrepancy-column">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <strong>Observer B: Grace Wekesa</strong>
+                  <span class="status-pill verified">Titan M2 Enclave</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+                  Submission: 18:26 EAT &bull; Form 34A Photo Hash: <code style="font-family:var(--font-mono);">0x3e18...99bb</code>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-family:var(--font-mono);">
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-subtle);">
+                    <span>Candidate A:</span> <strong>210 votes</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-subtle); color:#DC2626;">
+                    <span>Candidate B:</span> <strong>415 votes (+20 discrepancy)</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid var(--border-subtle);">
+                    <span>Candidate C:</span> <strong>45 votes</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; padding:4px 0; font-weight:700;">
+                    <span>Total Cast:</span> <strong>670 (Exceeds Register 650!)</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resolution Workflow -->
+            <div style="border-top:1px solid var(--border-default); padding-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div style="font-size:12px; color:var(--text-secondary);">
+                <strong>Auditor Finding:</strong> Observer B tally (670) exceeds station registered capacity of 650. Form 34A photo shows smudged numeral.
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-secondary btn-sm" onclick="App.showToast('Escalated to Returning Officer', 'info')">
+                  Escalate to Returning Officer
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="resolveDispute('PS-108')">
+                  Accept Observer A (395) &amp; Unfreeze
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 7: CHECKPOINTS & BITCOIN VIEW
+             ========================================== -->
+        <div class="console-view" id="view-checkpoints">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Published Merkle Checkpoints &amp; Bitcoin Anchors</h1>
+              <p class="console-header-sub">Periodic cryptographic root commitments anchored into the Bitcoin blockchain via OpenTimestamps.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-primary btn-sm" onclick="triggerManualCheckpoint()">
+                <span data-icon="lock"></span> Publish Checkpoint Now
+              </button>
+            </div>
+          </div>
+
+          <div class="console-card">
+            <div class="console-table-wrap">
+              <table class="console-table">
+                <thead>
+                  <tr>
+                    <th>Checkpoint</th>
+                    <th>Merkle Root Hash</th>
+                    <th>Submissions</th>
+                    <th>Published At</th>
+                    <th>Bitcoin Anchor</th>
+                    <th>Block Height</th>
+                    <th>Proof Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong style="font-family:var(--font-mono); color:var(--accent);">#142</strong></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px;">0x8a92...fc119a2e8877</code></td>
+                    <td>14,210</td>
+                    <td>15 min ago</td>
+                    <td><span class="status-pill verified">Bitcoin Confirmed</span></td>
+                    <td><strong style="font-family:var(--font-mono);">#884120</strong></td>
+                    <td><button class="btn btn-ghost btn-xs" onclick="App.showToast('Downloading OTS Proof file...', 'success')">OTS Proof</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong style="font-family:var(--font-mono); color:var(--accent);">#141</strong></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px;">0x3e18...bb77aa112200</code></td>
+                    <td>12,850</td>
+                    <td>1 hr ago</td>
+                    <td><span class="status-pill verified">Bitcoin Confirmed</span></td>
+                    <td><strong style="font-family:var(--font-mono);">#884114</strong></td>
+                    <td><button class="btn btn-ghost btn-xs" onclick="App.showToast('Downloading OTS Proof file...', 'success')">OTS Proof</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong style="font-family:var(--font-mono); color:var(--accent);">#140</strong></td>
+                    <td><code style="font-family:var(--font-mono); font-size:11px;">0xfa01...66228899aa11</code></td>
+                    <td>10,400</td>
+                    <td>2 hrs ago</td>
+                    <td><span class="status-pill verified">Bitcoin Confirmed</span></td>
+                    <td><strong style="font-family:var(--font-mono);">#884108</strong></td>
+                    <td><button class="btn btn-ghost btn-xs" onclick="App.showToast('Downloading OTS Proof file...', 'success')">OTS Proof</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 8: AUDIT LOG VIEW
+             ========================================== -->
+        <div class="console-view" id="view-audit">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Cryptographic Immutable Audit Trail</h1>
+              <p class="console-header-sub">Every administrator action and system state transition is appended with cryptographic proof.</p>
+            </div>
+            <div class="console-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="App.showToast('Exporting signed audit ledger...', 'info')">
+                <span data-icon="download"></span> Export Signed Log
+              </button>
+            </div>
+          </div>
+
+          <div class="console-card">
+            <div class="console-table-wrap">
+              <table class="console-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                    <th>Target Resource</th>
+                    <th>Signature</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:11px;">18:32:04 EAT</td>
+                    <td><strong>Faith Mwangi</strong></td>
+                    <td><span class="status-pill verified">Reviewer</span></td>
+                    <td>Station Freeze Protocol Activated</td>
+                    <td><code>PS-108 (Dispute #108)</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10px;">0x9a88...12c4</code></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:11px;">18:26:10 EAT</td>
+                    <td><strong>Grace Wekesa</strong></td>
+                    <td><span class="status-pill verified">Observer</span></td>
+                    <td>Form 34A Packet Submitted</td>
+                    <td><code>PS-108 (Stream 1)</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10px;">0x44bb...ee90</code></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:11px;">18:24:02 EAT</td>
+                    <td><strong>John Mutua</strong></td>
+                    <td><span class="status-pill verified">Observer</span></td>
+                    <td>Form 34A Packet Submitted</td>
+                    <td><code>PS-108 (Stream 1)</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10px;">0x77aa...11fa</code></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:11px;">18:00:00 EAT</td>
+                    <td><strong>System Scheduler</strong></td>
+                    <td><span class="status-pill pending">Daemon</span></td>
+                    <td>Merkle Checkpoint #142 Committed</td>
+                    <td><code>Root: 0x8a92...fc11</code></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10px;">0xcc01...8811</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 9: 17 ENGINES HEALTH
+             ========================================== -->
+        <div class="console-view" id="view-engines">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">17 Core Subsystem Engines Health</h1>
+              <p class="console-header-sub">Real-time status of Rust Ingestion, C++ SIMD verification, and statistical detectors.</p>
+            </div>
+            <div class="console-header-actions">
+              <span class="status-pill verified">All 17 Engines Operational</span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">1. Rust Tokio Ingestion</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Async ringbuffer processing 250k votes/sec capacity.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">Load: 1,420 msg/s &bull; p99: 2.4ms</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">2. C++ SIMD Blur/Glare Gate</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Laplacian variance edge detector for ballot photo quality.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">Variance &gt; 120 threshold &bull; 99.4% Pass</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">3. ECDSA P-256 Verifier</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Hardware-backed signature verification for all field observers.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">0 Invalid Signatures &bull; 482 Registered</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">4. Benford's Law Engine</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Continuous Chi-square statistical test across 250 stations.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">&chi;&sup2; test = 4.22 &bull; 1 Flagged (PS-088)</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">5. Turnout Spike Detector</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Local outlier factor &amp; z-score clustering vs adjacent centers.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">Threshold: 2.5 &sigma; &bull; 1 Flagged (PS-019)</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">6. Merkle Tree Builder</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Binary tree hasher generating verifiable inclusion paths.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">Depth: 14 &bull; 14,210 Committed Leaves</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">7. Bitcoin OTS Anchoring</strong>
+                <span class="status-pill verified">Active</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">OpenTimestamps client committing roots to Bitcoin blocks.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:var(--accent);">Last Block: #884120 &bull; Interval: 15m</div>
+            </div>
+
+            <div class="console-card">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="color:var(--text-primary);">8. Dual-Observer Reconciler</strong>
+                <span class="status-pill warn">Attention</span>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); margin:0 0 8px 0;">Automated cross-check of independent Form 34A returns.</p>
+              <div style="font-size:11px; font-family:var(--font-mono); color:#DC2626;">1 Active Discrepancy (PS-108)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 10: BILLING & PLANS
+             ========================================== -->
+        <div class="console-view" id="view-billing">
+          <div class="console-header-row">
+            <div>
+              <h1 class="console-header-title">Billing &amp; Subscription Tiers</h1>
+              <p class="console-header-sub">Manage organization plan, M-Pesa STK billing, and election-grade provisioning.</p>
+            </div>
+            <div class="console-header-actions">
+              <span class="status-pill verified">Active: Election Tier</span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px;">
+            <!-- Free -->
+            <div class="console-card">
+              <h3 style="font-size:16px; margin:0 0 4px 0;">Free Community</h3>
+              <div style="font-size:24px; font-weight:800; margin:10px 0;">KES 0</div>
+              <p style="font-size:12px; color:var(--text-secondary);">Up to 100 votes/poll &bull; SHA-256 Receipts &bull; Public verification</p>
+              <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:14px;" onclick="App.showToast('Downgrade flow requested', 'info')">Select Plan</button>
+            </div>
+
+            <!-- Pro -->
+            <div class="console-card">
+              <h3 style="font-size:16px; margin:0 0 4px 0;">Pro Professional</h3>
+              <div style="font-size:24px; font-weight:800; margin:10px 0;">KES 1,500 <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">/mo (~$12)</span></div>
+              <p style="font-size:12px; color:var(--text-secondary);">10,000 votes/mo &bull; Multi-question surveys &bull; CSV/PDF audit export</p>
+              <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:14px;" onclick="App.showToast('Upgrade to Pro requested', 'info')">Upgrade via M-Pesa</button>
+            </div>
+
+            <!-- Organisation -->
+            <div class="console-card">
+              <h3 style="font-size:16px; margin:0 0 4px 0;">Organisation</h3>
+              <div style="font-size:24px; font-weight:800; margin:10px 0;">KES 6,500 <span style="font-size:12px; font-weight:400; color:var(--text-secondary);">/mo (~$49)</span></div>
+              <p style="font-size:12px; color:var(--text-secondary);">100k votes/mo &bull; Custom sub-domains &bull; Role-based access control</p>
+              <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:14px;" onclick="App.showToast('Upgrade to Organisation requested', 'info')">Upgrade via M-Pesa</button>
+            </div>
+
+            <!-- Election Tier (Active) -->
+            <div class="console-card" style="border:2px solid var(--accent); background:rgba(30,42,74,0.02);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="font-size:16px; margin:0;">Election Grade</h3>
+                <span class="status-pill verified">Current</span>
+              </div>
+              <div style="font-size:24px; font-weight:800; margin:10px 0; color:var(--accent);">Turnkey</div>
+              <p style="font-size:12px; color:var(--text-secondary);">Hardware KeyStore &bull; Dual-observer reconcile &bull; Bitcoin OTS &bull; 17 Anomaly engines</p>
+              <button class="btn btn-primary btn-sm" style="width:100%; margin-top:14px;" onclick="App.showToast('Managing active enterprise contract', 'info')">Manage Tier</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             SIMULATED STATE CONTAINERS (LOADING / EMPTY / ERROR)
+             ========================================== -->
+        <!-- Loading State Skeleton -->
+        <div id="state-loading-view" style="display:none;">
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+            <div class="skeleton-box" style="height:110px; border-radius:12px;"></div>
+            <div class="skeleton-box" style="height:110px; border-radius:12px;"></div>
+            <div class="skeleton-box" style="height:110px; border-radius:12px;"></div>
+            <div class="skeleton-box" style="height:110px; border-radius:12px;"></div>
+          </div>
+          <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+            <div class="skeleton-box" style="height:280px; border-radius:14px;"></div>
+            <div class="skeleton-box" style="height:280px; border-radius:14px;"></div>
+          </div>
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="state-empty-view" class="console-card" style="display:none; text-align:center; padding:60px 20px;">
+          <div style="width:56px; height:56px; background:var(--bg-secondary); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <span data-icon="target" style="transform:scale(1.4); color:var(--text-secondary);"></span>
+          </div>
+          <h3 style="font-size:18px; margin:0 0 8px 0;">No Polling Returns Ingested Yet</h3>
+          <p style="font-size:13px; color:var(--text-secondary); max-width:440px; margin:0 auto 20px;">
+            No station returns have been captured for this election cohort. Deploy field observers with hardware attestation to commence live monitoring.
+          </p>
+          <button class="btn btn-primary btn-sm" onclick="setState('normal')">Simulate Incoming Packets</button>
+        </div>
+
+        <!-- Error State Container -->
+        <div id="state-error-view" class="console-card" style="display:none; text-align:center; padding:60px 20px; border-color:#DC2626; background:rgba(220,38,38,0.02);">
+          <div style="width:56px; height:56px; background:rgba(220,38,38,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:#DC2626;">
+            <span data-icon="alertCircle" style="transform:scale(1.4);"></span>
+          </div>
+          <h3 style="font-size:18px; color:#DC2626; margin:0 0 8px 0;">Telemetry Connection Stream Interrupted</h3>
+          <p style="font-size:13px; color:var(--text-secondary); max-width:440px; margin:0 auto 20px;">
+            Failed to receive heartbeat stream from Rust Ingestion Engine (WebSocket 127.0.0.1:8080). Encrypted outbox offline sync is retaining station returns.
+          </p>
+          <button class="btn btn-primary btn-sm" style="background:#DC2626; border-color:#DC2626;" onclick="setState('normal'); App.showToast('Reconnected to Ingestion Engine', 'success');">
+            Retry Connection Stream
+          </button>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- Station Inspector Modal -->
+    <div class="console-modal-backdrop" id="station-modal">
+      <div class="console-modal">
+        <div class="console-modal-header">
+          <h3 class="console-modal-title" id="station-modal-title">Polling Station Inspector</h3>
+          <button class="btn btn-ghost btn-icon" onclick="closeStationModal()" style="width:32px;height:32px;">
+            <span data-icon="close"></span>
+          </button>
+        </div>
+        <div class="console-modal-body" id="station-modal-body">
+          <!-- Dynamic details injected by script -->
+        </div>
+        <div class="console-modal-footer">
+          <button class="btn btn-secondary btn-sm" onclick="closeStationModal()">Close</button>
+          <button class="btn btn-primary btn-sm" onclick="App.showToast('Station audit certificate downloaded', 'success'); closeStationModal();">Download Certificate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="../js/core/icons.js"></script>
+  <script src="../js/core/i18n.js"></script>
+  <script src="../js/core/mock-data.js"></script>
+  <script src="../js/core/crypto-verifier.js"></script>
+  <script src="../js/core/app.js"></script>
+  <script>
+    // Tab switching architecture for all console views
+    const viewTitles = {
+      overview: "Operations Center",
+      polls: "Polls & Surveys",
+      stations: "Polling Stations Roster",
+      observers: "Observers & Hardware Keys",
+      ledger: "Cryptographic Ledger Explorer",
+      anomalies: "Automated Anomaly Engine",
+      disputes: "Disputes & Station Reconciliation",
+      checkpoints: "Checkpoints & Bitcoin Anchoring",
+      audit: "Cryptographic Audit Trail",
+      engines: "17 Core Subsystem Engines Health",
+      analytics: "Telemetry Analytics & Reports",
+      billing: "Billing & Subscription Plans"
+    };
+
+    function switchView(viewName) {
+      if (viewName === 'polls') {
+        window.location.href = 'polls.html';
+        return;
+      }
+      if (viewName === 'analytics') {
+        window.location.href = 'analytics.html';
+        return;
+      }
+
+      // Update sidebar nav active state
+      document.querySelectorAll('.console-nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.view === viewName) {
+          link.classList.add('active');
+        }
+      });
+
+      // Hide all views and show target
+      document.querySelectorAll('.console-view').forEach(view => {
+        view.classList.remove('active');
+      });
+
+      const targetView = document.getElementById('view-' + viewName);
+      if (targetView) {
+        targetView.classList.add('active');
+      }
+
+      // Update Topbar Breadcrumb
+      const titleEl = document.getElementById('current-view-title');
+      if (titleEl && viewTitles[viewName]) {
+        titleEl.textContent = viewTitles[viewName];
+      }
+
+      // Scroll to top of content
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      App.injectIcons();
+    }
+
+    // State Switcher (Normal / Loading / Empty / Error)
+    function setState(state) {
+      document.querySelectorAll('.topbar-segmented-btn[data-state]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.state === state);
+      });
+
+      const activeView = document.querySelector('.console-view.active');
+      const loadView = document.getElementById('state-loading-view');
+      const emptyView = document.getElementById('state-empty-view');
+      const errorView = document.getElementById('state-error-view');
+
+      if (state === 'normal') {
+        if (activeView) activeView.style.display = 'block';
+        loadView.style.display = 'none';
+        emptyView.style.display = 'none';
+        errorView.style.display = 'none';
+      } else if (state === 'loading') {
+        if (activeView) activeView.style.display = 'none';
+        loadView.style.display = 'block';
+        emptyView.style.display = 'none';
+        errorView.style.display = 'none';
+      } else if (state === 'empty') {
+        if (activeView) activeView.style.display = 'none';
+        loadView.style.display = 'none';
+        emptyView.style.display = 'block';
+        errorView.style.display = 'none';
+      } else if (state === 'error') {
+        if (activeView) activeView.style.display = 'none';
+        loadView.style.display = 'none';
+        emptyView.style.display = 'none';
+        errorView.style.display = 'block';
+      }
+      App.injectIcons();
+    }
+
+    // Filter Stations
+    function filterStations(category, btn) {
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const rows = document.querySelectorAll('#stations-table-body tr');
+      rows.forEach(row => {
+        if (category === 'all') {
+          row.style.display = '';
+        } else if (category === 'verified') {
+          row.style.display = row.innerHTML.includes('status-pill verified') ? '' : 'none';
+        } else if (category === 'flagged') {
+          row.style.display = row.innerHTML.includes('status-pill flagged') ? '' : 'none';
+        } else if (category === 'frozen') {
+          row.style.display = row.innerHTML.includes('status-pill frozen') ? '' : 'none';
+        } else if (category === 'pending') {
+          row.style.display = row.innerHTML.includes('status-pill pending') ? '' : 'none';
+        }
+      });
+    }
+
+    function searchStations(query) {
+      const q = query.toLowerCase();
+      const rows = document.querySelectorAll('#stations-table-body tr');
+      rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    // Station Inspector Modal
+    function openStationModal(code) {
+      const modal = document.getElementById('station-modal');
+      const title = document.getElementById('station-modal-title');
+      const body = document.getElementById('station-modal-body');
+      
+      title.textContent = `Station Inspector: ${code}`;
+      body.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); padding:12px; border-radius:8px;">
+            <div>
+              <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Registration Status</div>
+              <div style="font-weight:700; font-size:14px;">650 Registered &bull; GPS Geofenced (-1.2921, 36.8219)</div>
+            </div>
+            <span class="status-pill verified">Hardware Attested</span>
+          </div>
+          <div>
+            <h4 style="font-size:13px; margin:0 0 6px 0;">Dual Observer Cryptographic Signatures</h4>
+            <div style="font-family:var(--font-mono); font-size:11px; background:#FAFBFC; border:1px solid var(--border-default); padding:10px; border-radius:6px; line-height:1.6;">
+              <div>Obs 1 (Mutua): 0x77aa11fc...881a (ECDSA P-256 KeyStore)</div>
+              <div>Obs 2 (Wekesa): 0x99dd44ee...99bb (Titan M2 Enclave)</div>
+            </div>
+          </div>
+          <div>
+            <h4 style="font-size:13px; margin:0 0 6px 0;">Merkle Tree Commitment</h4>
+            <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent);">
+              Leaf Hash: 0x8a92...fc11 &bull; Checkpoint #142 (Block #884120)
+            </div>
+          </div>
+        </div>
+      `;
+      modal.classList.add('open');
+      App.injectIcons();
+    }
+
+    function closeStationModal() {
+      document.getElementById('station-modal').classList.remove('open');
+    }
+
+    // Manual Checkpoint trigger
+    function triggerManualCheckpoint() {
+      App.showToast('Computing Merkle Tree across 14,210 leaves...', 'info');
+      setTimeout(() => {
+        App.showToast('Checkpoint #143 Committed & Anchored to Bitcoin OTS!', 'success');
+      }, 1200);
+    }
+
+    // Resolve Dispute helper
+    function resolveDispute(stationCode) {
+      App.showToast(`Station ${stationCode} dispute resolved. Releasing freeze protocol...`, 'info');
+      setTimeout(() => {
+        App.showToast(`Station ${stationCode} unverified status cleared. Tally committed to ledger!`, 'success');
+        switchView('overview');
+      }, 1000);
+    }
+
+    function inspectProof(blockId) {
+      App.showToast(`Verifying cryptographic inclusion proof for Block #${blockId}...`, 'info');
+      setTimeout(() => {
+        App.showToast(`Block #${blockId} verified! Path leads to Merkle Root #142.`, 'success');
+      }, 800);
+    }
+
+    function setLangActive(lang) {
+      document.querySelectorAll('.topbar-segmented-btn[data-lang]').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+      App.showToast(`Switched language to ${lang.toUpperCase()}`, 'info');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      App.injectIcons();
+
+      // Check URL hash for direct view navigation
+      const hash = window.location.hash.replace('#', '');
+      if (hash && viewTitles[hash]) {
+        switchView(hash);
+      }
+
+      // Hydrate user and organization profile from active login session
+      const stored = localStorage.getItem('gir_user');
+      if (stored) {
+        try {
+          const u = JSON.parse(stored);
+          if (u.organization) {
+            const orgEl = document.getElementById('topbar-org-title');
+            if (orgEl) orgEl.textContent = u.organization;
+          }
+          if (u.fullName) {
+            const subEl = document.getElementById('topbar-user-sub');
+            if (subEl) subEl.textContent = `${u.fullName} • ${u.planName || u.plan || 'Customer'}`;
+            const sideName = document.getElementById('user-display-name');
+            if (sideName) sideName.textContent = u.fullName;
+            const sideRole = document.getElementById('user-display-role');
+            if (sideRole) sideRole.textContent = u.organization || u.planName || 'Verified Member';
+            const avatar = document.querySelector('.sidebar-user-avatar');
+            if (avatar) avatar.textContent = u.fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+          }
+        } catch(e) {}
+      }
+
+      window.handleDashboardLogout = function() {
+        localStorage.removeItem('gir_user');
+        localStorage.removeItem('gir_session');
+        window.location.href = '../auth/login.html';
+      };
+
+      // Keyboard shortcut ⌘K / Ctrl+K for search
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('global-search').focus();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

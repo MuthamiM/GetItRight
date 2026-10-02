@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Get It Right — Sign in to your cryptographic polling console.">
+  <title>Get It Right — Sign In to Console</title>
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-dark: #0B0F1A;
+      --bg-card: rgba(255,255,255,0.04);
+      --bg-card-hover: rgba(255,255,255,0.07);
+      --border-glass: rgba(255,255,255,0.08);
+      --accent: #2563EB;
+      --accent-glow: rgba(37,99,235,0.25);
+      --accent-hover: #1D4ED8;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --danger: #EF4444;
+      --success: #10B981;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(37,99,235,0.14), transparent),
+        radial-gradient(ellipse 60% 80% at 80% 100%, rgba(16,185,129,0.08), transparent);
+      pointer-events: none;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 460px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .auth-brand-logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1E2A4A, #0B0F1A);
+      border: 1px solid var(--border-glass);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .auth-brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 14px;
+    }
+
+    .auth-brand-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .auth-brand-name .dot {
+      color: var(--accent);
+    }
+
+    .auth-brand-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    }
+
+    .auth-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .auth-card .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-body);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-error {
+      display: none;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--danger);
+    }
+
+    .form-error.visible {
+      display: block;
+    }
+
+    .btn-auth {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 700;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      position: relative;
+    }
+
+    .btn-auth:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-auth:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-auth .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #FFFFFF;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .btn-auth.loading .spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    /* Quick Demo Logins Container */
+    .demo-credentials-box {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-glass);
+    }
+
+    .demo-credentials-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .demo-chips {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .demo-chip {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+      font-size: 11.5px;
+    }
+
+    .demo-chip:hover {
+      background: rgba(37,99,235,0.12);
+      border-color: rgba(37,99,235,0.4);
+      color: var(--text-primary);
+    }
+
+    .demo-chip strong {
+      display: block;
+      color: var(--text-primary);
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .demo-chip span {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .auth-footer a {
+      color: #60A5FA;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .success-card {
+      display: none;
+      text-align: center;
+      padding: 30px 10px;
+    }
+
+    .success-card.visible {
+      display: block;
+    }
+
+    .success-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(16,185,129,0.15);
+      color: var(--success);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .auth-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-bottom: 16px;
+    }
+
+    .auth-back-link:hover {
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-container">
+    <a href="../index.html" class="auth-back-link">&larr; Back to Landing Page</a>
+
+    <div class="auth-brand">
+      <div class="auth-brand-logo">
+        <img src="../assets/images/logo.jpg" alt="Get It Right Logo">
+      </div>
+      <div class="auth-brand-name">Get It Right<span class="dot">.</span></div>
+      <div class="auth-brand-sub">Polls &amp; Surveys You Can Prove</div>
+    </div>
+
+    <div class="auth-card" id="login-card">
+      <h2 id="login-heading">Sign In to Console</h2>
+      <p class="subtitle" id="login-sub">Enter your verified email and password to access your console</p>
+
+      <div class="form-error" id="login-error"></div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="login-email" required
+                 placeholder="name@organization.ke" autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label class="form-label" style="margin-bottom:0;">Password</label>
+            <span style="font-size:11px; color:var(--text-muted);">Protected by Zero-Knowledge Salt</span>
+          </div>
+          <input type="password" class="form-input" id="login-password" required
+                 placeholder="Enter password" autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn-auth" id="login-btn">
+          Sign In to Console &rarr;
+          <span class="spinner"></span>
+        </button>
+      </form>
+
+      <!-- Success Screen -->
+      <div class="success-card" id="login-success">
+        <div class="success-icon">&#10003;</div>
+        <h3 id="welcome-name" style="font-size:19px; font-weight:700; margin-bottom:6px;">Authenticated!</h3>
+        <p id="welcome-org" style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;"></p>
+        <p id="welcome-plan" style="font-size:12px; color:#60A5FA;"></p>
+      </div>
+
+      <!-- Quick 1-Click Demo Profiles -->
+      <div class="demo-credentials-box">
+        <div class="demo-credentials-title">
+          <span>Quick 1-Click Test Accounts</span>
+          <span>SQLite DB Seeded</span>
+        </div>
+        <div class="demo-chips">
+          <div class="demo-chip" onclick="fillCreds('grace@umoja.org', 'Password123!')">
+            <strong>Grace Wanjiku</strong>
+            <span>Plan 1: Civic Free (Community)</span>
+          </div>
+          <div class="demo-chip" onclick="fillCreds('marcus@surveyanalytics.ke', 'Password123!')">
+            <strong>Marcus Kiprop</strong>
+            <span>Plan 2: Civic Pro (Researcher)</span>
+          </div>
+          <div class="demo-chip" onclick="fillCreds('sarah@kenyateachersunion.org', 'Password123!')">
+            <strong>Sarah Mutiso</strong>
+            <span>Plan 3: Org (Teachers Union)</span>
+          </div>
+          <div class="demo-chip" onclick="fillCreds('commissioner@electoralguard.ke', 'Password123!')">
+            <strong>Amb. Paul Ochieng</strong>
+            <span>Plan 4: Sovereign Election</span>
+          </div>
+          <div class="demo-chip" style="grid-column: span 2; border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.06);" onclick="fillCreds('admin@getitright.io', 'SuperAdminPassword2026!')">
+            <strong style="color:#93C5FD;">&#9881; Dr. David Mwangi (Platform SuperAdmin)</strong>
+            <span>Central Admin Console (Zero-knowledge boundaries)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      New organization? <a href="signup.html">Select a plan &amp; create account &rarr;</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+
+    function fillCreds(email, password) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = password;
+      const errorEl = document.getElementById('login-error');
+      errorEl.classList.remove('visible');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+      const errorEl = document.getElementById('login-error');
+
+      errorEl.classList.remove('visible');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!res.ok) {
+          throw new Error('Invalid email or password. Please verify credentials or use one of the test profiles below.');
+        }
+
+        const data = await res.json();
+
+        // Store user and session
+        localStorage.setItem('gir_user', JSON.stringify(data.user));
+        localStorage.setItem('gir_session', 'active');
+
+        // Transition UI to success
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('login-heading').style.display = 'none';
+        document.getElementById('login-sub').style.display = 'none';
+        document.querySelector('.demo-credentials-box').style.display = 'none';
+
+        const successCard = document.getElementById('login-success');
+        successCard.classList.add('visible');
+        document.getElementById('welcome-name').textContent = `Welcome, ${data.user.fullName}!`;
+        document.getElementById('welcome-org').textContent = data.user.organization || 'Verified Account';
+        document.getElementById('welcome-plan').textContent = `Redirecting to ${data.user.planName || data.user.role} console...`;
+
+        setTimeout(() => {
+          const target = data.redirectUrl || data.user.consoleUrl || '/console/community.html';
+          window.location.href = '../' + target.replace(/^\//, '');
+        }, 1200);
+
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.add('visible');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package getitright.events;
+
+enum EventType {
+  UNKNOWN = 0;
+  VOTE_CAST = 1;
+  VOTE_TALLIED = 2;
+  POLL_STATE_UPDATE = 3;
+  SURVEY_RESPONSE_SUBMITTED = 4;
+  SURVEY_COMPLETED = 5;
+  HEARTBEAT = 6;
+}
+
+message VoteCastEvent {
+  string poll_id = 1;
+  string track_id = 2;
+  string option_id = 3;
+  string voter_fingerprint = 4;
+  int64 timestamp_ms = 5;
+  string platform = 6; // "web", "ios", "android"
+}
+
+message OptionResult {
+  string option_id = 1;
+  string label = 2;
+  int64 vote_count = 3;
+  double percentage = 4;
+}
+
+message PollStateUpdateEvent {
+  string poll_id = 1;
+  string track_id = 2;
+  int64 total_votes = 3;
+  repeated OptionResult results = 4;
+  int64 timestamp_ms = 5;
+  double velocity_per_sec = 6;
+}
+
+message SurveyAnswer {
+  string question_id = 1;
+  string answer_type = 2; // "choice", "rating", "text"
+  repeated string selected_option_ids = 3;
+  int32 rating_value = 4;
+  string text_value = 5;
+}
+
+message SurveyResponseEvent {
+  string survey_id = 1;
+  string track_id = 2;
+  string respondent_id = 3;
+  repeated SurveyAnswer answers = 4;
+  int64 duration_seconds = 5;
+  int64 timestamp_ms = 6;
+}
+
+message HeartbeatMessage {
+  int64 client_timestamp_ms = 1;
+  int64 server_timestamp_ms = 2;
+  int32 active_connections = 3;
+}

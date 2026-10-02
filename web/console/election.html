@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get It Right — Sovereign Election Guard Console</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/console.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    .plan-topbar {
+      background: #0B1120;
+      color: #F8FAFC;
+      border-bottom: 1px solid #1E293B;
+      padding: 12px clamp(16px, 3vw, 40px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .election-track-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+    .station-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .station-mini-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body class="console-body">
+
+  <header class="plan-topbar">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <a href="../index.html" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:#FFFFFF;">
+        <div style="width:30px; height:30px; border-radius:8px; background:#10B981; display:flex; align-items:center; justify-content:center; color:#064E3B; font-weight:800; font-size:12px;">ELEC</div>
+        <span style="font-family:var(--font-display); font-size:17px; font-weight:800; letter-spacing:-0.02em;">Get It Right</span>
+      </a>
+      <span class="status-pill" style="background:#064E3B; color:#34D399; border:1px solid #059669; font-weight:800;">
+        PLAN 4: SOVEREIGN ELECTION GUARD
+      </span>
+      <span style="font-size:12px; color:#94A3B8;" id="logged-user-name">Amb. Paul Ochieng &bull; Independent Electoral Oversight Mission</span>
+    </div>
+
+    <!-- Authenticated Session & Actions (No Role Switching!) -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981;" title="Verified Session"></span>
+        <span style="font-size:12px; font-weight:700; color:#FFFFFF;" id="top-user-display">Amb. Paul Ochieng</span>
+      </div>
+      <button onclick="handleConsoleLogout()" class="btn btn-ghost btn-xs" style="color:#94A3B8; border:1px solid #334155; border-radius:8px; padding:4px 10px;">
+        Sign Out
+      </button>
+      <a href="../index.html" class="btn btn-secondary btn-sm btn-pill" style="color:#FFFFFF; border-color:#334155; background:transparent;">Landing Page &rarr;</a>
+    </div>
+  </header>
+
+  <div style="padding: clamp(20px, 3.5vw, 48px); max-width:1440px; margin:0 auto; box-sizing:border-box;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h1 style="font-family:var(--font-display); font-size:24px; font-weight:800; color:var(--text-primary); margin:0 0 6px;">
+          Sovereign Election Command Center
+        </h1>
+        <p style="font-size:14px; color:var(--text-secondary); margin:0;">
+          Cryptographic Form 34A parallel vote tabulation (PVT), dual hardware attestation, and Bitcoin Merkle anchoring.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span class="status-pill verified">Bitcoin Block #884120 Anchored</span>
+        <button class="btn btn-primary btn-sm btn-pill" onclick="publishNewCheckpoint()">
+          Publish Bitcoin Checkpoint &rarr;
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Telemetry KPI Cards -->
+    <div class="kpi-metrics-grid" style="margin-bottom:28px;">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Polling Stations Reporting</span>
+          <div class="kpi-icon-wrap"><span data-icon="target"></span></div>
+        </div>
+        <div class="kpi-value" id="stations-stat">242 / 250</div>
+        <div class="kpi-meta"><span class="kpi-trend-pos">&uarr; 96.8%</span><span>Form 34A Packets</span></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Total Verified Ballots</span>
+          <div class="kpi-icon-wrap"><span data-icon="checkCircle"></span></div>
+        </div>
+        <div class="kpi-value" id="elec-total-votes">--</div>
+        <div class="kpi-meta"><span class="kpi-trend-pos">10 Sovereign Tracks</span><span>DB Validated</span></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Hardware Observers</span>
+          <div class="kpi-icon-wrap"><span data-icon="users"></span></div>
+        </div>
+        <div class="kpi-value">482 Keys</div>
+        <div class="kpi-meta"><span class="kpi-trend-pos">Titan M2 &bull; Secure Enclave</span></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Anomaly Engine</span>
+          <div class="kpi-icon-wrap warn"><span data-icon="alertCircle"></span></div>
+        </div>
+        <div class="kpi-value" id="anomaly-stat" style="color:#D97706;">2 Active</div>
+        <div class="kpi-meta"><span class="kpi-trend-danger">PS-108 Frozen</span><span>(Dispute review)</span></div>
+      </div>
+    </div>
+
+    <!-- 10 Sovereign Election Tracks Section -->
+    <h2 style="font-family:var(--font-display); font-size:18px; font-weight:800; margin-bottom:16px; color:var(--text-primary);">
+      10 Sovereign Parallel Vote Tabulation (PVT) Election Tracks
+    </h2>
+
+    <div id="election-tracks-container" style="margin-bottom:36px;">
+      <div style="padding:40px; text-align:center; color:var(--text-secondary);">Loading Sovereign Election tracks from C# SQLite database...</div>
+    </div>
+
+    <!-- Polling Stations Live Status Grid from DB -->
+    <div class="console-card" style="margin-bottom:32px;">
+      <div class="console-card-header">
+        <div>
+          <h3 class="console-card-title">Live Sample Polling Stations Stream (From Database)</h3>
+          <div class="console-card-sub">Physical centers with dual observer Form 34A cryptographic sign-offs</div>
+        </div>
+      </div>
+
+      <div class="station-grid" id="stations-grid">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+    let electionPolls = [];
+
+    async function loadElectionData() {
+      try {
+        // 1. Fetch Election Polls
+        const res = await fetch(`${API_BASE}/api/polls?plan=election`);
+        if (res.ok) {
+          electionPolls = await res.json();
+          renderElectionTracks(electionPolls);
+          const totalVotes = electionPolls.reduce((sum, p) => sum + (p.totalVotes || 0), 0);
+          document.getElementById('elec-total-votes').textContent = totalVotes.toLocaleString();
+        }
+
+        // 2. Fetch Polling Stations
+        const stRes = await fetch(`${API_BASE}/api/stations`);
+        if (stRes.ok) {
+          const stations = await stRes.json();
+          renderStations(stations);
+        }
+
+        // 3. Fetch Anomalies
+        const anomRes = await fetch(`${API_BASE}/api/anomalies`);
+        if (anomRes.ok) {
+          const anomalies = await anomRes.json();
+          document.getElementById('anomaly-stat').textContent = `${anomalies.length} Flagged`;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderElectionTracks(polls) {
+      const container = document.getElementById('election-tracks-container');
+      if (!container) return;
+
+      container.innerHTML = polls.map(p => `
+        <div class="election-track-card" id="elec-card-${p.id}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div>
+              <span style="font-size:11px; font-weight:700; color:#15803D; text-transform:uppercase; background:#DCFCE7; padding:3px 8px; border-radius:4px; margin-right:8px;">
+                ${p.category || 'National Plebiscite'}
+              </span>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">${p.id}</span>
+              <h3 style="font-family:var(--font-display); font-size:17px; font-weight:800; color:var(--text-primary); margin:8px 0 4px;">
+                ${p.title}
+              </h3>
+              <p style="font-size:13px; color:var(--text-secondary); margin:0;">${p.description}</p>
+            </div>
+
+            <div style="text-align:right;">
+              <div style="font-family:var(--font-mono); font-size:16px; font-weight:800; color:#15803D;">
+                ${p.totalVotes.toLocaleString()} <span style="font-size:11px; font-weight:500; color:var(--text-secondary);">tallied</span>
+              </div>
+              <span class="status-pill verified" style="font-size:10px;">Form 34A Ledger Anchored</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Option Bars from DB -->
+          <div style="display:flex; flex-direction:column; gap:10px; margin:16px 0;">
+            ${(p.options || []).map(opt => `
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;">
+                  <span>${opt.label}</span>
+                  <span style="font-family:var(--font-mono);">${opt.percentage}% (${opt.votes.toLocaleString()} votes)</span>
+                </div>
+                <div style="width:100%; height:8px; background:var(--bg-secondary); border-radius:100px; overflow:hidden;">
+                  <div style="width:${opt.percentage}%; height:100%; background:#15803D; border-radius:100px; transition:width 0.6s ease;"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div style="border-top:1px solid var(--border-subtle); padding-top:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">
+              Merkle Root: ${p.merkleRoot} &bull; Bitcoin Block #884120
+            </span>
+            <button class="btn btn-secondary btn-xs btn-pill" onclick="castElectionVote('${p.id}', 0)">
+              Simulate Station Vote Ingestion &rarr;
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStations(stations) {
+      const grid = document.getElementById('stations-grid');
+      if (!grid) return;
+
+      grid.innerHTML = stations.map(s => `
+        <div class="station-mini-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-family:var(--font-mono); font-size:12px;">${s.code}</strong>
+            <span class="status-pill ${s.status === 'verified' ? 'verified' : (s.status === 'frozen' ? 'danger' : 'warn')}">
+              ${s.status.toUpperCase()}
+            </span>
+          </div>
+          <div style="font-weight:700; font-size:13px; margin-bottom:4px;">${s.name}</div>
+          <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">${s.constituency}, ${s.county}</div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; border-top:1px solid var(--border-subtle); padding-top:6px;">
+            <span>Turnout: <strong>${s.turnoutPercent}%</strong></span>
+            <span>Votes: <strong>${s.votesCast} / ${s.registeredVoters}</strong></span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function castElectionVote(pollId, optionIndex) {
+      try {
+        const res = await fetch(`${API_BASE}/api/polls/${pollId}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionIndex, voterKey: 'ObsStream-' + Math.floor(Math.random()*9000 + 1000) })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          alert(`Form 34A Packet Committed to Ledger!\n\nReceipt: ${data.receiptHash}\nBlock Height: #${data.blockHeight}\nMerkle Leaf #${data.leafIndex}\nTotal Votes: ${data.totalVotes}`);
+          loadElectionData();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function publishNewCheckpoint() {
+      try {
+        const res = await fetch(`${API_BASE}/api/checkpoints/publish`, { method: 'POST' });
+        if (res.ok) {
+          const cp = await res.json();
+          alert(`New Bitcoin Checkpoint Published!\n\nCheckpoint #${cp.checkpointId}\nBitcoin Height: #${cp.bitcoinBlockHeight}\nRoot: ${cp.merkleRootHash}\nStatus: ${cp.status}`);
+          loadElectionData();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function hydrateSession() {
+      const stored = localStorage.getItem('gir_user');
+      if (stored) {
+        try {
+          const u = JSON.parse(stored);
+          if (u.fullName) {
+            document.getElementById('top-user-display').textContent = u.fullName;
+            document.getElementById('logged-user-name').textContent = `${u.fullName} • ${u.organization || 'Electoral Mission'}`;
+          }
+        } catch {}
+      }
+    }
+
+    function handleConsoleLogout() {
+      localStorage.removeItem('gir_user');
+      localStorage.removeItem('gir_session');
+      window.location.href = '../auth/login.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      hydrateSession();
+      loadElectionData();
+    });
+  </script>
+</body>
+</html>

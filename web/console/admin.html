@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get It Right — Sovereign Platform SuperAdmin</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/console.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    .superadmin-topbar {
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 12px clamp(16px, 3vw, 40px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1E293B;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .admin-pill {
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      color: #F87171;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+    .privacy-guard-box {
+      background: linear-gradient(135deg, rgba(30, 42, 74, 0.04) 0%, rgba(59, 130, 246, 0.06) 100%);
+      border: 1.5px solid rgba(59, 130, 246, 0.25);
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .privacy-guard-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #1E2A4A;
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+    .user-table-wrap {
+      background: #FFFFFF;
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      overflow-x: auto;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    .data-table th {
+      background: var(--bg-secondary);
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-default);
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .data-table tr:hover td {
+      background: rgba(30, 42, 74, 0.015);
+    }
+    .plan-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .plan-badge.free { background: #E0F2FE; color: #0284C7; }
+    .plan-badge.pro { background: #FEF3C7; color: #D97706; }
+    .plan-badge.org { background: #EDE9FE; color: #7C3AED; }
+    .plan-badge.election { background: #DCFCE7; color: #15803D; }
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-tag.active { background: #ECFDF5; color: #059669; }
+    .status-tag.verified { background: #EFF6FF; color: #2563EB; }
+    .status-tag.suspended { background: #FEF2F2; color: #DC2626; }
+    .bar-chart-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      height: 180px;
+      padding-top: 20px;
+      border-bottom: 1px solid var(--border-default);
+    }
+    .chart-bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .chart-bar-fill {
+      width: 100%;
+      max-width: 48px;
+      background: linear-gradient(180deg, #3B82F6 0%, #1E2A4A 100%);
+      border-radius: 6px 6px 0 0;
+      transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .chart-bar-fill:hover {
+      filter: brightness(1.15);
+    }
+    .chart-bar-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="console-body">
+  
+  <!-- SuperAdmin Top Bar with Plan Console Quick Switcher (All in One Tab!) -->
+  <header class="superadmin-topbar">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <a href="../index.html" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:#FFFFFF;">
+        <div style="width:28px; height:28px; border-radius:6px; background:#2563EB; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">GIR</div>
+        <span style="font-family:var(--font-display); font-size:16px; font-weight:800; letter-spacing:-0.02em;">Get It Right<span style="color:#38BDF8;">.</span></span>
+      </a>
+      <span class="admin-pill">ONLY 1 SUPERADMIN</span>
+      <span style="font-size:12px; color:#94A3B8;">Dr. David Mwangi &bull; Chief Cryptographic Officer</span>
+    </div>
+
+    <!-- Authenticated SuperAdmin Actions (No Role Switching!) -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#38BDF8;" title="Root SuperAdmin Session"></span>
+        <span style="font-size:12px; font-weight:700; color:#FFFFFF;" id="top-user-display">Dr. David Mwangi</span>
+      </div>
+      <button onclick="handleConsoleLogout()" class="btn btn-ghost btn-xs" style="color:#94A3B8; border:1px solid #334155; border-radius:8px; padding:4px 10px;">
+        Sign Out
+      </button>
+      <a href="../index.html" class="btn btn-ghost btn-sm" style="color:#94A3B8; border:1px solid #334155; padding:4px 10px; font-size:12px;">Landing Page &rarr;</a>
+    </div>
+  </header>
+
+  <div style="padding: clamp(20px, 3.5vw, 48px); max-width:1440px; margin:0 auto; box-sizing:border-box;">
+
+    <!-- Cryptographic Zero-Knowledge Privacy Boundary Declaration -->
+    <div class="privacy-guard-box">
+      <div class="privacy-guard-icon">&#128274;</div>
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+          <h2 style="font-family:var(--font-display); font-size:16px; font-weight:800; color:var(--text-primary); margin:0;">
+            Cryptographic Zero-Knowledge Privacy Boundary Active
+          </h2>
+          <span class="status-pill verified">ZK Proof Enforced</span>
+          <span id="redis-pill" class="status-pill" style="background:#ECFDF5; color:#059669; border:1px solid #A7F3D0;">Redis L2: Active</span>
+        </div>
+        <p style="font-size:13.5px; color:var(--text-secondary); line-height:1.55; margin:0;" id="privacy-guarantee-text">
+          As Platform SuperAdmin, you can monitor aggregate telemetry, system health, user quotas, and tamper-evident Merkle roots.
+          <strong>Admins CANNOT decrypt individual voter secret ballots or access client-side private keys.</strong>
+          Voter choices are mathematically sealed by zero-knowledge proofs and salted SHA-256 leaves.
+        </p>
+      </div>
+    </div>
+
+    <!-- Live Telemetry KPI Cards Fetched from C# SQLite Database & Redis -->
+    <div class="kpi-metrics-grid" style="margin-bottom:28px;">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Total Registered Users</span>
+          <div class="kpi-icon-wrap"><span data-icon="users"></span></div>
+        </div>
+        <div class="kpi-value" id="stat-total-users">--</div>
+        <div class="kpi-meta">
+          <span class="kpi-trend-pos">Across 4 Plans</span>
+          <span>(1 Admin, 6 Customers)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Total Seeded & Live Polls</span>
+          <div class="kpi-icon-wrap"><span data-icon="polls"></span></div>
+        </div>
+        <div class="kpi-value" id="stat-total-polls">--</div>
+        <div class="kpi-meta">
+          <span class="kpi-trend-pos">10 Polls per Plan</span>
+          <span>100% Cryptographic</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Aggregate System Votes</span>
+          <div class="kpi-icon-wrap"><span data-icon="checkCircle"></span></div>
+        </div>
+        <div class="kpi-value" id="stat-total-votes">--</div>
+        <div class="kpi-meta">
+          <span class="kpi-trend-pos">Real-time DB Sum</span>
+          <span>Cached in Redis</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Blockchain Ledger Blocks</span>
+          <div class="kpi-icon-wrap"><span data-icon="hash"></span></div>
+        </div>
+        <div class="kpi-value" id="stat-ledger-height">--</div>
+        <div class="kpi-meta">
+          <span class="kpi-trend-pos">Root #142 Anchored</span>
+          <span>Bitcoin Block #884120</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan Analytics Section: Dynamic Real Bar Chart From DB -->
+    <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:24px; margin-bottom:32px;">
+      
+      <!-- Votes Distribution by Plan Chart (REAL DATA FROM DB) -->
+      <div class="console-card">
+        <div class="console-card-header">
+          <div>
+            <h3 class="console-card-title">Vote Distribution Across the 4 Plans</h3>
+            <div class="console-card-sub">Real-time aggregate votes calculated from C# SQLite database</div>
+          </div>
+          <span class="status-pill verified" id="cache-latency-tag">Redis: 3.6ms</span>
+        </div>
+
+        <div class="bar-chart-container" id="chart-bars-wrap">
+          <!-- Dynamic bars rendered via JavaScript -->
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-secondary); padding-top:12px;">
+          <span>Data source: <code style="font-family:var(--font-mono);">GET /api/admin/tracking-telemetry</code></span>
+          <span>Zero-Knowledge Aggregated</span>
+        </div>
+      </div>
+
+      <!-- Real-Time Telemetry & Quota Status -->
+      <div class="console-card">
+        <div class="console-card-header">
+          <div>
+            <h3 class="console-card-title">Plan Infrastructure & Quotas</h3>
+            <div class="console-card-sub">Active tier capacities and limits</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px; margin-top:8px;">
+          <div style="padding:12px; background:var(--bg-secondary); border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
+              <span>Plan 1: Civic Starter (Free)</span>
+              <span id="quota-free-votes">10 Polls &bull; 1,000 Voter Quota</span>
+            </div>
+            <div style="width:100%; height:6px; background:#E2E8F0; border-radius:100px; overflow:hidden;">
+              <div id="bar-quota-free" style="width:45%; height:100%; background:#0284C7;"></div>
+            </div>
+          </div>
+
+          <div style="padding:12px; background:var(--bg-secondary); border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
+              <span>Plan 2: Civic Pro (Researchers)</span>
+              <span id="quota-pro-votes">10 Polls &bull; 25,000 Voter Quota</span>
+            </div>
+            <div style="width:100%; height:6px; background:#E2E8F0; border-radius:100px; overflow:hidden;">
+              <div id="bar-quota-pro" style="width:68%; height:100%; background:#D97706;"></div>
+            </div>
+          </div>
+
+          <div style="padding:12px; background:var(--bg-secondary); border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
+              <span>Plan 3: Institutional Org (Unions/NGOs)</span>
+              <span id="quota-org-votes">10 Polls &bull; 100,000 Voter Quota</span>
+            </div>
+            <div style="width:100%; height:6px; background:#E2E8F0; border-radius:100px; overflow:hidden;">
+              <div id="bar-quota-org" style="width:82%; height:100%; background:#7C3AED;"></div>
+            </div>
+          </div>
+
+          <div style="padding:12px; background:var(--bg-secondary); border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
+              <span>Plan 4: Sovereign Election Guard</span>
+              <span id="quota-elec-votes">10 Polls &bull; Multi-Million Capacity</span>
+            </div>
+            <div style="width:100%; height:6px; background:#E2E8F0; border-radius:100px; overflow:hidden;">
+              <div id="bar-quota-elec" style="width:94%; height:100%; background:#15803D;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management Table (Admin Manages All Users from One Console) -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h2 style="font-family:var(--font-display); font-size:20px; font-weight:800; color:var(--text-primary); margin:0 0 4px;">
+            Registered Customer &amp; User Accounts
+          </h2>
+          <p style="font-size:13.5px; color:var(--text-secondary); margin:0;">
+            Manage platform users across all 4 plans. Only 1 SuperAdmin account exists in the platform.
+          </p>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="text" id="user-search-input" placeholder="Search user or email..." oninput="filterUsersTable()" style="padding:8px 14px; border:1px solid var(--border-default); border-radius:8px; font-size:13px; width:220px;">
+          <select id="user-plan-filter" onchange="filterUsersTable()" style="padding:8px 12px; border:1px solid var(--border-default); border-radius:8px; font-size:13px; font-weight:600;">
+            <option value="all">All Plans</option>
+            <option value="free">Civic Starter (Free)</option>
+            <option value="pro">Civic Pro</option>
+            <option value="org">Institutional Org</option>
+            <option value="election">Sovereign Election Guard</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="user-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Organization</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created Polls</th>
+              <th>Votes Tracked</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr>
+              <td colspan="10" style="text-align:center; padding:32px; color:var(--text-secondary);">Loading registered users from database...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+    let allUsersData = [];
+
+    async function loadAdminData() {
+      try {
+        // 1. Fetch telemetry & privacy declaration from C# API
+        const teleRes = await fetch(`${API_BASE}/api/admin/tracking-telemetry`);
+        if (teleRes.ok) {
+          const tele = await teleRes.json();
+          renderTelemetry(tele);
+        }
+
+        // 2. Fetch cache status
+        const cacheRes = await fetch(`${API_BASE}/api/cache/status`);
+        if (cacheRes.ok) {
+          const cache = await cacheRes.json();
+          document.getElementById('cache-latency-tag').textContent = `Redis: ${cache.latency}`;
+          document.getElementById('redis-pill').textContent = `Redis L2: ${cache.redisConnected ? 'Active (' + cache.latency + ')' : 'Offline'}`;
+        }
+
+        // 3. Fetch all registered users
+        const usersRes = await fetch(`${API_BASE}/api/users`);
+        if (usersRes.ok) {
+          allUsersData = await usersRes.json();
+          renderUsersTable(allUsersData);
+        }
+      } catch (err) {
+        console.error("Admin load error:", err);
+      }
+    }
+
+    function renderTelemetry(tele) {
+      document.getElementById('stat-total-users').textContent = tele.overview.totalUsers;
+      document.getElementById('stat-total-polls').textContent = tele.overview.totalPolls;
+      document.getElementById('stat-total-votes').textContent = tele.overview.totalVotesCast.toLocaleString();
+      document.getElementById('stat-ledger-height').textContent = `#${tele.overview.lastAnchorCheckpoint}`;
+
+      if (tele.privacyGuarantees && tele.privacyGuarantees.message) {
+        document.getElementById('privacy-guarantee-text').innerHTML = `
+          ${tele.privacyGuarantees.message}
+          <div style="margin-top:6px; font-family:var(--font-mono); font-size:11px; color:#0369A1;">
+            Enforcement: ${tele.privacyGuarantees.voterPseudonymHashing} &bull; Secret Ballot Decryption: <strong>PROHIBITED</strong>
+          </div>
+        `;
+      }
+
+      // Render Dynamic Bars for Polls & Votes by Plan
+      const barsWrap = document.getElementById('chart-bars-wrap');
+      if (barsWrap && tele.pollsByPlan) {
+        barsWrap.innerHTML = '';
+        const maxVotes = Math.max(...tele.pollsByPlan.map(p => p.totalVotes), 1);
+
+        tele.pollsByPlan.forEach(p => {
+          const pct = Math.max(10, Math.round((p.totalVotes / maxVotes) * 100));
+          const planTitle = p.plan === 'free' ? 'Community' : (p.plan === 'pro' ? 'Pro' : (p.plan === 'org' ? 'Org' : 'Sovereign'));
+          const barColor = p.plan === 'free' ? '#0284C7' : (p.plan === 'pro' ? '#D97706' : (p.plan === 'org' ? '#7C3AED' : '#15803D'));
+
+          const barGroup = document.createElement('div');
+          barGroup.className = 'chart-bar-group';
+          barGroup.innerHTML = `
+            <div style="font-size:11px; font-family:var(--font-mono); font-weight:700; color:var(--text-primary); margin-bottom:4px;">
+              ${(p.totalVotes / 1000).toFixed(1)}k
+            </div>
+            <div class="chart-bar-fill" style="height:${pct}%; background:${barColor};"></div>
+            <div class="chart-bar-label">${planTitle} (10)</div>
+          `;
+          barsWrap.appendChild(barGroup);
+        });
+      }
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('users-table-body');
+      if (!tbody) return;
+
+      if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:24px;">No users found matching query.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const isAdmin = u.role === 'Admin';
+        const planClass = u.plan || 'free';
+        const statusClass = (u.status || 'Active').toLowerCase();
+
+        return `
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:700; color:var(--text-primary);">${u.id}</td>
+            <td style="font-weight:700; color:var(--text-primary);">${u.fullName}</td>
+            <td>${u.email}</td>
+            <td><span class="plan-badge ${planClass}">${u.planName || u.plan}</span></td>
+            <td>${u.organization || 'Independent'}</td>
+            <td>
+              <strong style="${isAdmin ? 'color:#DC2626;' : 'color:var(--text-secondary);'}">
+                ${isAdmin ? '&#9881; SuperAdmin' : 'Customer'}
+              </strong>
+            </td>
+            <td><span class="status-tag ${statusClass}">${u.status || 'Active'}</span></td>
+            <td style="font-family:var(--font-mono); font-weight:600;">${u.totalPollsCreated}</td>
+            <td style="font-family:var(--font-mono); font-weight:700; color:#1E2A4A;">${(u.totalVotesReceived || 0).toLocaleString()}</td>
+            <td>
+              ${isAdmin ? '<span style="font-size:11px; color:#94A3B8; font-weight:600;">Primary Admin</span>' : `
+                <div style="display:flex; gap:6px;">
+                  <button class="btn btn-ghost btn-xs" onclick="toggleUserStatus('${u.id}', '${u.status === 'Active' ? 'Suspended' : 'Active'}')" style="padding:2px 8px; font-size:11px;">
+                    ${u.status === 'Active' ? 'Suspend' : 'Activate'}
+                  </button>
+                  <button class="btn btn-secondary btn-xs" onclick="openConsoleForUser('${u.consoleUrl}')" style="padding:2px 8px; font-size:11px;">
+                    View Console &rarr;
+                  </button>
+                </div>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterUsersTable() {
+      const q = (document.getElementById('user-search-input').value || '').toLowerCase();
+      const plan = document.getElementById('user-plan-filter').value;
+
+      const filtered = allUsersData.filter(u => {
+        const matchQ = (u.fullName || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+        const matchPlan = plan === 'all' || (u.plan || '').toLowerCase() === plan;
+        return matchQ && matchPlan;
+      });
+
+      renderUsersTable(filtered);
+    }
+
+    async function toggleUserStatus(id, newStatus) {
+      try {
+        const res = await fetch(`${API_BASE}/api/users/${id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          loadAdminData();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function openConsoleForUser(url) {
+      if (url) window.location.href = url;
+    }
+
+    function hydrateSession() {
+      const stored = localStorage.getItem('gir_user');
+      if (stored) {
+        try {
+          const u = JSON.parse(stored);
+          if (u.fullName) {
+            document.getElementById('top-user-display').textContent = u.fullName;
+          }
+        } catch {}
+      }
+    }
+
+    function handleConsoleLogout() {
+      localStorage.removeItem('gir_user');
+      localStorage.removeItem('gir_session');
+      window.location.href = '../auth/login.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      hydrateSession();
+      loadAdminData();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+@GetItRight.Api_HostAddress = http://localhost:5031
+
+GET {{GetItRight.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

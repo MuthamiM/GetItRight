@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Getitright - Complete surveys, participate in research, and help organizations build better products.">
+  <title>Getitright - Surveys</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+</head>
+<body style="background:var(--bg-primary); min-height:100vh;">
+
+  <!-- ====== PUBLIC NAVBAR ====== -->
+  <nav class="landing-nav" style="border-bottom:1px solid var(--border-color); background:rgba(13,13,13,0.85); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100;">
+    <a href="../index.html" class="landing-nav-logo">
+      <img src="../assets/images/logo.jpg" alt="Getitright" style="width:36px; height:36px; border-radius:10px;">
+      <span class="landing-nav-brand">getitright<span>.</span></span>
+    </a>
+    <div class="landing-nav-links">
+      <a href="vote.html">Live Polls</a>
+      <a href="surveys.html" class="active" style="color:var(--accent-primary); font-weight:600;">Surveys</a>
+      <a href="../console/dashboard.html" style="font-size:13px; color:var(--text-secondary);">Switch to Org Console</a>
+    </div>
+    <div class="landing-nav-actions">
+      <button class="btn btn-ghost btn-sm" id="user-logout-btn">
+        <span data-icon="logout"></span> Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <!-- ====== MAIN CONTAINER ====== -->
+  <div style="max-width:1200px; margin:0 auto; padding:32px 24px;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:32px;">
+      <div>
+        <h1 style="font-size:28px; font-weight:700; color:var(--text-primary); margin:0 0 6px 0;">Available Surveys</h1>
+        <p style="font-size:14px; color:var(--text-secondary); margin:0;">Share thoughtful feedback directly with verified institutions and organizations.</p>
+      </div>
+      <div class="search-box" style="width:300px;">
+        <span class="search-icon" data-icon="search"></span>
+        <input type="text" class="search-input" placeholder="Search surveys...">
+      </div>
+    </div>
+
+    <!-- Surveys Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:24px;" id="surveys-grid">
+
+      <!-- Survey Card 1 -->
+      <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="user-avatar" style="width:28px; height:28px; font-size:11px;">AC</span>
+              <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Acme Corp</span>
+            </div>
+            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">4 mins</span>
+          </div>
+
+          <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Q3 Customer Satisfaction & Experience</h3>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Evaluating enterprise product satisfaction, onboarding friction, and feature expectations.</p>
+
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">8 Questions</span>
+            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">Anonymous</span>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; color:var(--text-secondary);">4,820 responses</span>
+          <button class="btn btn-primary btn-sm btn-pill take-survey-btn" data-title="Q3 Customer Satisfaction & Experience">
+            Take Survey
+          </button>
+        </div>
+      </div>
+
+      <!-- Survey Card 2 -->
+      <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="user-avatar" style="width:28px; height:28px; font-size:11px;">GI</span>
+              <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Getitright Team</span>
+            </div>
+            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">3 mins</span>
+          </div>
+
+          <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Mobile & Web UI Design Feedback</h3>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Reviewing dark theme accessibility, contrast ratios, and iconography clarity across platforms.</p>
+
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">5 Questions</span>
+            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">Design Research</span>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; color:var(--text-secondary);">2,190 responses</span>
+          <button class="btn btn-primary btn-sm btn-pill take-survey-btn" data-title="Mobile & Web UI Design Feedback">
+            Take Survey
+          </button>
+        </div>
+      </div>
+
+      <!-- Survey Card 3 -->
+      <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="user-avatar" style="width:28px; height:28px; font-size:11px;">TO</span>
+              <span style="font-size:13px; font-weight:600; color:var(--text-primary);">TechOrg</span>
+            </div>
+            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">6 mins</span>
+          </div>
+
+          <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Developer Productivity & Tooling 2026</h3>
+          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Understanding compiler speeds, IDE extensions, and cross-platform native compilation bottlenecks.</p>
+
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">10 Questions</span>
+            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">Engineering</span>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; color:var(--text-secondary);">6,410 responses</span>
+          <button class="btn btn-primary btn-sm btn-pill take-survey-btn" data-title="Developer Productivity & Tooling 2026">
+            Take Survey
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ====== INTERACTIVE SURVEY TAKER MODAL ====== -->
+  <div class="modal-backdrop" id="survey-taker-modal">
+    <div class="modal card" style="max-width:600px; width:90%; padding:32px;">
+      
+      <!-- Modal Header -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+        <div>
+          <span style="font-size:12px; font-weight:600; color:var(--accent-primary);" id="wizard-progress-text">Step 1 of 3</span>
+          <h2 style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0 0 0;" id="survey-taker-title">Survey</h2>
+        </div>
+        <button class="btn btn-ghost btn-icon" id="close-taker-btn">
+          <span data-icon="close"></span>
+        </button>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden; margin-bottom:24px;">
+        <div id="survey-progress-bar" style="width:33%; height:100%; background:var(--accent-primary); border-radius:3px; transition:width 0.3s ease;"></div>
+      </div>
+
+      <!-- Step Content Container -->
+      <div id="survey-step-content" style="min-height:160px; margin-bottom:24px;">
+        
+        <!-- Step 1 -->
+        <div class="survey-step" data-step="1">
+          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 16px 0;">1. How often do you participate in technical or community polls?</h4>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <label style="display:flex; align-items:center; gap:10px; background:var(--bg-elevated); padding:12px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color);">
+              <input type="radio" name="q1" value="daily" checked>
+              <span style="color:var(--text-primary); font-size:14px;">Daily (Active participant)</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; background:var(--bg-elevated); padding:12px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color);">
+              <input type="radio" name="q1" value="weekly">
+              <span style="color:var(--text-primary); font-size:14px;">A few times per week</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; background:var(--bg-elevated); padding:12px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color);">
+              <input type="radio" name="q1" value="rarely">
+              <span style="color:var(--text-primary); font-size:14px;">Occasionally / when invited</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="survey-step" data-step="2" style="display:none;">
+          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 16px 0;">2. How satisfied are you with live update speeds in polling apps?</h4>
+          <div style="display:flex; gap:12px; margin-bottom:16px;">
+            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">1</button>
+            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">2</button>
+            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">3</button>
+            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">4</button>
+            <button type="button" class="btn btn-primary rating-btn active" style="flex:1;">5 (Fastest)</button>
+          </div>
+          <span style="font-size:12px; color:var(--text-secondary);">1 = Needs Improvement, 5 = Excellent</span>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="survey-step" data-step="3" style="display:none;">
+          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 12px 0;">3. Any additional suggestions for our team?</h4>
+          <textarea class="form-input" rows="4" placeholder="Your thoughts (optional)..." style="width:100%; padding:12px; border-radius:10px; background:var(--bg-elevated); border:1px solid var(--border-color); color:var(--text-primary);"></textarea>
+        </div>
+
+        <!-- Completion Step -->
+        <div class="survey-step" data-step="done" style="display:none; text-align:center; padding:20px 0;">
+          <div style="width:56px; height:56px; border-radius:50%; background:rgba(0,230,118,0.15); color:var(--accent-primary); display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
+            <span data-icon="checkCircle" style="transform:scale(1.5);"></span>
+          </div>
+          <h3 style="font-size:20px; font-weight:700; color:var(--text-primary); margin:0 0 8px 0;">Response Recorded!</h3>
+          <p style="font-size:14px; color:var(--text-secondary); margin:0 0 20px 0;">Thank you for your valuable feedback. Your answers have been transmitted securely to the organization track.</p>
+          <button type="button" class="btn btn-primary btn-pill" id="finish-survey-btn">Return to Surveys</button>
+        </div>
+
+      </div>
+
+      <!-- Action Navigation Buttons -->
+      <div id="wizard-actions" style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:16px;">
+        <button type="button" class="btn btn-ghost btn-sm" id="prev-step-btn" style="visibility:hidden;">Back</button>
+        <button type="button" class="btn btn-primary btn-sm btn-pill" id="next-step-btn">Next Step</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="../js/core/icons.js"></script>
+  <script src="../js/core/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.injectIcons();
+
+      // Modal handling
+      const modal = document.getElementById('survey-taker-modal');
+      const closeBtn = document.getElementById('close-taker-btn');
+      const titleEl = document.getElementById('survey-taker-title');
+      const progressText = document.getElementById('wizard-progress-text');
+      const progressBar = document.getElementById('survey-progress-bar');
+      const prevBtn = document.getElementById('prev-step-btn');
+      const nextBtn = document.getElementById('next-step-btn');
+      const finishBtn = document.getElementById('finish-survey-btn');
+      const actionsBar = document.getElementById('wizard-actions');
+
+      let currentStep = 1;
+      const totalSteps = 3;
+
+      document.querySelectorAll('.take-survey-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          titleEl.textContent = btn.dataset.title;
+          currentStep = 1;
+          showStep(currentStep);
+          modal.classList.add('active');
+        });
+      });
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+      }
+
+      function showStep(step) {
+        document.querySelectorAll('.survey-step').forEach(s => s.style.display = 'none');
+        if (step <= totalSteps) {
+          const stepEl = document.querySelector(`.survey-step[data-step="${step}"]`);
+          if (stepEl) stepEl.style.display = 'block';
+          progressText.textContent = `Step ${step} of ${totalSteps}`;
+          progressBar.style.width = `${(step / totalSteps) * 100}%`;
+          prevBtn.style.visibility = step > 1 ? 'visible' : 'hidden';
+          nextBtn.textContent = step === totalSteps ? 'Submit Survey' : 'Next Step';
+          actionsBar.style.display = 'flex';
+        } else {
+          // Done
+          const doneEl = document.querySelector('.survey-step[data-step="done"]');
+          if (doneEl) doneEl.style.display = 'block';
+          progressText.textContent = 'Completed';
+          progressBar.style.width = '100%';
+          actionsBar.style.display = 'none';
+        }
+      }
+
+      nextBtn.addEventListener('click', () => {
+        if (currentStep < totalSteps) {
+          currentStep++;
+          showStep(currentStep);
+        } else {
+          currentStep++;
+          showStep(currentStep);
+          App.showToast('Survey submitted successfully', 'success');
+        }
+      });
+
+      prevBtn.addEventListener('click', () => {
+        if (currentStep > 1) {
+          currentStep--;
+          showStep(currentStep);
+        }
+      });
+
+      if (finishBtn) {
+        finishBtn.addEventListener('click', () => {
+          modal.classList.remove('active');
+        });
+      }
+
+      // Logout handler
+      const logoutBtn = document.getElementById('user-logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          AuthRedirect.logout();
+        });
+      }
+    });
+  </script>
+</body>
+</html>
