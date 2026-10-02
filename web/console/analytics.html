@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIR Tracks Console — Real-time telemetry, vote velocity, demographic trends, and automated report exports.">
+  <title>GIR Tracks Console — Analytics & Reports</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/console.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+</head>
+<body class="console-body">
+  <div class="app-shell" id="app-shell">
+
+    <!-- ====== CLEAN SLEEK SIDEBAR ====== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand-box">
+        <a href="../index.html" class="sidebar-brand-link">
+          <img src="../assets/images/logo.jpg" alt="GIR Tracks Logo" class="sidebar-logo-img">
+          <span class="sidebar-brand-name">GIR Tracks<span>.</span></span>
+        </a>
+        <span class="sidebar-version-badge">v2.4 Prod</span>
+      </div>
+
+      <div class="sidebar-scroll">
+        <!-- Operations Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">Operations</div>
+          <a href="dashboard.html#overview" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="dashboard"></span>
+            <span class="console-nav-label">Operations Center</span>
+          </a>
+          <a href="polls.html" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="polls"></span>
+            <span class="console-nav-label">Polls &amp; Surveys</span>
+            <span class="console-nav-badge">4</span>
+          </a>
+          <a href="dashboard.html#stations" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="target"></span>
+            <span class="console-nav-label">Polling Stations</span>
+            <span class="console-nav-badge">242/250</span>
+          </a>
+          <a href="dashboard.html#observers" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="users"></span>
+            <span class="console-nav-label">Observers &amp; Keys</span>
+            <span class="console-nav-badge">482</span>
+          </a>
+        </div>
+
+        <!-- Integrity & Verification Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">Integrity &amp; Audit</div>
+          <a href="dashboard.html#ledger" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="hash"></span>
+            <span class="console-nav-label">Ledger Explorer</span>
+          </a>
+          <a href="dashboard.html#anomalies" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="alertCircle"></span>
+            <span class="console-nav-label">Anomaly Engine</span>
+            <span class="console-nav-badge warn-badge">3</span>
+          </a>
+          <a href="dashboard.html#disputes" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="filter"></span>
+            <span class="console-nav-label">Disputes &amp; Review</span>
+            <span class="console-nav-badge danger-badge">1 Frozen</span>
+          </a>
+          <a href="dashboard.html#checkpoints" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="lock"></span>
+            <span class="console-nav-label">Checkpoints</span>
+            <span class="console-nav-badge">#142</span>
+          </a>
+          <a href="dashboard.html#audit" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="activity"></span>
+            <span class="console-nav-label">Audit Trail</span>
+          </a>
+        </div>
+
+        <!-- System & Admin Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">System &amp; Admin</div>
+          <a href="dashboard.html#engines" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="zap"></span>
+            <span class="console-nav-label">17 Engines Health</span>
+            <span class="console-nav-badge success-badge">17/17 OK</span>
+          </a>
+          <a href="analytics.html" class="console-nav-link active">
+            <span class="console-nav-icon" data-icon="analytics"></span>
+            <span class="console-nav-label">Telemetry &amp; Reports</span>
+            <span class="console-nav-badge active-badge">Live</span>
+          </a>
+          <a href="dashboard.html#billing" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="clock"></span>
+            <span class="console-nav-label">Billing &amp; Plans</span>
+          </a>
+          <a href="../verifier.html" target="_blank" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="search"></span>
+            <span class="console-nav-label">Public Verifier &nearr;</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Compact System Health Status Bar -->
+      <div class="sidebar-engine-status">
+        <div class="sidebar-engine-header">
+          <div class="sidebar-engine-title">
+            <span class="pulse-dot-green"></span>
+            <span>Tokio Ingestion Stream</span>
+          </div>
+          <span style="font-size:10px; font-weight:700; color:#059669;">LIVE</span>
+        </div>
+        <div class="sidebar-engine-meta">
+          <span>Throughput</span>
+          <strong>1,420 msg/s</strong>
+        </div>
+        <div class="sidebar-engine-meta">
+          <span>Chain Integrity</span>
+          <strong style="color:#059669;">100% Intact</strong>
+        </div>
+      </div>
+
+      <!-- User Profile Row -->
+      <div class="sidebar-user-footer">
+        <div class="sidebar-user-profile">
+          <div class="sidebar-user-avatar">FM</div>
+          <div class="sidebar-user-meta">
+            <span class="sidebar-user-name">Faith Mwangi</span>
+            <span class="sidebar-user-role">Lead Reviewer</span>
+          </div>
+        </div>
+        <button class="sidebar-logout-btn" title="Sign out" onclick="window.location.href='../index.html'">
+          <span data-icon="logout"></span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ====== MAIN CONTENT ====== -->
+    <div class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-ghost btn-icon" id="menu-toggle" style="display:none;" aria-label="Toggle menu">
+            <span data-icon="menu"></span>
+          </button>
+          <div class="search-box">
+            <span class="search-icon" data-icon="search"></span>
+            <input type="text" class="search-input" id="analytics-search" placeholder="Search metric streams, tracks, cohort data...">
+          </div>
+        </div>
+        <div class="topbar-right">
+          <!-- Real-time engine status pill -->
+          <div style="display:flex; align-items:center; gap:8px; background:var(--accent-subtle); border:1px solid var(--border-accent); padding:6px 12px; border-radius:20px; font-size:12px; color:var(--accent);">
+            <span class="pulse-dot"></span>
+            <span>Rust Engine: 1.4k msg/s</span>
+          </div>
+
+          <div class="icon-btn-group">
+            <button class="btn btn-ghost btn-icon" aria-label="Notifications">
+              <span data-icon="bell"></span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="page-body">
+        <!-- Analytics & Telemetry Overview Banner -->
+        <div style="background:var(--accent-subtle); border:1px solid var(--border-accent); border-radius:var(--radius-xl); padding:20px 24px; margin-bottom:24px; position:relative; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+            <div>
+              <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); margin-bottom:4px;">
+                Engine Telemetry &amp; Anomaly Detection
+              </div>
+              <h2 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0 0 6px 0;">
+                High-Throughput Verification Stream
+              </h2>
+              <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0; max-width:720px;">
+                Continuous event streaming with sub-5ms p99 latency. Data feeds 17 anomaly detection algorithms including Benford's Law analysis, velocity spike identification, and observer discrepancy scoring.
+              </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-primary btn-sm btn-pill" id="export-pdf-btn">
+                <span data-icon="download"></span>
+                Export PDF Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:16px;">
+          <div>
+            <h1 class="page-title" style="font-size:22px; font-weight:700; color:var(--text-primary); margin:0 0 4px 0;">Live Vote Velocity &amp; Cohorts</h1>
+            <p style="color:var(--text-secondary); margin:0; font-size:13px;">High-throughput response telemetry powered by Rust streaming engine and native C/C++ export pipelines.</p>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <select class="form-input" style="padding:8px 14px; border-radius:8px; background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary); font-size:13px;">
+              <option value="today">Today (Last 24h)</option>
+              <option value="7d" selected>Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="all">All-Time</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
+          <div class="stat-card card">
+            <div class="stat-card-header">
+              <span class="stat-card-title">Total Processed Votes</span>
+              <span class="stat-card-icon" data-icon="vote"></span>
+            </div>
+            <div class="stat-card-value">148,920</div>
+            <div class="stat-card-change positive">
+              <span data-icon="trendUp"></span>
+              +28.4% this week
+            </div>
+          </div>
+
+          <div class="stat-card card">
+            <div class="stat-card-header">
+              <span class="stat-card-title">Peak Concurrency</span>
+              <span class="stat-card-icon" data-icon="zap"></span>
+            </div>
+            <div class="stat-card-value">14,210</div>
+            <div class="stat-card-change positive">
+              <span data-icon="trendUp"></span>
+              Rust engine nominal
+            </div>
+          </div>
+
+          <div class="stat-card card">
+            <div class="stat-card-header">
+              <span class="stat-card-title">Avg. Latency (p99)</span>
+              <span class="stat-card-icon" data-icon="clock"></span>
+            </div>
+            <div class="stat-card-value">2.4 ms</div>
+            <div class="stat-card-change positive">
+              <span data-icon="trendUp"></span>
+              Sub-5ms SLA verified
+            </div>
+          </div>
+
+          <div class="stat-card card">
+            <div class="stat-card-header">
+              <span class="stat-card-title">Sybil/Bot Prevention</span>
+              <span class="stat-card-icon" data-icon="lock"></span>
+            </div>
+            <div class="stat-card-value">99.98%</div>
+            <div class="stat-card-change positive">
+              <span data-icon="checkCircle"></span>
+              312 bots neutralized
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Charts Grid -->
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:24px;">
+          
+          <!-- Chart 1: Real-time Velocity SVG Chart -->
+          <div class="card" style="padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+              <div>
+                <h3 style="font-size:17px; font-weight:600; color:var(--text-primary); margin:0 0 4px 0;">Vote Ingestion Velocity</h3>
+                <p style="font-size:13px; color:var(--text-secondary); margin:0;">Real-time events streamed per minute over the past 24 hours</p>
+              </div>
+              <div class="tabs" style="border:none; margin:0;">
+                <button class="tab active" style="padding:6px 12px; font-size:12px;">Hourly</button>
+                <button class="tab" style="padding:6px 12px; font-size:12px;">Realtime</button>
+              </div>
+            </div>
+
+            <!-- Custom Clean SVG Area Chart -->
+            <div style="width:100%; height:240px; position:relative;">
+              <svg viewBox="0 0 600 200" preserveAspectRatio="none" style="width:100%; height:100%; overflow:visible;">
+                <defs>
+                  <linearGradient id="velocityGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00E676" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#00E676" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Grid Lines -->
+                <line x1="0" y1="40" x2="600" y2="40" stroke="#2A2A3E" stroke-dasharray="4" stroke-width="1"/>
+                <line x1="0" y1="90" x2="600" y2="90" stroke="#2A2A3E" stroke-dasharray="4" stroke-width="1"/>
+                <line x1="0" y1="140" x2="600" y2="140" stroke="#2A2A3E" stroke-dasharray="4" stroke-width="1"/>
+                <line x1="0" y1="190" x2="600" y2="190" stroke="#2A2A3E" stroke-width="1"/>
+                
+                <!-- Area Fill -->
+                <path d="M 0 160 Q 60 140 120 110 T 240 70 T 360 90 T 480 40 T 600 20 L 600 190 L 0 190 Z" fill="url(#velocityGrad)"/>
+                <!-- Line -->
+                <path d="M 0 160 Q 60 140 120 110 T 240 70 T 360 90 T 480 40 T 600 20" fill="none" stroke="#00E676" stroke-width="3" stroke-linecap="round"/>
+                
+                <!-- Glow points -->
+                <circle cx="240" cy="70" r="4" fill="#00E676" filter="drop-shadow(0 0 6px #00E676)"/>
+                <circle cx="480" cy="40" r="4" fill="#00E676" filter="drop-shadow(0 0 6px #00E676)"/>
+                <circle cx="600" cy="20" r="5" fill="#FFFFFF" stroke="#00E676" stroke-width="2"/>
+              </svg>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:12px; color:var(--text-secondary);">
+              <span>00:00</span>
+              <span>04:00</span>
+              <span>08:00</span>
+              <span>12:00</span>
+              <span>16:00</span>
+              <span>20:00</span>
+              <span>Live Now</span>
+            </div>
+          </div>
+
+          <!-- Chart 2: Platform Distribution -->
+          <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <h3 style="font-size:17px; font-weight:600; color:var(--text-primary); margin:0 0 4px 0;">Platform Ingestion</h3>
+              <p style="font-size:13px; color:var(--text-secondary); margin:0 0 20px 0;">Voter distribution across devices</p>
+
+              <!-- Progress bar breakdown -->
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                    <span style="color:var(--text-primary); font-weight:500;">Web Application</span>
+                    <span style="color:var(--accent-primary); font-weight:600;">54% (80.4k)</span>
+                  </div>
+                  <div style="height:8px; background:var(--bg-elevated); border-radius:4px; overflow:hidden;">
+                    <div style="width:54%; height:100%; background:var(--accent-primary); border-radius:4px;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                    <span style="color:var(--text-primary); font-weight:500;">Flutter iOS App</span>
+                    <span style="color:#00B0FF; font-weight:600;">28% (41.7k)</span>
+                  </div>
+                  <div style="height:8px; background:var(--bg-elevated); border-radius:4px; overflow:hidden;">
+                    <div style="width:28%; height:100%; background:#00B0FF; border-radius:4px;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                    <span style="color:var(--text-primary); font-weight:500;">Flutter Android App</span>
+                    <span style="color:#7C4DFF; font-weight:600;">18% (26.8k)</span>
+                  </div>
+                  <div style="height:8px; background:var(--bg-elevated); border-radius:4px; overflow:hidden;">
+                    <div style="width:18%; height:100%; background:#7C4DFF; border-radius:4px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:var(--bg-elevated); padding:12px; border-radius:10px; margin-top:20px; font-size:12px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
+              <span data-icon="activity"></span>
+              <span>All 3 platforms sync real-time via WebSocket protocol</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Top Poll Tracks Engagement Table -->
+        <div class="card" style="padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:17px; font-weight:600; color:var(--text-primary); margin:0 0 4px 0;">Track Performance & Conversion Breakdown</h3>
+              <p style="font-size:13px; color:var(--text-secondary); margin:0;">Detailed metrics per organization track</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="App.showToast('Exporting CSV metrics table', 'info')">
+              <span data-icon="download"></span> Export CSV
+            </button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border-color); color:var(--text-secondary);">
+                  <th style="padding:12px 14px;">Track Name</th>
+                  <th style="padding:12px 14px;">Total Polls</th>
+                  <th style="padding:12px 14px;">Total Votes</th>
+                  <th style="padding:12px 14px;">Completion %</th>
+                  <th style="padding:12px 14px;">Fraud Flagged</th>
+                  <th style="padding:12px 14px;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid var(--border-color);">
+                  <td style="padding:14px; font-weight:600; color:var(--text-primary);">Q4 Product Roadmap 2026</td>
+                  <td style="padding:14px; color:var(--text-secondary);">5 polls</td>
+                  <td style="padding:14px; color:var(--text-primary); font-weight:500;">42,100</td>
+                  <td style="padding:14px; color:var(--accent-primary); font-weight:600;">91.4%</td>
+                  <td style="padding:14px; color:var(--text-secondary);">0.02% (8)</td>
+                  <td style="padding:14px;"><span class="badge" style="background:rgba(74,92,255,0.15); color:var(--accent-primary); padding:3px 8px; border-radius:6px; font-size:11px;">Active</span></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-color);">
+                  <td style="padding:14px; font-weight:600; color:var(--text-primary);">Community Feature Requests</td>
+                  <td style="padding:14px; color:var(--text-secondary);">8 polls</td>
+                  <td style="padding:14px; color:var(--text-primary); font-weight:500;">68,430</td>
+                  <td style="padding:14px; color:var(--accent-primary); font-weight:600;">88.2%</td>
+                  <td style="padding:14px; color:var(--text-secondary);">0.04% (27)</td>
+                  <td style="padding:14px;"><span class="badge" style="background:rgba(74,92,255,0.15); color:var(--accent-primary); padding:3px 8px; border-radius:6px; font-size:11px;">Active</span></td>
+                </tr>
+                <tr>
+                  <td style="padding:14px; font-weight:600; color:var(--text-primary);">Developer Tooling Experience</td>
+                  <td style="padding:14px; color:var(--text-secondary);">3 polls</td>
+                  <td style="padding:14px; color:var(--text-primary); font-weight:500;">38,390</td>
+                  <td style="padding:14px; color:var(--accent-primary); font-weight:600;">94.1%</td>
+                  <td style="padding:14px; color:var(--text-secondary);">0.01% (4)</td>
+                  <td style="padding:14px;"><span class="badge" style="background:rgba(74,92,255,0.15); color:var(--accent-primary); padding:3px 8px; border-radius:6px; font-size:11px;">Active</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="../js/core/icons.js"></script>
+  <script src="../js/core/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.injectIcons();
+
+      // Export report button
+      const exportPdfBtn = document.getElementById('export-pdf-btn');
+      if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', () => {
+          App.showToast('Generating PDF via native C export module...', 'info');
+          setTimeout(() => {
+            App.showToast('PDF report compiled and downloaded successfully', 'success');
+          }, 1500);
+        });
+      }
+
+      // Logout handler
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          AuthRedirect.logout();
+        });
+      }
+    });
+  </script>
+</body>
+</html>

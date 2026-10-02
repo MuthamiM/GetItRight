@@ -1,0 +1,18 @@
+# Build & Cache Artifacts
+bin/
+obj/
+*.user
+*.suo
+__pycache__/
+*.pyc
+
+# Local SQLite locks
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Logs & temp
+*.log
+.vscode/
+.idea/
+.DS_Store

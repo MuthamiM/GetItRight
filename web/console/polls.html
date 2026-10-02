@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIR Tracks Console — Create and manage cryptographic poll tracks with tamper-evident digital receipts.">
+  <title>GIR Tracks Console — Poll Tracks</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../css/console.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+</head>
+<body class="console-body">
+  <div class="app-shell" id="app-shell">
+
+    <!-- ====== CLEAN SLEEK SIDEBAR ====== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand-box">
+        <a href="../index.html" class="sidebar-brand-link">
+          <img src="../assets/images/logo.jpg" alt="GIR Tracks Logo" class="sidebar-logo-img">
+          <span class="sidebar-brand-name">GIR Tracks<span>.</span></span>
+        </a>
+        <span class="sidebar-version-badge">v2.4 Prod</span>
+      </div>
+
+      <div class="sidebar-scroll">
+        <!-- Operations Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">Operations</div>
+          <a href="dashboard.html#overview" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="dashboard"></span>
+            <span class="console-nav-label">Operations Center</span>
+          </a>
+          <a href="polls.html" class="console-nav-link active">
+            <span class="console-nav-icon" data-icon="polls"></span>
+            <span class="console-nav-label">Polls &amp; Surveys</span>
+            <span class="console-nav-badge active-badge">4</span>
+          </a>
+          <a href="dashboard.html#stations" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="target"></span>
+            <span class="console-nav-label">Polling Stations</span>
+            <span class="console-nav-badge">242/250</span>
+          </a>
+          <a href="dashboard.html#observers" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="users"></span>
+            <span class="console-nav-label">Observers &amp; Keys</span>
+            <span class="console-nav-badge">482</span>
+          </a>
+        </div>
+
+        <!-- Integrity & Verification Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">Integrity &amp; Audit</div>
+          <a href="dashboard.html#ledger" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="hash"></span>
+            <span class="console-nav-label">Ledger Explorer</span>
+          </a>
+          <a href="dashboard.html#anomalies" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="alertCircle"></span>
+            <span class="console-nav-label">Anomaly Engine</span>
+            <span class="console-nav-badge warn-badge">3</span>
+          </a>
+          <a href="dashboard.html#disputes" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="filter"></span>
+            <span class="console-nav-label">Disputes &amp; Review</span>
+            <span class="console-nav-badge danger-badge">1 Frozen</span>
+          </a>
+          <a href="dashboard.html#checkpoints" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="lock"></span>
+            <span class="console-nav-label">Checkpoints</span>
+            <span class="console-nav-badge">#142</span>
+          </a>
+          <a href="dashboard.html#audit" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="activity"></span>
+            <span class="console-nav-label">Audit Trail</span>
+          </a>
+        </div>
+
+        <!-- System & Admin Group -->
+        <div class="nav-group">
+          <div class="nav-group-title">System &amp; Admin</div>
+          <a href="dashboard.html#engines" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="zap"></span>
+            <span class="console-nav-label">17 Engines Health</span>
+            <span class="console-nav-badge success-badge">17/17 OK</span>
+          </a>
+          <a href="analytics.html" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="analytics"></span>
+            <span class="console-nav-label">Telemetry &amp; Reports</span>
+          </a>
+          <a href="dashboard.html#billing" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="clock"></span>
+            <span class="console-nav-label">Billing &amp; Plans</span>
+          </a>
+          <a href="../verifier.html" target="_blank" class="console-nav-link">
+            <span class="console-nav-icon" data-icon="search"></span>
+            <span class="console-nav-label">Public Verifier &nearr;</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Compact System Health Status Bar -->
+      <div class="sidebar-engine-status">
+        <div class="sidebar-engine-header">
+          <div class="sidebar-engine-title">
+            <span class="pulse-dot-green"></span>
+            <span>Tokio Ingestion Stream</span>
+          </div>
+          <span style="font-size:10px; font-weight:700; color:#059669;">LIVE</span>
+        </div>
+        <div class="sidebar-engine-meta">
+          <span>Throughput</span>
+          <strong>1,420 msg/s</strong>
+        </div>
+        <div class="sidebar-engine-meta">
+          <span>Chain Integrity</span>
+          <strong style="color:#059669;">100% Intact</strong>
+        </div>
+      </div>
+
+      <!-- User Profile Row -->
+      <div class="sidebar-user-footer">
+        <div class="sidebar-user-profile">
+          <div class="sidebar-user-avatar">FM</div>
+          <div class="sidebar-user-meta">
+            <span class="sidebar-user-name">Faith Mwangi</span>
+            <span class="sidebar-user-role">Lead Reviewer</span>
+          </div>
+        </div>
+        <button class="sidebar-logout-btn" title="Sign out" onclick="window.location.href='../index.html'">
+          <span data-icon="logout"></span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="menu-toggle" data-icon="menu" aria-label="Toggle menu"></button>
+          <h1 class="header-title">Poll Tracks</h1>
+        </div>
+        <div class="header-search">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="text" placeholder="Search poll tracks, hashes, questions..." id="global-search" autocomplete="off">
+        </div>
+        <div class="header-right">
+          <button class="btn btn-primary btn-sm btn-pill" id="create-track-btn">
+            <span data-icon="plus"></span>
+            New Track
+          </button>
+          <button class="header-icon-btn" data-tooltip="Notifications">
+            <span data-icon="bell"></span>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-content">
+
+        <!-- What is Poll Tracks Overview Banner -->
+        <div style="background:var(--accent-subtle); border:1px solid var(--border-accent); border-radius:var(--radius-xl); padding:20px 24px; margin-bottom:20px; position:relative; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+            <div>
+              <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); margin-bottom:4px;">
+                Cryptographic Polling Infrastructure
+              </div>
+              <h2 style="font-size:18px; font-weight:800; color:var(--text-primary); margin:0 0 6px 0;">
+                Tamper-Evident Poll Tracks
+              </h2>
+              <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0; max-width:720px;">
+                Every vote in a poll track is signed client-side, hashed into the Merkle tree, and committed to an append-only ledger. Participants receive cryptographic hash receipts that can be independently verified on the public verifier without exposing their identity.
+              </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <a href="../verifier.html" target="_blank" class="btn btn-secondary btn-sm btn-pill">
+                <span data-icon="shieldCheck"></span>
+                Verify a Receipt
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Track Stats Strip -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:20px;">
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:16px 20px;">
+            <div style="font-size:11px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Total Track Votes</div>
+            <div style="font-size:24px; font-weight:800; font-family:var(--font-display); color:var(--accent); margin-top:4px;">2,045</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Across all active tracks</div>
+          </div>
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:16px 20px;">
+            <div style="font-size:11px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Active Tracks</div>
+            <div style="font-size:24px; font-weight:800; font-family:var(--font-display); color:var(--text-primary); margin-top:4px;">2 <span style="font-size:14px; color:var(--text-tertiary); font-weight:400;">(1 draft)</span></div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Open for submissions</div>
+          </div>
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:16px 20px;">
+            <div style="font-size:11px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Ledger Receipts</div>
+            <div style="font-size:24px; font-weight:800; font-family:var(--font-display); color:var(--accent); margin-top:4px;">100%</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">All 2,045 SHA-256 hashed</div>
+          </div>
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:16px 20px;">
+            <div style="font-size:11px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Integrity Audit</div>
+            <div style="font-size:24px; font-weight:800; font-family:var(--font-display); color:var(--accent); margin-top:4px;">0 Failures</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">Zero chain breaks detected</div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="console-toolbar animate-slide-up">
+          <div class="console-toolbar-left">
+            <div class="chip-group">
+              <span class="chip active">All Tracks</span>
+              <span class="chip">Active</span>
+              <span class="chip">Draft</span>
+              <span class="chip">Ended</span>
+            </div>
+          </div>
+          <div class="console-toolbar-right">
+            <button class="btn btn-ghost btn-sm">
+              <span data-icon="filter"></span>
+              Filter
+            </button>
+            <button class="btn btn-ghost btn-sm">
+              <span data-icon="download"></span>
+              Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Track List -->
+        <div class="content-grid animate-slide-up" style="animation-delay:80ms;">
+
+          <!-- Track 1 -->
+          <div class="track-card">
+            <div class="track-card-header">
+              <span class="track-card-title">Q4 Product Feedback</span>
+              <div style="display:flex;align-items:center;gap:var(--space-3);">
+                <span class="badge badge-accent">Active</span>
+                <button class="btn btn-ghost btn-icon" data-icon="moreVertical"></button>
+              </div>
+            </div>
+            <div class="track-card-body">
+              <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4);">Gathering feedback on product features, UX satisfaction, and future priorities.</p>
+
+              <!-- Polls inside this track -->
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+                <div class="poll-option" style="cursor:default;">
+                  <div class="poll-option-fill" style="width:82%;"></div>
+                  <div class="poll-option-content">
+                    <div style="display:flex;align-items:center;gap:var(--space-2);">
+                      <span class="question-number">1</span>
+                      <span class="poll-option-text">How satisfied are you with our product?</span>
+                    </div>
+                    <span class="poll-option-percent">342 votes</span>
+                  </div>
+                </div>
+                <div class="poll-option" style="cursor:default;">
+                  <div class="poll-option-fill" style="width:56%;"></div>
+                  <div class="poll-option-content">
+                    <div style="display:flex;align-items:center;gap:var(--space-2);">
+                      <span class="question-number">2</span>
+                      <span class="poll-option-text">Which feature should we prioritize?</span>
+                    </div>
+                    <span class="poll-option-percent">289 votes</span>
+                  </div>
+                </div>
+                <div class="poll-option" style="cursor:default;">
+                  <div class="poll-option-fill" style="width:31%;"></div>
+                  <div class="poll-option-content">
+                    <div style="display:flex;align-items:center;gap:var(--space-2);">
+                      <span class="question-number">3</span>
+                      <span class="poll-option-text">Rate our customer support experience</span>
+                    </div>
+                    <span class="poll-option-percent">211 votes</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="track-card-meta">
+                <span><span data-icon="users"></span> 842 total responses</span>
+                <span><span data-icon="clock"></span> 4 days remaining</span>
+                <span><span data-icon="share"></span> 156 shares</span>
+              </div>
+            </div>
+            <div class="track-card-footer">
+              <div class="avatar-group">
+                <span class="avatar">JK</span>
+                <span class="avatar">SM</span>
+                <span class="avatar">AL</span>
+                <span class="avatar" style="background:var(--bg-input);color:var(--text-secondary);font-size:10px;">+12</span>
+              </div>
+              <div style="display:flex;gap:var(--space-2);">
+                <button class="btn btn-ghost btn-sm"><span data-icon="eye"></span> Preview</button>
+                <button class="btn btn-ghost btn-sm"><span data-icon="edit"></span> Edit</button>
+                <button class="btn btn-ghost btn-sm"><span data-icon="share"></span> Share</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Track 2 -->
+          <div class="track-card">
+            <div class="track-card-header">
+              <span class="track-card-title">Employee Engagement 2026</span>
+              <div style="display:flex;align-items:center;gap:var(--space-3);">
+                <span class="badge badge-accent">Active</span>
+                <button class="btn btn-ghost btn-icon" data-icon="moreVertical"></button>
+              </div>
+            </div>
+            <div class="track-card-body">
+              <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4);">Tracking team satisfaction, remote work preferences, and benefits feedback across the org.</p>
+
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+                <div class="poll-option" style="cursor:default;">
+                  <div class="poll-option-fill" style="width:91%;"></div>
+                  <div class="poll-option-content">
+                    <div style="display:flex;align-items:center;gap:var(--space-2);">
+                      <span class="question-number">1</span>
+                      <span class="poll-option-text">Overall job satisfaction</span>
+                    </div>
+                    <span class="poll-option-percent">501 votes</span>
+                  </div>
+                </div>
+                <div class="poll-option" style="cursor:default;">
+                  <div class="poll-option-fill" style="width:73%;"></div>
+                  <div class="poll-option-content">
+                    <div style="display:flex;align-items:center;gap:var(--space-2);">
+                      <span class="question-number">2</span>
+                      <span class="poll-option-text">Preferred work arrangement</span>
+                    </div>
+                    <span class="poll-option-percent">402 votes</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="track-card-meta">
+                <span><span data-icon="users"></span> 1,203 responses</span>
+                <span><span data-icon="clock"></span> 12 days remaining</span>
+              </div>
+            </div>
+            <div class="track-card-footer">
+              <div class="avatar-group">
+                <span class="avatar">HR</span>
+                <span class="avatar">PM</span>
+              </div>
+              <div style="display:flex;gap:var(--space-2);">
+                <button class="btn btn-ghost btn-sm"><span data-icon="eye"></span> Preview</button>
+                <button class="btn btn-ghost btn-sm"><span data-icon="edit"></span> Edit</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Track 3: Draft -->
+          <div class="track-card" style="opacity:0.7;">
+            <div class="track-card-header">
+              <span class="track-card-title">Benefits Review 2026</span>
+              <div style="display:flex;align-items:center;gap:var(--space-3);">
+                <span class="badge badge-warning">Draft</span>
+                <button class="btn btn-ghost btn-icon" data-icon="moreVertical"></button>
+              </div>
+            </div>
+            <div class="track-card-body">
+              <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4);">Upcoming review of employee benefits package. 2 polls planned.</p>
+              <div class="track-card-meta">
+                <span><span data-icon="polls"></span> 2 polls (draft)</span>
+                <span><span data-icon="clock"></span> Scheduled Oct 15</span>
+              </div>
+            </div>
+            <div class="track-card-footer">
+              <span style="font-size:var(--text-xs);color:var(--text-tertiary);">Not yet published</span>
+              <div style="display:flex;gap:var(--space-2);">
+                <button class="btn btn-ghost btn-sm"><span data-icon="edit"></span> Edit</button>
+                <button class="btn btn-primary btn-sm"><span data-icon="zap"></span> Publish</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+      <a href="dashboard.html" class="bottom-nav-item"><span class="nav-icon" data-icon="dashboard"></span><span>Dashboard</span></a>
+      <a href="polls.html" class="bottom-nav-item active"><span class="nav-icon" data-icon="polls"></span><span>Polls</span></a>
+      <a href="surveys.html" class="bottom-nav-item"><span class="nav-icon" data-icon="surveys"></span><span>Surveys</span></a>
+      <a href="analytics.html" class="bottom-nav-item"><span class="nav-icon" data-icon="analytics"></span><span>Analytics</span></a>
+      <a href="#" class="bottom-nav-item"><span class="nav-icon" data-icon="profile"></span><span>Account</span></a>
+    </nav>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+  <script src="../js/core/icons.js"></script>
+  <script src="../js/core/app.js"></script>
+</body>
+</html>

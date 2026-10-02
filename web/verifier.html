@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PollTrack Public Verifier — Cryptographically verify polling station results photos, Merkle inclusion proofs, and ledger checkpoints independently without login.">
+  <title>PollTrack — Public Ledger Verifier</title>
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" href="assets/images/logo.jpg" type="image/jpeg">
+</head>
+<body style="background:var(--bg-primary); color:var(--text); min-height:100vh;">
+
+  <!-- ====== STICKY NAVBAR ====== -->
+  <nav class="landing-nav" style="border-bottom:1px solid var(--border); background:rgba(14,14,14,0.9); backdrop-filter:blur(16px); position:sticky; top:0; z-index:100;">
+    <a href="index.html" class="landing-nav-logo" style="text-decoration:none; display:flex; align-items:center; gap:10px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:var(--primary); display:flex; align-items:center; justify-content:center; color:#000;">
+        <span data-icon="barChart"></span>
+      </div>
+      <span class="landing-nav-brand" style="font-family:var(--font-display); font-size:20px; font-weight:800; color:var(--text);">
+        PollTrack<span style="color:var(--primary);">.</span>
+      </span>
+    </a>
+
+    <div class="landing-nav-links">
+      <a href="index.html#features">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="verifier.html" style="color:var(--primary); font-weight:600;">Public Verifier</a>
+      <a href="console/dashboard.html">Console</a>
+      <a href="mobile-app.html">Observer App</a>
+    </div>
+
+    <div class="landing-nav-actions">
+      <!-- Language Switcher -->
+      <div style="display:flex; background:var(--surface-alt); border:1px solid var(--border); border-radius:var(--radius-pill); padding:2px;">
+        <button class="btn btn-ghost btn-sm lang-selector-btn active" data-lang="en" onclick="I18n.setLanguage('en')" style="padding:4px 10px; font-size:11px; font-weight:700;">EN</button>
+        <button class="btn btn-ghost btn-sm lang-selector-btn" data-lang="sw" onclick="I18n.setLanguage('sw')" style="padding:4px 10px; font-size:11px; font-weight:700;">SW</button>
+      </div>
+      <a href="index.html" class="btn btn-ghost btn-sm">&larr; Back to Home</a>
+    </div>
+  </nav>
+
+  <!-- ====== VERIFIER HERO & WIDGET ====== -->
+  <main style="max-width:1100px; margin:0 auto; padding:60px 24px;">
+    
+    <div style="text-align:center; max-width:800px; margin:0 auto 40px auto;">
+      <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(74,92,255,0.1); border:1px solid rgba(74,92,255,0.3); padding:4px 14px; border-radius:var(--radius-pill); font-size:12px; color:var(--primary); margin-bottom:16px;">
+        <span data-icon="lock"></span>
+        <span>Open Source Verification Engine • No Login Required</span>
+      </div>
+      <h1 style="font-family:var(--font-display); font-size:36px; font-weight:800; margin:0 0 12px 0;">Public Results & Checkpoint Verifier</h1>
+      <p style="font-size:15px; color:var(--text-muted); line-height:1.6; margin:0;">
+        Verify any official polling-station photo, vote receipt, or Merkle tree inclusion proof. All hashing is executed locally inside your browser using the W3C Web Crypto standard.
+      </p>
+    </div>
+
+    <!-- Verification Card Container -->
+    <div class="card" style="padding:36px; border:1px solid var(--border); margin-bottom:48px;">
+      
+      <!-- Interactive Inputs: File Dropzone & Hash Field -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+        
+        <!-- Dropzone -->
+        <div id="verifier-dropzone" style="border:2px dashed var(--border); border-radius:12px; padding:28px 20px; text-align:center; cursor:pointer; background:var(--surface-alt); transition:border-color 0.2s ease;">
+          <div style="width:44px; height:44px; border-radius:50%; background:rgba(74,92,255,0.1); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 10px auto;">
+            <span data-icon="image"></span>
+          </div>
+          <div style="font-weight:600; font-size:13px; color:var(--text); margin-bottom:4px;" id="dropzone-text">Drop polling station photo or click to browse</div>
+          <div style="font-size:11px; color:var(--text-muted);">Browser computes SHA-256 locally. Zero bytes uploaded.</div>
+          <input type="file" id="verifier-file-input" style="display:none;" accept="image/*">
+        </div>
+
+        <!-- Hash Input -->
+        <div style="display:flex; flex-direction:column; justify-content:space-between; background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:20px;">
+          <div>
+            <label style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:8px;">Enter Known Entry Hash or Receipt ID:</label>
+            <textarea id="hash-textarea" rows="3" class="form-input" style="width:100%; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text); resize:none;">0x8f2a93c7e1b4f09d8213ba4e67120cda59e41b7f0129ad8412bc4890cf319a2e</textarea>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <button class="btn btn-ghost btn-sm" id="preset-match-btn" style="font-size:11px; padding:4px 8px;">Load Valid Sample</button>
+            <button class="btn btn-ghost btn-sm" id="preset-mismatch-btn" style="font-size:11px; padding:4px 8px; color:var(--danger);">Simulate Mismatch</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:flex; justify-content:center; margin-bottom:28px;">
+        <button class="btn btn-primary btn-lg btn-pill" id="execute-verification-btn" style="padding:12px 36px; font-weight:700;">
+          <span data-icon="search"></span>
+          Verify Proof Against Published Root
+        </button>
+      </div>
+
+      <!-- Result Section (Dynamically rendered) -->
+      <div id="verification-result-box">
+        <!-- Rendered by JS -->
+      </div>
+
+    </div>
+
+    <!-- ====== HOW TO VERIFY INDEPENDENTLY (CLI & OPEN SOURCE) ====== -->
+    <div class="card" style="padding:32px; border:1px solid var(--border); margin-bottom:48px;">
+      <h3 style="font-size:18px; font-weight:700; margin:0 0 8px 0; color:var(--text);">How to Verify Completely Independently (Offline / CLI)</h3>
+      <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin:0 0 20px 0;">
+        You don't have to trust this website. Any observer can verify their result using standard terminal utilities:
+      </p>
+
+      <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:10px; padding:16px; font-family:var(--font-mono); font-size:12px; color:var(--text); line-height:1.7; overflow-x:auto;">
+        <span style="color:var(--text-muted);"># 1. Compute SHA-256 of your captured polling station photo:</span><br>
+        sha256sum station_042_form.jpg<br>
+        <span style="color:var(--primary);">&gt; 8f2a93c7e1b4f09d8213ba4e67120cda59e41b7f0129ad8412bc4890cf319a2e</span><br><br>
+        <span style="color:var(--text-muted);"># 2. Fetch inclusion proof from public transparency mirror:</span><br>
+        curl -s https://mirror.polltrack.io/v1/proof/8f2a93c7... &gt; proof.json<br><br>
+        <span style="color:var(--text-muted);"># 3. Hash leaf with siblings up to root:</span><br>
+        python3 -m pt_verify --leaf 8f2a93c7... --proof proof.json<br>
+        <span style="color:var(--primary);">&gt; Calculated Root: 0x00e676a91e87f2a1b9c3e5d710842ba67120cda59e41b7f0129ad8412bc4890c</span><br>
+        <span style="color:var(--primary);">&gt; Published Root (Checkpoint #142): MATCH VERIFIED [Bitcoin Block #884120]</span>
+      </div>
+    </div>
+
+    <!-- ====== LATEST PUBLISHED CHECKPOINTS TABLE ====== -->
+    <div class="card" style="padding:32px; border:1px solid var(--border);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h3 style="font-size:18px; font-weight:700; margin:0 0 4px 0;">Latest Published Ledger Checkpoints</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin:0;">Append-only signed Merkle roots anchored into public blockchains.</p>
+        </div>
+        <span class="status-badge status-live"><span data-icon="activity"></span> Checkpoints Live</span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border); color:var(--text-muted);">
+              <th style="padding:12px 14px;">Checkpoint #</th>
+              <th style="padding:12px 14px;">Tree Size</th>
+              <th style="padding:12px 14px;">Merkle Root Hash</th>
+              <th style="padding:12px 14px;">Signed Timestamp</th>
+              <th style="padding:12px 14px;">External Anchors</th>
+              <th style="padding:12px 14px;">Signature</th>
+            </tr>
+          </thead>
+          <tbody id="checkpoints-table-body">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/core/icons.js"></script>
+  <script src="js/core/i18n.js"></script>
+  <script src="js/core/mock-data.js"></script>
+  <script src="js/core/crypto-verifier.js"></script>
+  <script src="js/core/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.injectIcons();
+
+      const dropzone = document.getElementById('verifier-dropzone');
+      const fileInput = document.getElementById('verifier-file-input');
+      const hashTextarea = document.getElementById('hash-textarea');
+      const executeBtn = document.getElementById('execute-verification-btn');
+      const resultBox = document.getElementById('verification-result-box');
+      const dropzoneText = document.getElementById('dropzone-text');
+
+      // Dropzone handler
+      if (dropzone && fileInput) {
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', async (e) => {
+          if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            dropzoneText.textContent = 'Hashing ' + file.name + ' in browser...';
+            const hash = await CryptoVerifier.hashFile(file);
+            hashTextarea.value = hash;
+            dropzoneText.textContent = 'SHA-256 computed: ' + hash.substring(0, 18) + '...';
+            App.showToast('SHA-256 hash computed client-side via Web Crypto API', 'success');
+            runVerification();
+          }
+        });
+      }
+
+      // Presets
+      document.getElementById('preset-match-btn').addEventListener('click', () => {
+        hashTextarea.value = '0x8f2a93c7e1b4f09d8213ba4e67120cda59e41b7f0129ad8412bc4890cf319a2e';
+        runVerification();
+      });
+
+      document.getElementById('preset-mismatch-btn').addEventListener('click', () => {
+        hashTextarea.value = '0xbad4c91e87f2a1b9c3e5d710842ba67120cda59e41b7f0129ad8412bc4890cf';
+        runVerification();
+      });
+
+      executeBtn.addEventListener('click', runVerification);
+
+      function runVerification() {
+        const val = hashTextarea.value.trim();
+        const res = CryptoVerifier.lookupHash(val);
+
+        if (res.status === 'MATCH') {
+          resultBox.innerHTML = `
+            <div class="card" style="background:rgba(74,92,255,0.06); border:1px solid var(--primary); padding:24px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <span class="status-badge status-verified"><span data-icon="checkCircle"></span> <strong>MATCH VERIFIED</strong></span>
+                <span style="font-size:12px; color:var(--primary); font-weight:700;">Unchanged Since Committal</span>
+              </div>
+              <p style="font-size:14px; color:var(--text); line-height:1.5; margin:0 0 16px 0;">
+                Entry <strong>#${res.entrySeq}</strong> for <strong>${res.stationName}</strong> was committed to the hash chain and anchored in Checkpoint #${res.checkpointNumber}.
+              </p>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; font-size:12px; margin-bottom:16px;">
+                <div style="background:var(--surface); padding:10px 12px; border-radius:6px; border:1px solid var(--border);">
+                  <span style="color:var(--text-muted); display:block;">Captured At:</span>
+                  <strong style="color:var(--text);">${res.capturedAt}</strong>
+                </div>
+                <div style="background:var(--surface); padding:10px 12px; border-radius:6px; border:1px solid var(--border);">
+                  <span style="color:var(--text-muted); display:block;">Hardware Signature:</span>
+                  <strong style="color:var(--primary);">${res.deviceSigStatus}</strong>
+                </div>
+                <div style="background:var(--surface); padding:10px 12px; border-radius:6px; border:1px solid var(--border);">
+                  <span style="color:var(--text-muted); display:block;">Bitcoin Anchor:</span>
+                  <strong style="color:var(--text);">${res.anchors[0].target}</strong>
+                </div>
+              </div>
+              <div style="font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px;">Cryptographic Path to Root:</div>
+              <div class="merkle-path-flow" style="margin-bottom:16px;">
+                <div class="merkle-node">Leaf: ${val.substring(0, 10)}...</div>
+                <span class="merkle-arrow">&rarr;</span>
+                <div class="merkle-node">Proof H1: ${res.inclusionProof[0].hash.substring(0, 10)}...</div>
+                <span class="merkle-arrow">&rarr;</span>
+                <div class="merkle-node">Proof H2: ${res.inclusionProof[1].hash.substring(0, 10)}...</div>
+                <span class="merkle-arrow">&rarr;</span>
+                <div class="merkle-node root">Root #${res.checkpointNumber}: ${res.publishedRoot.substring(0, 10)}...</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="App.showToast('Downloaded cryptographically verified JSON receipt', 'success')">
+                <span data-icon="download"></span> Download Inclusion Proof JSON
+              </button>
+            </div>
+          `;
+          App.showToast('MATCH VERIFIED against Checkpoint #' + res.checkpointNumber, 'success');
+        } else if (res.status === 'MISMATCH') {
+          resultBox.innerHTML = `
+            <div class="card" style="background:rgba(255,82,82,0.08); border:1px solid var(--danger); padding:24px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <span class="status-badge status-frozen"><span data-icon="alertCircle"></span> <strong>MISMATCH DETECTED</strong></span>
+                <span style="font-size:12px; color:var(--danger); font-weight:700;">Integrity Check Failed</span>
+              </div>
+              <p style="font-size:14px; color:var(--text); line-height:1.5; margin:0 0 16px 0;">
+                The provided image or payload hash does not match the ledger commitment for Entry #${res.entrySeq}. Reason: <strong>${res.diffReason}</strong>.
+              </p>
+              <div style="font-family:var(--font-mono); font-size:11px; background:var(--surface); border:1px solid var(--border); padding:12px; border-radius:8px;">
+                <div style="color:var(--text-muted); margin-bottom:4px;">Expected Ledger Hash: <span style="color:var(--primary);">${res.expectedHash}</span></div>
+                <div style="color:var(--text-muted);">Submitted Hash: <span style="color:var(--danger);">${res.receivedHash}</span></div>
+              </div>
+            </div>
+          `;
+          App.showToast('MISMATCH: Uncommitted payload or altered photo', 'error');
+        } else {
+          resultBox.innerHTML = `
+            <div class="card" style="background:var(--surface-alt); border:1px solid var(--border); padding:24px; text-align:center;">
+              <span class="status-badge status-draft" style="margin-bottom:10px;">NOT FOUND</span>
+              <h4 style="font-size:16px; font-weight:700; color:var(--text); margin:0 0 6px 0;">Hash Not Found in Published Roots</h4>
+              <p style="font-size:13px; color:var(--text-muted); margin:0 auto; max-width:440px;">
+                The hash "${val.substring(0, 16)}..." does not exist in any verified Merkle checkpoints. Ensure the polling station submission has synced.
+              </p>
+            </div>
+          `;
+          App.showToast('Hash not found in public ledger checkpoints', 'error');
+        }
+        App.injectIcons();
+      }
+
+      // Populate Checkpoints Table
+      const cpTable = document.getElementById('checkpoints-table-body');
+      if (cpTable) {
+        cpTable.innerHTML = MockData.checkpoints.map(cp => `
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:14px; font-weight:700; color:var(--text);">Checkpoint #${cp.number}</td>
+            <td style="padding:14px; color:var(--primary); font-weight:600;">${cp.treeSize.toLocaleString()} entries</td>
+            <td style="padding:14px;"><span class="hash-pill" onclick="App.copyToClipboard('${cp.root}', 'Root copied')">${cp.root.substring(0, 14)}...</span></td>
+            <td style="padding:14px; color:var(--text-muted);">${cp.signedAt}</td>
+            <td style="padding:14px;"><span class="badge" style="background:rgba(74,92,255,0.12); color:var(--primary); font-size:11px;">${cp.anchors[0].target}</span></td>
+            <td style="padding:14px; color:var(--text-muted); font-size:12px;">${cp.signatureStatus}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Run initial verification display
+      runVerification();
+    });
+  </script>
+</body>
+</html>

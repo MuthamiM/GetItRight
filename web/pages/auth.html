@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PollTrack — Create your tamper-evident polling and verification account.">
+  <title>PollTrack — Account Creation & Sign In</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+</head>
+<body style="background:var(--bg-primary); color:var(--text);">
+  <div class="auth-page">
+
+    <!-- Left: Interactive Form -->
+    <div class="auth-left">
+      <div class="auth-card" style="max-width:480px; padding:36px 32px;">
+        <a href="../index.html" class="auth-logo" style="text-decoration:none; display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:var(--primary); display:flex; align-items:center; justify-content:center; color:#000;">
+            <span data-icon="barChart"></span>
+          </div>
+          <span style="font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--text);">
+            PollTrack<span style="color:var(--primary);">.</span>
+          </span>
+        </a>
+
+        <h1 class="auth-heading" id="auth-heading" style="font-family:var(--font-display); font-size:26px; font-weight:800; margin:0 0 6px 0;">Create your account</h1>
+        <p class="auth-subheading" id="auth-subheading" style="font-size:14px; color:var(--text-muted); margin:0 0 24px 0;">Select your operational role to initialize your cryptographic profile.</p>
+
+        <!-- Role Selector Grid (Section 3) -->
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">Operational Role</label>
+          <div class="role-selector" id="role-selector" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="role-option selected" data-role="admin" id="role-admin" style="padding:14px; border:1px solid var(--primary); background:rgba(74,92,255,0.06); border-radius:12px; cursor:pointer;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span class="role-option-title" style="font-weight:700; font-size:13px; color:var(--text);">Org Admin / Creator</span>
+                <span style="color:var(--primary);" data-icon="checkCircle"></span>
+              </div>
+              <div class="role-option-desc" style="font-size:11px; color:var(--text-muted);">Console & poll tracks</div>
+            </div>
+
+            <div class="role-option" data-role="observer" id="role-observer" style="padding:14px; border:1px solid var(--border); background:var(--surface-alt); border-radius:12px; cursor:pointer;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span class="role-option-title" style="font-weight:700; font-size:13px; color:var(--text);">Observer</span>
+                <span style="color:var(--text-muted);" data-icon="target"></span>
+              </div>
+              <div class="role-option-desc" style="font-size:11px; color:var(--text-muted);">Mobile hardware capture</div>
+            </div>
+
+            <div class="role-option" data-role="reviewer" id="role-reviewer" style="padding:14px; border:1px solid var(--border); background:var(--surface-alt); border-radius:12px; cursor:pointer;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span class="role-option-title" style="font-weight:700; font-size:13px; color:var(--text);">Reviewer</span>
+                <span style="color:var(--text-muted);" data-icon="filter"></span>
+              </div>
+              <div class="role-option-desc" style="font-size:11px; color:var(--text-muted);">Disputes & reconciliation</div>
+            </div>
+
+            <div class="role-option" data-role="auditor" id="role-auditor" style="padding:14px; border:1px solid var(--border); background:var(--surface-alt); border-radius:12px; cursor:pointer;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span class="role-option-title" style="font-weight:700; font-size:13px; color:var(--text);">Auditor</span>
+                <span style="color:var(--text-muted);" data-icon="lock"></span>
+              </div>
+              <div class="role-option-desc" style="font-size:11px; color:var(--text-muted);">Read-only proof explorer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth Form -->
+        <form id="auth-form" autocomplete="off">
+          <div id="register-fields">
+            <div class="form-group" id="org-name-group" style="margin-bottom:14px;">
+              <label class="form-label" for="org-name" style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px;">Organization / Institution Name</label>
+              <input type="text" class="form-input" id="org-name" placeholder="e.g. Civic Transparency Initiative" value="Civic Transparency Initiative" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface-alt); border:1px solid var(--border); color:var(--text);">
+            </div>
+            
+            <div class="form-group" id="full-name-group" style="margin-bottom:14px;">
+              <label class="form-label" for="full-name" style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px;">Full Name</label>
+              <input type="text" class="form-input" id="full-name" placeholder="Faith Mwangi" value="Faith Mwangi" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface-alt); border:1px solid var(--border); color:var(--text);">
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label" style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px;">Initial Plan Tier</label>
+              <select class="form-input" id="plan-tier-select" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface-alt); border:1px solid var(--border); color:var(--text);">
+                <option value="election">Election / Enterprise (Polling Station Capture)</option>
+                <option value="org">Organisation Tier (~KES 6,500/mo)</option>
+                <option value="pro">Pro Tier (~KES 1,500/mo)</option>
+                <option value="free">Free Tier (3 Active Polls)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label" for="email" style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px;">Email Address</label>
+            <input type="email" class="form-input" id="email" placeholder="faith@mission.org" value="faith@mission.org" required style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface-alt); border:1px solid var(--border); color:var(--text);">
+          </div>
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <label class="form-label" for="password" style="display:block; font-size:12px; font-weight:600; color:var(--text); margin-bottom:6px;">Password</label>
+            <input type="password" class="form-input" id="password" placeholder="Min 8 characters" value="ValidPass123!" required style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface-alt); border:1px solid var(--border); color:var(--text);">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-pill" style="width:100%; justify-content:center; font-weight:700;" id="auth-submit-btn">
+            Create Account & Launch Console
+          </button>
+        </form>
+
+        <p class="auth-footer-text" id="auth-toggle-text" style="font-size:13px; color:var(--text-muted); text-align:center; margin-top:20px;">
+          Already have an account? <a href="#" id="auth-toggle-link" style="color:var(--primary); font-weight:600; text-decoration:none;">Sign in</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Right: Visual Trust Showcase -->
+    <div class="auth-right" style="background:linear-gradient(135deg, var(--surface) 0%, #0d1b14 100%); border-left:1px solid var(--border); padding:60px; display:flex; flex-direction:column; justify-content:center;">
+      <div class="auth-right-content" style="max-width:480px;">
+        <span class="status-badge status-live" style="margin-bottom:16px;">Zero Trust Architecture</span>
+        <h2 style="font-family:var(--font-display); font-size:32px; font-weight:800; color:var(--text); margin:0 0 16px 0; line-height:1.2;">
+          Lying Made Detectable, Attributable, and Costly.
+        </h2>
+        <p style="color:var(--text-muted); font-size:15px; line-height:1.6; margin:0 0 32px 0;">
+          Every vote, observation, and photo is committed to an append-only cryptographic ledger anchored to Bitcoin and OpenTimestamps.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div style="display:flex; gap:16px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(74,92,255,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span data-icon="lock"></span>
+            </div>
+            <div>
+              <h4 style="font-size:15px; font-weight:700; color:var(--text); margin:0 0 4px 0;">Hardware Device Attestation</h4>
+              <p style="font-size:13px; color:var(--text-muted); margin:0; line-height:1.4;">Hardware-backed ECDSA P-256 keys on attested Android & iOS devices prevent ballot manipulation.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:16px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(74,92,255,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span data-icon="activity"></span>
+            </div>
+            <div>
+              <h4 style="font-size:15px; font-weight:700; color:var(--text); margin:0 0 4px 0;">Automated Anomaly Engine</h4>
+              <p style="font-size:13px; color:var(--text-muted); margin:0; line-height:1.4;">Continuous statistical scanning for Benford's law violations, round-number bias, and turnout spikes.</p>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:16px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(74,92,255,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span data-icon="search"></span>
+            </div>
+            <div>
+              <h4 style="font-size:15px; font-weight:700; color:var(--text); margin:0 0 4px 0;">Public Merkle Verifier</h4>
+              <p style="font-size:13px; color:var(--text-muted); margin:0; line-height:1.4;">Anyone can independently recompute proofs in their browser without signing up or trusting our servers.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="../js/core/icons.js"></script>
+  <script src="../js/core/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.injectIcons();
+
+      let isLoginMode = false;
+      let selectedRole = 'admin';
+
+      const heading = document.getElementById('auth-heading');
+      const subheading = document.getElementById('auth-subheading');
+      const submitBtn = document.getElementById('auth-submit-btn');
+      const registerFields = document.getElementById('register-fields');
+      const toggleLink = document.getElementById('auth-toggle-link');
+      const toggleText = document.getElementById('auth-toggle-text');
+      const roleOptions = document.querySelectorAll('.role-option');
+
+      // Role selection
+      roleOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+          roleOptions.forEach(o => {
+            o.style.borderColor = 'var(--border)';
+            o.style.background = 'var(--surface-alt)';
+          });
+          opt.style.borderColor = 'var(--primary)';
+          opt.style.background = 'rgba(74,92,255,0.06)';
+          selectedRole = opt.dataset.role;
+        });
+      });
+
+      // Toggle Login / Register
+      if (toggleLink) {
+        toggleLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          isLoginMode = !isLoginMode;
+          if (isLoginMode) {
+            heading.textContent = 'Welcome back';
+            subheading.textContent = 'Sign in to access your verified console.';
+            submitBtn.textContent = 'Sign In to Console';
+            registerFields.style.display = 'none';
+            toggleText.innerHTML = 'Don\'t have an account? <a href="#" id="auth-toggle-link" style="color:var(--primary); font-weight:600;">Create one</a>';
+          } else {
+            heading.textContent = 'Create your account';
+            subheading.textContent = 'Select your operational role to initialize your cryptographic profile.';
+            submitBtn.textContent = 'Create Account & Launch Console';
+            registerFields.style.display = 'block';
+            toggleText.innerHTML = 'Already have an account? <a href="#" id="auth-toggle-link" style="color:var(--primary); font-weight:600;">Sign in</a>';
+          }
+          App.injectIcons();
+        });
+      }
+
+      // Form submission
+      const form = document.getElementById('auth-form');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          App.showToast('Authentication verified. Launching workspace...', 'success');
+          setTimeout(() => {
+            if (selectedRole === 'observer') {
+              window.location.href = '../mobile-app.html';
+            } else {
+              window.location.href = '../console/dashboard.html';
+            }
+          }, 800);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

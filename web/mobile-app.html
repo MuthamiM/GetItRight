@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="PollTrack Observer Mobile App — Hardware-signed polling station result capture, live image quality checks, arithmetic validation, and silent duress alerts.">
+  <title>PollTrack — Observer Mobile Capture</title>
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" href="assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    /* Phone-first container styling */
+    body {
+      background: #080808;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+      font-family: var(--font-body);
+    }
+
+    .phone-simulator {
+      width: 100%;
+      max-width: 412px;
+      height: 860px;
+      background: var(--bg-primary);
+      border: 2px solid var(--border);
+      border-radius: 36px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 6px #1c1c1e;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .phone-simulator {
+        border-radius: 0;
+        border: none;
+        height: 100vh;
+        max-width: 100%;
+      }
+    }
+
+    .phone-top-status {
+      height: 38px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: var(--surface);
+    }
+
+    .phone-header {
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .phone-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-footer-nav {
+      height: 64px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+    }
+
+    .phone-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .phone-nav-btn.active {
+      color: var(--primary);
+    }
+
+    .camera-viewfinder {
+      height: 220px;
+      background: #000;
+      border-radius: 16px;
+      border: 2px dashed var(--border);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .corner-reticle {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: var(--primary);
+    }
+    .reticle-tl { top: 12px; left: 12px; border-top: 3px solid var(--primary); border-left: 3px solid var(--primary); }
+    .reticle-tr { top: 12px; right: 12px; border-top: 3px solid var(--primary); border-right: 3px solid var(--primary); }
+    .reticle-bl { bottom: 12px; left: 12px; border-bottom: 3px solid var(--primary); border-left: 3px solid var(--primary); }
+    .reticle-br { bottom: 12px; right: 12px; border-bottom: 3px solid var(--primary); border-right: 3px solid var(--primary); }
+  </style>
+</head>
+<body>
+
+  <!-- ====== PHONE SIMULATOR CONTAINER ====== -->
+  <div class="phone-simulator" id="phone-app">
+
+    <!-- Top Status Bar (Time, Signal, Attestation) -->
+    <div class="phone-top-status">
+      <span>02:45 UTC</span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="status-badge status-verified" style="font-size:10px; padding:2px 6px;">
+          <span data-icon="lock"></span> Attested
+        </span>
+        <span style="font-size:11px;">4G</span>
+      </div>
+    </div>
+
+    <!-- Offline Banner (Can be toggled) -->
+    <div id="offline-banner" style="display:none; background:rgba(64,196,255,0.15); border-bottom:1px solid rgba(64,196,255,0.3); padding:6px 16px; font-size:11px; color:var(--info); display:flex; justify-content:space-between; align-items:center;">
+      <span style="display:flex; align-items:center; gap:6px;">
+        <span data-icon="alertCircle"></span>
+        <span data-i18n="mobile_offline_banner">Offline mode: Submissions encrypted in outbox</span>
+      </span>
+      <span class="badge" style="background:var(--info); color:#000; font-size:9px; font-weight:800;">SMS READY</span>
+    </div>
+
+    <!-- App Header -->
+    <header class="phone-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:28px; height:28px; border-radius:8px; background:var(--primary); display:flex; align-items:center; justify-content:center; color:#000;">
+          <span data-icon="barChart"></span>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:14px; font-weight:800; color:var(--text); line-height:1.1;">PollTrack Observer</div>
+          <div style="font-size:11px; color:var(--text-muted);">Station PS-042 • St. Jude Hall</div>
+        </div>
+      </div>
+
+      <!-- Duress Button: Discreet, neutral state, zero bystander alert -->
+      <button id="duress-btn" title="System Check" style="background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:4px 8px; font-size:10px; color:var(--text-muted); cursor:pointer;">
+        SYS#42
+      </button>
+    </header>
+
+    <!-- App Dynamic Screens Body -->
+    <div class="phone-body" id="app-screens">
+
+      <!-- SCREEN 1: Capture Station Form -->
+      <div id="screen-capture" class="screen-view">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:12px; font-weight:700; color:var(--text);">Step 1: Document Capture</span>
+          <span class="status-badge status-open">Form 34A</span>
+        </div>
+
+        <!-- Camera Viewfinder with Native Quality Engine Feedback -->
+        <div class="camera-viewfinder" id="camera-box">
+          <div class="corner-reticle reticle-tl"></div>
+          <div class="corner-reticle reticle-tr"></div>
+          <div class="corner-reticle reticle-bl"></div>
+          <div class="corner-reticle reticle-br"></div>
+          
+          <div style="text-align:center; padding:20px; z-index:1;">
+            <div style="width:40px; height:40px; border-radius:50%; background:rgba(74,92,255,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 10px auto;">
+              <span data-icon="image"></span>
+            </div>
+            <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px;">Position Official Result Form</div>
+            <div style="font-size:11px; color:var(--text-muted);">Native C/C++ Engine checking glare & skew...</div>
+          </div>
+        </div>
+
+        <!-- Quality Metrics Feedback (Simulating Native Engine Output) -->
+        <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:16px;">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Hardware Quality Gate</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:11px;">
+            <div style="background:var(--surface); padding:6px 8px; border-radius:6px; text-align:center;">
+              <span style="color:var(--text-muted); display:block;">Blur Check:</span>
+              <strong style="color:var(--primary);">&check; 98% Sharp</strong>
+            </div>
+            <div style="background:var(--surface); padding:6px 8px; border-radius:6px; text-align:center;">
+              <span style="color:var(--text-muted); display:block;">Glare Check:</span>
+              <strong style="color:var(--primary);">&check; 0% Clear</strong>
+            </div>
+            <div style="background:var(--surface); padding:6px 8px; border-radius:6px; text-align:center;">
+              <span style="color:var(--text-muted); display:block;">Skew Angle:</span>
+              <strong style="color:var(--primary);">&check; 1.2&deg; Valid</strong>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-pill" id="take-photo-btn" style="width:100%; justify-content:center; font-weight:700; margin-bottom:10px;">
+          Capture & Sign Frame
+        </button>
+      </div>
+
+      <!-- SCREEN 2: Structured Result Entry & Arithmetic Validation -->
+      <div id="screen-entry" class="screen-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:12px; font-weight:700; color:var(--text);">Step 2: Enter Tally Counts</span>
+          <span style="font-size:11px; color:var(--text-muted);">Registered: 750</span>
+        </div>
+
+        <!-- Live Arithmetic Warning Banner -->
+        <div id="arithmetic-warning" style="display:none; background:rgba(255,82,82,0.15); border:1px solid var(--danger); border-radius:8px; padding:10px 12px; font-size:12px; color:var(--danger); margin-bottom:14px;">
+          <strong>Arithmetic Error:</strong> Sum of candidates (0) + spoilt (0) does not equal total ballots (0).
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+          <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:13px; font-weight:600; color:var(--text);">Candidate A (Kenyatta)</label>
+            <input type="number" id="count-cand-a" class="form-input count-input" value="342" style="width:90px; text-align:right; padding:6px 10px; font-family:var(--font-mono); font-weight:700; font-size:15px; border-radius:6px; background:var(--surface); border:1px solid var(--border); color:var(--primary);">
+          </div>
+
+          <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:13px; font-weight:600; color:var(--text);">Candidate B (Odinga)</label>
+            <input type="number" id="count-cand-b" class="form-input count-input" value="289" style="width:90px; text-align:right; padding:6px 10px; font-family:var(--font-mono); font-weight:700; font-size:15px; border-radius:6px; background:var(--surface); border:1px solid var(--border); color:var(--primary);">
+          </div>
+
+          <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:13px; font-weight:600; color:var(--text);">Candidate C (Wajackoyah)</label>
+            <input type="number" id="count-cand-c" class="form-input count-input" value="78" style="width:90px; text-align:right; padding:6px 10px; font-family:var(--font-mono); font-weight:700; font-size:15px; border-radius:6px; background:var(--surface); border:1px solid var(--border); color:var(--primary);">
+          </div>
+
+          <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:13px; font-weight:600; color:var(--text-muted);">Rejected / Spoilt</label>
+            <input type="number" id="count-spoilt" class="form-input count-input" value="12" style="width:90px; text-align:right; padding:6px 10px; font-family:var(--font-mono); font-weight:700; font-size:15px; border-radius:6px; background:var(--surface); border:1px solid var(--border); color:var(--text-muted);">
+          </div>
+
+          <div style="background:rgba(74,92,255,0.08); border:1px solid rgba(74,92,255,0.3); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <label style="font-size:13px; font-weight:700; color:var(--primary);">Grand Total Ballots</label>
+            <input type="number" id="count-total" class="form-input count-input" value="721" style="width:90px; text-align:right; padding:6px 10px; font-family:var(--font-mono); font-weight:700; font-size:15px; border-radius:6px; background:var(--surface); border:1px solid var(--primary); color:var(--text);">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-ghost btn-sm" id="back-to-capture-btn" style="flex:1;">Back</button>
+          <button class="btn btn-primary btn-sm btn-pill" id="proceed-to-sign-btn" style="flex:2; justify-content:center; font-weight:700;">
+            Review & Sign with Key
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: Receipt & Inclusion Proof Screen -->
+      <div id="screen-receipt" class="screen-view" style="display:none; text-align:center;">
+        <div style="width:52px; height:52px; border-radius:50%; background:rgba(74,92,255,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:10px auto 12px auto;">
+          <span data-icon="checkCircle" style="transform:scale(1.4);"></span>
+        </div>
+
+        <h3 style="font-size:18px; font-weight:800; color:var(--text); margin:0 0 4px 0;">Submission Signed & Verified</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin:0 0 16px 0;">Committed to immutable ledger chain.</p>
+
+        <!-- Simulated QR Representation -->
+        <div style="width:140px; height:140px; margin:0 auto 16px auto; background:#fff; border-radius:12px; padding:8px; display:flex; align-items:center; justify-content:center; border:2px solid var(--border);">
+          <div style="width:100%; height:100%; border:3px solid #000; border-radius:6px; display:flex; flex-direction:column; justify-content:space-around; align-items:center; padding:4px;">
+            <div style="display:flex; justify-content:space-between; width:100%;">
+              <div style="width:24px; height:24px; background:#000;"></div>
+              <div style="width:24px; height:24px; background:#000;"></div>
+            </div>
+            <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:#000;">POLLTRACK #14208</div>
+            <div style="display:flex; justify-content:space-between; width:100%;">
+              <div style="width:24px; height:24px; background:#000;"></div>
+              <div style="width:12px; height:12px; background:#000;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--surface-alt); border:1px solid var(--border); padding:14px; text-align:left; font-size:11px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="color:var(--text-muted);">Station:</span>
+            <strong style="color:var(--text);">PS-042 Kiambu</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="color:var(--text-muted);">Hardware Key:</span>
+            <strong style="color:var(--primary);">ECDSA P-256 Valid</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="color:var(--text-muted);">Sequence #:</span>
+            <strong style="color:var(--text);">14208 (Checkpoint #142)</strong>
+          </div>
+          <div style="word-break:break-all;">
+            <span style="color:var(--text-muted); display:block; margin-bottom:2px;">Entry Hash:</span>
+            <span class="hash-pill" style="font-size:10px;">0x8f2a93c7...cf319a2e</span>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary btn-pill" id="new-capture-btn" style="width:100%; justify-content:center;">
+          Capture Next Station
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Phone Footer Navigation Bar -->
+    <footer class="phone-footer-nav">
+      <button class="phone-nav-btn active" id="nav-btn-capture">
+        <span data-icon="image"></span>
+        <span>Capture</span>
+      </button>
+      <button class="phone-nav-btn" id="nav-btn-outbox">
+        <span data-icon="clock"></span>
+        <span>Outbox (0)</span>
+      </button>
+      <button class="phone-nav-btn" id="nav-btn-receipts">
+        <span data-icon="lock"></span>
+        <span>Receipts</span>
+      </button>
+      <button class="phone-nav-btn" id="nav-btn-offline">
+        <span data-icon="refresh"></span>
+        <span>Offline</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/core/icons.js"></script>
+  <script src="js/core/i18n.js"></script>
+  <script src="js/core/mock-data.js"></script>
+  <script src="js/core/crypto-verifier.js"></script>
+  <script src="js/core/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.injectIcons();
+
+      const screenCapture = document.getElementById('screen-capture');
+      const screenEntry = document.getElementById('screen-entry');
+      const screenReceipt = document.getElementById('screen-receipt');
+
+      const takePhotoBtn = document.getElementById('take-photo-btn');
+      const backToCaptureBtn = document.getElementById('back-to-capture-btn');
+      const proceedToSignBtn = document.getElementById('proceed-to-sign-btn');
+      const newCaptureBtn = document.getElementById('new-capture-btn');
+
+      const countInputs = document.querySelectorAll('.count-input');
+      const warningBanner = document.getElementById('arithmetic-warning');
+
+      // Live arithmetic sum validation
+      function checkArithmetic() {
+        const a = parseInt(document.getElementById('count-cand-a').value || 0, 10);
+        const b = parseInt(document.getElementById('count-cand-b').value || 0, 10);
+        const c = parseInt(document.getElementById('count-cand-c').value || 0, 10);
+        const spoilt = parseInt(document.getElementById('count-spoilt').value || 0, 10);
+        const total = parseInt(document.getElementById('count-total').value || 0, 10);
+
+        const sum = a + b + c + spoilt;
+        if (sum !== total) {
+          warningBanner.style.display = 'block';
+          warningBanner.innerHTML = `<strong>Arithmetic Mismatch:</strong> Candidate sum (${sum}) &ne; Total stated (${total}). Correct before signing.`;
+          proceedToSignBtn.disabled = true;
+          proceedToSignBtn.style.opacity = '0.5';
+        } else if (total > 750) {
+          warningBanner.style.display = 'block';
+          warningBanner.innerHTML = `<strong>Turnout Violation:</strong> Total (${total}) exceeds registered voters (750).`;
+          proceedToSignBtn.disabled = true;
+          proceedToSignBtn.style.opacity = '0.5';
+        } else {
+          warningBanner.style.display = 'none';
+          proceedToSignBtn.disabled = false;
+          proceedToSignBtn.style.opacity = '1';
+        }
+      }
+
+      countInputs.forEach(input => input.addEventListener('input', checkArithmetic));
+
+      takePhotoBtn.addEventListener('click', () => {
+        App.showToast('Hardware Keystore locked frame SHA-256 hash', 'info');
+        screenCapture.style.display = 'none';
+        screenEntry.style.display = 'block';
+        checkArithmetic();
+      });
+
+      backToCaptureBtn.addEventListener('click', () => {
+        screenEntry.style.display = 'none';
+        screenCapture.style.display = 'block';
+      });
+
+      proceedToSignBtn.addEventListener('click', () => {
+        App.showToast('Signing payload with ECDSA P-256 key...', 'info');
+        setTimeout(() => {
+          screenEntry.style.display = 'none';
+          screenReceipt.style.display = 'block';
+          App.showToast('Appended to ledger sequence #14208', 'success');
+        }, 800);
+      });
+
+      newCaptureBtn.addEventListener('click', () => {
+        screenReceipt.style.display = 'none';
+        screenCapture.style.display = 'block';
+      });
+
+      // Silent Duress Trigger: Under intimidation or threat, subtle feedback only
+      const duressBtn = document.getElementById('duress-btn');
+      let duressClicks = 0;
+      duressBtn.addEventListener('click', () => {
+        duressClicks++;
+        if (duressClicks >= 2) {
+          // Send silent alert to server without visible confirmation on screen to bystanders
+          duressBtn.style.borderColor = 'rgba(255,255,255,0.05)';
+          console.warn('[SILENT_DURESS_TRIGGERED] Observer reported coercion. Dispatching security audit.');
+          duressClicks = 0;
+        }
+      });
+
+      // Offline toggle
+      const offlineBtn = document.getElementById('nav-btn-offline');
+      const offlineBanner = document.getElementById('offline-banner');
+      let isOffline = false;
+      offlineBtn.addEventListener('click', () => {
+        isOffline = !isOffline;
+        offlineBanner.style.display = isOffline ? 'flex' : 'none';
+        App.showToast(isOffline ? 'Switched to Offline Mode (SMS fallback ready)' : 'Reconnected to Cloud Ledger', 'info');
+      });
+    });
+  </script>
+</body>
+</html>
