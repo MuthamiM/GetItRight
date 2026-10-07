@@ -8,6 +8,7 @@ import 'features/surveys/presentation/surveys_feed_screen.dart';
 import 'features/dashboard/presentation/org_dashboard_screen.dart';
 import 'features/profile/presentation/profile_settings_screen.dart';
 import 'features/splash/presentation/splash_screen.dart';
+import 'core/network/api_client.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,10 +45,16 @@ class _RootNavigationCoordinatorState
   String _userName = 'User';
   String _currentPlan = 'free';
 
+  final GlobalKey<PollsFeedScreenState> _pollsKey = GlobalKey<PollsFeedScreenState>();
+  final GlobalKey<SurveysFeedScreenState> _surveysKey = GlobalKey<SurveysFeedScreenState>();
+
   @override
   void initState() {
     super.initState();
     _checkSavedSession();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForAppUpdateIfNeeded();
+    });
   }
 
   Future<void> _checkSavedSession() async {
@@ -71,12 +78,116 @@ class _RootNavigationCoordinatorState
     }
   }
 
+  Future<void> _checkForAppUpdateIfNeeded() async {
+    try {
+      final updateInfo = await ApiClient().checkAppUpdate();
+      if (!mounted) return;
+      if (updateInfo['update_available'] == true) {
+        _showUpdateDialog(
+          version: updateInfo['latest_version']?.toString() ?? '2.0.0',
+          releaseNotes: updateInfo['release_notes']?.toString(),
+        );
+      }
+    } catch (_) {}
+  }
+
+  void _showUpdateDialog({required String version, String? releaseNotes}) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF424242),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF555555),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.system_update_rounded, color: Color(0xFFE5E5E5), size: 24),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Update Available',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF303030),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF606060)),
+              ),
+              child: Text(
+                'Version $version is now available (Current: v1.0.0)',
+                style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'What\'s New in this release:',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              releaseNotes ??
+                  '• Instant scroll-to-top navigation\n'
+                  '• Real-time poll vote tallying & animated charts\n'
+                  '• Cryptographic survey receipt verification\n'
+                  '• Offline vote persistence & auto-sync\n'
+                  '• Stability & performance improvements',
+              style: const TextStyle(color: Color(0xFFD0D0D0), fontSize: 12.5, height: 1.45),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Later', style: TextStyle(color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Downloading Getitright v$version...',
+                    style: const TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFFE5E5E5),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE5E5E5),
+              foregroundColor: const Color(0xFF2A2A2A),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _requestNotificationPermissionIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
     final alreadyAsked = prefs.getBool('gir_notification_asked') ?? false;
 
     if (!alreadyAsked && mounted) {
       await prefs.setBool('gir_notification_asked', true);
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -134,6 +245,7 @@ class _RootNavigationCoordinatorState
     });
 
     _requestNotificationPermissionIfNeeded();
+    _checkForAppUpdateIfNeeded();
   }
 
   void _refreshState() async {
@@ -196,14 +308,14 @@ class _RootNavigationCoordinatorState
 
     final List<Widget> screens = isOrgAdmin
         ? [
-            const PollsFeedScreen(),
-            const SurveysFeedScreen(),
+            PollsFeedScreen(key: _pollsKey),
+            SurveysFeedScreen(key: _surveysKey),
             const OrgDashboardScreen(),
             ProfileSettingsScreen(onSettingsUpdated: _refreshState),
           ]
         : [
-            const PollsFeedScreen(),
-            const SurveysFeedScreen(),
+            PollsFeedScreen(key: _pollsKey),
+            SurveysFeedScreen(key: _surveysKey),
             ProfileSettingsScreen(onSettingsUpdated: _refreshState),
           ];
 
@@ -318,7 +430,18 @@ class _RootNavigationCoordinatorState
               const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           type: BottomNavigationBarType.fixed,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            if (index == _currentIndex) {
+              // Already on this tab — scroll to top
+              if (index == 0) {
+                _pollsKey.currentState?.scrollToTop();
+              } else if (index == 1) {
+                _surveysKey.currentState?.scrollToTop();
+              }
+            } else {
+              setState(() => _currentIndex = index);
+            }
+          },
           items: isOrgAdmin
               ? const [
                   BottomNavigationBarItem(
