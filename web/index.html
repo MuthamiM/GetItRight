@@ -3,768 +3,453 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Get It Right — Tamper-evident polling, institutional surveys, and cryptographic results verification. Polls and surveys you can prove.">
-  <title>Get It Right — Polls &amp; Surveys You Can Prove</title>
-  <link rel="stylesheet" href="css/index.css">
-  <link rel="stylesheet" href="css/pages.css">
-  <link rel="stylesheet" href="css/landing.css">
+  <meta name="description" content="Getitright — The polling and survey management platform that captures every voice. Real-time analytics, mobile voting, and institutional-grade reporting.">
+  <title>Getitright — Capture Every Voice</title>
+  <link rel="stylesheet" href="css/landing-new.css">
   <link rel="icon" href="assets/images/logo.jpg" type="image/jpeg">
 </head>
-<body class="landing-page">
+<body class="landing-new">
 
-  <!-- ====== FROSTED TOP NAVIGATION (EDGE-TO-EDGE) ====== -->
-  <header class="landing-nav">
-    <div style="display:flex; align-items:center; gap: clamp(16px, 3vw, 36px);">
-      <a href="index.html" class="nav-logo">
-        <div class="nav-logo-icon">
-          <img src="assets/images/logo.jpg" alt="Get It Right Logo">
-        </div>
-        <span class="nav-brand">Get It Right<span class="dot">.</span></span>
-      </a>
-
-      <!-- Desktop Nav Links -->
-      <nav class="nav-links">
-        <a href="#how-it-works">How It Works</a>
-        <a href="#pricing">Pricing Plans</a>
-        <a href="#live-verifier">Live Verifier</a>
-        <a href="#anomaly-engine">Anomaly Engine</a>
-        <a href="#consoles">Consoles Preview</a>
-        <a href="#faq">FAQ</a>
-      </nav>
-    </div>
-
-    <div class="nav-actions">
-      <!-- Live Checkpoint Status Pill -->
-      <div class="hero-pill-badge desktop-only" style="margin-bottom:0; padding:4px 10px; font-size:11px;">
-        <span class="pulse-dot"></span>
-        <span>Bitcoin Root #142 Anchored</span>
+  <!-- ====== NAVIGATION ====== -->
+  <nav class="ln-nav" id="mainNav">
+    <a href="index.html" class="ln-nav-logo">
+      <div class="ln-nav-logo-icon">
+        <img src="assets/images/logo.jpg" alt="Getitright Logo">
       </div>
-
-      <!-- Auto-Detected Currency Badge (From IP/Location in background) -->
-      <div class="geo-currency-badge" id="geo-currency-pill" title="Auto-detected from IP/location">
-        <span class="geo-dot"></span>
-        <span id="geo-currency-label">KES &bull; Auto</span>
-      </div>
-
-      <a href="verifier.html" class="btn btn-ghost btn-sm desktop-only" style="color:var(--text-secondary);">Public Verifier &nearr;</a>
-      
-      <!-- User Auth Actions -->
-      <a href="auth/login.html" class="btn btn-secondary btn-sm btn-pill">Sign In</a>
-      <a href="auth/signup.html" class="btn btn-primary btn-sm btn-pill">Get Started &rarr;</a>
-
-      <button class="mobile-menu-toggle" onclick="toggleMobileNav()" aria-label="Toggle Navigation">
-        <span data-icon="menu"></span>
-      </button>
-    </div>
-  </header>
-
-  <!-- Mobile Nav Drawer -->
-  <div class="mobile-nav-drawer" id="mobile-nav-drawer">
-    <a href="#how-it-works" onclick="closeMobileNav()">How It Works</a>
-    <a href="#pricing" onclick="closeMobileNav()">Pricing Plans</a>
-    <a href="#live-verifier" onclick="closeMobileNav()">Live Verifier</a>
-    <a href="#anomaly-engine" onclick="closeMobileNav()">Anomaly Engine</a>
-    <a href="#faq" onclick="closeMobileNav()">FAQ</a>
-    <a href="verifier.html" onclick="closeMobileNav()">Public Verifier &nearr;</a>
-    <a href="auth/login.html" onclick="closeMobileNav()" class="btn btn-secondary btn-sm btn-block" style="margin-top:14px;">
-      Sign In to Console
+      <span class="ln-nav-brand">Getitright</span>
     </a>
-    <a href="auth/signup.html" onclick="closeMobileNav()" class="btn btn-primary btn-sm btn-block" style="margin-top:8px;">
-      Get Started &amp; Create Account &rarr;
-    </a>
-  </div>
 
-  <!-- ====== HERO SECTION (EDGE-TO-EDGE FULL BLEED) ====== -->
-  <section class="landing-hero">
-    <!-- Left Hero Column -->
-    <div>
-      <div class="hero-pill-badge">
-        <span class="pulse-dot"></span>
-        <span id="hero-bitcoin-status">Checkpoint #142 &bull; Bitcoin Block #884120 Anchored</span>
-      </div>
-
-      <h1 class="hero-main-title">
-        Cryptographic Polling &amp; Surveys You Can <span class="gradient-accent">Mathematically Prove.</span>
-      </h1>
-
-      <p class="hero-sub-text">
-        Transform citizen voting, corporate governance, and physical election tallies into immutable, tamper-evident Merkle chains. Every vote is signed inside hardware keystores, committed to an append-only ledger, and publicly auditable.
-      </p>
-
-      <div class="hero-cta-group">
-        <a href="#pricing" class="btn btn-primary btn-pill btn-lg">
-          <span data-icon="plus"></span>
-          <span>Explore Plans &amp; Get Started</span>
-        </a>
-        <a href="#how-it-works" class="btn btn-secondary btn-pill btn-lg">
-          <span data-icon="zap"></span>
-          <span>See How It Works</span>
-        </a>
-        <a href="auth/login.html" class="btn btn-ghost btn-sm" style="color:var(--text-secondary);">
-          <span data-icon="lock"></span> SuperAdmin Portal &rarr;
-        </a>
-      </div>
-
-      <!-- Trust Metrics Strip -->
-      <div class="hero-trust-strip">
-        <div class="trust-item">
-          <span data-icon="checkCircle"></span>
-          <span>Zero-Knowledge Privacy</span>
-        </div>
-        <div class="trust-item">
-          <span data-icon="checkCircle"></span>
-          <span>Bitcoin OP_RETURN Anchored</span>
-        </div>
-        <div class="trust-item">
-          <span data-icon="checkCircle"></span>
-          <span>Hardware KeyStore Attested</span>
-        </div>
-        <div class="trust-item">
-          <span data-icon="checkCircle"></span>
-          <span>Redis L2 Caching (<span id="hero-cache-latency">3.6ms</span>)</span>
-        </div>
-      </div>
+    <div class="ln-nav-links" id="navLinks">
+      <a href="#features">Features</a>
+      <a href="#discover">Discover</a>
+      <a href="#compare">Compare</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#contact">Contact</a>
     </div>
 
-    <!-- Right Hero Column: Real Live Interactive Ballot (Wired directly to C# SQLite + Redis DB) -->
-    <div>
-      <div class="demo-showcase-box">
-        <div class="demo-header-bar">
-          <div class="demo-tabs-wrap">
-            <button class="demo-tab-btn active" id="tab-btn-ballot" onclick="switchDemoTab('ballot')">Live DB Ballot</button>
-            <button class="demo-tab-btn" id="tab-btn-receipt" onclick="switchDemoTab('receipt')">SHA-256 Receipt</button>
-            <button class="demo-tab-btn" id="tab-btn-proof" onclick="switchDemoTab('proof')">Merkle Tree Proof</button>
-          </div>
-          <span class="status-pill verified" id="demo-db-status" style="font-size:10px;">SQLite &bull; Redis L2 Live</span>
+    <button class="ln-nav-toggle" id="navToggle" aria-label="Toggle navigation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <a href="auth/signup.html" class="ln-nav-cta">Get Started <span>&rarr;</span></a>
+  </nav>
+
+  <!-- ====== HERO SECTION ====== -->
+  <section class="ln-hero">
+    <!-- Decorative floating panels -->
+    <div class="ln-hero-float-left"></div>
+    <div class="ln-hero-float-right"></div>
+
+    <h1 class="ln-hero-headline">Capture <em>every</em> voice.</h1>
+
+    <p class="ln-hero-sub" style="animation-fill-mode: forwards;">
+      The polling platform that empowers organizations to publish targeted surveys and engage citizens through mobile voting — with live analytics.
+    </p>
+
+    <!-- Device Mockup -->
+    <div class="ln-hero-device" style="animation-fill-mode: forwards;">
+      <div class="ln-device-frame">
+        <div class="ln-device-bar">
+          <div class="ln-device-dot"></div>
+          <div class="ln-device-dot"></div>
+          <div class="ln-device-dot"></div>
         </div>
-
-        <div class="demo-body">
-          <!-- Live Interactive Ballot Tab -->
-          <div id="demo-tab-ballot-view">
-            <span class="ballot-topic-pill" id="ballot-category">Clean Energy &amp; Infrastructure</span>
-            <h3 class="ballot-question-title" id="ballot-title">
-              Community Ballot: Proposed Solar Power Micro-grid for Sub-County Hall
-            </h3>
-
-            <!-- Dynamic Options loaded from C# SQLite Database -->
-            <div class="ballot-options-list" id="ballot-options-container">
-              <div style="padding:20px; text-align:center; color:var(--text-secondary);">
-                Fetching real poll options from C# database...
-              </div>
-            </div>
-
-            <!-- Cast Live Verified Vote Button -->
-            <button class="btn btn-primary btn-block btn-pill" id="cast-vote-btn" onclick="submitLiveVote()">
-              Cast Mathematically Proven Ballot &rarr;
-            </button>
-          </div>
-
-          <!-- Receipt Tab -->
-          <div id="demo-tab-receipt-view" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <span style="font-weight:700; font-size:13px; color:#059669;">&#10003; Vote Committed to Immutable Ledger</span>
-              <span class="status-pill verified">Valid Proof</span>
-            </div>
-            <div class="receipt-display-card">
-              <div class="receipt-row"><span>POLL ID:</span> <span class="receipt-val" id="receipt-poll-id">PL-FREE-01</span></div>
-              <div class="receipt-row"><span>RECEIPT HASH:</span> <span class="receipt-val" id="receipt-hash-val">0x8f2a71c89a2e4b1055de77189c44bb01fa1200984a1122e</span></div>
-              <div class="receipt-row"><span>MERKLE LEAF:</span> <span class="receipt-val" id="receipt-leaf-val">#1675</span></div>
-              <div class="receipt-row"><span>BLOCK HEIGHT:</span> <span class="receipt-val" id="receipt-block-val">#14211</span></div>
-              <div class="receipt-row"><span>BITCOIN ANCHOR:</span> <span class="receipt-val">Block #884120 (OP_RETURN)</span></div>
-              <div class="receipt-row"><span>TIMESTAMP:</span> <span class="receipt-val" id="receipt-time-val">Just now</span></div>
-            </div>
-            <button class="btn btn-secondary btn-sm btn-block" style="margin-top:14px;" onclick="switchDemoTab('ballot')">
-              &larr; Vote on Another Option
-            </button>
-          </div>
-
-          <!-- Merkle Proof Tab -->
-          <div id="demo-tab-proof-view" style="display:none;">
-            <div style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:10px;">
-              Merkle Tree Inclusion Path
-            </div>
-            <div style="font-family:var(--font-mono); font-size:11px; background:var(--bg-secondary); border:1px solid var(--border-default); border-radius:10px; padding:14px; line-height:1.7;">
-              <div>Root: <strong style="color:var(--accent);" id="proof-root-val">0x8a92fc119a2e8877</strong></div>
-              <div style="color:var(--text-secondary);">&boxur;&boxh; Node [1]: 0x3e18bb77aa112200 (Right Sibling)</div>
-              <div style="color:var(--text-secondary);">&nbsp;&nbsp;&boxur;&boxh; Node [2]: 0x91bbcc22aa881100 (Left Sibling)</div>
-              <div style="color:#059669; font-weight:700;">&nbsp;&nbsp;&nbsp;&nbsp;&boxur;&boxh; Leaf: <span id="proof-leaf-val">0x8f2a71c89a2e4b1055de77189c...</span> (Your Ballot)</div>
-            </div>
-            <div style="margin-top:12px; font-size:12px; color:var(--text-secondary);">
-              Calculated via SHA-256. Verified in <span style="font-family:var(--font-mono); color:#059669; font-weight:700;">0.8ms</span>.
-            </div>
-            <button class="btn btn-secondary btn-sm btn-block" style="margin-top:14px;" onclick="switchDemoTab('ballot')">
-              &larr; Return to Ballot
-            </button>
-          </div>
+        <div class="ln-device-screen">
+          <img src="assets/images/dashboard-hero.jpg" alt="Getitright Analytics Dashboard showing 92% response accuracy with poll response trends">
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ====== TOP SECTION: HOW IT WORKS (AS REQUESTED) ====== -->
-  <section class="landing-section" id="how-it-works" style="background:#F8FAFC; border-top:1px solid var(--border-default); border-bottom:1px solid var(--border-default);">
-    <div>
-      <span class="section-tag">Zero-Trust Cryptographic Pipeline</span>
-      <h2 class="section-headline">
-        How It Works: From Your Vote to Public Proof
-      </h2>
-      <p class="section-description">
-        From the moment a voter taps their choice to public verification, every step is protected by client-side hardware cryptography, tamper-proof aggregation, and decentralized blockchain anchoring.
-      </p>
-
-      <div class="arch-pipeline-strip">
-        <!-- Step 1 -->
-        <div class="arch-node-card">
-          <div class="arch-step-badge">01</div>
-          <h3 class="arch-node-title">Hardware Keystore Signing</h3>
-          <p class="arch-node-desc">
-            Voter choices are signed directly within the physical device's Secure Enclave. Private keys never leave the silicon chip, preventing remote ballot tampering at the hardware level.
-          </p>
-          <div style="margin-top:14px; font-size:11px; font-weight:700; color:#059669;">
-            &bull; Device-Level Security &bull; Tamper-Proof Keys
+  <!-- ====== TRUSTED BY BAR ====== -->
+  <section class="ln-trusted reveal">
+    <div class="ln-trusted-inner">
+      <div class="ln-trusted-label">Trusted by:</div>
+      <div class="ln-trusted-logos">
+        <div class="ln-trusted-logo">
+          <div class="ln-trusted-logo-shape">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
           </div>
+          County Governments
         </div>
-
-        <!-- Step 2 -->
-        <div class="arch-node-card">
-          <div class="arch-step-badge">02</div>
-          <h3 class="arch-node-title">Merkle Leaf Aggregation</h3>
-          <p class="arch-node-desc">
-            Submissions are ingested by high-throughput engines and hashed into cryptographic Merkle leaves. Each voter receives an instant cryptographic receipt proving their vote was counted.
-          </p>
-          <div style="margin-top:14px; font-size:11px; font-weight:700; color:#059669;">
-            &bull; Append-Only Ledger &bull; Instant Receipts
+        <div class="ln-trusted-logo">
+          <div class="ln-trusted-logo-shape">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
+          Research Institutes
         </div>
-
-        <!-- Step 3 -->
-        <div class="arch-node-card">
-          <div class="arch-step-badge">03</div>
-          <h3 class="arch-node-title">Automated Anomaly Detection</h3>
-          <p class="arch-node-desc">
-            The telemetry pipeline continuously runs automated pattern analysis and turnout velocity checks to instantly flag and freeze suspicious activity at any reporting center.
-          </p>
-          <div style="margin-top:14px; font-size:11px; font-weight:700; color:#059669;">
-            &bull; Pattern Analysis &bull; Auto-Freeze Protocol
+        <div class="ln-trusted-logo">
+          <div class="ln-trusted-logo-shape">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           </div>
+          NGOs
         </div>
-
-        <!-- Step 4 -->
-        <div class="arch-node-card">
-          <div class="arch-step-badge">04</div>
-          <h3 class="arch-node-title">Bitcoin Block Anchoring</h3>
-          <p class="arch-node-desc">
-            Periodic Merkle root hashes are committed into public Bitcoin block headers. This creates an unalterable global timestamp that no regime or bad actor can rewrite after the fact.
-          </p>
-          <div style="margin-top:14px; font-size:11px; font-weight:700; color:#059669;">
-            &bull; Public Blockchain Proof &bull; Immutable Timestamps
+        <div class="ln-trusted-logo">
+          <div class="ln-trusted-logo-shape">
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
           </div>
+          Civic Organizations
+        </div>
+        <div class="ln-trusted-logo">
+          <div class="ln-trusted-logo-shape">
+            <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 12 3 12 0v-5"/></svg>
+          </div>
+          Universities
+        </div>
+        <div class="ln-trusted-logo">
+          <div class="ln-trusted-logo-shape">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          Election Bodies
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ====== PRICING & "GET STARTED" FOR THE 4 PLANS ====== -->
-  <section class="landing-section" id="pricing">
-    <div>
-      <span class="section-tag">Transparent Tiered Packaging</span>
-      <h2 class="section-headline">
-        Choose Your Plan. Launch Your Dedicated Console.
-      </h2>
-      <p class="section-description">
-        Each plan unlocks a distinct management console designed for your organization's exact requirements. Sign up and access your console seamlessly in one tab.
-      </p>
-
-      <div class="pricing-matrix-grid">
-        
-        <!-- Plan 1: Civic Starter (Free / Community) -->
-        <div class="landing-price-card">
-          <span class="price-card-tier">Plan 1</span>
-          <h3 class="price-card-title">Civic Starter</h3>
-          <div class="price-card-target">For local communities, students, neighborhood referendums, and grassroot associations.</div>
-          
-          <div class="price-val-row">
-            <span class="price-figure" id="price-fig-free">KES 0</span>
-            <span class="price-period">/ forever free</span>
-          </div>
-
-          <ul class="price-feature-list">
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span><strong>10 Community Polls</strong> in Database</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Up to 1,000 Verified Participants</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Cryptographic Merkle Receipts</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>WhatsApp &amp; SMS QR Share Cards</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Public Verifier Inclusion Check</span></li>
-          </ul>
-
-          <button onclick="redirectToPlanSignup('free')" class="btn btn-secondary btn-block btn-pill">
-            Get Started Free &rarr;
-          </button>
-        </div>
-
-        <!-- Plan 2: Civic Pro (Researchers) -->
-        <div class="landing-price-card featured">
-          <div class="price-card-badge">Most Popular</div>
-          <span class="price-card-tier">Plan 2</span>
-          <h3 class="price-card-title">Civic Pro</h3>
-          <div class="price-card-target">For independent pollsters, researchers, journalists, and market analysts.</div>
-          
-          <div class="price-val-row">
-            <span class="price-figure" id="price-fig-pro">KES 1,500</span>
-            <span class="price-period">/ month</span>
-          </div>
-
-          <ul class="price-feature-list">
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span><strong>10 Pro Research Polls</strong> in Database</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Up to 25,000 Verified Voters</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Demographic Cross-Tab Analytics</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Export CSV &amp; Cryptographic JSON</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Zero-Knowledge Secret Ballot Guard</span></li>
-          </ul>
-
-          <button onclick="redirectToPlanSignup('pro')" class="btn btn-primary btn-block btn-pill">
-            Get Started Pro &rarr;
-          </button>
-        </div>
-
-        <!-- Plan 3: Institutional Org (Unions / NGOs) -->
-        <div class="landing-price-card">
-          <span class="price-card-tier">Plan 3</span>
-          <h3 class="price-card-title">Institutional Org</h3>
-          <div class="price-card-target">For labor unions, universities, cooperative SACCOs, and global NGOs.</div>
-          
-          <div class="price-val-row">
-            <span class="price-figure" id="price-fig-org">KES 6,500</span>
-            <span class="price-period">/ month</span>
-          </div>
-
-          <ul class="price-feature-list">
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span><strong>10 Institutional Org Polls</strong> in DB</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Up to 100,000 Member Roster</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Dual-Observer Quorum Matrix</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Weighted Voting &amp; Delegate Shares</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Automated Dispute &amp; Audit Logs</span></li>
-          </ul>
-
-          <button onclick="redirectToPlanSignup('org')" class="btn btn-secondary btn-block btn-pill">
-            Get Started Org &rarr;
-          </button>
-        </div>
-
-        <!-- Plan 4: Sovereign Election Guard (State Commissions) -->
-        <div class="landing-price-card">
-          <span class="price-card-tier">Plan 4</span>
-          <h3 class="price-card-title">Sovereign Guard</h3>
-          <div class="price-card-target">For national electoral commissions, state referendums, and high-stakes PVT missions.</div>
-          
-          <div class="price-val-row">
-            <span class="price-figure" id="price-fig-election">Custom</span>
-            <span class="price-period">/ turnkey</span>
-          </div>
-
-          <ul class="price-feature-list">
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span><strong>10 Sovereign PVT Tracks</strong> in DB</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Multi-Million Citizen Scale</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Form 34A Cryptographic Ingestion</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>250 Polling Stations Live Monitoring</span></li>
-            <li class="price-feature-item"><span data-icon="checkCircle"></span> <span>Bitcoin OP_RETURN Merkle Anchoring</span></li>
-          </ul>
-
-          <button onclick="redirectToPlanSignup('election')" class="btn btn-secondary btn-block btn-pill">
-            Get Started Sovereign &rarr;
-          </button>
-        </div>
-
-      </div>
-
-      <!-- SuperAdmin Platform Callout Banner -->
-      <div class="admin-card-banner">
-        <div>
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-            <span class="admin-pill">PLATFORM SUPERADMIN</span>
-            <strong style="font-size:15px; font-family:var(--font-display);">Central Platform Administration &amp; Telemetry</strong>
-          </div>
-          <p style="font-size:13px; color:#94A3B8; margin:0; max-width:760px; line-height:1.5;">
-            Only ONE SuperAdmin account exists in the platform. Oversees user quotas, server telemetry, and Redis cache health, while strictly restricted from decrypting individual voter ballots by zero-knowledge boundaries.
-          </p>
-        </div>
-        <button onclick="window.location.href='auth/login.html'" class="btn btn-sm btn-pill" style="background:#2563EB; color:#FFFFFF; border:none; padding:8px 18px; font-weight:700; white-space:nowrap;">
-          SuperAdmin Sign In &rarr;
-        </button>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ====== INTERACTIVE LIVE PUBLIC VERIFIER ====== -->
-  <section class="landing-section" id="live-verifier" style="background:#F8FAFC; border-top:1px solid var(--border-default);">
-    <div>
-      <span class="section-tag">Client-Side Public Verifier</span>
-      <h2 class="section-headline">
-        Verify Any Ballot Receipt in Real Time
-      </h2>
-      <p class="section-description">
-        No database trust required. Enter any SHA-256 ballot receipt hash to reconstruct the Merkle path and verify Bitcoin block inclusion.
-      </p>
-
-      <div style="background:#FFFFFF; border:1px solid var(--border-default); border-radius:18px; padding:32px; box-shadow:0 6px 20px rgba(15,23,42,0.05); max-width:900px; margin:0 auto;">
-        <div style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap;">
-          <input type="text" id="verifier-input" value="0x8f2a71c89a2e4b1055de77189c44bb01fa1200984a1122e" placeholder="Paste SHA-256 Receipt Hash..." style="flex:1; min-width:280px; padding:12px 16px; border:1px solid var(--border-default); border-radius:10px; font-family:var(--font-mono); font-size:13px;">
-          <button class="btn btn-primary btn-pill" onclick="runPublicVerification()">Verify Cryptographic Receipt &rarr;</button>
-        </div>
-
-        <div id="verifier-output" style="display:none; background:#0F172A; color:#F8FAFC; border-radius:12px; padding:20px; font-family:var(--font-mono); font-size:12px; line-height:1.7;">
-          <div style="color:#10B981; font-weight:800; margin-bottom:8px;">&#10003; CRYPTOGRAPHIC PROOF VALID &bull; ANCHORED IN BITCOIN BLOCK #884120</div>
-          <div>Leaf Hash: <span style="color:#38BDF8;">0x8f2a71c89a2e4b1055de77189c44bb01fa1200984a1122e</span></div>
-          <div>Merkle Root: <span style="color:#FBBF24;">0x8a92fc119a2e8877</span></div>
-          <div>Status: <span style="color:#10B981;">Inclusion Verified (0.4ms)</span> &bull; Plan: Civic Starter</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====== COMPREHENSIVE FULL-BLEED FOOTER ====== -->
-  <footer class="landing-footer">
-    <div class="footer-top-grid">
-      <!-- Brand Column -->
-      <div class="footer-brand-col">
-        <div class="footer-brand-title">
-          <div style="width:28px; height:28px; border-radius:6px; background:#2563EB; display:flex; align-items:center; justify-content:center; color:#FFFFFF; font-size:12px; font-weight:800;">GIR</div>
-          <span>Get It Right<span style="color:#38BDF8;">.</span></span>
-        </div>
-        <p class="footer-brand-desc">
-          Get It Right Technologies is the pioneer of mathematically verifiable, tamper-evident civic polling, union elections, and sovereign parallel vote tabulations across East Africa and global democracies.
+  <!-- ====== FEATURES / BENEFITS SECTION ====== -->
+  <section class="ln-features" id="features">
+    <div class="ln-features-inner">
+      <div class="reveal">
+        <span class="ln-section-tag">Features</span>
+        <h2 class="ln-section-headline">We've solved the feedback&nbsp;gap.</h2>
+        <p class="ln-section-desc">
+          Getitright gives organizations real participation data, without the noise. Publish, engage, analyze — all in one platform.
         </p>
-        <div class="footer-status-pill">
-          <span style="width:6px; height:6px; background:#10B981; border-radius:50%;"></span>
-          <span>All 17 Micro-Engines Operational &bull; Redis L2 Online</span>
+      </div>
+
+      <div class="ln-features-grid">
+        <!-- Feature 1 -->
+        <div class="ln-feature-card reveal">
+          <div class="ln-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/>
+            </svg>
+          </div>
+          <h3 class="ln-feature-title">Targeted Polling</h3>
+          <p class="ln-feature-desc">
+            Publish polls by county, demographic, or topic. Reach the exact audience that matters to your organization's mission.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="ln-feature-card reveal" style="transition-delay: 0.1s;">
+          <div class="ln-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <h3 class="ln-feature-title">Live Analytics</h3>
+          <p class="ln-feature-desc">
+            Watch responses stream in real-time. Track turnout, percentages, and trend lines as they happen — no refresh needed.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="ln-feature-card reveal" style="transition-delay: 0.2s;">
+          <div class="ln-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <h3 class="ln-feature-title">Mobile-First Voting</h3>
+          <p class="ln-feature-desc">
+            Citizens vote through a dedicated Android app with one-tap simplicity. Single-vote protection guarantees fairness.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="ln-feature-card reveal" style="transition-delay: 0.3s;">
+          <div class="ln-feature-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="ln-feature-title">Export &amp; Report</h3>
+          <p class="ln-feature-desc">
+            Download clean PDF and CSV reports to present findings to leadership, board members, and stakeholders instantly.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SEE THE BIG PICTURE / HOW-TO SECTION ====== -->
+  <section class="ln-bigpicture" id="how-it-works">
+    <div class="ln-bigpicture-inner">
+      <!-- Left: Text Column -->
+      <div class="reveal-left">
+        <h2 class="ln-bigpicture-headline">See the Big Picture</h2>
+        <p class="ln-bigpicture-desc">
+          Getitright turns raw participation into clear, actionable visuals that show you exactly what's happening across every county and demographic.
+        </p>
+
+        <div class="ln-steps-list">
+          <div class="ln-step">
+            <span class="ln-step-num">01</span>
+            <span class="ln-step-text"><strong>Author in Seconds:</strong> No more messy spreadsheets or paper forms.</span>
+          </div>
+          <div class="ln-step">
+            <span class="ln-step-num">02</span>
+            <span class="ln-step-text"><strong>Reach Every Citizen:</strong> Push polls directly to mobile app users across all 47 counties.</span>
+          </div>
+          <div class="ln-step">
+            <span class="ln-step-num">03</span>
+            <span class="ln-step-text"><strong>Real-Time Dashboards:</strong> Interactive charts and maps keep your stakeholders engaged.</span>
+          </div>
+          <div class="ln-step">
+            <span class="ln-step-num">04</span>
+            <span class="ln-step-text"><strong>Your Organization Snapshot:</strong> Get a quick, clear overview of every active poll and survey.</span>
+          </div>
+        </div>
+
+        <a href="#discover" class="ln-btn-outline">Discover More <span>&rarr;</span></a>
+      </div>
+
+      <!-- Right: Visual Column -->
+      <div class="ln-bigpicture-visual reveal-right">
+        <img src="assets/images/product-visual.jpg" alt="Abstract product visualization representing data building blocks">
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== COMPARISON TABLE SECTION ====== -->
+  <section class="ln-compare" id="compare">
+    <div class="ln-compare-inner">
+      <div class="ln-compare-header reveal">
+        <span class="ln-section-tag">Specs</span>
+        <h2 class="ln-compare-headline">Why Choose Getitright?</h2>
+        <p class="ln-compare-desc">
+          You need a solution that keeps up. That's why we developed Getitright. A purpose-built approach to streamline your organization's feedback collection.
+        </p>
+        <a href="#discover" class="ln-compare-cta">Discover More <span>&rarr;</span></a>
+      </div>
+
+      <div class="ln-table-wrap reveal">
+        <table class="ln-compare-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Getitright</th>
+              <th>Traditional Surveys</th>
+              <th>Paper Ballots</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ln-table-check">Real-time results</span></td>
+              <td><span class="ln-table-check">Instant live dashboards</span></td>
+              <td><span class="ln-table-partial">Delayed processing</span></td>
+              <td><span class="ln-table-x">Manual counting</span></td>
+            </tr>
+            <tr>
+              <td><span class="ln-table-check">Mobile voting</span></td>
+              <td><span class="ln-table-check">Dedicated Android app</span></td>
+              <td><span class="ln-table-x">No mobile support</span></td>
+              <td><span class="ln-table-x">Physical only</span></td>
+            </tr>
+            <tr>
+              <td><span class="ln-table-check">County-level targeting</span></td>
+              <td><span class="ln-table-check">All 47 counties</span></td>
+              <td><span class="ln-table-partial">Limited reach</span></td>
+              <td><span class="ln-table-x">Location-bound</span></td>
+            </tr>
+            <tr>
+              <td><span class="ln-table-check">Duplicate vote protection</span></td>
+              <td><span class="ln-table-check">Device-level verification</span></td>
+              <td><span class="ln-table-partial">Basic checks</span></td>
+              <td><span class="ln-table-x">No protection</span></td>
+            </tr>
+            <tr>
+              <td><span class="ln-table-check">Live analytics dashboards</span></td>
+              <td><span class="ln-table-check">Charts, maps, trends</span></td>
+              <td><span class="ln-table-x">No dashboards</span></td>
+              <td><span class="ln-table-x">No dashboards</span></td>
+            </tr>
+            <tr>
+              <td><span class="ln-table-check">PDF &amp; CSV exports</span></td>
+              <td><span class="ln-table-check">One-click export</span></td>
+              <td><span class="ln-table-check">Manual export</span></td>
+              <td><span class="ln-table-x">No digital records</span></td>
+            </tr>
+            <tr>
+              <td><span class="ln-table-check">Multi-language support</span></td>
+              <td><span class="ln-table-check">English &amp; Kiswahili</span></td>
+              <td><span class="ln-table-partial">Varies</span></td>
+              <td><span class="ln-table-partial">Print-dependent</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== DISCOVER MORE — FULL-WIDTH INLINE SECTION ====== -->
+  <section class="ln-discover" id="discover">
+    <div class="ln-discover-inner">
+      <div class="ln-discover-header reveal">
+        <span class="ln-section-tag">Why We Are Unbeatable</span>
+        <h2 class="ln-discover-headline">Built for Absolute Trust, Unmatched Speed &amp; Total Inclusion.</h2>
+        <p class="ln-discover-desc">
+          Whether you are a local community leader running a neighborhood poll, a university organizing student elections, a national union surveying thousands of educators, or a sovereign election observer — <strong>Get It Right</strong> gives you cryptographic proof, real-time analytics, and fraud protection that no traditional platform can match.
+        </p>
+      </div>
+
+      <div class="ln-discover-grid">
+        <div class="ln-discover-card reveal">
+          <h3 class="ln-discover-card-title">Cryptographic Merkle Proofs</h3>
+          <p class="ln-discover-card-desc">Every single vote generates an immutable SHA-256 receipt stored on a tamper-proof ledger. Voters can independently verify their ballot without revealing identity.</p>
+        </div>
+
+        <div class="ln-discover-card reveal" style="transition-delay: 0.1s;">
+          <h3 class="ln-discover-card-title">IP &amp; Location Anti-Fraud Engine</h3>
+          <p class="ln-discover-card-desc">Real-time GPS validation, IP location tracking, and device hardware fingerprinting automatically block duplicate votes, bot attacks, and spoofing attempts.</p>
+        </div>
+
+        <div class="ln-discover-card reveal" style="transition-delay: 0.2s;">
+          <h3 class="ln-discover-card-title">Accessible to Every Citizen</h3>
+          <p class="ln-discover-card-desc">Seamless Flutter Mobile App (iOS/Android), Mobile Web, and SMS/Offline polling fallback ensure voters in remote rural regions or cities participate equally.</p>
+        </div>
+
+        <div class="ln-discover-card reveal" style="transition-delay: 0.3s;">
+          <h3 class="ln-discover-card-title">Vivid Live Analytics &amp; Reports</h3>
+          <p class="ln-discover-card-desc">Watch live pie charts, bar breakdowns, and demographic maps update instantly as votes roll in. Export official signed PDF/CSV reports in one click.</p>
         </div>
       </div>
 
-      <!-- Navigation Columns -->
-      <div>
-        <h4 class="footer-col-title">Architecture</h4>
-        <ul class="footer-nav-list">
-          <li><a href="#how-it-works">How It Works</a></li>
-          <li><a href="#live-verifier">Merkle Trees</a></li>
-          <li><a href="#live-verifier">Hardware Attestation</a></li>
-          <li><a href="#live-verifier">Bitcoin Anchoring</a></li>
-          <li><a href="verifier.html">Public Verifier</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4 class="footer-col-title">The 4 Consoles</h4>
-        <ul class="footer-nav-list">
-          <li><a href="javascript:void(0)" onclick="launchPlanConsole('community.html')">Civic Starter (Free)</a></li>
-          <li><a href="javascript:void(0)" onclick="launchPlanConsole('pro.html')">Civic Pro (Researcher)</a></li>
-          <li><a href="javascript:void(0)" onclick="launchPlanConsole('organization.html')">Institutional Org</a></li>
-          <li><a href="javascript:void(0)" onclick="launchPlanConsole('election.html')">Sovereign Guard</a></li>
-          <li><a href="javascript:void(0)" onclick="launchPlanConsole('admin.html')">Platform SuperAdmin</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4 class="footer-col-title">Technology</h4>
-        <ul class="footer-nav-list">
-          <li><a href="javascript:void(0)">C# SQLite API Core</a></li>
-          <li><a href="javascript:void(0)">StackExchange.Redis Cache</a></li>
-          <li><a href="javascript:void(0)">Tokio Ingestion Stream</a></li>
-          <li><a href="javascript:void(0)">Zero-Knowledge Proofs</a></li>
-          <li><a href="javascript:void(0)">OpenTimestamps OTS</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4 class="footer-col-title">Security &amp; Legal</h4>
-        <ul class="footer-nav-list">
-          <li><a href="javascript:void(0)">Zero-Knowledge Privacy</a></li>
-          <li><a href="javascript:void(0)">Secret Ballot Guarantee</a></li>
-          <li><a href="javascript:void(0)">Terms of Service</a></li>
-          <li><a href="javascript:void(0)">Security Whitepaper</a></li>
-          <li><a href="javascript:void(0)">Auditor Verification</a></li>
-        </ul>
+      <div class="ln-discover-cta-bar reveal">
+        <div>
+          <div class="ln-discover-cta-title">Ready to elevate your organization's decision-making?</div>
+          <div class="ln-discover-cta-sub">Start for free today — no credit card required. Upgrade anytime as your audience grows.</div>
+        </div>
+        <a href="auth/signup.html" class="ln-btn-primary">Create Account Now <span>&rarr;</span></a>
       </div>
     </div>
+  </section>
 
-    <div class="footer-bottom-strip">
-      <div>
-        Copyright &copy; 2026 Get It Right Technologies. All rights reserved.
+  <!-- ====== CTA / CONTACT SECTION ====== -->
+  <section class="ln-cta-section" id="contact">
+    <div class="ln-cta-inner reveal">
+      <h2 class="ln-cta-headline">Ready to capture every voice?</h2>
+      <p class="ln-cta-desc">
+        Join organizations across Kenya already using Getitright to publish polls, engage citizens, and make data-driven decisions.
+      </p>
+      <div class="ln-cta-buttons">
+        <a href="auth/signup.html" class="ln-btn-primary">Get Started <span>&rarr;</span></a>
+        <a href="#discover" class="ln-btn-secondary">Why Get It Right?</a>
       </div>
-      <div style="display:flex; gap:18px;">
-        <span>Currency: <strong style="color:#FFFFFF;" id="footer-currency-indicator">KES (Kenya)</strong></span>
-        <span>Anchor: <strong style="color:#FFFFFF;">Bitcoin #884120</strong></span>
-        <span>Version: <strong style="color:#FFFFFF;">v2.6 Enterprise Prod</strong></span>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="ln-footer">
+    <div class="ln-footer-inner">
+      <div class="ln-footer-grid">
+        <!-- Brand Column -->
+        <div>
+          <div class="ln-footer-brand-name">
+            <div class="ln-footer-brand-logo">
+              <img src="assets/images/logo.jpg" alt="Getitright">
+            </div>
+            Getitright
+          </div>
+          <p class="ln-footer-brand-desc">
+            Empowering organizations with web-based poll and survey management, real-time analytics, and mobile voting engagement across Kenya.
+          </p>
+        </div>
+
+        <!-- Navigation -->
+        <div>
+          <h4 class="ln-footer-col-title">Navigation</h4>
+          <ul class="ln-footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#compare">Compare</a></li>
+          </ul>
+        </div>
+
+        <!-- Organizations -->
+        <div>
+          <h4 class="ln-footer-col-title">Organizations</h4>
+          <ul class="ln-footer-links">
+            <li><a href="auth/login.html">Organization Sign In</a></li>
+            <li><a href="auth/signup.html">Create Account</a></li>
+            <li><a href="#discover">Why We Are Unique</a></li>
+          </ul>
+        </div>
+
+        <!-- Mobile App -->
+        <div>
+          <h4 class="ln-footer-col-title">Mobile App</h4>
+          <ul class="ln-footer-links">
+            <li><a href="mobile-app.html">Download Android App</a></li>
+            <li><a href="verifier.html">Privacy Verifier</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ln-footer-bottom">
+        <div>Copyright &copy; 2026 Getitright. All rights reserved.</div>
+        <div>Polling &amp; Survey Management Platform</div>
       </div>
     </div>
   </footer>
 
-  <!-- ====== IN-TAB UNIFIED CONSOLE LAUNCHER MODAL (ALL IN ONE TAB!) ====== -->
-  <div class="in-tab-modal-overlay" id="console-modal" onclick="if(event.target === this) closeConsoleModal()">
-    <div class="in-tab-modal">
-      <div class="in-tab-modal-header">
-        <div class="in-tab-modal-title">
-          <div style="width:28px; height:28px; border-radius:6px; background:#1E2A4A; display:flex; align-items:center; justify-content:center; color:#FFFFFF; font-size:12px; font-weight:800;">GIR</div>
-          <span>Launch Your Plan Console (All in One Tab)</span>
-        </div>
-        <button class="modal-close-btn" onclick="closeConsoleModal()">&times;</button>
-      </div>
-
-      <div class="in-tab-modal-body">
-        <p style="font-size:13.5px; color:var(--text-secondary); margin:0 0 16px;">
-          Choose your plan to register your institution or sign in to your verified console.
-        </p>
-
-        <div style="margin-bottom:16px; display:flex; gap:12px; align-items:center; background:rgba(37,99,235,0.08); padding:10px 14px; border-radius:10px; border:1px solid rgba(37,99,235,0.2);">
-          <span style="font-size:12.5px; color:var(--text-secondary);">Already have an account?</span>
-          <a href="auth/login.html" class="btn btn-primary btn-xs btn-pill" style="font-weight:700;">Sign In Here &rarr;</a>
-        </div>
-
-        <div class="console-plan-selection-grid">
-          <!-- Option 1: Free -->
-          <div class="plan-select-box" onclick="redirectToPlanSignup('free')">
-            <span class="plan-select-badge" style="color:#0284C7;">Plan 1 &bull; Free</span>
-            <div class="plan-select-name">Civic Starter Console</div>
-            <div class="plan-select-desc">For grassroots communities and neighborhood ballots. 10 community polls loaded.</div>
-            <div class="plan-select-user">&rarr; Select Plan &amp; Register</div>
-          </div>
-
-          <!-- Option 2: Pro -->
-          <div class="plan-select-box" onclick="redirectToPlanSignup('pro')">
-            <span class="plan-select-badge" style="color:#D97706;">Plan 2 &bull; Pro</span>
-            <div class="plan-select-name">Civic Pro Research Console</div>
-            <div class="plan-select-desc">For independent pollsters. 10 pro polls, demographic cross-tabs, and CSV export.</div>
-            <div class="plan-select-user">&rarr; Select Plan &amp; Register</div>
-          </div>
-
-          <!-- Option 3: Org -->
-          <div class="plan-select-box" onclick="redirectToPlanSignup('org')">
-            <span class="plan-select-badge" style="color:#7C3AED;">Plan 3 &bull; Org</span>
-            <div class="plan-select-name">Institutional Org Console</div>
-            <div class="plan-select-desc">For unions, universities, and NGOs. 10 org polls, dual-observer quorum matrix.</div>
-            <div class="plan-select-user">&rarr; Select Plan &amp; Register</div>
-          </div>
-
-          <!-- Option 4: Sovereign -->
-          <div class="plan-select-box" onclick="redirectToPlanSignup('election')">
-            <span class="plan-select-badge" style="color:#15803D;">Plan 4 &bull; Sovereign</span>
-            <div class="plan-select-name">Sovereign Election Guard</div>
-            <div class="plan-select-desc">For national election oversight. 10 tracks, 250 stations, and Bitcoin anchoring.</div>
-            <div class="plan-select-user">&rarr; Select Plan &amp; Register</div>
-          </div>
-        </div>
-
-        <!-- SuperAdmin Direct Entry -->
-        <div style="background:#0F172A; border-radius:14px; padding:18px 20px; color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="admin-pill" style="font-size:10px;">ONLY 1 SUPERADMIN</span>
-              <strong style="font-size:14px;">Platform SuperAdmin Command Console</strong>
-            </div>
-            <div style="font-size:12px; color:#94A3B8; margin-top:2px;">
-              Dr. David Mwangi &bull; Oversees all users, telemetry, and Redis cache across all 4 plans.
-            </div>
-          </div>
-          <button onclick="window.location.href='auth/login.html'" class="btn btn-primary btn-sm btn-pill">
-            Admin Sign In &rarr;
-          </button>
-        </div>
-
-        <div class="admin-privacy-banner">
-          <strong>Privacy Protocol Guarantee:</strong> Admins can manage users and view telemetry, but cannot decrypt private voter ballots or view individual voter choices.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== CORE SCRIPTS: WIRED TO C# SQLITE + REDIS API ====== -->
-  <script src="js/core/icons.js"></script>
-  <script src="js/core/app.js"></script>
+  <!-- ====== SCRIPTS ====== -->
   <script>
-    const API_BASE = 'http://127.0.0.1:5000';
-    let currentLivePoll = null;
-    let selectedOptionIndex = 0;
+    /* Modal removed — Discover is now an inline full-width section */
 
-    // 1. Silent Background Geo Currency Detection (No manual buttons on top)
-    async function detectGeoCurrency() {
-      try {
-        const res = await fetch(`${API_BASE}/api/geo/currency`);
-        if (res.ok) {
-          const data = await res.json();
-          const pill = document.getElementById('geo-currency-label');
-          if (pill) pill.textContent = `${data.currency} (${data.countryCode}) • Auto`;
-
-          const footerCurr = document.getElementById('footer-currency-indicator');
-          if (footerCurr) footerCurr.textContent = `${data.currency} (${data.countryName})`;
-
-          // Update Pricing Figures dynamically
-          if (data.pricing) {
-            document.getElementById('price-fig-free').textContent = data.pricing.free;
-            document.getElementById('price-fig-pro').textContent = data.pricing.pro;
-            document.getElementById('price-fig-org').textContent = data.pricing.org;
-            document.getElementById('price-fig-election').textContent = data.pricing.election;
-          }
+    /* -- Scroll Reveal Observer -- */
+    const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
         }
-      } catch (e) {
-        console.error("Currency detection fallback:", e);
-      }
-    }
-
-    // 2. Load Real Poll from C# SQLite Database for Hero Interactive Ballot
-    async function loadHeroBallot() {
-      try {
-        const res = await fetch(`${API_BASE}/api/polls/PL-FREE-01`);
-        if (res.ok) {
-          currentLivePoll = await res.json();
-          renderHeroBallot(currentLivePoll);
-        }
-
-        // Fetch Cache Status to show real Redis latency
-        const cacheRes = await fetch(`${API_BASE}/api/cache/status`);
-        if (cacheRes.ok) {
-          const cache = await cacheRes.json();
-          const latEl = document.getElementById('hero-cache-latency');
-          if (latEl) latEl.textContent = cache.latency;
-        }
-      } catch (err) {
-        console.error("Ballot fetch error:", err);
-      }
-    }
-
-    function renderHeroBallot(poll) {
-      document.getElementById('ballot-category').textContent = poll.category || 'Clean Energy & Infrastructure';
-      document.getElementById('ballot-title').textContent = poll.title;
-
-      const container = document.getElementById('ballot-options-container');
-      container.innerHTML = (poll.options || []).map((opt, idx) => `
-        <div class="ballot-option ${idx === selectedOptionIndex ? 'selected' : ''}" onclick="selectBallotOption(${idx})" id="ballot-opt-${idx}">
-          <div class="ballot-option-fill" style="width: ${opt.percentage || 0}%;"></div>
-          <div class="ballot-option-content">
-            <span style="display:flex; align-items:center; font-weight:600; font-size:14px; color:var(--text-primary);">
-              <span class="ballot-radio-circle"></span>
-              <span>${opt.label}</span>
-            </span>
-            <span class="ballot-vote-stat">${opt.percentage}% (${opt.votes.toLocaleString()})</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function selectBallotOption(index) {
-      selectedOptionIndex = index;
-      document.querySelectorAll('.ballot-option').forEach((el, idx) => {
-        el.classList.toggle('selected', idx === index);
       });
-    }
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealElements.forEach(el => revealObserver.observe(el));
 
-    // 3. Real Interaction: Cast Verified Vote to C# SQLite DB + Invalidate Redis Cache
-    async function submitLiveVote() {
-      if (!currentLivePoll) return;
-      const btn = document.getElementById('cast-vote-btn');
-      btn.disabled = true;
-      btn.textContent = "Committing to Blockchain Ledger...";
-
-      try {
-        const voterKey = "LiveWeb-" + Math.floor(Math.random() * 90000 + 10000);
-        const res = await fetch(`${API_BASE}/api/polls/${currentLivePoll.id}/vote`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ optionIndex: selectedOptionIndex, voterKey })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          
-          // Populate Receipt view
-          document.getElementById('receipt-poll-id').textContent = data.pollId;
-          document.getElementById('receipt-hash-val').textContent = data.receiptHash;
-          document.getElementById('receipt-leaf-val').textContent = `#${data.leafIndex}`;
-          document.getElementById('receipt-block-val').textContent = `#${data.blockHeight}`;
-          document.getElementById('receipt-time-val').textContent = data.timestamp;
-
-          // Populate Merkle Proof view
-          document.getElementById('proof-root-val').textContent = data.merkleRoot;
-          document.getElementById('proof-leaf-val').textContent = data.receiptHash;
-
-          switchDemoTab('receipt');
-          loadHeroBallot(); // Refresh poll data from DB
-        } else {
-          alert("Error casting ballot. Please retry.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Failed to reach C# API server on 127.0.0.1:5000");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Cast Mathematically Proven Ballot →";
-      }
-    }
-
-    function switchDemoTab(tab) {
-      document.getElementById('demo-tab-ballot-view').style.display = tab === 'ballot' ? 'block' : 'none';
-      document.getElementById('demo-tab-receipt-view').style.display = tab === 'receipt' ? 'block' : 'none';
-      document.getElementById('demo-tab-proof-view').style.display = tab === 'proof' ? 'block' : 'none';
-
-      document.getElementById('tab-btn-ballot').classList.toggle('active', tab === 'ballot');
-      document.getElementById('tab-btn-receipt').classList.toggle('active', tab === 'receipt');
-      document.getElementById('tab-btn-proof').classList.toggle('active', tab === 'proof');
-    }
-
-    // 4. In-Tab Auth & Plan Routing (No new tabs!)
-    function redirectToPlanSignup(plan) {
-      // Check if user already has an active session matching this plan
-      const stored = localStorage.getItem('gir_user');
-      if (stored) {
-        try {
-          const u = JSON.parse(stored);
-          if (u && u.plan === plan && u.consoleUrl) {
-            window.location.href = u.consoleUrl.replace(/^\//, '');
-            return;
-          }
-        } catch {}
-      }
-      // Redirect to signup specifying plan
-      window.location.href = `auth/signup.html?plan=${plan}`;
-    }
-
-    function openConsoleModal() {
-      document.getElementById('console-modal').classList.add('open');
-    }
-
-    function closeConsoleModal() {
-      document.getElementById('console-modal').classList.remove('open');
-    }
-
-    function launchPlanConsole(consoleFile) {
-      // If user is already logged in, navigate to console; otherwise direct to login
-      const stored = localStorage.getItem('gir_user');
-      if (stored) {
-        window.location.href = `console/${consoleFile}`;
+    /* -- Nav scroll effect -- */
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 20) {
+        nav.classList.add('scrolled');
       } else {
-        window.location.href = `auth/login.html`;
+        nav.classList.remove('scrolled');
       }
-    }
+    }, { passive: true });
 
-    function toggleMobileNav() {
-      const drawer = document.getElementById('mobile-nav-drawer');
-      drawer.classList.toggle('open');
-    }
+    /* -- Mobile nav toggle -- */
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
 
-    function closeMobileNav() {
-      document.getElementById('mobile-nav-drawer').classList.remove('open');
-    }
-
-    // 5. Public Verification Simulation
-    function runPublicVerification() {
-      const hash = document.getElementById('verifier-input').value.trim();
-      const out = document.getElementById('verifier-output');
-      out.style.display = 'block';
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      App.injectIcons();
-      detectGeoCurrency();
-      loadHeroBallot();
+    /* -- Smooth scroll for anchor links -- */
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target) {
+          const navHeight = 72;
+          const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+        /* Close mobile nav */
+        navLinks.classList.remove('open');
+      });
     });
   </script>
+
 </body>
 </html>

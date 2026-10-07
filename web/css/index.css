@@ -8,56 +8,56 @@
 /* ── Google Fonts ── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
 
-/* ── CSS Custom Properties (Design Tokens) ── */
+/* ── CSS Custom Properties (Design Tokens - Flutter App Dark Theme Palette) ── */
 :root {
-  /* Colors -- Backgrounds (Clean institutional whites) */
-  --bg-primary: #FAFBFD;
-  --bg-secondary: #F3F4F8;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F8F9FC;
-  --bg-elevated: #F0F1F6;
-  --bg-input: #F5F6FA;
-  --bg-overlay: rgba(15, 23, 42, 0.55);
-  --bg-modal: #FFFFFF;
-  --bg-stat-card: #FFFFFF;
+  /* Colors -- STRICT TWO-COLOR SYSTEM FOR CONSOLES & DASHBOARDS: #303030 & #E5E5E5 ONLY */
+  --bg-primary: #303030;
+  --bg-secondary: #303030;
+  --bg-card: #303030;
+  --bg-card-hover: #303030;
+  --bg-elevated: #303030;
+  --bg-input: #303030;
+  --bg-overlay: rgba(48, 48, 48, 0.85);
+  --bg-modal: #303030;
+  --bg-stat-card: #303030;
 
-  /* Colors -- Accent (Deep Navy #1E2A4A institutional blue) */
-  --accent: #1E2A4A;
-  --accent-hover: #2C3E6B;
-  --accent-glow: rgba(30, 42, 74, 0.12);
-  --accent-glow-strong: rgba(30, 42, 74, 0.2);
-  --accent-subtle: rgba(30, 42, 74, 0.06);
-  --accent-gradient: linear-gradient(135deg, #1E2A4A 0%, #2C3E6B 100%);
-  --accent-gradient-diagonal: linear-gradient(45deg, #1E2A4A 0%, #374B7A 100%);
+  /* Colors -- Accent */
+  --accent: #E5E5E5;
+  --accent-hover: #E5E5E5;
+  --accent-glow: rgba(229, 229, 229, 0.15);
+  --accent-glow-strong: rgba(229, 229, 229, 0.25);
+  --accent-subtle: rgba(229, 229, 229, 0.08);
+  --accent-gradient: #303030;
+  --accent-gradient-diagonal: #303030;
 
   /* Colors -- Text */
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --text-tertiary: #94A3B8;
-  --text-accent: #1E2A4A;
-  --text-inverse: #FFFFFF;
+  --text-primary: #E5E5E5;
+  --text-secondary: #E5E5E5;
+  --text-tertiary: rgba(229, 229, 229, 0.7);
+  --text-accent: #E5E5E5;
+  --text-inverse: #303030;
 
   /* Colors -- Border */
-  --border-default: #E2E5EC;
-  --border-subtle: #EEF0F5;
-  --border-accent: rgba(30, 42, 74, 0.25);
-  --border-focus: #1E2A4A;
+  --border-default: #E5E5E5;
+  --border-subtle: rgba(229, 229, 229, 0.3);
+  --border-accent: #E5E5E5;
+  --border-focus: #E5E5E5;
 
-  /* Colors -- Semantic */
-  --success: #059669;
-  --success-subtle: rgba(5, 150, 105, 0.08);
-  --warning: #D97706;
-  --warning-subtle: rgba(217, 119, 6, 0.08);
-  --error: #DC2626;
-  --danger: #DC2626;
-  --danger-subtle: rgba(220, 38, 38, 0.08);
-  --info: #0284C7;
-  --info-subtle: rgba(2, 132, 199, 0.08);
-  --locked: #7C3AED;
-  --locked-surface: rgba(124, 58, 237, 0.06);
-  --locked-border: rgba(124, 58, 237, 0.2);
+  /* Colors -- Semantic (All mapped to Silver/Charcoal contrast) */
+  --success: #E5E5E5;
+  --success-subtle: rgba(229, 229, 229, 0.1);
+  --warning: #E5E5E5;
+  --warning-subtle: rgba(229, 229, 229, 0.1);
+  --error: #E5E5E5;
+  --danger: #E5E5E5;
+  --danger-subtle: rgba(229, 229, 229, 0.1);
+  --info: #E5E5E5;
+  --info-subtle: rgba(229, 229, 229, 0.1);
+  --locked: rgba(229, 229, 229, 0.6);
+  --locked-surface: rgba(229, 229, 229, 0.1);
+  --locked-border: rgba(229, 229, 229, 0.3);
 
-  /* Semantic Token Aliases for PollTrack */
+  /* Semantic Token Aliases */
   --primary: var(--accent);
   --primary-hover: var(--accent-hover);
   --surface: var(--bg-card);
@@ -65,6 +65,7 @@
   --text: var(--text-primary);
   --text-muted: var(--text-secondary);
   --border: var(--border-default);
+
 
   /* Typography */
   --font-display: 'Outfit', sans-serif;

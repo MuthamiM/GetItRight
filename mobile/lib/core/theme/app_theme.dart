@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color bgPrimary = Color(0xFF0D0D0D);
-  static const Color bgCard = Color(0xFF1A1A2E);
-  static const Color bgElevated = Color(0xFF16213E);
-  static const Color accent = Color(0xFF00E676);
-  static const Color accentGlow = Color(0x4000E676);
+  static const Color bgPrimary = Color(0xFF303030);
+  static const Color bgCard = Color(0xFF424242);
+  static const Color bgElevated = Color(0xFF505050);
+  static const Color accent = Color(0xFFE5E5E5);
+  static const Color accentGlow = Color(0x33FFFFFF);
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFA0A0B0);
-  static const Color textMuted = Color(0xFF6B7280);
-  static const Color border = Color(0xFF2A2A3E);
-  static const Color error = Color(0xFFFF5252);
-  static const Color warning = Color(0xFFFFD740);
-  static const Color success = Color(0xFF00E676);
+  static const Color textSecondary = Color(0xFFB8B8B8);
+  static const Color textMuted = Color(0xFF888888);
+  static const Color border = Color(0xFF555555);
+  static const Color error = Color(0xFFFF6B6B);
+  static const Color warning = Color(0xFFE5E5E5);
+  static const Color success = Color(0xFFE5E5E5);
 }
 
 class AppRadius {
   static const double card = 16.0;
-  static const double button = 12.0;
-  static const double pill = 24.0;
+  static const double button = 26.0;
+  static const double pill = 26.0;
   static const double small = 8.0;
 }
 
@@ -49,10 +49,10 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.bgPrimary,
         elevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         titleTextStyle: TextStyle(
           color: AppColors.textPrimary,
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
@@ -67,7 +67,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           textStyle: const TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -84,21 +84,21 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.bgCard,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: AppColors.bgElevated,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.button),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.button),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.button),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide.none,
         ),
-        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+        hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 15),
       ),
     );
   }

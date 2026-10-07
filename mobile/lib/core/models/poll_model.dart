@@ -13,10 +13,10 @@ class PollOption {
 
   factory PollOption.fromJson(Map<String, dynamic> json) {
     return PollOption(
-      id: json['id'] as String,
-      text: json['text'] as String,
-      votes: (json['votes'] as num?)?.toInt() ?? 0,
-      percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
+      id: (json['id'] ?? json['Id'] ?? json['index'] ?? '0').toString(),
+      text: (json['text'] ?? json['label'] ?? json['Label'] ?? '').toString(),
+      votes: (json['votes'] ?? json['Votes'] as num?)?.toInt() ?? 0,
+      percentage: (json['percentage'] ?? json['Percentage'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -42,6 +42,8 @@ class Poll {
   final DateTime createdAt;
   String? selectedOptionId;
 
+  final String status;
+
   Poll({
     required this.id,
     required this.title,
@@ -53,23 +55,31 @@ class Poll {
     this.isMultipleChoice = false,
     required this.createdAt,
     this.selectedOptionId,
+    this.status = 'live',
   });
 
   factory Poll.fromJson(Map<String, dynamic> json) {
+    DateTime parsedDate = DateTime.now();
+    final rawDate = json['created_at'] ?? json['createdAt'] ?? json['CreatedAt'];
+    if (rawDate != null) {
+      parsedDate = DateTime.tryParse(rawDate.toString()) ?? DateTime.now();
+    }
+
     return Poll(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String? ?? '',
-      trackName: json['track_name'] as String? ?? 'General',
-      authorName: json['author_name'] as String? ?? 'Anonymous',
+      id: (json['id'] ?? json['Id'] ?? '').toString(),
+      title: (json['title'] ?? json['Title'] ?? '').toString(),
+      description: (json['description'] ?? json['Description'] as String?) ?? '',
+      trackName: (json['track_name'] ?? json['category'] ?? json['plan'] ?? 'General').toString(),
+      authorName: (json['author_name'] ?? json['ownerId'] ?? 'GetItRight').toString(),
       options: (json['options'] as List<dynamic>?)
               ?.map((o) => PollOption.fromJson(o as Map<String, dynamic>))
               .toList() ??
           [],
-      totalVotes: (json['total_votes'] as num?)?.toInt() ?? 0,
+      totalVotes: (json['total_votes'] ?? json['totalVotes'] ?? json['TotalVotes'] as num?)?.toInt() ?? 0,
       isMultipleChoice: json['is_multiple_choice'] as bool? ?? false,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: parsedDate,
       selectedOptionId: json['selected_option_id'] as String?,
+      status: (json['status'] ?? json['Status'] ?? 'live').toString().toLowerCase(),
     );
   }
 
@@ -85,6 +95,7 @@ class Poll {
       'is_multiple_choice': isMultipleChoice,
       'created_at': createdAt.toIso8601String(),
       'selected_option_id': selectedOptionId,
+      'status': status,
     };
   }
 }

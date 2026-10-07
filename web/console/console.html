@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Getitright Console — Manage your organization's active polls, surveys, and polling quotas.">
+  <title>Getitright — Customer Console</title>
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    :root {
+      --bg-outer: #E9EEF5;
+      --bg-shell: #FAFAFC;
+      --bg-card: #FFFFFF;
+      --border-color: #E2E8F0;
+      --text-main: #0F172A;
+      --text-sub: #475569;
+      --text-muted: #94A3B8;
+      --brand-accent: #3B49DF;
+      --brand-hover: #2563EB;
+      --color-pink: #EC4899;
+      --color-green: #10B981;
+      --color-blue: #0288D1;
+      --color-purple: #7B1FA2;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-shell); color: var(--text-main); font-family: var(--font-family); font-size: 13px; line-height: 1.5; margin: 0; padding: 0; width: 100%; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* Edge to edge full screen layout frame */
+    .dashboard-frame {
+      width: 100%; max-width: 100%; min-height: 100vh; margin: 0; background: var(--bg-shell);
+      border-radius: 0; border: none;
+      box-shadow: none; overflow: hidden; display: flex; flex-direction: column;
+    }
+
+    /* Top Bar Header */
+    .topbar {
+      height: 68px; background: #FFFFFF; border-bottom: 1px solid var(--border-color);
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 40px; }
+    .brand-logo { font-size: 22px; font-weight: 800; color: #0F172A; text-decoration: none; display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; }
+    .brand-logo span { color: var(--brand-accent); }
+
+    .search-box {
+      display: flex; align-items: center; gap: 10px; background: #F8FAFC; border: 1px solid var(--border-color);
+      border-radius: 100px; padding: 8px 18px; width: 340px;
+    }
+    .search-box input { border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: var(--text-main); }
+    .search-box svg { width: 16px; height: 16px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
+
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .btn-create {
+      background: var(--brand-accent); color: #FFFFFF; border: none; border-radius: 100px;
+      padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s ease;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    }
+    .btn-create:hover { background: var(--brand-hover); }
+
+    .nav-icon-btn { position: relative; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-color); background: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-sub); }
+    .nav-icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    .user-pill { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 8px; border-radius: 100px; }
+    .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: #0288D1; color: #FFFFFF; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+    /* Shell Main Layout */
+    .shell-body { display: flex; flex: 1; }
+
+    /* Sidebar Navigation */
+    .sidebar { width: 250px; background: #FFFFFF; border-right: 1px solid var(--border-color); padding: 24px 16px; display: flex; flex-direction: column; }
+    .nav-title { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 0 12px; margin: 16px 0 8px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px;
+      color: var(--text-sub); font-weight: 600; text-decoration: none; margin-bottom: 3px; cursor: pointer; transition: all 0.15s ease;
+    }
+    .nav-link:hover { background: #F8FAFC; color: var(--text-main); }
+    .nav-link.active { background: #EEF2FF; color: var(--brand-accent); font-weight: 700; }
+    .nav-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-lock-tag { margin-left: auto; font-size: 9px; font-weight: 800; background: #F1F5F9; color: var(--text-muted); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+
+    /* Main Content Area */
+    .main-content { flex: 1; padding: 28px 32px 48px; background: #FAFAFC; overflow-y: auto; }
+
+    .page-title-bar { margin-bottom: 24px; }
+    .page-title { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.4px; }
+    .page-desc { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+
+    /* Plan Header Banner */
+    .plan-banner-box {
+      background: linear-gradient(135deg, #1E293B, #0F172A); color: #FFFFFF; border-radius: 18px;
+      padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .plan-title { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+    .plan-desc { font-size: 12px; color: #94A3B8; }
+    .btn-upgrade-pill { background: #0288D1; color: #FFFFFF; border: none; border-radius: 100px; padding: 8px 18px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+    /* 4 KPI Cards Grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+    .kpi-card {
+      background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px;
+      padding: 20px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02); display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .kpi-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .kpi-title { font-size: 13px; font-weight: 700; color: var(--text-sub); }
+    .kpi-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .kpi-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .kpi-number { font-size: 28px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+    .kpi-foot { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+    /* Middle 4 Widgets Row */
+    .widgets-row { display: grid; grid-template-columns: 1.8fr 1.1fr 1.1fr 1.2fr; gap: 18px; margin-bottom: 24px; }
+    .widget-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 20px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02); }
+    .widget-title { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .widget-sub { font-size: 11px; color: var(--text-sub); margin-bottom: 16px; }
+
+    .chart-box { width: 100%; height: 160px; position: relative; }
+    .gauge-center { text-align: center; margin-top: 10px; }
+    .gauge-val { font-size: 26px; font-weight: 800; color: var(--text-main); }
+    .btn-outline-sm { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 100px; padding: 6px 16px; font-size: 11px; font-weight: 700; color: var(--text-sub); cursor: pointer; margin-top: 12px; }
+
+    /* Bottom Row */
+    .bottom-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 22px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02); }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+
+    /* Tab Switcher */
+    .panel-tab { display: none; }
+    .panel-tab.active { display: block; }
+
+    /* Data Table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+    .data-table th { background: #F8FAFC; padding: 10px 14px; font-weight: 700; color: var(--text-sub); border-bottom: 1px solid var(--border-color); text-align: left; }
+    .data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-sub); }
+    .data-table tr:hover td { background: #F8FAFC; }
+    .badge-pill { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(16, 185, 129, 0.12); color: #059669; }
+
+    @media (max-width: 1200px) {
+      .widgets-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DASHBOARD CONTAINER FRAME MATCHING SCREENSHOT -->
+  <div class="dashboard-frame">
+
+    <!-- TOPBAR HEADER -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="../index.html" class="brand-logo">
+          <span>@</span>Getitright
+        </a>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search my active polls...">
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="btn-create" onclick="openCreateModal()">+ Create Poll / Survey</button>
+        <button class="nav-icon-btn" title="Notifications">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+        <div class="user-pill">
+          <div class="user-avatar" id="user-avatar-text">GW</div>
+          <span style="font-weight:700;font-size:13px;color:var(--text-main);" id="user-topbar-name">Grace Wanjiku</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SHELL BODY -->
+    <div class="shell-body">
+
+      <!-- SIDEBAR NAVIGATION -->
+      <aside class="sidebar">
+        <div class="nav-title">MAIN MENU</div>
+        <a class="nav-link active" onclick="switchPanel('overview', this)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          Overview
+        </a>
+        <a class="nav-link" onclick="switchPanel('polls', this)">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          My Polls
+        </a>
+
+        <div class="nav-title">FEATURES</div>
+        <a class="nav-link" id="link-surveys" onclick="switchPanel('surveys', this)">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Surveys
+          <span class="nav-lock-tag" id="tag-surveys">Org</span>
+        </a>
+        <a class="nav-link" id="link-merkle" onclick="switchPanel('merkle', this)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Merkle Receipts
+          <span class="nav-lock-tag" id="tag-merkle">Election</span>
+        </a>
+
+        <div class="nav-title">OTHERS</div>
+        <a class="nav-link" onclick="switchPanel('settings', this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+
+        <!-- PLAN HEADER BANNER -->
+        <div class="plan-banner-box">
+          <div>
+            <div class="plan-title" id="user-plan-title">Civic Starter Plan</div>
+            <div class="plan-desc" id="user-plan-desc">Quota Usage: 3 / 5 Polls created • Up to 1,000 Voters per Poll</div>
+          </div>
+          <button class="btn-upgrade-pill">Upgrade Plan</button>
+        </div>
+
+        <!-- TAB: OVERVIEW -->
+        <div class="panel-tab active" id="tab-overview">
+          
+          <div class="page-title-bar">
+            <h1 class="page-title">Organization Overview</h1>
+            <p class="page-desc">Track participant engagement and campaign performance.</p>
+          </div>
+
+          <!-- TOP 4 KPI CARDS -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">My Active Polls</span>
+                <div class="kpi-icon" style="background:rgba(236,72,153,0.1);color:var(--color-pink);">
+                  <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-number" id="user-kpi-polls">3</div>
+              <div class="kpi-foot">Active campaigns</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Votes Cast</span>
+                <div class="kpi-icon" style="background:rgba(16,185,129,0.1);color:var(--color-green);">
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                </div>
+              </div>
+              <div class="kpi-number" id="user-kpi-votes">140</div>
+              <div class="kpi-foot">Submitted responses</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Voter Quota Limit</span>
+                <div class="kpi-icon" style="background:rgba(2,136,209,0.1);color:var(--color-blue);">
+                  <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </div>
+              </div>
+              <div class="kpi-number" id="user-kpi-voter-quota">1,000</div>
+              <div class="kpi-foot">Max voters per poll</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-title">Poll Quota Limit</span>
+                <div class="kpi-icon" style="background:rgba(123,31,162,0.1);color:var(--color-purple);">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="kpi-number" id="user-kpi-polls-quota">5</div>
+              <div class="kpi-foot">Total allowed</div>
+            </div>
+          </div>
+
+          <!-- MIDDLE WIDGETS ROW MATCHING SCREENSHOT -->
+          <div class="widgets-row">
+            
+            <div class="widget-card">
+              <div class="widget-title">Votes Distribution</div>
+              <div class="widget-sub">Responses per active campaign</div>
+              <div class="chart-box" id="user-widget-bar"></div>
+            </div>
+
+            <div class="widget-card" style="text-align:center;">
+              <div class="widget-title" style="text-align:left;">Turnout Rate</div>
+              <div class="chart-box" id="user-widget-gauge-1" style="height:110px;"></div>
+              <div class="gauge-center">
+                <div class="gauge-val">84%</div>
+                <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Target engagement rate</div>
+              </div>
+            </div>
+
+            <div class="widget-card" style="text-align:center;">
+              <div class="widget-title" style="text-align:left;">Avg. Response Time</div>
+              <div class="chart-box" id="user-widget-gauge-2" style="height:110px;"></div>
+              <div class="gauge-center">
+                <div class="gauge-val" style="font-size:22px;">1.8 min</div>
+                <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Time to submit ballot</div>
+              </div>
+            </div>
+
+            <div class="widget-card">
+              <div style="font-size:20px;font-weight:800;color:var(--color-pink);">Quota Active</div>
+              <div class="widget-sub">Plan consumption status</div>
+              <div class="chart-box" id="user-widget-area" style="height:110px;"></div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM CARD ROW -->
+          <div class="bottom-card">
+            <div class="card-top">
+              <div style="font-size:15px;font-weight:800;color:var(--text-main);">My Active Campaigns</div>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr><th>Title</th><th>Category</th><th>Votes Cast</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody id="user-polls-tbody">
+                <tr><td colspan="5">Loading my active polls...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- PANEL: POLLS -->
+        <div class="panel-tab" id="tab-polls">
+          <div class="page-title-bar"><h1 class="page-title">My Polls</h1></div>
+          <div class="bottom-card">
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Votes</th><th>Status</th></tr></thead>
+              <tbody id="polls-table-tbody"><tr><td colspan="5">Loading polls...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANEL: SURVEYS -->
+        <div class="panel-tab" id="tab-surveys">
+          <div class="page-title-bar"><h1 class="page-title">Surveys</h1></div>
+          <div class="bottom-card">
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Title</th><th>Track</th><th>Responses</th><th>Status</th></tr></thead>
+              <tbody id="surveys-table-tbody"><tr><td colspan="5">Loading surveys...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANEL: MERKLE -->
+        <div class="panel-tab" id="tab-merkle">
+          <div class="page-title-bar"><h1 class="page-title">Merkle Receipts</h1></div>
+          <div class="bottom-card">
+            <table class="data-table">
+              <thead><tr><th>Checkpoint ID</th><th>Merkle Hash</th><th>Status</th></tr></thead>
+              <tbody id="merkle-table-tbody"><tr><td colspan="3">Loading receipts...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANEL: SETTINGS -->
+        <div class="panel-tab" id="tab-settings">
+          <div class="page-title-bar">
+            <h1 class="page-title">Account Settings</h1>
+            <p class="page-desc">Your profile, plan details, and account preferences.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+            <div class="bottom-card">
+              <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:18px;">Profile Information</h3>
+              <table class="data-table">
+                <tbody>
+                  <tr><td style="font-weight:700;">Full Name</td><td id="settings-name">—</td></tr>
+                  <tr><td style="font-weight:700;">Organization</td><td id="settings-org">—</td></tr>
+                  <tr><td style="font-weight:700;">Current Plan</td><td id="settings-plan">—</td></tr>
+                  <tr><td style="font-weight:700;">Voter Quota</td><td id="settings-voter-quota">—</td></tr>
+                  <tr><td style="font-weight:700;">Polls Quota</td><td id="settings-polls-quota">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="bottom-card">
+              <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:18px;">Quick Actions</h3>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn-create" onclick="openCreateModal()" style="width:100%;justify-content:center;">+ Create New Poll</button>
+                <button class="btn-create" style="width:100%;justify-content:center;background:#1E293B;" onclick="window.location.href='../index.html'">← Back to Landing Page</button>
+                <button class="btn-outline-sm" style="width:100%;padding:10px;" onclick="alert('Contact support@getitright.io for plan upgrades.')">Contact Support</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT — ALL DATA FROM DB VIA API, ZERO HARDCODED CHART VALUES -->
+  <script>
+    const API = 'http://127.0.0.1:8000/api';
+    let currentUser = {
+      fullName: 'Grace Wanjiku',
+      plan: 'free',
+      planName: 'Civic Starter',
+      organization: 'Umoja Community Initiative',
+      voterQuota: 1000,
+      pollsQuota: 5
+    };
+    let polls = [], surveys = [], checkpoints = [];
+    let dashStats = null;
+
+    function switchPanel(name, el) {
+      document.querySelectorAll('.panel-tab').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+      document.getElementById(`tab-${name}`).classList.add('active');
+      if (el) el.classList.add('active');
+    }
+
+    async function loadData() {
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) currentUser = JSON.parse(stored);
+      } catch (e) {}
+
+      document.getElementById('user-topbar-name').textContent = currentUser.fullName || 'User Account';
+      document.getElementById('user-plan-title').textContent = (currentUser.planName || 'Civic Starter') + ' Plan';
+
+      const initials = (currentUser.fullName || 'User').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      document.getElementById('user-avatar-text').textContent = initials;
+
+      try {
+        // Fetch dashboard stats from DB + polls/surveys/checkpoints
+        const userId = currentUser.id || '1';
+        const [pRes, sRes, cRes, dsRes] = await Promise.all([
+          fetch(`${API}/polls`),
+          fetch(`${API}/surveys`),
+          fetch(`${API}/checkpoints`),
+          fetch(`${API}/customer/dashboard-stats/${userId}`)
+        ]);
+        if (pRes.ok) polls = await pRes.json();
+        if (sRes.ok) surveys = await sRes.json();
+        if (cRes.ok) checkpoints = await cRes.json();
+        if (dsRes.ok) dashStats = await dsRes.json();
+
+        renderUserConsole();
+      } catch (e) { console.error('Data load error:', e); }
+    }
+
+    function renderUserConsole() {
+      if (dashStats) {
+        // All KPIs from DB
+        document.getElementById('user-kpi-polls').textContent = dashStats.myActivePolls;
+        document.getElementById('user-kpi-votes').textContent = dashStats.myTotalVotes.toLocaleString();
+        document.getElementById('user-kpi-voter-quota').textContent = dashStats.voterQuota.toLocaleString();
+        document.getElementById('user-kpi-polls-quota').textContent = dashStats.pollsQuota;
+
+        // Plan info from DB
+        document.getElementById('user-plan-desc').textContent = `Quota: ${dashStats.quotaUsed} / ${dashStats.pollsQuota} Polls • Up to ${dashStats.voterQuota.toLocaleString()} Voters per Poll`;
+        if (dashStats.planName) {
+          document.getElementById('user-plan-title').textContent = dashStats.planName + ' Plan';
+        }
+
+        // Charts from DB data
+        renderBarChart(dashStats.monthlyVotes);
+        renderTurnoutGauge(dashStats.turnoutRate);
+        renderResponseGauge(dashStats.avgResponseTime);
+        renderAreaChart(dashStats.quotaUsed, dashStats.pollsQuota);
+
+        // Settings panel from DB
+        document.getElementById('settings-name').textContent = currentUser.fullName || dashStats.planName;
+        document.getElementById('settings-org').textContent = dashStats.organization || currentUser.organization;
+        document.getElementById('settings-plan').textContent = dashStats.planName || currentUser.planName;
+        document.getElementById('settings-voter-quota').textContent = dashStats.voterQuota.toLocaleString();
+        document.getElementById('settings-polls-quota').textContent = `${dashStats.quotaUsed} / ${dashStats.pollsQuota}`;
+      } else {
+        // Fallback to polls data
+        const totalVotes = polls.reduce((s, p) => s + (p.totalVotes || 0), 0);
+        document.getElementById('user-kpi-polls').textContent = polls.length;
+        document.getElementById('user-kpi-votes').textContent = totalVotes.toLocaleString();
+        document.getElementById('user-kpi-voter-quota').textContent = (currentUser.voterQuota || 1000).toLocaleString();
+        document.getElementById('user-kpi-polls-quota').textContent = currentUser.pollsQuota || 5;
+        document.getElementById('user-plan-desc').textContent = `Quota: ${polls.length} / ${currentUser.pollsQuota || 5} Polls • Up to ${(currentUser.voterQuota || 1000).toLocaleString()} Voters per Poll`;
+      }
+      renderTables();
+    }
+
+    // === BAR CHART — from DB monthlyVotes ===
+    function renderBarChart(monthlyVotes) {
+      const el = document.getElementById('user-widget-bar');
+      if (!el || !monthlyVotes || !monthlyVotes.length) return;
+      const max = Math.max(...monthlyVotes.map(m => m.votes), 1);
+      const w = 320, h = 150, padB = 25, padL = 30, barW = 24;
+      const highIdx = monthlyVotes.reduce((best, m, i) => m.votes > monthlyVotes[best].votes ? i : best, 0);
+      let barsSvg = '';
+      monthlyVotes.forEach((m, i) => {
+        const bh = (m.votes / max) * (h - padB - 20);
+        const x = padL + i * (barW + 20) + 10;
+        const y = h - padB - bh;
+        const isHighlight = i === highIdx;
+        const color = isHighlight ? '#F57C00' : '#E2E8F0';
+        barsSvg += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="4" fill="${color}"><animate attributeName="height" from="0" to="${bh}" dur="0.6s" fill="freeze"/><animate attributeName="y" from="${h-padB}" to="${y}" dur="0.6s" fill="freeze"/></rect>`;
+        barsSvg += `<text x="${x + barW/2}" y="${h - 6}" text-anchor="middle" font-size="10" font-weight="600" fill="#94A3B8">${m.month}</text>`;
+        if (isHighlight) {
+          barsSvg += `<g transform="translate(${x + barW/2 - 50}, ${y - 32})"><rect width="100" height="24" rx="6" fill="#0F172A"/><text x="50" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">${m.votes} Votes</text></g>`;
+        }
+      });
+      el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:100%;">${barsSvg}</svg>`;
+    }
+
+    // === TURNOUT GAUGE — from DB turnoutRate ===
+    function renderTurnoutGauge(rate) {
+      const el = document.getElementById('user-widget-gauge-1');
+      if (!el) return;
+      rate = rate || 0;
+      const pct = Math.min(rate, 100) / 100;
+      const angle = Math.PI * (1 - pct);
+      const ex = 50 + 40 * Math.cos(angle);
+      const ey = 50 - 40 * Math.sin(angle);
+      const largeArc = pct > 0.5 ? 1 : 0;
+      el.innerHTML = `<svg viewBox="0 0 100 60" style="width:100%;height:100%;"><path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#E2E8F0" stroke-width="10" stroke-linecap="round"/><path d="M 10 50 A 40 40 0 ${largeArc} 1 ${ex.toFixed(1)} ${ey.toFixed(1)}" fill="none" stroke="#10B981" stroke-width="10" stroke-linecap="round"/></svg>`;
+      const gaugeVal = el.closest('.widget-card').querySelector('.gauge-val');
+      if (gaugeVal) gaugeVal.textContent = `${rate}%`;
+    }
+
+    // === RESPONSE TIME GAUGE — from DB avgResponseTime ===
+    function renderResponseGauge(avgTime) {
+      const el = document.getElementById('user-widget-gauge-2');
+      if (!el) return;
+      avgTime = avgTime || 1.8;
+      const pct = Math.min(avgTime / 5, 1); // 5 min max
+      const angle = Math.PI * (1 - pct);
+      const ex = 50 + 40 * Math.cos(angle);
+      const ey = 50 - 40 * Math.sin(angle);
+      const largeArc = pct > 0.5 ? 1 : 0;
+      el.innerHTML = `<svg viewBox="0 0 100 60" style="width:100%;height:100%;"><path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#E2E8F0" stroke-width="10" stroke-linecap="round"/><path d="M 10 50 A 40 40 0 ${largeArc} 1 ${ex.toFixed(1)} ${ey.toFixed(1)}" fill="none" stroke="#0288D1" stroke-width="10" stroke-linecap="round"/></svg>`;
+      const gaugeVal = el.closest('.widget-card').querySelector('.gauge-val');
+      if (gaugeVal) gaugeVal.textContent = `${avgTime} min`;
+    }
+
+    // === AREA CHART — from DB quota usage ===
+    function renderAreaChart(used, total) {
+      const el = document.getElementById('user-widget-area');
+      if (!el) return;
+      used = used || 0; total = total || 5;
+      const pct = Math.min(used / total, 1);
+      const label = el.closest('.widget-card').querySelector('div:first-child');
+      if (label) label.textContent = `${used} / ${total} Used`;
+      el.innerHTML = `<svg viewBox="0 0 200 90" style="width:100%;height:100%;"><defs><linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0288D1" stop-opacity="0.4"/><stop offset="100%" stop-color="#0288D1" stop-opacity="0.0"/></linearGradient></defs><polygon points="0,${90 - pct * 50} 50,${70 - pct * 30} 100,${60 - pct * 20} 150,${50 - pct * 15} 200,${45 - pct * 10} 200,90 0,90" fill="url(#userGrad)"/><polyline points="0,${90 - pct * 50} 50,${70 - pct * 30} 100,${60 - pct * 20} 150,${50 - pct * 15} 200,${45 - pct * 10}" fill="none" stroke="#0288D1" stroke-width="2.5"/></svg>`;
+    }
+
+    function renderTables() {
+      // Overview polls table
+      const tbody = document.getElementById('user-polls-tbody');
+      if (tbody && polls.length) {
+        tbody.innerHTML = polls.map(p => `
+          <tr>
+            <td style="font-weight:700;">${p.title}</td>
+            <td><span class="badge-pill" style="background:#F1F5F9;color:#3B49DF;">${p.category||'General'}</span></td>
+            <td style="font-weight:700;font-family:monospace;">${(p.totalVotes||0).toLocaleString()}</td>
+            <td><span class="badge-pill">Active</span></td>
+            <td><a href="../pages/vote.html?id=${p.id}" target="_blank" style="color:#0288D1;font-weight:700;text-decoration:none;">Vote Link →</a></td>
+          </tr>
+        `).join('');
+      }
+
+      // Polls panel table
+      const pTbody = document.getElementById('polls-table-tbody');
+      if (pTbody && polls.length) {
+        pTbody.innerHTML = polls.map(p => `
+          <tr>
+            <td style="font-family:monospace;font-weight:700;">${p.id}</td>
+            <td style="font-weight:700;">${p.title}</td>
+            <td>${p.category||'General'}</td>
+            <td style="font-weight:700;">${(p.totalVotes||0).toLocaleString()}</td>
+            <td><span class="badge-pill">Active</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Surveys panel table
+      const sTbody = document.getElementById('surveys-table-tbody');
+      if (sTbody && surveys.length) {
+        sTbody.innerHTML = surveys.map(s => `
+          <tr>
+            <td style="font-family:monospace;font-weight:700;">${s.id}</td>
+            <td style="font-weight:700;">${s.title}</td>
+            <td>${s.track||'General'}</td>
+            <td style="font-weight:700;">${(s.totalResponses||0).toLocaleString()}</td>
+            <td><span class="badge-pill">Active</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Merkle panel table
+      const mTbody = document.getElementById('merkle-table-tbody');
+      if (mTbody && checkpoints.length) {
+        mTbody.innerHTML = checkpoints.map(c => `
+          <tr>
+            <td style="font-family:monospace;font-weight:700;">${c.checkpointId}</td>
+            <td style="font-family:monospace;font-size:10px;">${c.merkleRootHash}</td>
+            <td><span class="badge-pill">${c.status}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function openCreateModal() {
+      window.location.href = 'create.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>

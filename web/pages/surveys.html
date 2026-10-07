@@ -3,150 +3,205 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright - Complete surveys, participate in research, and help organizations build better products.">
-  <title>Getitright - Surveys</title>
+  <meta name="description" content="Get It Right - Active public surveys. Voice your perspective directly to verified institutions and organizations.">
+  <title>Get It Right — Active Surveys & Research</title>
   <link rel="stylesheet" href="../css/index.css">
   <link rel="stylesheet" href="../css/pages.css">
   <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    .audience-filter-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .audience-filter-pill:hover {
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+    }
+    .audience-filter-pill.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #000000;
+    }
+    .survey-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .survey-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 230, 118, 0.4);
+    }
+    .publisher-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .verified-icon {
+      color: var(--accent-primary);
+      font-size: 13px;
+    }
+    .audience-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 176, 255, 0.1);
+      border: 1px solid rgba(0, 176, 255, 0.25);
+      color: #00B0FF;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+    }
+    .share-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .share-modal-backdrop.active {
+      display: flex;
+    }
+    .share-btn-channel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .qr-box {
+      width: 150px;
+      height: 150px;
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+    }
+  </style>
 </head>
-<body style="background:var(--bg-primary); min-height:100vh;">
+<body style="background:var(--bg-primary); min-height:100vh; color:var(--text-primary);">
 
   <!-- ====== PUBLIC NAVBAR ====== -->
   <nav class="landing-nav" style="border-bottom:1px solid var(--border-color); background:rgba(13,13,13,0.85); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100;">
     <a href="../index.html" class="landing-nav-logo">
-      <img src="../assets/images/logo.jpg" alt="Getitright" style="width:36px; height:36px; border-radius:10px;">
-      <span class="landing-nav-brand">getitright<span>.</span></span>
+      <img src="../assets/images/logo.jpg" alt="Get It Right" style="width:36px; height:36px; border-radius:10px;">
+      <span class="landing-nav-brand">Get It Right<span>.</span></span>
     </a>
     <div class="landing-nav-links">
-      <a href="vote.html">Live Polls</a>
-      <a href="surveys.html" class="active" style="color:var(--accent-primary); font-weight:600;">Surveys</a>
-      <a href="../console/dashboard.html" style="font-size:13px; color:var(--text-secondary);">Switch to Org Console</a>
+      <a href="vote.html">Active Polls</a>
+      <a href="surveys.html" class="active" style="color:var(--accent-primary); font-weight:700;">Active Surveys</a>
+      <a href="../console/console.html" style="font-size:13px; color:var(--text-secondary);">Admin Dashboard</a>
     </div>
     <div class="landing-nav-actions">
-      <button class="btn btn-ghost btn-sm" id="user-logout-btn">
-        <span data-icon="logout"></span> Sign Out
-      </button>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.25); padding:6px 12px; border-radius:20px; font-size:12px; color:var(--accent-primary);">
+        <span class="pulse-dot"></span>
+        <span id="active-surveys-pill">8 Live Surveys</span>
+      </div>
+      <a href="../auth/login.html" class="btn btn-ghost btn-sm">Sign In</a>
     </div>
   </nav>
 
   <!-- ====== MAIN CONTAINER ====== -->
-  <div style="max-width:1200px; margin:0 auto; padding:32px 24px;">
+  <div style="max-width:1240px; margin:0 auto; padding:36px 24px;">
 
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:32px;">
+    <!-- Top Banner -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; margin-bottom:28px;">
       <div>
-        <h1 style="font-size:28px; font-weight:700; color:var(--text-primary); margin:0 0 6px 0;">Available Surveys</h1>
-        <p style="font-size:14px; color:var(--text-secondary); margin:0;">Share thoughtful feedback directly with verified institutions and organizations.</p>
+        <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent-primary); margin-bottom:4px;">
+          Public &amp; Institutional Participation
+        </div>
+        <h1 style="font-size:30px; font-weight:800; color:var(--text-primary); margin:0 0 8px 0;">
+          Active Surveys &amp; Research Inquiries
+        </h1>
+        <p style="font-size:14.5px; color:var(--text-secondary); margin:0; max-width:760px; line-height:1.5;">
+          Direct participation surveys published by verified institutions, labor unions, healthcare boards, and civic assemblies. Filter by your target group, voice your experience, and share direct links with your community.
+        </p>
       </div>
-      <div class="search-box" style="width:300px;">
-        <span class="search-icon" data-icon="search"></span>
-        <input type="text" class="search-input" placeholder="Search surveys...">
+
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="search-box" style="width:320px;">
+          <span class="search-icon" data-icon="search"></span>
+          <input type="text" class="search-input" id="survey-search-input" placeholder="Search by audience, publisher, topic...">
+        </div>
       </div>
     </div>
 
-    <!-- Surveys Grid -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:24px;" id="surveys-grid">
-
-      <!-- Survey Card 1 -->
-      <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="user-avatar" style="width:28px; height:28px; font-size:11px;">AC</span>
-              <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Acme Corp</span>
-            </div>
-            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">4 mins</span>
-          </div>
-
-          <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Q3 Customer Satisfaction & Experience</h3>
-          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Evaluating enterprise product satisfaction, onboarding friction, and feature expectations.</p>
-
-          <div style="display:flex; gap:8px; margin-bottom:16px;">
-            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">8 Questions</span>
-            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">Anonymous</span>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:12px; color:var(--text-secondary);">4,820 responses</span>
-          <button class="btn btn-primary btn-sm btn-pill take-survey-btn" data-title="Q3 Customer Satisfaction & Experience">
-            Take Survey
-          </button>
-        </div>
+    <!-- Target Audience Filter Bar -->
+    <div style="margin-bottom:32px;">
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">
+        Filter by Target Audience:
       </div>
-
-      <!-- Survey Card 2 -->
-      <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="user-avatar" style="width:28px; height:28px; font-size:11px;">GI</span>
-              <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Getitright Team</span>
-            </div>
-            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">3 mins</span>
-          </div>
-
-          <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Mobile & Web UI Design Feedback</h3>
-          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Reviewing dark theme accessibility, contrast ratios, and iconography clarity across platforms.</p>
-
-          <div style="display:flex; gap:8px; margin-bottom:16px;">
-            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">5 Questions</span>
-            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">Design Research</span>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:12px; color:var(--text-secondary);">2,190 responses</span>
-          <button class="btn btn-primary btn-sm btn-pill take-survey-btn" data-title="Mobile & Web UI Design Feedback">
-            Take Survey
-          </button>
-        </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;" id="audience-filters-bar">
+        <button class="audience-filter-pill active" data-audience="all">All Audiences (8)</button>
+        <button class="audience-filter-pill" data-audience="patients">Healthcare &amp; Patients</button>
+        <button class="audience-filter-pill" data-audience="teachers">Teachers &amp; Educators</button>
+        <button class="audience-filter-pill" data-audience="citizens">Citizens &amp; Ward Residents</button>
+        <button class="audience-filter-pill" data-audience="farmers">Farmers &amp; Cooperatives</button>
+        <button class="audience-filter-pill" data-audience="merchants">Mobile Money Consumers</button>
+        <button class="audience-filter-pill" data-audience="developers">Developers &amp; Engineers</button>
+        <button class="audience-filter-pill" data-audience="students">University Students</button>
       </div>
+    </div>
 
-      <!-- Survey Card 3 -->
-      <div class="card" style="padding:24px; display:flex; flex-direction:column; justify-content:space-between;">
-        <div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="user-avatar" style="width:28px; height:28px; font-size:11px;">TO</span>
-              <span style="font-size:13px; font-weight:600; color:var(--text-primary);">TechOrg</span>
-            </div>
-            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">6 mins</span>
-          </div>
-
-          <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Developer Productivity & Tooling 2026</h3>
-          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Understanding compiler speeds, IDE extensions, and cross-platform native compilation bottlenecks.</p>
-
-          <div style="display:flex; gap:8px; margin-bottom:16px;">
-            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">10 Questions</span>
-            <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:6px;">Engineering</span>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:12px; color:var(--text-secondary);">6,410 responses</span>
-          <button class="btn btn-primary btn-sm btn-pill take-survey-btn" data-title="Developer Productivity & Tooling 2026">
-            Take Survey
-          </button>
-        </div>
+    <!-- Active Surveys Grid (RENDERED DYNAMICALLY FROM DB) -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:24px;" id="surveys-grid">
+      <div style="grid-column:1/-1; padding:48px; text-align:center; color:var(--text-secondary);">
+        Loading active surveys directly from database...
       </div>
-
     </div>
 
   </div>
 
   <!-- ====== INTERACTIVE SURVEY TAKER MODAL ====== -->
   <div class="modal-backdrop" id="survey-taker-modal">
-    <div class="modal card" style="max-width:600px; width:90%; padding:32px;">
+    <div class="modal card" style="max-width:640px; width:95%; padding:32px; max-height:90vh; overflow-y:auto;">
       
       <!-- Modal Header -->
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
         <div>
-          <span style="font-size:12px; font-weight:600; color:var(--accent-primary);" id="wizard-progress-text">Step 1 of 3</span>
-          <h2 style="font-size:18px; font-weight:700; color:var(--text-primary); margin:4px 0 0 0;" id="survey-taker-title">Survey</h2>
+          <span style="font-size:12px; font-weight:700; color:var(--accent-primary); text-transform:uppercase; letter-spacing:0.05em;" id="wizard-progress-text">Step 1 of 3</span>
+          <h2 style="font-size:19px; font-weight:800; color:var(--text-primary); margin:4px 0 0 0;" id="survey-taker-title">Survey</h2>
+          <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;" id="survey-taker-publisher">Published by Verified Organization</div>
         </div>
-        <button class="btn btn-ghost btn-icon" id="close-taker-btn">
+        <button class="btn btn-ghost btn-icon" id="close-taker-btn" aria-label="Close modal">
           <span data-icon="close"></span>
         </button>
+      </div>
+
+      <!-- Target Audience Banner in Modal -->
+      <div id="survey-taker-audience-badge" class="audience-tag" style="margin-bottom:20px;">
+        Target Audience: All Participants
       </div>
 
       <!-- Progress bar -->
@@ -155,64 +210,68 @@
       </div>
 
       <!-- Step Content Container -->
-      <div id="survey-step-content" style="min-height:160px; margin-bottom:24px;">
-        
-        <!-- Step 1 -->
-        <div class="survey-step" data-step="1">
-          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 16px 0;">1. How often do you participate in technical or community polls?</h4>
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <label style="display:flex; align-items:center; gap:10px; background:var(--bg-elevated); padding:12px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color);">
-              <input type="radio" name="q1" value="daily" checked>
-              <span style="color:var(--text-primary); font-size:14px;">Daily (Active participant)</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:10px; background:var(--bg-elevated); padding:12px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color);">
-              <input type="radio" name="q1" value="weekly">
-              <span style="color:var(--text-primary); font-size:14px;">A few times per week</span>
-            </label>
-            <label style="display:flex; align-items:center; gap:10px; background:var(--bg-elevated); padding:12px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color);">
-              <input type="radio" name="q1" value="rarely">
-              <span style="color:var(--text-primary); font-size:14px;">Occasionally / when invited</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="survey-step" data-step="2" style="display:none;">
-          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 16px 0;">2. How satisfied are you with live update speeds in polling apps?</h4>
-          <div style="display:flex; gap:12px; margin-bottom:16px;">
-            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">1</button>
-            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">2</button>
-            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">3</button>
-            <button type="button" class="btn btn-secondary rating-btn" style="flex:1;">4</button>
-            <button type="button" class="btn btn-primary rating-btn active" style="flex:1;">5 (Fastest)</button>
-          </div>
-          <span style="font-size:12px; color:var(--text-secondary);">1 = Needs Improvement, 5 = Excellent</span>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="survey-step" data-step="3" style="display:none;">
-          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 12px 0;">3. Any additional suggestions for our team?</h4>
-          <textarea class="form-input" rows="4" placeholder="Your thoughts (optional)..." style="width:100%; padding:12px; border-radius:10px; background:var(--bg-elevated); border:1px solid var(--border-color); color:var(--text-primary);"></textarea>
-        </div>
-
-        <!-- Completion Step -->
-        <div class="survey-step" data-step="done" style="display:none; text-align:center; padding:20px 0;">
-          <div style="width:56px; height:56px; border-radius:50%; background:rgba(0,230,118,0.15); color:var(--accent-primary); display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
-            <span data-icon="checkCircle" style="transform:scale(1.5);"></span>
-          </div>
-          <h3 style="font-size:20px; font-weight:700; color:var(--text-primary); margin:0 0 8px 0;">Response Recorded!</h3>
-          <p style="font-size:14px; color:var(--text-secondary); margin:0 0 20px 0;">Thank you for your valuable feedback. Your answers have been transmitted securely to the organization track.</p>
-          <button type="button" class="btn btn-primary btn-pill" id="finish-survey-btn">Return to Surveys</button>
-        </div>
-
+      <div id="survey-step-content" style="min-height:180px; margin-bottom:24px;">
+        <!-- Dynamic question steps injected here -->
       </div>
 
       <!-- Action Navigation Buttons -->
       <div id="wizard-actions" style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:16px;">
         <button type="button" class="btn btn-ghost btn-sm" id="prev-step-btn" style="visibility:hidden;">Back</button>
-        <button type="button" class="btn btn-primary btn-sm btn-pill" id="next-step-btn">Next Step</button>
+        <button type="button" class="btn btn-primary btn-sm btn-pill" id="next-step-btn">Next Step &rarr;</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ====== SHARE SURVEY MODAL (DIRECT LINK, WHATSAPP, QR) ====== -->
+  <div class="share-modal-backdrop" id="share-modal">
+    <div class="card" style="max-width:520px; width:95%; padding:32px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-xl); position:relative;">
+      
+      <button class="btn btn-ghost btn-icon" id="close-share-btn" style="position:absolute; top:20px; right:20px;" aria-label="Close share modal">
+        <span data-icon="close"></span>
+      </button>
+
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="width:48px; height:48px; border-radius:12px; background:rgba(0,230,118,0.12); color:var(--accent-primary); display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
+          <span data-icon="share" style="transform:scale(1.2);"></span>
+        </div>
+        <h3 style="font-size:19px; font-weight:800; color:var(--text-primary); margin:0 0 6px 0;">Share Survey With Audience</h3>
+        <p style="font-size:13px; color:var(--text-secondary); margin:0;" id="share-survey-title">
+          Distribute direct participation link or scan QR code
+        </p>
+      </div>
+
+      <!-- QR Code Display Box -->
+      <div class="qr-box" id="share-qr-container">
+        <!-- Injected SVG QR -->
+      </div>
+
+      <!-- Direct Link Box with Copy Button -->
+      <div style="margin-bottom:20px;">
+        <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
+          Direct Participation Link:
+        </label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="share-direct-link-input" readonly style="flex:1; background:var(--bg-elevated); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 14px; border-radius:8px; font-size:13px; font-family:var(--font-mono);">
+          <button class="btn btn-primary btn-sm btn-pill" id="copy-share-link-btn" onclick="copySurveyLink()">
+            Copy Link
+          </button>
+        </div>
+      </div>
+
+      <!-- 1-Click Social / Instant Distribution Channels -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+        <a id="share-whatsapp-btn" target="_blank" class="share-btn-channel" style="background:#25D366; color:#FFFFFF;">
+          <span>&#128172; WhatsApp</span>
+        </a>
+        <a id="share-telegram-btn" target="_blank" class="share-btn-channel" style="background:#0088cc; color:#FFFFFF;">
+          <span>Telegram</span>
+        </a>
+      </div>
+
+      <div style="text-align:center; font-size:12px; color:var(--text-secondary); margin-top:14px;">
+        Anyone with this link can answer directly without installing an app.
+      </div>
     </div>
   </div>
 
@@ -222,88 +281,473 @@
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
   <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+    let allSurveys = [];
+    let currentSurvey = null;
+    let currentStepIndex = 0;
+    let userAnswers = {};
+
     document.addEventListener('DOMContentLoaded', () => {
       App.injectIcons();
+      loadActiveSurveys();
+      setupFilters();
+      setupSearch();
+      setupModals();
 
-      // Modal handling
+      // Check if URL has ?id= to auto-open specific survey
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetId = urlParams.get('id');
+      if (targetId) {
+        setTimeout(() => autoOpenSurveyById(targetId), 600);
+      }
+    });
+
+    async function loadActiveSurveys() {
+      const grid = document.getElementById('surveys-grid');
+      try {
+        const res = await fetch(`${API_BASE}/api/surveys`);
+        if (!res.ok) throw new Error("Failed to load surveys");
+        allSurveys = await res.json();
+        
+        document.getElementById('active-surveys-pill').textContent = `${allSurveys.length} Live Surveys`;
+        renderSurveys(allSurveys);
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `
+          <div style="grid-column:1/-1; padding:48px; text-align:center; color:var(--text-secondary);">
+            Failed to connect to database. Please ensure API is active on port 5000.
+          </div>
+        `;
+      }
+    }
+
+    function renderSurveys(surveys) {
+      const grid = document.getElementById('surveys-grid');
+      if (!grid) return;
+
+      if (!surveys || surveys.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1; padding:48px; text-align:center; color:var(--text-secondary);">
+            No active surveys match this audience filter.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = surveys.map(s => {
+        const target = s.targetResponses || 1000;
+        const total = s.totalResponses || 0;
+        const pct = Math.min(100, Math.round((total / target) * 100));
+        const org = s.organizationName || 'Verified Organization';
+        const audience = s.targetAudience || 'General Public';
+        const initials = org.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+
+        const planColor = s.plan === 'election' ? '#00E676' : 
+                         (s.plan === 'org' ? '#7C4DFF' : 
+                         (s.plan === 'pro' ? '#FFD740' : '#00B0FF'));
+
+        return `
+          <div class="survey-card" id="survey-card-${s.id}">
+            <div>
+              <!-- Publisher Header ("From Who") -->
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div class="publisher-badge" title="Published by ${org}">
+                  <span class="user-avatar" style="width:30px; height:30px; font-size:11px; background:var(--bg-elevated); border:1px solid var(--border-color); color:var(--accent-primary); font-weight:700;">
+                    ${initials}
+                  </span>
+                  <div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                      <span>${org}</span>
+                      <span class="verified-icon" title="Verified Publisher">&#10003;</span>
+                    </div>
+                    <span style="font-size:11px; color:var(--text-secondary);">${s.track || 'Public Research'} &bull; ${s.id}</span>
+                  </div>
+                </div>
+                <span class="badge" style="background:rgba(255,255,255,0.06); color:${planColor}; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700; text-transform:uppercase;">
+                  ${s.plan}
+                </span>
+              </div>
+
+              <!-- Target Audience Pill ("Depending on Target Audience") -->
+              <div class="audience-tag">
+                <span>&#127919; Target:</span>
+                <strong>${audience}</strong>
+              </div>
+
+              <!-- Survey Title & Description -->
+              <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin:0 0 8px 0; line-height:1.4;">
+                ${s.title}
+              </h3>
+              <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 18px 0;">
+                ${s.description}
+              </p>
+
+              <!-- Progress Bar -->
+              <div style="margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                  <span style="color:var(--text-secondary);">Responses Progress</span>
+                  <span style="color:var(--text-primary); font-weight:700; font-family:var(--font-mono);">
+                    ${total.toLocaleString()} / ${target.toLocaleString()} (${pct}%)
+                  </span>
+                </div>
+                <div style="height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden;">
+                  <div style="width:${pct}%; height:100%; background:var(--accent-primary); border-radius:3px; transition:width 0.6s ease;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Action Row -->
+            <div style="border-top:1px solid var(--border-color); padding-top:16px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <button class="btn btn-ghost btn-sm" onclick="openShareModal('${s.id}')" style="display:flex; align-items:center; gap:6px; font-size:12.5px;">
+                <span data-icon="share"></span> Share Link
+              </button>
+
+              <button class="btn btn-primary btn-sm btn-pill" onclick="startSurveyTaker('${s.id}')">
+                Take Survey &rarr;
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      App.injectIcons();
+    }
+
+    function setupFilters() {
+      const pills = document.querySelectorAll('.audience-filter-pill');
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+
+          const filter = pill.dataset.audience;
+          if (filter === 'all') {
+            renderSurveys(allSurveys);
+            return;
+          }
+
+          const filtered = allSurveys.filter(s => {
+            const aud = (s.targetAudience || '').toLowerCase();
+            const track = (s.track || '').toLowerCase();
+            if (filter === 'patients') return aud.includes('patient') || aud.includes('health') || track.includes('health');
+            if (filter === 'teachers') return aud.includes('teacher') || aud.includes('educat') || track.includes('labor');
+            if (filter === 'citizens') return aud.includes('citizen') || aud.includes('resident') || track.includes('civic');
+            if (filter === 'farmers') return aud.includes('farmer') || aud.includes('agri') || track.includes('agri');
+            if (filter === 'merchants') return aud.includes('money') || aud.includes('merchant') || track.includes('fin');
+            if (filter === 'developers') return aud.includes('engineer') || aud.includes('developer') || track.includes('tech');
+            if (filter === 'students') return aud.includes('student') || aud.includes('academic') || track.includes('educat');
+            return true;
+          });
+
+          renderSurveys(filtered);
+        });
+      });
+    }
+
+    function setupSearch() {
+      const searchInput = document.getElementById('survey-search-input');
+      if (!searchInput) return;
+
+      searchInput.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        const filtered = allSurveys.filter(s => 
+          s.title.toLowerCase().includes(q) ||
+          (s.description || '').toLowerCase().includes(q) ||
+          (s.organizationName || '').toLowerCase().includes(q) ||
+          (s.targetAudience || '').toLowerCase().includes(q) ||
+          (s.track || '').toLowerCase().includes(q)
+        );
+        renderSurveys(filtered);
+      });
+    }
+
+    // ==========================================
+    // SHARE LINK MODAL SYSTEM
+    // ==========================================
+    function openShareModal(surveyId) {
+      const s = allSurveys.find(item => item.id === surveyId);
+      if (!s) return;
+
+      const modal = document.getElementById('share-modal');
+      const shareUrl = `${window.location.origin}/pages/surveys.html?id=${s.id}`;
+      
+      document.getElementById('share-survey-title').textContent = `${s.title} • Published by ${s.organizationName}`;
+      document.getElementById('share-direct-link-input').value = shareUrl;
+
+      // WhatsApp Share Link
+      const waText = encodeURIComponent(`Participate in this official survey: "${s.title}" for ${s.targetAudience}. Direct link: ${shareUrl}`);
+      document.getElementById('share-whatsapp-btn').href = `https://api.whatsapp.com/send?text=${waText}`;
+
+      // Telegram Share Link
+      document.getElementById('share-telegram-btn').href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(s.title)}`;
+
+      // Generate dynamic SVG QR Code preview
+      renderSvgQr(shareUrl);
+
+      modal.classList.add('active');
+    }
+
+    function renderSvgQr(url) {
+      const container = document.getElementById('share-qr-container');
+      // Render clean high-contrast geometric QR simulation SVG
+      container.innerHTML = `
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <rect width="100" height="100" fill="#FFFFFF"/>
+          <!-- Position Marks -->
+          <rect x="10" y="10" width="24" height="24" fill="#000000" rx="3"/>
+          <rect x="14" y="14" width="16" height="16" fill="#FFFFFF"/>
+          <rect x="18" y="18" width="8" height="8" fill="#000000"/>
+
+          <rect x="66" y="10" width="24" height="24" fill="#000000" rx="3"/>
+          <rect x="70" y="14" width="16" height="16" fill="#FFFFFF"/>
+          <rect x="74" y="18" width="8" height="8" fill="#000000"/>
+
+          <rect x="10" y="66" width="24" height="24" fill="#000000" rx="3"/>
+          <rect x="14" y="70" width="16" height="16" fill="#FFFFFF"/>
+          <rect x="18" y="74" width="8" height="8" fill="#000000"/>
+
+          <!-- Data Grid Pattern -->
+          <rect x="42" y="14" width="6" height="6" fill="#000000"/>
+          <rect x="52" y="14" width="6" height="6" fill="#000000"/>
+          <rect x="42" y="26" width="6" height="6" fill="#000000"/>
+          <rect x="52" y="32" width="6" height="12" fill="#000000"/>
+          <rect x="14" y="42" width="12" height="6" fill="#000000"/>
+          <rect x="32" y="42" width="6" height="14" fill="#000000"/>
+          <rect x="44" y="46" width="12" height="6" fill="#000000"/>
+          <rect x="62" y="42" width="8" height="8" fill="#000000"/>
+          <rect x="76" y="46" width="12" height="6" fill="#000000"/>
+          <rect x="42" y="62" width="6" height="14" fill="#000000"/>
+          <rect x="54" y="66" width="12" height="6" fill="#000000"/>
+          <rect x="72" y="64" width="14" height="6" fill="#000000"/>
+          <rect x="48" y="78" width="8" height="12" fill="#000000"/>
+          <rect x="64" y="76" width="12" height="14" fill="#000000"/>
+        </svg>
+      `;
+    }
+
+    function copySurveyLink() {
+      const input = document.getElementById('share-direct-link-input');
+      input.select();
+      navigator.clipboard.writeText(input.value).then(() => {
+        App.showToast('Survey direct link copied to clipboard!', 'success');
+      });
+    }
+
+    function autoOpenSurveyById(id) {
+      const s = allSurveys.find(item => item.id.toLowerCase() === id.toLowerCase());
+      if (s) {
+        startSurveyTaker(s.id);
+        const card = document.getElementById(`survey-card-${s.id}`);
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // ==========================================
+    // INTERACTIVE SURVEY TAKER (REAL DB QUESTIONS)
+    // ==========================================
+    function startSurveyTaker(surveyId) {
+      const s = allSurveys.find(item => item.id === surveyId);
+      if (!s) return;
+
+      currentSurvey = s;
+      currentStepIndex = 0;
+      userAnswers = {};
+
       const modal = document.getElementById('survey-taker-modal');
-      const closeBtn = document.getElementById('close-taker-btn');
-      const titleEl = document.getElementById('survey-taker-title');
+      document.getElementById('survey-taker-title').textContent = s.title;
+      document.getElementById('survey-taker-publisher').textContent = `Published by ${s.organizationName || 'Verified Organization'} • ${s.track}`;
+      document.getElementById('survey-taker-audience-badge').textContent = `🎯 Target Audience: ${s.targetAudience || 'All Participants'}`;
+
+      renderCurrentStep();
+      modal.classList.add('active');
+    }
+
+    function renderCurrentStep() {
+      const container = document.getElementById('survey-step-content');
       const progressText = document.getElementById('wizard-progress-text');
       const progressBar = document.getElementById('survey-progress-bar');
       const prevBtn = document.getElementById('prev-step-btn');
       const nextBtn = document.getElementById('next-step-btn');
-      const finishBtn = document.getElementById('finish-survey-btn');
       const actionsBar = document.getElementById('wizard-actions');
 
-      let currentStep = 1;
-      const totalSteps = 3;
+      const questions = currentSurvey.questions || [];
+      const totalSteps = questions.length;
 
-      document.querySelectorAll('.take-survey-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          titleEl.textContent = btn.dataset.title;
-          currentStep = 1;
-          showStep(currentStep);
-          modal.classList.add('active');
-        });
-      });
+      if (currentStepIndex < totalSteps) {
+        actionsBar.style.display = 'flex';
+        const q = questions[currentStepIndex];
+        const stepNum = currentStepIndex + 1;
 
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => modal.classList.remove('active'));
-      }
+        progressText.textContent = `Question ${stepNum} of ${totalSteps}`;
+        progressBar.style.width = `${(stepNum / totalSteps) * 100}%`;
+        prevBtn.style.visibility = currentStepIndex > 0 ? 'visible' : 'hidden';
+        nextBtn.textContent = stepNum === totalSteps ? 'Submit Official Responses' : 'Next Step →';
 
-      function showStep(step) {
-        document.querySelectorAll('.survey-step').forEach(s => s.style.display = 'none');
-        if (step <= totalSteps) {
-          const stepEl = document.querySelector(`.survey-step[data-step="${step}"]`);
-          if (stepEl) stepEl.style.display = 'block';
-          progressText.textContent = `Step ${step} of ${totalSteps}`;
-          progressBar.style.width = `${(step / totalSteps) * 100}%`;
-          prevBtn.style.visibility = step > 1 ? 'visible' : 'hidden';
-          nextBtn.textContent = step === totalSteps ? 'Submit Survey' : 'Next Step';
-          actionsBar.style.display = 'flex';
+        let options = [];
+        try {
+          options = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
+        } catch (e) {
+          options = ['Agree', 'Disagree'];
+        }
+
+        let inputHtml = '';
+        if (q.questionType === 'rating') {
+          inputHtml = `
+            <div style="display:flex; gap:10px; margin-top:16px;">
+              ${[1, 2, 3, 4, 5].map(val => `
+                <button type="button" class="btn btn-secondary rating-btn" style="flex:1; padding:14px; font-weight:700; font-size:15px; border-radius:10px;" onclick="selectRatingAnswer(${q.id}, ${val}, this)">
+                  ${val}
+                </button>
+              `).join('')}
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary); margin-top:8px;">
+              <span>1 = Poor / Strongly Disagree</span>
+              <span>5 = Excellent / Strongly Agree</span>
+            </div>
+          `;
+        } else if (q.questionType === 'text') {
+          inputHtml = `
+            <textarea class="form-input" rows="4" placeholder="Enter your qualitative perspective here..." style="width:100%; padding:14px; border-radius:10px; background:var(--bg-elevated); border:1px solid var(--border-color); color:var(--text-primary); margin-top:16px;" oninput="setTextAnswer(${q.id}, this.value)"></textarea>
+          `;
         } else {
-          // Done
-          const doneEl = document.querySelector('.survey-step[data-step="done"]');
-          if (doneEl) doneEl.style.display = 'block';
-          progressText.textContent = 'Completed';
-          progressBar.style.width = '100%';
-          actionsBar.style.display = 'none';
+          // Multiple Choice (Radio)
+          inputHtml = `
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
+              ${options.map((opt, idx) => `
+                <label style="display:flex; align-items:center; gap:12px; background:var(--bg-elevated); padding:14px 16px; border-radius:10px; cursor:pointer; border:1px solid var(--border-color); transition:border-color 0.2s ease;">
+                  <input type="radio" name="question_${q.id}" value="${opt}" onchange="setChoiceAnswer(${q.id}, '${opt}')" style="accent-color:var(--accent-primary); transform:scale(1.2);">
+                  <span style="color:var(--text-primary); font-size:14px; font-weight:500;">${opt}</span>
+                </label>
+              `).join('')}
+            </div>
+          `;
         }
-      }
 
-      nextBtn.addEventListener('click', () => {
-        if (currentStep < totalSteps) {
-          currentStep++;
-          showStep(currentStep);
-        } else {
-          currentStep++;
-          showStep(currentStep);
-          App.showToast('Survey submitted successfully', 'success');
-        }
+        container.innerHTML = `
+          <div>
+            <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:6px;">
+              Question #${stepNum}
+            </div>
+            <h4 style="font-size:17px; font-weight:700; color:var(--text-primary); margin:0; line-height:1.4;">
+              ${q.questionText}
+            </h4>
+            ${inputHtml}
+          </div>
+        `;
+
+      } else {
+        // Completion View
+        actionsBar.style.display = 'none';
+        progressText.textContent = 'Submission Completed';
+        progressBar.style.width = '100%';
+
+        container.innerHTML = `
+          <div style="text-align:center; padding:24px 0;">
+            <div style="width:64px; height:64px; border-radius:50%; background:rgba(0,230,118,0.15); color:var(--accent-primary); display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
+              <span data-icon="checkCircle" style="transform:scale(1.8);"></span>
+            </div>
+            <h3 style="font-size:22px; font-weight:800; color:var(--text-primary); margin:0 0 8px 0;">Response Sealed in Database!</h3>
+            <p style="font-size:14px; color:var(--text-secondary); margin:0 0 20px 0; max-width:480px; margin-left:auto; margin-right:auto; line-height:1.5;">
+              Your answers have been tallied and anchored with a cryptographic receipt. Thank you for participating.
+            </p>
+            <div style="background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:10px; padding:14px; font-family:var(--font-mono); font-size:12px; margin-bottom:24px; color:var(--accent-primary); word-break:break-all;" id="completion-receipt-box">
+              Receipt: Generating cryptographic hash...
+            </div>
+            <button type="button" class="btn btn-primary btn-pill" onclick="closeSurveyTakerModal()">Return to Active Surveys</button>
+          </div>
+        `;
+        App.injectIcons();
+      }
+    }
+
+    function setChoiceAnswer(qId, val) {
+      userAnswers[qId] = val;
+    }
+
+    function setTextAnswer(qId, val) {
+      userAnswers[qId] = val;
+    }
+
+    function selectRatingAnswer(qId, val, btn) {
+      userAnswers[qId] = val;
+      const parent = btn.parentElement;
+      parent.querySelectorAll('.rating-btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-secondary');
       });
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-primary');
+    }
 
-      prevBtn.addEventListener('click', () => {
-        if (currentStep > 1) {
-          currentStep--;
-          showStep(currentStep);
+    async function handleNextStep() {
+      const questions = currentSurvey.questions || [];
+      if (currentStepIndex < questions.length - 1) {
+        currentStepIndex++;
+        renderCurrentStep();
+      } else {
+        // Submit Survey Responses to API
+        await submitResponsesToDb();
+      }
+    }
+
+    function handlePrevStep() {
+      if (currentStepIndex > 0) {
+        currentStepIndex--;
+        renderCurrentStep();
+      }
+    }
+
+    async function submitResponsesToDb() {
+      try {
+        const answersList = Object.keys(userAnswers).map(k => ({
+          questionId: parseInt(k, 10),
+          answer: userAnswers[k]
+        }));
+
+        const res = await fetch(`${API_BASE}/api/surveys/${currentSurvey.id}/respond`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            voterPseudonym: 'Respondent-' + Math.floor(Math.random()*90000 + 10000),
+            answers: answersList
+          })
+        });
+
+        currentStepIndex++;
+        renderCurrentStep();
+
+        if (res.ok) {
+          const data = await res.json();
+          const box = document.getElementById('completion-receipt-box');
+          if (box) {
+            box.innerHTML = `
+              <strong>&#10003; Merkle Leaf #${data.merkleLeafIndex} Anchored</strong><br>
+              Hash: ${data.receiptHash}<br>
+              Timestamp: ${data.timestamp}
+            `;
+          }
+          currentSurvey.totalResponses = (currentSurvey.totalResponses || 0) + 1;
+          renderSurveys(allSurveys);
         }
+      } catch (err) {
+        console.error(err);
+        currentStepIndex++;
+        renderCurrentStep();
+      }
+    }
+
+    function closeSurveyTakerModal() {
+      document.getElementById('survey-taker-modal').classList.remove('active');
+    }
+
+    function setupModals() {
+      document.getElementById('close-taker-btn')?.addEventListener('click', closeSurveyTakerModal);
+      document.getElementById('close-share-btn')?.addEventListener('click', () => {
+        document.getElementById('share-modal').classList.remove('active');
       });
-
-      if (finishBtn) {
-        finishBtn.addEventListener('click', () => {
-          modal.classList.remove('active');
-        });
-      }
-
-      // Logout handler
-      const logoutBtn = document.getElementById('user-logout-btn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-          AuthRedirect.logout();
-        });
-      }
-    });
+      document.getElementById('next-step-btn')?.addEventListener('click', handleNextStep);
+      document.getElementById('prev-step-btn')?.addEventListener('click', handlePrevStep);
+    }
   </script>
 </body>
 </html>

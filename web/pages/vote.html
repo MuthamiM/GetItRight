@@ -3,221 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright - Vote in real-time polls, voice your opinion, and view instant live aggregate results.">
-  <title>Getitright - Live Polls</title>
+  <meta name="description" content="Get It Right - Active public voting feed. Vote in real-time polls, voice your opinion, and view instant live aggregate results.">
+  <title>Get It Right — Active Live Polls</title>
   <link rel="stylesheet" href="../css/index.css">
   <link rel="stylesheet" href="../css/pages.css">
   <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    .poll-feed-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E5EC;
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+    }
+    .poll-feed-card:hover {
+      border-color: #1E2A4A;
+    }
+    .poll-opt-btn {
+      position: relative;
+      background: #FAFBFD;
+      border: 1px solid #E2E5EC;
+      border-radius: 12px;
+      padding: 14px 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: block;
+      width: 100%;
+      text-align: left;
+    }
+    .poll-opt-btn:hover {
+      border-color: #1E2A4A;
+    }
+    .poll-opt-btn.voted {
+      border-color: #1E2A4A;
+      box-shadow: 0 0 0 1px #1E2A4A;
+    }
+    .poll-progress-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: rgba(30, 42, 74, 0.12);
+      border-radius: 12px;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .receipt-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(30, 42, 74, 0.08);
+      border: 1px solid rgba(30, 42, 74, 0.2);
+      color: #1E2A4A;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-top: 10px;
+    }
+    .plan-filter-btn {
+      background: #FFFFFF;
+      border: 1px solid #E2E5EC;
+      color: #64748B;
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .plan-filter-btn:hover {
+      border-color: #1E2A4A;
+      color: #0F172A;
+    }
+    .plan-filter-btn.active {
+      background: #1E2A4A;
+      border-color: #1E2A4A;
+      color: #FFFFFF;
+    }
+  </style>
 </head>
-<body style="background:var(--bg-primary); min-height:100vh;">
+<body style="background:#FAFBFD; min-height:100vh; color:#0F172A; font-family:var(--font-body);">
 
   <!-- ====== PUBLIC NAVBAR ====== -->
-  <nav class="landing-nav" style="border-bottom:1px solid var(--border-color); background:rgba(13,13,13,0.85); backdrop-filter:blur(12px); position:sticky; top:0; z-index:100;">
-    <a href="../index.html" class="landing-nav-logo">
-      <img src="../assets/images/logo.jpg" alt="Getitright" style="width:36px; height:36px; border-radius:10px;">
-      <span class="landing-nav-brand">getitright<span>.</span></span>
+  <nav class="landing-nav" style="border-bottom:1px solid #E2E5EC; background:#FFFFFF; position:sticky; top:0; z-index:100; padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between;">
+    <a href="../index.html" class="landing-nav-logo" style="display:flex; align-items:center; gap:10px; text-decoration:none;">
+      <img src="../assets/images/logo.jpg" alt="Get It Right" style="width:34px; height:34px; border-radius:8px;">
+      <span class="landing-nav-brand" style="font-family:var(--font-display); font-size:18px; font-weight:800; color:#0F172A;">Get It Right</span>
     </a>
-    <div class="landing-nav-links">
-      <a href="vote.html" class="active" style="color:var(--accent-primary); font-weight:600;">Live Polls</a>
-      <a href="surveys.html">Surveys</a>
-      <a href="../console/dashboard.html" style="font-size:13px; color:var(--text-secondary);">Switch to Org Console</a>
+    <div class="landing-nav-links" style="display:flex; gap:24px; align-items:center;">
+      <a href="vote.html" class="active" style="color:#1E2A4A; font-weight:700; text-decoration:none;">Active Polls</a>
+      <a href="surveys.html" style="color:#64748B; text-decoration:none; font-size:14px; font-weight:600;">Active Surveys</a>
+      <a href="../console/console.html" style="font-size:14px; color:#64748B; text-decoration:none; font-weight:600;">Admin Dashboard</a>
     </div>
-    <div class="landing-nav-actions">
-      <div style="display:flex; align-items:center; gap:8px; background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.25); padding:6px 12px; border-radius:20px; font-size:12px; color:var(--accent-primary);">
-        <span class="pulse-dot"></span>
-        <span>WebSocket Live</span>
-      </div>
-      <button class="btn btn-ghost btn-sm" id="user-logout-btn">
-        <span data-icon="logout"></span> Sign Out
-      </button>
+    <div class="landing-nav-actions" style="display:flex; align-items:center; gap:12px;">
+      <a href="../auth/login.html" class="btn btn-pill" style="background:#1E2A4A; color:#FFFFFF; padding:8px 20px; font-size:13px; font-weight:700; text-decoration:none; border-radius:100px;">Sign In</a>
     </div>
   </nav>
 
   <!-- ====== MAIN CONTAINER ====== -->
-  <div style="max-width:1200px; margin:0 auto; padding:32px 24px;">
+  <div style="max-width:1240px; margin:0 auto; padding:36px 24px;">
 
     <!-- Top search & category filter -->
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:28px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; margin-bottom:28px;">
       <div>
-        <h1 style="font-size:28px; font-weight:700; color:var(--text-primary); margin:0 0 6px 0;">Community Polls & Feedback</h1>
-        <p style="font-size:14px; color:var(--text-secondary); margin:0;">Participate anonymously or authenticated. Real-time consensus streamed instantly.</p>
+        <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#1E2A4A; margin-bottom:4px;">
+          ORGANIZATION MANAGEMENT &bull; PUBLIC POLL DIRECTORY
+        </div>
+        <h1 style="font-size:30px; font-weight:800; color:#0F172A; margin:0 0 8px 0;">
+          Active Public Polls &amp; Referendums
+        </h1>
+        <p style="font-size:14.5px; color:#64748B; margin:0; max-width:760px; line-height:1.5;">
+          Browse published community referendums, organizational polls, and national plebiscites. Organizations manage polls and monitor live turnout here; citizens cast votes on the <strong>Get It Right Mobile App</strong>.
+        </p>
       </div>
 
       <div class="search-box" style="width:320px;">
         <span class="search-icon" data-icon="search"></span>
-        <input type="text" class="search-input" id="poll-filter-input" placeholder="Search active polls or tags...">
+        <input type="text" class="search-input" id="poll-filter-input" placeholder="Search active polls...">
       </div>
     </div>
 
-    <!-- Category Pills -->
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px;">
-      <button class="btn btn-primary btn-sm btn-pill category-pill active" data-cat="all">All Topics</button>
-      <button class="btn btn-secondary btn-sm btn-pill category-pill" data-cat="engineering">Engineering</button>
-      <button class="btn btn-secondary btn-sm btn-pill category-pill" data-cat="architecture">Architecture</button>
-      <button class="btn btn-secondary btn-sm btn-pill category-pill" data-cat="governance">Governance</button>
-      <button class="btn btn-secondary btn-sm btn-pill category-pill" data-cat="community">Community</button>
+    <!-- Category / Tier Filter Pills -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px;" id="poll-filters-bar">
+      <button class="plan-filter-btn active" data-plan="all">All Active Polls</button>
+      <button class="plan-filter-btn" data-plan="free">Community Grassroots</button>
+      <button class="plan-filter-btn" data-plan="pro">Pro Research &amp; Industry</button>
+      <button class="plan-filter-btn" data-plan="org">Institutional Unions &amp; NGOs</button>
+      <button class="plan-filter-btn" data-plan="election">Sovereign Plebiscites</button>
     </div>
 
     <!-- Content Layout: Polls Feed + Sidebar -->
-    <div style="display:grid; grid-template-columns:2fr 1fr; gap:32px; align-items:start;">
+    <div style="display:grid; grid-template-columns:2.2fr 1fr; gap:32px; align-items:start;">
 
-      <!-- Left Column: Interactive Polls Feed -->
+      <!-- Left Column: Interactive Polls Feed (RENDERED DYNAMICALLY FROM DB) -->
       <div style="display:flex; flex-direction:column; gap:24px;" id="polls-feed-container">
-
-        <!-- Interactive Poll 1 -->
-        <div class="card poll-card" data-poll-id="p1" style="padding:24px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span class="user-avatar" style="width:32px; height:32px; font-size:12px;">AC</span>
-              <div>
-                <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Acme Engineering</span>
-                <span style="display:block; font-size:11px; color:var(--text-secondary);">Track: High Concurrency Systems</span>
-              </div>
-            </div>
-            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">Live Voting</span>
-          </div>
-
-          <h2 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">What backend engine stack offers the best throughput for real-time WebSocket poll tallying?</h2>
-          <p style="font-size:13px; color:var(--text-secondary); margin:0 0 20px 0;">Evaluating sub-millisecond serialization, lockless concurrency, and memory footprints for millions of connected clients.</p>
-
-          <!-- Poll Options -->
-          <div class="poll-options-group" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-            
-            <div class="poll-option-row" data-option-id="opt1" style="cursor:pointer; position:relative; background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; overflow:hidden; transition:border-color 0.2s ease;">
-              <div class="poll-progress-fill" style="position:absolute; top:0; left:0; bottom:0; width:62%; background:rgba(0,230,118,0.18); border-radius:12px; transition:width 0.4s ease;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; font-size:14px; color:var(--text-primary);">Rust + Tokio + WebSocket Engine</span>
-                <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px;">62%</span>
-              </div>
-            </div>
-
-            <div class="poll-option-row" data-option-id="opt2" style="cursor:pointer; position:relative; background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; overflow:hidden; transition:border-color 0.2s ease;">
-              <div class="poll-progress-fill" style="position:absolute; top:0; left:0; bottom:0; width:24%; background:rgba(0,230,118,0.18); border-radius:12px; transition:width 0.4s ease;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; font-size:14px; color:var(--text-primary);">Go + Gorilla WebSockets</span>
-                <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px;">24%</span>
-              </div>
-            </div>
-
-            <div class="poll-option-row" data-option-id="opt3" style="cursor:pointer; position:relative; background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; overflow:hidden; transition:border-color 0.2s ease;">
-              <div class="poll-progress-fill" style="position:absolute; top:0; left:0; bottom:0; width:10%; background:rgba(0,230,118,0.18); border-radius:12px; transition:width 0.4s ease;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; font-size:14px; color:var(--text-primary);">C++ (uWebSockets) Native Service</span>
-                <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px;">10%</span>
-              </div>
-            </div>
-
-            <div class="poll-option-row" data-option-id="opt4" style="cursor:pointer; position:relative; background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; overflow:hidden; transition:border-color 0.2s ease;">
-              <div class="poll-progress-fill" style="position:absolute; top:0; left:0; bottom:0; width:4%; background:rgba(0,230,118,0.18); border-radius:12px; transition:width 0.4s ease;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; font-size:14px; color:var(--text-primary);">Node.js / Bun Engine</span>
-                <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px;">4%</span>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Poll Footer -->
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:14px; font-size:13px; color:var(--text-secondary);">
-            <div style="display:flex; gap:16px;">
-              <span><strong style="color:var(--text-primary);" class="vote-count">14,820</strong> total votes</span>
-              <span>Ends in 3 days</span>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <button class="btn btn-ghost btn-sm" onclick="App.showToast('Poll link copied to clipboard', 'success')">
-                <span data-icon="share"></span> Share
-              </button>
-            </div>
-          </div>
+        <div style="padding:48px; text-align:center; color:#64748B;">
+          Loading active polls from database...
         </div>
-
-        <!-- Interactive Poll 2 -->
-        <div class="card poll-card" data-poll-id="p2" style="padding:24px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span class="user-avatar" style="width:32px; height:32px; font-size:12px;">GI</span>
-              <div>
-                <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Getitright Core</span>
-                <span style="display:block; font-size:11px; color:var(--text-secondary);">Track: Production Engineering Standards</span>
-              </div>
-            </div>
-            <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px;">Live Voting</span>
-          </div>
-
-          <h2 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Should production backend logs and codebase enforce zero emojis in favor of structured icon identifiers?</h2>
-          <p style="font-size:13px; color:var(--text-secondary); margin:0 0 20px 0;">Evaluating parser safety, terminal character width bugs, and enterprise log indexing compliance.</p>
-
-          <div class="poll-options-group" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-            
-            <div class="poll-option-row" data-option-id="p2_opt1" style="cursor:pointer; position:relative; background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; overflow:hidden;">
-              <div class="poll-progress-fill" style="position:absolute; top:0; left:0; bottom:0; width:89%; background:rgba(0,230,118,0.18); border-radius:12px; transition:width 0.4s ease;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; font-size:14px; color:var(--text-primary);">Yes, strict icons/tokens only (Zero emojis)</span>
-                <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px;">89%</span>
-              </div>
-            </div>
-
-            <div class="poll-option-row" data-option-id="p2_opt2" style="cursor:pointer; position:relative; background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:12px; padding:14px 16px; overflow:hidden;">
-              <div class="poll-progress-fill" style="position:absolute; top:0; left:0; bottom:0; width:11%; background:rgba(0,230,118,0.18); border-radius:12px; transition:width 0.4s ease;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; font-size:14px; color:var(--text-primary);">No, allow emojis in messages</span>
-                <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px;">11%</span>
-              </div>
-            </div>
-
-          </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:14px; font-size:13px; color:var(--text-secondary);">
-            <div style="display:flex; gap:16px;">
-              <span><strong style="color:var(--text-primary);" class="vote-count">9,310</strong> total votes</span>
-              <span>Verified Institution</span>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="App.showToast('Poll link copied', 'success')">
-              <span data-icon="share"></span> Share
-            </button>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Right Column: Featured Tracks & Activity -->
-      <div style="display:flex; flex-direction:column; gap:24px;">
+      <!-- Right Column: Mobile App Download Callout -->
+      <div style="display:flex; flex-direction:column; gap:24px; position:sticky; top:90px;">
 
-        <!-- Active Poll Tracks Widget -->
-        <div class="card" style="padding:20px;">
-          <h3 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 14px 0; display:flex; align-items:center; gap:8px;">
-            <span data-icon="target"></span>
-            Featured Poll Tracks
-          </h3>
-
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <div style="background:var(--bg-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-color);">
-              <div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:2px;">Enterprise Architecture 2026</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Curated by Acme Systems - 5 connected polls</div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--accent-primary);">
-                <span>42k Responses</span>
-                <span>Track Active</span>
-              </div>
-            </div>
-
-            <div style="background:var(--bg-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-color);">
-              <div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:2px;">Flutter & Dart State Survey</div>
-              <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Curated by Flutter Guild - 3 connected polls</div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--accent-primary);">
-                <span>28k Responses</span>
-                <span>Track Active</span>
-              </div>
-            </div>
-          </div>
+        <!-- Mobile App Callout Card -->
+        <div class="card" style="padding:22px; border:1px solid #E2E5EC; background:#FFFFFF; border-radius:16px;">
+          <span class="badge" style="background:rgba(30,42,74,0.08); color:#1E2A4A; font-size:11px; padding:3px 8px; border-radius:6px; margin-bottom:12px; display:inline-block; font-weight:700;">
+            Mobile App Participation
+          </span>
+          <h3 style="font-size:17px; font-weight:800; color:#0F172A; margin:0 0 8px 0;">Participate on Mobile</h3>
+          <p style="font-size:13px; color:#64748B; line-height:1.5; margin:0 0 16px 0;">
+            Download the Get It Right Mobile App for Android to cast votes and complete surveys anywhere.
+          </p>
+          <a href="../mobile-app.html" class="btn btn-pill" style="width:100%; justify-content:center; background:#1E2A4A; color:#FFFFFF; padding:10px 18px; font-weight:700; text-decoration:none; border-radius:100px; display:inline-block; text-align:center;">
+            Get Android Mobile App &rarr;
+          </a>
         </div>
 
-        <!-- Take a Survey Card -->
-        <div class="card" style="padding:20px; border:1px solid rgba(0,230,118,0.3); background:linear-gradient(180deg, rgba(0,230,118,0.06) 0%, var(--bg-card) 100%);">
-          <span class="badge" style="background:rgba(0,230,118,0.15); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px; margin-bottom:12px; display:inline-block;">In-depth Feedback</span>
-          <h4 style="font-size:16px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Looking for Surveys?</h4>
-          <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Organizations are currently running multi-question feedback surveys with verified anonymity.</p>
-          <a href="surveys.html" class="btn btn-primary btn-sm btn-pill" style="width:100%; justify-content:center;">
-            Browse All Surveys
+        <!-- Verification Guarantee Card -->
+        <div class="card" style="padding:22px; border-radius:var(--radius-lg);">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; color:var(--accent-primary); font-weight:700; font-size:13px;">
+            <span data-icon="shield"></span>
+            <span>Cryptographic Proof Guarantee</span>
+          </div>
+          <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.55; margin:0 0 12px 0;">
+            Every vote cast is mathematically sealed with a SHA-256 Merkle leaf and anchored to the tamper-evident ledger. Anyone can verify ballot inclusion independently.
+          </p>
+          <a href="../verifier.html" class="btn btn-secondary btn-xs btn-pill" style="width:100%; justify-content:center;">
+            Open Public Verifier
           </a>
         </div>
 
@@ -232,45 +185,226 @@
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
   <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+    let allPolls = [];
+    let currentFilterPlan = 'all';
+
     document.addEventListener('DOMContentLoaded', () => {
       App.injectIcons();
+      loadActivePolls();
+      setupFilters();
+      setupSearch();
+    });
 
-      // Interactive Voting Mechanism
-      document.querySelectorAll('.poll-card').forEach(card => {
-        const optionRows = card.querySelectorAll('.poll-option-row');
-        optionRows.forEach(row => {
-          row.addEventListener('click', () => {
-            // Unselect previous
-            optionRows.forEach(r => {
-              r.style.borderColor = 'var(--border-color)';
-              r.classList.remove('voted');
-            });
+    async function loadActivePolls() {
+      const container = document.getElementById('polls-feed-container');
+      try {
+        const res = await fetch(`${API_BASE}/api/polls`);
+        if (!res.ok) throw new Error("Failed to load polls");
+        allPolls = await res.json();
+        
+        document.getElementById('polls-count-pill').textContent = `${allPolls.length} Active Polls`;
+        renderPollsFeed(allPolls);
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `
+          <div style="padding:48px; text-align:center; color:var(--text-secondary);">
+            Failed to connect to database. Please ensure API is active on port 5000.
+          </div>
+        `;
+      }
+    }
 
-            // Select clicked
-            row.style.borderColor = 'var(--accent-primary)';
-            row.classList.add('voted');
+    function renderPollsFeed(polls) {
+      const container = document.getElementById('polls-feed-container');
+      if (!container) return;
 
-            // Play instant confirmation
-            App.showToast('Vote successfully transmitted to Rust engine', 'success');
+      if (!polls || polls.length === 0) {
+        container.innerHTML = `
+          <div style="padding:48px; text-align:center; color:var(--text-secondary);">
+            No active polls found matching this filter.
+          </div>
+        `;
+        return;
+      }
 
-            // Increment visual count
-            const countEl = card.querySelector('.vote-count');
-            if (countEl) {
-              const currentNum = parseInt(countEl.textContent.replace(/,/g, ''), 10);
-              countEl.textContent = (currentNum + 1).toLocaleString();
+      container.innerHTML = polls.map(p => {
+        const planColor = p.plan === 'election' ? '#00E676' : 
+                         (p.plan === 'org' ? '#7C4DFF' : 
+                         (p.plan === 'pro' ? '#FFD740' : '#00B0FF'));
+
+        const optionsHtml = (p.options || []).map(opt => `
+          <button class="poll-opt-btn" onclick="submitPollVote('${p.id}', ${opt.index}, this)">
+            <div class="poll-progress-bar-fill" style="width:${opt.percentage}%;"></div>
+            <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:600; font-size:14px; color:var(--text-primary);">${opt.label}</span>
+              <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px; font-family:var(--font-mono);">
+                ${opt.percentage}% (${opt.votes.toLocaleString()})
+              </span>
+            </div>
+          </button>
+        `).join('');
+
+        return `
+          <div class="poll-feed-card" id="poll-card-${p.id}">
+            <!-- Header -->
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+              <div>
+                <span style="font-size:11px; font-weight:700; color:${planColor}; text-transform:uppercase; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:4px; margin-right:8px;">
+                  ${p.category || 'Civic'}
+                </span>
+                <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">${p.id}</span>
+              </div>
+              <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">
+                Active &bull; Accepting Votes
+              </span>
+            </div>
+
+            <!-- Title & Description -->
+            <h2 style="font-size:18px; font-weight:700; color:var(--text-primary); margin:0 0 8px 0; line-height:1.4;">
+              ${p.title}
+            </h2>
+            <p style="font-size:13px; color:var(--text-secondary); margin:0 0 20px 0; line-height:1.5;">
+              ${p.description}
+            </p>
+
+            <!-- Options Group -->
+            <div class="poll-options-group" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+              ${optionsHtml}
+            </div>
+
+            <!-- Receipt Container -->
+            <div id="receipt-container-${p.id}" style="display:none; margin-bottom:14px;"></div>
+
+            <!-- Footer -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:14px; font-size:12.5px; color:var(--text-secondary);">
+              <div>
+                <strong style="color:var(--text-primary);" class="vote-count">${p.totalVotes.toLocaleString()}</strong> total votes &bull; 
+                <span style="font-family:var(--font-mono); font-size:11px;">Root: ${p.merkleRoot ? p.merkleRoot.substring(0, 10) + '...' : '0x8a92...'}</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-ghost btn-sm" onclick="copyPollLink('${p.id}', '${escape(p.title)}')">
+                  <span data-icon="share"></span> Share Poll
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      App.injectIcons();
+    }
+
+    async function submitPollVote(pollId, optionIndex, btnEl) {
+      try {
+        const res = await fetch(`${API_BASE}/api/polls/${pollId}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            optionIndex: optionIndex,
+            voterKey: 'Voter-' + Math.floor(Math.random()*90000 + 10000),
+            platform: 'web'
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          App.showToast(`Ballot verified & recorded in database! (Total: ${data.totalVotes.toLocaleString()})`, 'success');
+
+          // Highlight selected
+          const card = document.getElementById(`poll-card-${pollId}`);
+          if (card) {
+            card.querySelectorAll('.poll-opt-btn').forEach(b => b.classList.remove('voted'));
+            btnEl.classList.add('voted');
+
+            // Show receipt pill
+            const receiptBox = document.getElementById(`receipt-container-${pollId}`);
+            if (receiptBox) {
+              receiptBox.style.display = 'block';
+              receiptBox.innerHTML = `
+                <div class="receipt-pill">
+                  <span>&#10003; Merkle Leaf #${data.merkleLeafIndex}</span> &bull; 
+                  <span>Receipt: ${data.receiptHash.substring(0, 16)}...</span>
+                </div>
+              `;
             }
-          });
+          }
+
+          // Refresh polls data
+          const refreshRes = await fetch(`${API_BASE}/api/polls/${pollId}`);
+          if (refreshRes.ok) {
+            const updatedPoll = await refreshRes.json();
+            const idx = allPolls.findIndex(p => p.id === pollId);
+            if (idx !== -1) {
+              allPolls[idx] = updatedPoll;
+              updatePollCardUI(updatedPoll);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        App.showToast('Network error submitting vote', 'error');
+      }
+    }
+
+    function updatePollCardUI(p) {
+      const card = document.getElementById(`poll-card-${p.id}`);
+      if (!card) return;
+
+      const countEl = card.querySelector('.vote-count');
+      if (countEl) countEl.textContent = p.totalVotes.toLocaleString();
+
+      const btns = card.querySelectorAll('.poll-opt-btn');
+      (p.options || []).forEach((opt, idx) => {
+        if (btns[idx]) {
+          const fill = btns[idx].querySelector('.poll-progress-bar-fill');
+          if (fill) fill.style.width = `${opt.percentage}%`;
+          const pctText = btns[idx].querySelector('.option-percent');
+          if (pctText) pctText.textContent = `${opt.percentage}% (${opt.votes.toLocaleString()})`;
+        }
+      });
+    }
+
+    function copyPollLink(pollId, rawTitle) {
+      const title = unescape(rawTitle);
+      const url = `${window.location.origin}/pages/vote.html?id=${pollId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        App.showToast('Poll participation link copied to clipboard!', 'success');
+      });
+    }
+
+    function setupFilters() {
+      const buttons = document.querySelectorAll('.plan-filter-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const plan = btn.dataset.plan;
+          if (plan === 'all') {
+            renderPollsFeed(allPolls);
+          } else {
+            const filtered = allPolls.filter(p => p.plan.toLowerCase() === plan.toLowerCase());
+            renderPollsFeed(filtered);
+          }
         });
       });
+    }
 
-      // User Logout
-      const logoutBtn = document.getElementById('user-logout-btn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-          AuthRedirect.logout();
-        });
-      }
-    });
+    function setupSearch() {
+      const input = document.getElementById('poll-filter-input');
+      if (!input) return;
+
+      input.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        const filtered = allPolls.filter(p => 
+          p.title.toLowerCase().includes(q) ||
+          (p.description || '').toLowerCase().includes(q) ||
+          (p.category || '').toLowerCase().includes(q)
+        );
+        renderPollsFeed(filtered);
+      });
+    }
   </script>
 </body>
 </html>

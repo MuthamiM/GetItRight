@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Getitright — Create a new survey or poll with the multi-step wizard.">
+  <title>Getitright — Create Survey / Poll</title>
+  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <style>
+    :root {
+      --bg-shell: #FAFAFC;
+      --bg-card: #FFFFFF;
+      --border-color: #E2E8F0;
+      --text-main: #0F172A;
+      --text-sub: #475569;
+      --text-muted: #94A3B8;
+      --brand-accent: #3B49DF;
+      --brand-hover: #2563EB;
+      --color-pink: #EC4899;
+      --color-green: #10B981;
+      --color-blue: #0288D1;
+      --color-purple: #7B1FA2;
+      --color-orange: #F57C00;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-shell); color: var(--text-main); font-family: var(--font-family); font-size: 13px; line-height: 1.5; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* Top Bar */
+    .topbar {
+      height: 68px; background: #FFFFFF; border-bottom: 1px solid var(--border-color);
+      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand-logo { font-size: 22px; font-weight: 800; color: #0F172A; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .brand-logo span { color: var(--brand-accent); }
+    .btn-back { background: #F1F5F9; color: var(--text-sub); border: none; border-radius: 100px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-back:hover { background: #E2E8F0; }
+
+    /* Main Container */
+    .wizard-container { max-width: 880px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    /* Step Progress Bar */
+    .step-progress { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+    .step-item {
+      flex: 1; display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+      background: #FFFFFF; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease;
+    }
+    .step-item:first-child { border-radius: 14px 0 0 14px; }
+    .step-item:last-child { border-radius: 0 14px 14px 0; }
+    .step-item.active { background: #EEF2FF; border-color: var(--brand-accent); }
+    .step-item.completed { background: #ECFDF5; border-color: var(--color-green); }
+    .step-num {
+      width: 30px; height: 30px; border-radius: 50%; background: #F1F5F9; color: var(--text-muted);
+      font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center;
+    }
+    .step-item.active .step-num { background: var(--brand-accent); color: #FFF; }
+    .step-item.completed .step-num { background: var(--color-green); color: #FFF; }
+    .step-label { font-weight: 700; font-size: 13px; color: var(--text-sub); }
+    .step-item.active .step-label { color: var(--brand-accent); }
+    .step-item.completed .step-label { color: var(--color-green); }
+
+    /* Wizard Panels */
+    .wizard-panel { display: none; }
+    .wizard-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .panel-card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 18px; padding: 28px; box-shadow: 0 2px 8px rgba(15,23,42,0.03); margin-bottom: 20px; }
+    .panel-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .panel-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
+
+    /* Type selector cards */
+    .type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .type-card {
+      border: 2px solid var(--border-color); border-radius: 14px; padding: 20px; cursor: pointer;
+      transition: all 0.2s ease; text-align: center;
+    }
+    .type-card:hover { border-color: var(--brand-accent); background: #FAFAFF; }
+    .type-card.selected { border-color: var(--brand-accent); background: #EEF2FF; }
+    .type-card-icon { font-size: 32px; margin-bottom: 8px; }
+    .type-card-title { font-size: 15px; font-weight: 800; color: var(--text-main); }
+    .type-card-desc { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
+
+    /* Template Gallery */
+    .templates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+    .template-card {
+      border: 2px solid var(--border-color); border-radius: 14px; padding: 18px; cursor: pointer;
+      transition: all 0.2s ease; position: relative;
+    }
+    .template-card:hover { border-color: var(--brand-accent); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59,73,223,0.08); }
+    .template-card.selected { border-color: var(--brand-accent); background: #EEF2FF; }
+    .template-icon { font-size: 24px; margin-bottom: 8px; }
+    .template-name { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .template-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
+    .template-badge { position: absolute; top: 10px; right: 10px; font-size: 9px; font-weight: 800; background: #F1F5F9; color: var(--text-muted); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .template-card.selected .template-badge { background: var(--brand-accent); color: #FFF; }
+
+    /* Form inputs */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #CBD5E1;
+      font-size: 13px; font-family: inherit; color: var(--text-main); transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--brand-accent); }
+    .form-textarea { resize: vertical; }
+
+    /* Question Builder */
+    .question-card {
+      background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px;
+      margin-bottom: 14px; transition: all 0.2s ease;
+    }
+    .question-card:hover { border-color: #CBD5E1; }
+    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .question-badge { font-size: 12px; font-weight: 800; color: var(--brand-accent); }
+    .question-actions { display: flex; gap: 8px; }
+    .btn-sm { background: none; border: none; font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .btn-sm:hover { background: #E2E8F0; }
+    .btn-sm.danger { color: var(--color-pink); }
+    .btn-sm.move { color: var(--text-muted); }
+
+    .choice-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .choice-input { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 12px; font-family: inherit; }
+    .choice-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
+
+    /* Live Preview Panel */
+    .preview-panel { background: #0F172A; border-radius: 14px; padding: 24px; color: #FFFFFF; }
+    .preview-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; }
+    .preview-question { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .preview-q-text { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .preview-option { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94A3B8; margin-bottom: 4px; }
+    .preview-radio { width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; }
+    .preview-text-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #334155; border-radius: 8px; padding: 8px; color: #CBD5E1; font-size: 12px; }
+
+    /* Review Summary */
+    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    .summary-label { font-weight: 700; color: var(--text-sub); }
+    .summary-value { font-weight: 800; color: var(--text-main); }
+
+    /* Buttons */
+    .btn-row { display: flex; justify-content: space-between; margin-top: 24px; }
+    .btn-primary { background: var(--brand-accent); color: #FFF; border: none; border-radius: 100px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .btn-primary:hover { background: var(--brand-hover); transform: translateY(-1px); }
+    .btn-secondary { background: #F1F5F9; color: var(--text-sub); border: none; border-radius: 100px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .btn-secondary:hover { background: #E2E8F0; }
+    .btn-add { background: #EEF2FF; color: var(--brand-accent); border: none; border-radius: 100px; padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-add:hover { background: #DDD6FE; }
+
+    .info-box { background: #EEF2FF; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--brand-accent); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+    @media (max-width: 768px) {
+      .type-selector { grid-template-columns: 1fr; }
+      .templates-grid { grid-template-columns: 1fr 1fr; }
+      .step-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <a href="../index.html" class="brand-logo"><span>@</span>Getitright</a>
+    <button class="btn-back" onclick="history.back()">← Back to Dashboard</button>
+  </header>
+
+  <!-- WIZARD CONTAINER -->
+  <div class="wizard-container">
+
+    <!-- STEP PROGRESS BAR -->
+    <div class="step-progress">
+      <div class="step-item active" id="step-indicator-1" onclick="goToStep(1)">
+        <div class="step-num">1</div>
+        <span class="step-label">Type & Template</span>
+      </div>
+      <div class="step-item" id="step-indicator-2" onclick="goToStep(2)">
+        <div class="step-num">2</div>
+        <span class="step-label">Build Questions</span>
+      </div>
+      <div class="step-item" id="step-indicator-3" onclick="goToStep(3)">
+        <div class="step-num">3</div>
+        <span class="step-label">Review & Publish</span>
+      </div>
+    </div>
+
+    <!-- ====== STEP 1: TYPE & TEMPLATE ====== -->
+    <div class="wizard-panel active" id="panel-1">
+      <div class="panel-card">
+        <div class="panel-title">What would you like to create?</div>
+        <div class="panel-desc">Choose whether you're building a multi-question survey or a single-question poll.</div>
+
+        <div class="type-selector">
+          <div class="type-card selected" id="type-survey" onclick="selectType('survey')">
+            <div class="type-card-icon">📋</div>
+            <div class="type-card-title">Multi-Step Survey</div>
+            <div class="type-card-desc">Multiple questions with choice, rating, and text input types</div>
+          </div>
+          <div class="type-card" id="type-poll" onclick="selectType('poll')">
+            <div class="type-card-icon">🗳️</div>
+            <div class="type-card-title">Single Poll</div>
+            <div class="type-card-desc">One question with multiple choice options for quick voting</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" class="form-input" id="wizard-title" placeholder="e.g. Employee & Community Feedback Q4 2026" required>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Category / Track</label>
+            <select class="form-select" id="wizard-track">
+              <option value="General">General Public</option>
+              <option value="Enterprise Feedback">Enterprise Feedback</option>
+              <option value="Product Roadmap">Product Roadmap</option>
+              <option value="Civic Priority">Civic Priority</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Plan Tier</label>
+            <select class="form-select" id="wizard-plan">
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="org">Organization</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="wizard-desc" rows="2" placeholder="Briefly describe the purpose..."></textarea>
+        </div>
+      </div>
+
+      <!-- TEMPLATE GALLERY -->
+      <div class="panel-card" id="template-gallery-section">
+        <div class="panel-title">Start from a Template</div>
+        <div class="panel-desc">Choose a pre-built template to auto-populate questions, or start from scratch.</div>
+
+        <div class="type-card" style="margin-bottom:14px;text-align:left;display:flex;align-items:center;gap:12px;padding:14px 18px;" id="template-scratch" onclick="selectTemplate(null)">
+          <span style="font-size:22px;">✨</span>
+          <div>
+            <div class="type-card-title" style="font-size:13px;">Start from Scratch</div>
+            <div class="type-card-desc">Build your own questions from an empty canvas</div>
+          </div>
+        </div>
+
+        <div class="templates-grid" id="templates-grid">
+          <div style="text-align:center;color:var(--text-muted);padding:20px;grid-column:1/-1;">Loading templates...</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div></div>
+        <button class="btn-primary" onclick="goToStep(2)">Continue to Questions →</button>
+      </div>
+    </div>
+
+    <!-- ====== STEP 2: BUILD QUESTIONS ====== -->
+    <div class="wizard-panel" id="panel-2">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;">
+
+        <!-- Left: Question Builder -->
+        <div>
+          <div class="panel-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <div>
+                <div class="panel-title">Questions & Configuration</div>
+                <div class="panel-desc" style="margin-bottom:0;">Add, reorder, and configure your questions.</div>
+              </div>
+              <button class="btn-add" onclick="addQuestion()">+ Add Question</button>
+            </div>
+
+            <div id="questions-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Preview -->
+        <div>
+          <div class="preview-panel" style="position:sticky;top:20px;">
+            <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">LIVE PREVIEW</div>
+            <div class="preview-title" id="preview-title">Your Survey Title</div>
+            <div id="preview-questions">
+              <div style="color:#64748B;font-size:12px;">Add questions to see a live preview.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn-primary" onclick="goToStep(3)">Review & Publish →</button>
+      </div>
+    </div>
+
+    <!-- ====== STEP 3: REVIEW & PUBLISH ====== -->
+    <div class="wizard-panel" id="panel-3">
+      <div class="panel-card">
+        <div class="panel-title">Review & Publish</div>
+        <div class="panel-desc">Confirm your survey/poll details before publishing.</div>
+
+        <div id="review-summary">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title" style="font-size:16px;">Publication Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+          <div class="form-group">
+            <label class="form-label">Target Responses</label>
+            <input type="number" class="form-input" id="wizard-target" value="500" min="10" max="100000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Publish Mode</label>
+            <select class="form-select" id="wizard-publish-mode">
+              <option value="immediate">Publish Immediately</option>
+              <option value="scheduled">Schedule for Later</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="info-box" style="margin-top:10px;">
+          🔗 Share link will be generated after publishing. Voters can access via the public vote page.
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goToStep(2)">← Back to Edit</button>
+        <button class="btn-primary" onclick="publishWizard()" style="background:var(--color-green);">✓ Confirm & Publish</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    const API = 'http://127.0.0.1:8000/api';
+    let currentStep = 1;
+    let selectedType = 'survey';
+    let selectedTemplate = null;
+    let templates = [];
+    let questions = [
+      { id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true }
+    ];
+
+    // === STEP NAVIGATION ===
+    function goToStep(n) {
+      if (n === 2 && !document.getElementById('wizard-title').value.trim()) {
+        alert('Please enter a title first.');
+        return;
+      }
+      currentStep = n;
+      document.querySelectorAll('.wizard-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(`panel-${n}`).classList.add('active');
+
+      for (let i = 1; i <= 3; i++) {
+        const indicator = document.getElementById(`step-indicator-${i}`);
+        indicator.classList.remove('active', 'completed');
+        if (i < n) indicator.classList.add('completed');
+        if (i === n) indicator.classList.add('active');
+      }
+
+      if (n === 2) { renderQuestions(); updatePreview(); }
+      if (n === 3) renderReview();
+    }
+
+    // === TYPE SELECTION ===
+    function selectType(type) {
+      selectedType = type;
+      document.getElementById('type-survey').classList.toggle('selected', type === 'survey');
+      document.getElementById('type-poll').classList.toggle('selected', type === 'poll');
+
+      // Hide template gallery for polls
+      document.getElementById('template-gallery-section').style.display = type === 'survey' ? 'block' : 'none';
+
+      if (type === 'poll') {
+        questions = [{ id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B', 'Option C'], required: true }];
+      }
+    }
+
+    // === TEMPLATE SELECTION ===
+    function selectTemplate(tmpl) {
+      selectedTemplate = tmpl;
+
+      // Deselect all
+      document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('template-scratch').classList.remove('selected');
+
+      if (tmpl === null) {
+        document.getElementById('template-scratch').classList.add('selected');
+        questions = [{ id: Date.now(), text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true }];
+      } else {
+        const card = document.querySelector(`[data-template-id="${tmpl.id}"]`);
+        if (card) card.classList.add('selected');
+
+        // Auto-populate questions from template
+        questions = tmpl.questions.map((q, i) => ({
+          id: Date.now() + i,
+          text: q.questionText,
+          type: q.questionType === 'rating' ? 'rating' : (q.questionType === 'text' ? 'text' : 'choice'),
+          choices: q.options && q.options.length ? [...q.options] : [],
+          required: true
+        }));
+
+        // Auto-fill title and track if empty
+        if (!document.getElementById('wizard-title').value.trim()) {
+          document.getElementById('wizard-title').value = tmpl.name;
+        }
+        // Match category
+        const trackSel = document.getElementById('wizard-track');
+        for (let opt of trackSel.options) {
+          if (opt.value === tmpl.category) { trackSel.value = tmpl.category; break; }
+        }
+      }
+    }
+
+    // === LOAD TEMPLATES FROM API ===
+    async function loadTemplates() {
+      try {
+        const res = await fetch(`${API}/surveys/templates`);
+        if (res.ok) templates = await res.json();
+      } catch (e) { console.error('Failed to load templates:', e); }
+      renderTemplateGallery();
+    }
+
+    function renderTemplateGallery() {
+      const grid = document.getElementById('templates-grid');
+      if (!templates.length) {
+        grid.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center;">No templates available.</div>';
+        return;
+      }
+      grid.innerHTML = templates.map(t => `
+        <div class="template-card" data-template-id="${t.id}" onclick='selectTemplate(${JSON.stringify(t).replace(/'/g, "\\'")})'>
+          <div class="template-badge">${t.category}</div>
+          <div class="template-icon">${t.icon || '📋'}</div>
+          <div class="template-name">${t.name}</div>
+          <div class="template-desc">${t.description}</div>
+          <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-weight:700;">${t.questions.length} questions</div>
+        </div>
+      `).join('');
+    }
+
+    // === QUESTION BUILDER ===
+    function addQuestion() {
+      questions.push({ id: Date.now(), text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true });
+      renderQuestions();
+      updatePreview();
+    }
+
+    function removeQuestion(id) {
+      if (questions.length <= 1) return alert('Must have at least 1 question.');
+      questions = questions.filter(q => q.id !== id);
+      renderQuestions();
+      updatePreview();
+    }
+
+    function moveQuestion(id, dir) {
+      const idx = questions.findIndex(q => q.id === id);
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= questions.length) return;
+      [questions[idx], questions[newIdx]] = [questions[newIdx], questions[idx]];
+      renderQuestions();
+      updatePreview();
+    }
+
+    function addChoice(qId) {
+      const q = questions.find(x => x.id === qId);
+      if (q) {
+        q.choices.push(`Option ${String.fromCharCode(65 + q.choices.length)}`);
+        renderQuestions();
+        updatePreview();
+      }
+    }
+
+    function removeChoice(qId, idx) {
+      const q = questions.find(x => x.id === qId);
+      if (q && q.choices.length > 1) {
+        q.choices.splice(idx, 1);
+        renderQuestions();
+        updatePreview();
+      }
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = questions.map((q, qIdx) => {
+        const isChoice = q.type === 'choice';
+        const isRating = q.type === 'rating';
+        const isText = q.type === 'text';
+
+        return `
+          <div class="question-card">
+            <div class="question-header">
+              <span class="question-badge">Q${qIdx + 1}: ${isChoice ? 'Multiple Choice' : isRating ? 'Rating Scale' : 'Text Input'}</span>
+              <div class="question-actions">
+                <button class="btn-sm move" onclick="moveQuestion(${q.id}, -1)" title="Move up">↑</button>
+                <button class="btn-sm move" onclick="moveQuestion(${q.id}, 1)" title="Move down">↓</button>
+                <button class="btn-sm danger" onclick="removeQuestion(${q.id})">Delete</button>
+              </div>
+            </div>
+
+            <input type="text" class="form-input" placeholder="Type your question..." value="${q.text}"
+              oninput="questions[${qIdx}].text = this.value; updatePreview();" style="margin-bottom:10px;">
+
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+              <select class="form-select" style="width:auto;padding:6px 12px;font-size:12px;"
+                onchange="questions[${qIdx}].type = this.value; renderQuestions(); updatePreview();">
+                <option value="choice" ${isChoice ? 'selected' : ''}>Multiple Choice</option>
+                <option value="rating" ${isRating ? 'selected' : ''}>Rating Scale (1-5)</option>
+                <option value="text" ${isText ? 'selected' : ''}>Free Text Input</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--text-sub);cursor:pointer;">
+                <input type="checkbox" ${q.required ? 'checked' : ''} onchange="questions[${qIdx}].required = this.checked"> Required
+              </label>
+            </div>
+
+            ${isChoice ? `
+              <div style="margin-top:6px;">
+                ${q.choices.map((c, cIdx) => `
+                  <div class="choice-row">
+                    <input type="text" class="choice-input" value="${c}" placeholder="Choice text..."
+                      oninput="questions[${qIdx}].choices[${cIdx}] = this.value; updatePreview();">
+                    <button class="choice-remove" onclick="removeChoice(${q.id}, ${cIdx})">&times;</button>
+                  </div>
+                `).join('')}
+                <button class="btn-add" style="margin-top:6px;" onclick="addChoice(${q.id})">+ Add Choice</button>
+              </div>
+            ` : isRating ? `
+              <div class="info-box">⭐ Respondents will rate on a scale from 1 to 5 stars.</div>
+            ` : `
+              <div class="info-box">💡 Respondents will type a free-text answer in a text box.</div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // === LIVE PREVIEW ===
+    function updatePreview() {
+      const title = document.getElementById('wizard-title').value || 'Your Survey Title';
+      document.getElementById('preview-title').textContent = title;
+
+      const container = document.getElementById('preview-questions');
+      if (!questions.length) {
+        container.innerHTML = '<div style="color:#64748B;font-size:12px;">Add questions to see a live preview.</div>';
+        return;
+      }
+
+      container.innerHTML = questions.map((q, i) => {
+        let content = '';
+        if (q.type === 'choice') {
+          content = q.choices.map(c => `<div class="preview-option"><div class="preview-radio"></div>${c}</div>`).join('');
+        } else if (q.type === 'rating') {
+          content = '<div style="display:flex;gap:4px;margin-top:4px;">★★★★★</div>';
+        } else {
+          content = '<input class="preview-text-input" placeholder="Type your answer..." disabled>';
+        }
+        return `
+          <div class="preview-question">
+            <div class="preview-q-text">${i + 1}. ${q.text || 'Untitled Question'}${q.required ? ' *' : ''}</div>
+            ${content}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // === REVIEW ===
+    function renderReview() {
+      const title = document.getElementById('wizard-title').value || 'Untitled';
+      const track = document.getElementById('wizard-track').value;
+      const plan = document.getElementById('wizard-plan').value;
+      const desc = document.getElementById('wizard-desc').value || 'No description';
+
+      const choiceCount = questions.filter(q => q.type === 'choice').length;
+      const textCount = questions.filter(q => q.type === 'text').length;
+      const ratingCount = questions.filter(q => q.type === 'rating').length;
+
+      document.getElementById('review-summary').innerHTML = `
+        <div class="summary-row"><span class="summary-label">Type</span><span class="summary-value">${selectedType === 'survey' ? '📋 Survey' : '🗳️ Poll'}</span></div>
+        <div class="summary-row"><span class="summary-label">Title</span><span class="summary-value">${title}</span></div>
+        <div class="summary-row"><span class="summary-label">Category</span><span class="summary-value">${track}</span></div>
+        <div class="summary-row"><span class="summary-label">Plan</span><span class="summary-value">${plan}</span></div>
+        <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:400px;text-align:right;">${desc}</span></div>
+        <div class="summary-row"><span class="summary-label">Total Questions</span><span class="summary-value">${questions.length}</span></div>
+        <div class="summary-row"><span class="summary-label">Question Types</span><span class="summary-value">${choiceCount} choice · ${textCount} text · ${ratingCount} rating</span></div>
+        ${selectedTemplate ? `<div class="summary-row"><span class="summary-label">Template Used</span><span class="summary-value">${selectedTemplate.name}</span></div>` : ''}
+
+        <div style="margin-top:20px;">
+          <div style="font-size:14px;font-weight:800;color:var(--text-main);margin-bottom:12px;">Questions Preview</div>
+          ${questions.map((q, i) => `
+            <div style="background:#F8FAFC;border:1px solid var(--border-color);border-radius:10px;padding:12px;margin-bottom:8px;">
+              <div style="font-weight:700;font-size:13px;color:var(--text-main);">Q${i+1}: ${q.text || 'Untitled Question'}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+                Type: ${q.type}${q.type === 'choice' ? ` · ${q.choices.length} options` : ''}${q.required ? ' · Required' : ''}
+              </div>
+              ${q.type === 'choice' ? `<div style="font-size:11px;color:var(--text-sub);margin-top:4px;">${q.choices.join(' • ')}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // === PUBLISH ===
+    async function publishWizard() {
+      const title = document.getElementById('wizard-title').value.trim();
+      const track = document.getElementById('wizard-track').value;
+      const plan = document.getElementById('wizard-plan').value;
+      const desc = document.getElementById('wizard-desc').value.trim();
+      const target = parseInt(document.getElementById('wizard-target').value) || 500;
+
+      if (!title) return alert('Please enter a title.');
+      if (!questions.length || !questions[0].text) return alert('Please add at least one question.');
+
+      if (selectedType === 'survey') {
+        const questionsPayload = questions.map(q => ({
+          questionText: q.text || 'Untitled Question',
+          questionType: q.type === 'rating' ? 'rating' : (q.type === 'text' ? 'text' : 'choice'),
+          options: q.type === 'choice' ? q.choices.filter(c => c.trim()) : []
+        }));
+
+        try {
+          const res = await fetch(`${API}/surveys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description: desc, track, plan, targetResponses: target, questions: questionsPayload })
+          });
+          if (res.ok) {
+            alert('🎉 Survey published successfully!');
+            window.location.href = 'admin.html';
+          } else {
+            const err = await res.json();
+            alert('Error: ' + (err.detail || 'Could not create survey'));
+          }
+        } catch (e) { alert('Network error creating survey'); }
+      } else {
+        const allChoices = questions.flatMap(q => q.choices || []).filter(c => c.trim());
+        try {
+          const res = await fetch(`${API}/polls`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description: desc, category: track, plan, options: allChoices.length ? allChoices : ['Yes', 'No'] })
+          });
+          if (res.ok) {
+            alert('🎉 Poll published successfully!');
+            window.location.href = 'admin.html';
+          } else {
+            const err = await res.json();
+            alert('Error: ' + (err.detail || 'Could not create poll'));
+          }
+        } catch (e) { alert('Network error creating poll'); }
+      }
+    }
+
+    // === INIT ===
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTemplates();
+      // Listen for title changes to update preview
+      document.getElementById('wizard-title').addEventListener('input', updatePreview);
+    });
+  </script>
+</body>
+</html>
