@@ -218,7 +218,7 @@ const AuthRedirect = {
     const role = this.getRole();
     if (!this.isLoggedIn()) return;
     if (role === 'org') {
-      window.location.href = 'console/dashboard.html';
+      window.location.href = 'console/console.html';
     } else {
       window.location.href = 'pages/vote.html';
     }

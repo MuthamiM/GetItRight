@@ -816,7 +816,7 @@ app.MapPost("/api/auth/login", async ([FromBody] LoginRequest req, AppDbContext 
             user.ConsoleUrl,
             isAdmin = user.Role == "Admin"
         },
-        redirectUrl = user.Role == "Admin" ? "/console/admin.html" : user.ConsoleUrl
+        redirectUrl = user.Role == "Admin" ? "/console/dashboard.html" : user.ConsoleUrl
     });
 });
 
@@ -1252,6 +1252,8 @@ public class Survey
     public string CreatedAt { get; set; } = "";
     public string OwnerId { get; set; } = "USR-001";
     public string MerkleCohortRoot { get; set; } = "";
+    public string TargetAudience { get; set; } = "General Public";
+    public string OrganizationName { get; set; } = "Verified Civic Publisher";
     public List<SurveyQuestion> Questions { get; set; } = new();
 }
 
@@ -1327,7 +1329,7 @@ public static class DbSeeder
             TotalVotesReceived = 158200,
             VoterQuota = 10000000,
             PollsQuota = 99999,
-            ConsoleUrl = "/console/admin.html",
+            ConsoleUrl = "/console/dashboard.html",
             LastLogin = "Live Now"
         };
 
@@ -2360,6 +2362,59 @@ public static class DbSeeder
                         QuestionType = "multiple_choice",
                         OptionsJson = JsonSerializer.Serialize(new List<string> { "Strongly Support", "Support with Privacy Protections", "Oppose / Proprietary IP" }),
                         ResponsesJson = JsonSerializer.Serialize(new Dictionary<string, int> { { "Strongly Support", 9100 }, { "Support with Privacy Protections", 4250 }, { "Oppose / Proprietary IP", 850 } })
+                    }
+                }
+            },
+            new Survey
+            {
+                Id = "SRV-PRO-02",
+                Title = "Kenyan Supermarkets & Shopping Malls National Consumer Census 2026",
+                Description = "National consumer survey evaluating customer experience, pricing, stock availability, and checkout speed across major Kenyan supermarket chains and shopping malls by County.",
+                Track = "Retail & Consumer Research",
+                Plan = "pro",
+                Status = "active",
+                TargetResponses = 20000,
+                TotalResponses = 18450,
+                CreatedAt = "2026-10-01 09:30",
+                OwnerId = "USR-002",
+                MerkleCohortRoot = "0x98fa11a28892bb54",
+                Questions = new List<SurveyQuestion>
+                {
+                    new SurveyQuestion
+                    {
+                        SurveyId = "SRV-PRO-02",
+                        Index = 1,
+                        QuestionText = "Which County in Kenya do you primarily conduct your supermarket & mall shopping in?",
+                        QuestionType = "multiple_choice",
+                        OptionsJson = JsonSerializer.Serialize(new List<string> { "Nairobi County", "Mombasa County", "Kiambu County", "Nakuru County", "Uasin Gishu County (Eldoret)", "Kisumu County", "Machakos County", "Kilifi County", "Other County" }),
+                        ResponsesJson = JsonSerializer.Serialize(new Dictionary<string, int> { { "Nairobi County", 7850 }, { "Mombasa County", 2410 }, { "Kiambu County", 2150 }, { "Nakuru County", 1890 }, { "Uasin Gishu County (Eldoret)", 1420 }, { "Kisumu County", 1210 }, { "Machakos County", 890 }, { "Kilifi County", 420 }, { "Other County", 210 } })
+                    },
+                    new SurveyQuestion
+                    {
+                        SurveyId = "SRV-PRO-02",
+                        Index = 2,
+                        QuestionText = "Which supermarket chain is your primary destination for groceries and household goods?",
+                        QuestionType = "multiple_choice",
+                        OptionsJson = JsonSerializer.Serialize(new List<string> { "Naivas Supermarket", "Quickmart Supermarket", "Carrefour Kenya", "Chandarana Foodplus", "Cleanshelf Supermarket", "Khetias Supermarket", "Other Local Supermarket" }),
+                        ResponsesJson = JsonSerializer.Serialize(new Dictionary<string, int> { { "Naivas Supermarket", 7920 }, { "Quickmart Supermarket", 4810 }, { "Carrefour Kenya", 3450 }, { "Chandarana Foodplus", 1120 }, { "Cleanshelf Supermarket", 610 }, { "Khetias Supermarket", 390 }, { "Other Local Supermarket", 150 } })
+                    },
+                    new SurveyQuestion
+                    {
+                        SurveyId = "SRV-PRO-02",
+                        Index = 3,
+                        QuestionText = "Which shopping mall or commercial complex do you visit most frequently in your region?",
+                        QuestionType = "multiple_choice",
+                        OptionsJson = JsonSerializer.Serialize(new List<string> { "Two Rivers Mall (Nairobi)", "Garden City Mall (Nairobi)", "Sarit Centre (Westlands)", "Yaya Centre (Kilimani)", "Galleria Mall (Karen)", "Nyali Centre / City Mall (Mombasa)", "Rupa's Mall (Eldoret)", "Westgate Shopping Mall (Nairobi)", "Mega Plaza (Kisumu)", "Local Town Commercial Center" }),
+                        ResponsesJson = JsonSerializer.Serialize(new Dictionary<string, int> { { "Two Rivers Mall (Nairobi)", 3840 }, { "Garden City Mall (Nairobi)", 2910 }, { "Sarit Centre (Westlands)", 3420 }, { "Yaya Centre (Kilimani)", 1820 }, { "Galleria Mall (Karen)", 1650 }, { "Nyali Centre / City Mall (Mombasa)", 2140 }, { "Rupa's Mall (Eldoret)", 1250 }, { "Westgate Shopping Mall (Nairobi)", 890 }, { "Mega Plaza (Kisumu)", 410 }, { "Local Town Commercial Center", 120 } })
+                    },
+                    new SurveyQuestion
+                    {
+                        SurveyId = "SRV-PRO-02",
+                        Index = 4,
+                        QuestionText = "How would you rate product pricing fairness, stock availability, and checkout speed at your preferred retail store?",
+                        QuestionType = "rating_scale",
+                        OptionsJson = JsonSerializer.Serialize(new List<string> { "5 Stars - Excellent Service & Fair Prices", "4 Stars - Good Overall Experience", "3 Stars - Average Service & Pricing", "2 Stars - Long Queues & Price Inflation", "1 Star - Frequent Stockouts & Poor Service" }),
+                        ResponsesJson = JsonSerializer.Serialize(new Dictionary<string, int> { { "5 Stars - Excellent Service & Fair Prices", 4120 }, { "4 Stars - Good Overall Experience", 7890 }, { "3 Stars - Average Service & Pricing", 4210 }, { "2 Stars - Long Queues & Price Inflation", 1820 }, { "1 Star - Frequent Stockouts & Poor Service", 410 } })
                     }
                 }
             },

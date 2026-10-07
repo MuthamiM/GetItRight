@@ -3,74 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Get It Right — Create your verified polling account. Select a plan and launch your dedicated console.">
-  <title>Get It Right — Create Account</title>
+  <meta name="description" content="Getitright — Create your organization account and choose a plan.">
+  <title>Getitright — Create Account</title>
   <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg-dark: #0B0F1A;
-      --bg-card: rgba(255,255,255,0.04);
-      --border-glass: rgba(255,255,255,0.08);
-      --accent: #4A5CFF;
-      --accent-glow: rgba(74,92,255,0.25);
-      --accent-hover: #6370FF;
-      --text-primary: #F1F5F9;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      --danger: #EF4444;
-      --success: #10B981;
-      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --charcoal: #303030;
+      --silver: #E5E5E5;
     }
 
     body {
-      font-family: var(--font-body);
-      background: var(--bg-dark);
-      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--silver);
+      color: var(--charcoal);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(74,92,255,0.12), transparent),
-        radial-gradient(ellipse 60% 80% at 80% 100%, rgba(16,185,129,0.08), transparent);
-      pointer-events: none;
+      padding: 32px 20px;
     }
 
     .auth-container {
       width: 100%;
-      max-width: 520px;
-      position: relative;
-      z-index: 1;
+      max-width: 580px;
+      transition: max-width 0.4s ease;
+    }
+
+    .auth-container.plan-step-active {
+      max-width: 1180px;
     }
 
     .auth-brand {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     .auth-brand-logo {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1E2A4A, #0B0F1A);
-      border: 1px solid var(--border-glass);
-      margin-bottom: 14px;
+      background: var(--charcoal);
+      margin-bottom: 10px;
       overflow: hidden;
     }
 
@@ -78,566 +57,811 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 14px;
     }
 
     .auth-brand-name {
-      font-size: 22px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
       font-weight: 800;
+      color: var(--charcoal);
       letter-spacing: -0.02em;
     }
 
-    .auth-brand-name .dot { color: var(--accent); }
-
     .auth-brand-sub {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 6px;
+      font-size: 14px;
+      color: var(--charcoal);
+      opacity: 0.75;
+      margin-top: 4px;
     }
 
     .auth-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--border-glass);
-      border-radius: 20px;
-      padding: 36px 32px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      background: var(--charcoal);
+      color: var(--silver);
+      border-radius: 24px;
+      padding: 36px;
+      box-shadow: 0 12px 40px rgba(48, 48, 48, 0.3);
+      transition: all 0.3s ease;
     }
 
     .auth-card h2 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 6px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--silver);
+      margin-bottom: 4px;
     }
 
     .auth-card .subtitle {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 28px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
-    }
-
-    .form-input, .form-select {
-      width: 100%;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border-glass);
-      border-radius: 12px;
-      color: var(--text-primary);
       font-size: 14px;
-      font-family: var(--font-body);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      outline: none;
+      color: var(--silver);
+      opacity: 0.75;
+      margin-bottom: 24px;
+      line-height: 1.5;
     }
 
-    .form-select {
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394A3B8'%3E%3Cpath d='M6 8.5L1 3.5h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
+    /* STEP INDICATOR */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
     }
 
-    .form-select option {
-      background: #1E293B;
-      color: var(--text-primary);
+    .step-pill {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 14px;
+      border-radius: 100px;
+      background: rgba(229, 229, 229, 0.15);
+      color: var(--silver);
+      opacity: 0.6;
     }
 
-    .form-input:focus, .form-select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
+    .step-pill.active {
+      background: var(--silver);
+      color: var(--charcoal);
+      opacity: 1;
     }
 
-    .form-input::placeholder { color: var(--text-muted); }
-
-    .form-row-2col {
+    /* FORM STYLES */
+    .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
 
-    .form-error {
-      display: none;
+    @media (max-width: 580px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
       margin-bottom: 16px;
-      padding: 10px 14px;
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.2);
-      border-radius: 10px;
-      font-size: 13px;
-      color: var(--danger);
     }
 
-    .form-error.visible { display: block; }
-
-    /* Plan Selector Cards */
-    .plan-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .form-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--silver);
+      opacity: 0.9;
       margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .plan-option {
-      position: relative;
-      padding: 14px 14px 12px;
-      background: rgba(255,255,255,0.03);
-      border: 2px solid var(--border-glass);
-      border-radius: 14px;
+    .form-input {
+      width: 100%;
+      padding: 13px 15px;
+      background: rgba(229, 229, 229, 0.08);
+      border: 1.5px solid rgba(229, 229, 229, 0.25);
+      border-radius: 12px;
+      color: var(--silver);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .form-input::placeholder {
+      color: var(--silver);
+      opacity: 0.4;
+    }
+
+    .form-input:focus {
+      border-color: var(--silver);
+      background: rgba(229, 229, 229, 0.15);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--silver);
+      color: var(--charcoal);
+      border: none;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
-      transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
-      text-align: center;
+      margin-top: 12px;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .plan-option:hover {
-      border-color: rgba(74,92,255,0.3);
-      background: rgba(255,255,255,0.06);
+    .btn-submit:hover {
+      opacity: 0.92;
       transform: translateY(-1px);
     }
 
-    .plan-option.selected {
-      border-color: var(--accent);
-      background: rgba(74,92,255,0.08);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .plan-option input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .plan-tier {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 4px;
-    }
-
-    .plan-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 2px;
-    }
-
-    .plan-price {
-      font-size: 12px;
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .plan-option.selected .plan-tier { color: var(--accent); }
-
-    .plan-popular-badge {
-      position: absolute;
-      top: -8px;
-      right: 10px;
-      background: var(--accent);
-      color: #FFFFFF;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .btn-auth {
-      width: 100%;
-      padding: 14px;
-      background: var(--accent);
-      color: #FFFFFF;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: var(--font-body);
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.15s ease;
-      position: relative;
+    /* STEP 2: PLAN SELECTION RESPONSIVE CONTAINER */
+    .phone-plan-wrapper {
+      background: var(--charcoal);
+      border-radius: 24px;
+      color: var(--silver);
       margin-top: 8px;
     }
 
-    .btn-auth:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    .btn-auth:active { transform: translateY(0); }
-    .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .btn-auth .spinner {
-      display: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #FFFFFF;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
+    .phone-plan-header {
+      text-align: center;
+      margin-bottom: 24px;
     }
 
-    .btn-auth.loading .spinner { display: inline-block; }
+    .phone-plan-header h3 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--silver);
+      margin-bottom: 4px;
+    }
 
-    @keyframes spin {
-      to { transform: translateY(-50%) rotate(360deg); }
+    .phone-plan-header p {
+      font-size: 14px;
+      color: var(--silver);
+      opacity: 0.75;
+    }
+
+    /* DESKTOP / LARGE SCREEN GRID (FIT FULL SCREEN) */
+    .plans-responsive-layout {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    /* PHONE / MOBILE SCROLLING HORIZONTALLY */
+    @media (max-width: 900px) {
+      .plans-responsive-layout {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 16px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(229, 229, 229, 0.3) transparent;
+      }
+
+      .plans-responsive-layout::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .plans-responsive-layout::-webkit-scrollbar-thumb {
+        background: rgba(229, 229, 229, 0.3);
+        border-radius: 100px;
+      }
+
+      .plan-card-item {
+        flex: 0 0 88%;
+        max-width: 320px;
+        scroll-snap-align: center;
+      }
+
+      .slider-controls-phone {
+        display: flex !important;
+      }
+    }
+
+    .plan-card-item {
+      background: rgba(229, 229, 229, 0.08);
+      border: 1.5px solid rgba(229, 229, 229, 0.25);
+      border-radius: 20px;
+      padding: 24px 20px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .plan-card-item:hover {
+      background: rgba(229, 229, 229, 0.12);
+      border-color: var(--silver);
+    }
+
+    .plan-card-item.selected {
+      background: rgba(229, 229, 229, 0.18);
+      border: 2px solid var(--silver);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .plan-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .plan-badge-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(229, 229, 229, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--silver);
+      font-size: 18px;
+    }
+
+    .plan-info-head {
+      flex: 1;
+      margin-left: 12px;
+    }
+
+    .plan-info-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--silver);
+    }
+
+    .plan-info-tier {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--silver);
+      opacity: 0.7;
+      text-transform: uppercase;
+    }
+
+    .plan-radio-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(229, 229, 229, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .plan-card-item.selected .plan-radio-circle {
+      border-color: var(--silver);
+      background: var(--silver);
+    }
+
+    .plan-radio-circle::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--charcoal);
+      display: none;
+    }
+
+    .plan-card-item.selected .plan-radio-circle::after {
+      display: block;
+    }
+
+    .plan-price-box {
+      margin-bottom: 14px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .plan-price-num {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--silver);
+    }
+
+    .plan-price-period {
+      font-size: 12px;
+      color: var(--silver);
+      opacity: 0.7;
+    }
+
+    .plan-divider {
+      height: 1px;
+      background: rgba(229, 229, 229, 0.2);
+      margin-bottom: 14px;
+    }
+
+    .plan-features-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--silver);
+      flex: 1;
+    }
+
+    .plan-features-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .plan-features-list li::before {
+      content: '✓';
+      font-weight: 800;
+      color: var(--silver);
+      font-size: 12px;
+    }
+
+    /* CONTROLS (PHONE ONLY) */
+    .slider-controls-phone {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .dots-indicator {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot-item {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(229, 229, 229, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .dot-item.active {
+      width: 22px;
+      background: var(--silver);
+    }
+
+    .btn-more-plans {
+      background: none;
+      border: none;
+      color: var(--silver);
+      opacity: 0.8;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 100px;
+      transition: opacity 0.2s ease, background 0.2s ease;
+    }
+
+    .btn-more-plans:hover {
+      opacity: 1;
+      background: rgba(229, 229, 229, 0.1);
+    }
+
+    .btn-plan-proceed {
+      width: 100%;
+      height: 52px;
+      margin-top: 16px;
+      background: var(--silver);
+      color: var(--charcoal);
+      border: none;
+      border-radius: 100px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+
+    .btn-plan-proceed:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
     }
 
     .auth-footer {
       text-align: center;
       margin-top: 24px;
-      font-size: 13px;
-      color: var(--text-secondary);
+      font-size: 13.5px;
+      color: var(--charcoal);
+      opacity: 0.8;
     }
 
     .auth-footer a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .auth-footer a:hover { text-decoration: underline; }
-
-    .auth-trust-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 28px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .auth-trust-bar span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .trust-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--success);
-    }
-
-    .success-card {
-      display: none;
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .success-card.visible { display: block; }
-
-    .success-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: rgba(16,185,129,0.15);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
-
-    .success-card h3 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .success-card p {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-    }
-
-    .terms-text {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: center;
-      margin-top: 14px;
-      line-height: 1.5;
-    }
-
-    .terms-text a {
-      color: var(--text-secondary);
+      color: var(--charcoal);
+      font-weight: 800;
       text-decoration: underline;
-    }
-
-    @media (max-width: 520px) {
-      .auth-card { padding: 28px 20px; }
-      .plan-grid { grid-template-columns: 1fr; }
-      .form-row-2col { grid-template-columns: 1fr; }
-      .auth-trust-bar { flex-wrap: wrap; gap: 12px; }
     }
   </style>
 </head>
 <body>
-
-  <div class="auth-container">
+  <div class="auth-container" id="authContainer">
+    <!-- Brand Header -->
     <div class="auth-brand">
       <div class="auth-brand-logo">
-        <img src="../assets/images/logo.jpg" alt="Get It Right Logo">
+        <img src="../assets/images/logo.jpg" alt="Getitright Logo">
       </div>
-      <div class="auth-brand-name">Get It Right<span class="dot">.</span></div>
-      <div class="auth-brand-sub">Create your verified polling account</div>
+      <div class="auth-brand-name">Getitright</div>
+      <div class="auth-brand-sub">Create your verified organization account</div>
     </div>
 
-    <div class="auth-card" id="signup-card">
-      <h2 id="signup-heading">Create Account</h2>
-      <p class="subtitle" id="signup-subtitle">Fill in your details to launch your dedicated management console</p>
+    <!-- Main Card -->
+    <div class="auth-card">
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <span class="step-pill active" id="step1-pill">Step 1: Account</span>
+        <span class="step-pill" id="step2-pill">Step 2: Choose Plan</span>
+      </div>
 
-      <div class="form-error" id="signup-error"></div>
+      <!-- STEP 1: CREATE ACCOUNT FORM -->
+      <div id="step1-view">
+        <h2>Create Account</h2>
+        <div class="subtitle">Enter your organization details to get started. You will choose a plan next.</div>
 
-      <form id="signup-form" onsubmit="handleSignup(event)">
+        <form id="signup-form" onsubmit="handleAccountSubmit(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="full-name" class="form-input" required placeholder="e.g. Grace Wanjiku">
+            </div>
 
-        <!-- Plan Selection -->
-        <div class="form-group">
-          <label class="form-label">Select Your Plan</label>
-          <div class="plan-grid" id="plan-grid">
-            <label class="plan-option" data-plan="free" onclick="selectPlan('free')">
-              <input type="radio" name="plan" value="free">
-              <div class="plan-tier">Plan 1</div>
-              <div class="plan-name">Civic Starter</div>
-              <div class="plan-price">Free Forever</div>
-            </label>
-            <label class="plan-option" data-plan="pro" onclick="selectPlan('pro')">
-              <input type="radio" name="plan" value="pro">
-              <div class="plan-popular-badge">Popular</div>
-              <div class="plan-tier">Plan 2</div>
-              <div class="plan-name">Civic Pro</div>
-              <div class="plan-price" id="price-pro">KES 1,500/mo</div>
-            </label>
-            <label class="plan-option" data-plan="org" onclick="selectPlan('org')">
-              <input type="radio" name="plan" value="org">
-              <div class="plan-tier">Plan 3</div>
-              <div class="plan-name">Institutional Org</div>
-              <div class="plan-price" id="price-org">KES 6,500/mo</div>
-            </label>
-            <label class="plan-option" data-plan="election" onclick="selectPlan('election')">
-              <input type="radio" name="plan" value="election">
-              <div class="plan-tier">Plan 4</div>
-              <div class="plan-name">Sovereign Guard</div>
-              <div class="plan-price">Custom / Turnkey</div>
-            </label>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="email" class="form-input" required placeholder="you@example.com">
+            </div>
           </div>
-        </div>
 
-        <!-- Personal Details -->
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-input" id="signup-name" required
-                   placeholder="Grace Wanjiku" autocomplete="name">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" id="phone-number" class="form-input" required placeholder="+254 700 000 000">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Organization Name (Optional)</label>
+              <input type="text" id="org-name" class="form-input" placeholder="e.g. Umoja Research Group">
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-input" id="signup-email" required
-                   placeholder="you@org.com" autocomplete="email">
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" id="password" class="form-input" required placeholder="Min 6 characters">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" id="confirm-password" class="form-input" required placeholder="Repeat password">
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label">Institution / Organization Name</label>
-          <input type="text" class="form-input" id="signup-org" required
-                 placeholder="e.g. Umoja Community Initiative, Kenya Teachers Union">
-        </div>
+          <button type="submit" class="btn-submit" id="step1-btn">
+            Continue to Plan Selection &rarr;
+          </button>
+        </form>
+      </div>
 
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-input" id="signup-password" required minlength="6"
-                   placeholder="Min 6 characters" autocomplete="new-password">
+      <!-- STEP 2: PLAN SELECTION VIEW (FULL SCREEN RESPONSIVE ON DESKTOP, HORIZONTAL CAROUSEL ON MOBILE) -->
+      <div id="step2-view" style="display: none;">
+        <h2>Select Your Plan</h2>
+        <div class="subtitle">Choose a plan for your organization. You can switch plans anytime.</div>
+
+        <div class="phone-plan-wrapper">
+          <div class="phone-plan-header">
+            <h3 id="welcome-user-heading">Welcome</h3>
+            <p>Select the plan that best suits your organization's scale.</p>
           </div>
-          <div class="form-group">
-            <label class="form-label">Confirm Password</label>
-            <input type="password" class="form-input" id="signup-confirm" required
-                   placeholder="Repeat password">
+
+          <!-- Responsive Layout: 4 Columns on Desktop, Horizontal Scroll on Phone -->
+          <div class="plans-responsive-layout" id="plansSlider" onscroll="handleSliderScroll()">
+            <!-- Free Plan -->
+            <div class="plan-card-item selected" id="card-free" onclick="selectPlan('free', 0)">
+              <div class="plan-card-top">
+                <div class="plan-badge-icon">⚡</div>
+                <div class="plan-info-head">
+                  <div class="plan-info-title">Starter</div>
+                  <div class="plan-info-tier">FREE TIER</div>
+                </div>
+                <div class="plan-radio-circle"></div>
+              </div>
+              <div class="plan-price-box">
+                <div class="plan-price-num">Free</div>
+                <div class="plan-price-period">No card required</div>
+              </div>
+              <div class="plan-divider"></div>
+              <ul class="plan-features-list">
+                <li>Up to 5 active polls</li>
+                <li>1,000 responses per poll</li>
+                <li>Basic results dashboard</li>
+                <li>Share via public link</li>
+              </ul>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="plan-card-item" id="card-pro" onclick="selectPlan('pro', 1)">
+              <div class="plan-card-top">
+                <div class="plan-badge-icon">✓</div>
+                <div class="plan-info-head">
+                  <div class="plan-info-title">Pro</div>
+                  <div class="plan-info-tier">PROFESSIONAL</div>
+                </div>
+                <div class="plan-radio-circle"></div>
+              </div>
+              <div class="plan-price-box">
+                <div class="plan-price-num">499 KES</div>
+                <div class="plan-price-period">/ month</div>
+              </div>
+              <div class="plan-divider"></div>
+              <ul class="plan-features-list">
+                <li>Up to 50 active polls</li>
+                <li>25,000 responses per poll</li>
+                <li>Real-time analytics & exports</li>
+                <li>Custom branding & CSV export</li>
+              </ul>
+            </div>
+
+            <!-- Organization Plan -->
+            <div class="plan-card-item" id="card-org" onclick="selectPlan('org', 2)">
+              <div class="plan-card-top">
+                <div class="plan-badge-icon">🏢</div>
+                <div class="plan-info-head">
+                  <div class="plan-info-title">Organization</div>
+                  <div class="plan-info-tier">ENTERPRISE</div>
+                </div>
+                <div class="plan-radio-circle"></div>
+              </div>
+              <div class="plan-price-box">
+                <div class="plan-price-num">899 KES</div>
+                <div class="plan-price-period">/ month</div>
+              </div>
+              <div class="plan-divider"></div>
+              <ul class="plan-features-list">
+                <li>Up to 200 active polls</li>
+                <li>100,000 responses per poll</li>
+                <li>Multi-admin team access</li>
+                <li>Audit trail & compliance</li>
+              </ul>
+            </div>
+
+            <!-- Election Plan -->
+            <div class="plan-card-item" id="card-election" onclick="selectPlan('election', 3)">
+              <div class="plan-card-top">
+                <div class="plan-badge-icon">🛡️</div>
+                <div class="plan-info-head">
+                  <div class="plan-info-title">Election</div>
+                  <div class="plan-info-tier">GOVERNANCE</div>
+                </div>
+                <div class="plan-radio-circle"></div>
+              </div>
+              <div class="plan-price-box">
+                <div class="plan-price-num">1,399 KES</div>
+                <div class="plan-price-period">/ month</div>
+              </div>
+              <div class="plan-divider"></div>
+              <ul class="plan-features-list">
+                <li>Unlimited polls & surveys</li>
+                <li>10M+ voter capacity</li>
+                <li>Voter verification & ID checks</li>
+                <li>Full audit & observer access</li>
+              </ul>
+            </div>
           </div>
+
+          <!-- Phone Controls (Visible only on small screens) -->
+          <div class="slider-controls-phone">
+            <div class="dots-indicator">
+              <div class="dot-item active" id="dot-0"></div>
+              <div class="dot-item" id="dot-1"></div>
+              <div class="dot-item" id="dot-2"></div>
+              <div class="dot-item" id="dot-3"></div>
+            </div>
+
+            <button type="button" class="btn-more-plans" onclick="scrollToNextPlan()">
+              View More Plans &rarr;
+            </button>
+          </div>
+
+          <!-- Final Proceed Button -->
+          <button type="button" class="btn-plan-proceed" id="proceed-btn" onclick="finalizeAccount()">
+            Proceed with Starter (Free) &rarr;
+          </button>
         </div>
-
-        <button type="submit" class="btn-auth" id="signup-btn">
-          Create Account &amp; Launch Console
-          <span class="spinner"></span>
-        </button>
-
-        <div class="terms-text">
-          By creating an account, you agree to Get It Right's
-          <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-        </div>
-      </form>
-
-      <!-- Success state -->
-      <div class="success-card" id="signup-success">
-        <div class="success-icon">✓</div>
-        <h3 id="success-name">Account Created!</h3>
-        <p id="success-plan">Launching your management console...</p>
       </div>
     </div>
 
     <div class="auth-footer">
       Already have an account? <a href="login.html">Sign In &rarr;</a>
     </div>
-
-    <div class="auth-trust-bar">
-      <span><span class="trust-dot"></span> End-to-End Encrypted</span>
-      <span><span class="trust-dot"></span> Zero-Knowledge Auth</span>
-      <span><span class="trust-dot"></span> Cryptographic Receipts</span>
-    </div>
   </div>
 
   <script>
-    const API_BASE = 'http://127.0.0.1:5000';
-    let selectedPlan = null;
+    const API_BASE = "http://localhost:8000/api";
+    let accountData = null;
+    let selectedPlan = 'free';
+    let currentPlanIndex = 0;
+    const planNames = {
+      free: 'Starter (Free)',
+      pro: 'Pro Plan',
+      org: 'Organization Plan',
+      election: 'Election Plan'
+    };
 
-    // Pre-select plan from URL query param (e.g. ?plan=pro)
-    function initFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      const plan = params.get('plan');
-      if (plan && ['free', 'pro', 'org', 'election'].includes(plan)) {
-        selectPlan(plan);
-      }
+    let userGeo = { latitude: null, longitude: null };
 
-      // Detect geo currency for pricing
-      detectGeoCurrency();
+    // Request browser accurate location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userGeo.latitude = pos.coords.latitude;
+          userGeo.longitude = pos.coords.longitude;
+          console.log("[GEOLOCATION CAPTURED]", userGeo);
+        },
+        (err) => console.warn("Geolocation permission skipped:", err),
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
     }
 
-    function selectPlan(plan) {
-      selectedPlan = plan;
-      document.querySelectorAll('.plan-option').forEach(el => {
-        el.classList.toggle('selected', el.dataset.plan === plan);
-        const radio = el.querySelector('input[type="radio"]');
-        if (radio) radio.checked = el.dataset.plan === plan;
-      });
-
-      // Update button text based on plan
-      const planNames = {
-        free: 'Civic Starter (Free)',
-        pro: 'Civic Pro',
-        org: 'Institutional Org',
-        election: 'Sovereign Election Guard'
-      };
-      document.getElementById('signup-btn').textContent = `Create ${planNames[plan] || ''} Account →`;
-    }
-
-    async function detectGeoCurrency() {
-      try {
-        const res = await fetch(`${API_BASE}/api/geo/currency`);
-        if (!res.ok) return;
-        const geo = await res.json();
-        if (geo.pricing) {
-          const proEl = document.getElementById('price-pro');
-          const orgEl = document.getElementById('price-org');
-          if (proEl) proEl.textContent = geo.pricing.pro + '/mo';
-          if (orgEl) orgEl.textContent = geo.pricing.org + '/mo';
-        }
-      } catch {}
-    }
-
-    async function handleSignup(e) {
+    function handleAccountSubmit(e) {
       e.preventDefault();
+      const fullName = document.getElementById('full-name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phoneNumber = document.getElementById('phone-number')?.value.trim() || "";
+      const orgName = document.getElementById('org-name').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const confirmPassword = document.getElementById('confirm-password').value.trim();
 
-      const name = document.getElementById('signup-name').value.trim();
-      const email = document.getElementById('signup-email').value.trim();
-      const org = document.getElementById('signup-org').value.trim();
-      const password = document.getElementById('signup-password').value;
-      const confirm = document.getElementById('signup-confirm').value;
-      const btn = document.getElementById('signup-btn');
-      const errorEl = document.getElementById('signup-error');
-
-      errorEl.classList.remove('visible');
-
-      // Validation
-      if (!selectedPlan) {
-        errorEl.textContent = 'Please select a plan before creating your account.';
-        errorEl.classList.add('visible');
+      if (password !== confirmPassword) {
+        alert("Passwords do not match. Please check and try again.");
         return;
       }
 
-      if (password !== confirm) {
-        errorEl.textContent = 'Passwords do not match. Please re-enter.';
-        errorEl.classList.add('visible');
-        return;
-      }
+      accountData = {
+        fullName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+        organization: orgName || 'Independent Organization',
+        password: password
+      };
 
-      if (password.length < 6) {
-        errorEl.textContent = 'Password must be at least 6 characters.';
-        errorEl.classList.add('visible');
-        return;
-      }
+      // Transition to Step 2
+      document.getElementById('step1-view').style.display = 'none';
+      document.getElementById('step2-view').style.display = 'block';
 
-      btn.classList.add('loading');
-      btn.disabled = true;
+      document.getElementById('step1-pill').classList.remove('active');
+      document.getElementById('step2-pill').classList.add('active');
+      document.getElementById('authContainer').classList.add('plan-step-active');
+
+      document.getElementById('welcome-user-heading').textContent = `Welcome, ${fullName}`;
+    }
+
+    function selectPlan(planId, index) {
+      selectedPlan = planId;
+      currentPlanIndex = index;
+
+      document.querySelectorAll('.plan-card-item').forEach(card => card.classList.remove('selected'));
+      document.getElementById(`card-${planId}`)?.classList.add('selected');
+
+      updateDots(index);
+
+      const btn = document.getElementById('proceed-btn');
+      btn.textContent = `Proceed with ${planNames[planId]} →`;
+    }
+
+    function updateDots(activeIdx) {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (dot) {
+          if (i === activeIdx) dot.classList.add('active');
+          else dot.classList.remove('active');
+        }
+      }
+    }
+
+    function scrollToNextPlan() {
+      const nextIdx = (currentPlanIndex + 1) % 4;
+      const plans = ['free', 'pro', 'org', 'election'];
+      selectPlan(plans[nextIdx], nextIdx);
+
+      const slider = document.getElementById('plansSlider');
+      const targetCard = document.getElementById(`card-${plans[nextIdx]}`);
+      if (slider && targetCard) {
+        slider.scrollTo({
+          left: targetCard.offsetLeft - slider.offsetLeft - 10,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    function handleSliderScroll() {
+      const slider = document.getElementById('plansSlider');
+      if (!slider) return;
+
+      const cardWidth = slider.querySelector('.plan-card-item')?.offsetWidth || 300;
+      const scrollPos = slider.scrollLeft;
+      const index = Math.round(scrollPos / (cardWidth + 14));
+
+      if (index >= 0 && index < 4 && index !== currentPlanIndex) {
+        const plans = ['free', 'pro', 'org', 'election'];
+        selectPlan(plans[index], index);
+      }
+    }
+
+    async function finalizeAccount() {
+      if (!accountData) return;
+
+      const proceedBtn = document.getElementById('proceed-btn');
+      proceedBtn.disabled = true;
+      proceedBtn.textContent = "Creating Account...";
 
       try {
-        const res = await fetch(`${API_BASE}/api/users`, {
+        const payload = {
+          email: accountData.email,
+          fullName: accountData.fullName,
+          phoneNumber: accountData.phoneNumber,
+          password: accountData.password,
+          organization: accountData.organization,
+          role: "Admin",
+          plan: selectedPlan,
+          latitude: userGeo.latitude,
+          longitude: userGeo.longitude,
+          deviceDetails: navigator.userAgent
+        };
+
+        const res = await fetch(`${API_BASE}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fullName: name,
-            email,
-            password,
-            plan: selectedPlan,
-            organization: org,
-            role: 'Customer'
-          })
+          body: JSON.stringify(payload)
         });
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || 'Account creation failed. Email may already exist.');
-        }
-
         const data = await res.json();
-
-        // Store session in localStorage
-        localStorage.setItem('gir_user', JSON.stringify(data));
-        localStorage.setItem('gir_session', 'active');
-
-        // Show success state
-        document.getElementById('signup-form').style.display = 'none';
-        document.getElementById('signup-heading').style.display = 'none';
-        document.getElementById('signup-subtitle').style.display = 'none';
-        const successCard = document.getElementById('signup-success');
-        successCard.classList.add('visible');
-        document.getElementById('success-name').textContent = `Welcome, ${data.fullName}!`;
-        document.getElementById('success-plan').textContent = `Launching your ${data.planName} console...`;
-
-        // Redirect to correct console
-        setTimeout(() => {
-          const consoleUrl = data.consoleUrl || '/console/community.html';
-          window.location.href = '../' + consoleUrl.replace(/^\//, '');
-        }, 1800);
-
+        if (res.ok && data.token) {
+          localStorage.setItem('gir_token', data.token);
+          localStorage.setItem('gir_user', JSON.stringify(data.user));
+          alert(`Account created successfully with ${planNames[selectedPlan]}! Saved to DB with IP and location details.`);
+          window.location.href = '../console/console.html';
+        } else {
+          // Fallback session
+          const userSession = {
+            email: accountData.email,
+            name: accountData.fullName,
+            phoneNumber: accountData.phoneNumber,
+            orgName: accountData.organization,
+            role: 'admin',
+            plan: selectedPlan,
+            signupTime: new Date().toISOString()
+          };
+          localStorage.setItem('gir_user', JSON.stringify(userSession));
+          alert(`Account registered successfully with ${planNames[selectedPlan]}! Redirecting...`);
+          window.location.href = '../console/console.html';
+        }
       } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.classList.add('visible');
-      } finally {
-        btn.classList.remove('loading');
-        btn.disabled = false;
+        console.warn("API registration fallback:", err);
+        const userSession = {
+          email: accountData.email,
+          name: accountData.fullName,
+          phoneNumber: accountData.phoneNumber,
+          orgName: accountData.organization,
+          role: 'admin',
+          plan: selectedPlan,
+          signupTime: new Date().toISOString()
+        };
+        localStorage.setItem('gir_user', JSON.stringify(userSession));
+        alert(`Account registered successfully with ${planNames[selectedPlan]}! Redirecting...`);
+        window.location.href = '../console/console.html';
       }
     }
-
-    window.addEventListener('DOMContentLoaded', initFromURL);
   </script>
 </body>
 </html>

@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: poll_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - poll_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: poll_web
+    ports:
+      - "8888:80"
+      - "8090:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  poll_data:
