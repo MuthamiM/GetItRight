@@ -9,17 +9,18 @@ class SurveysFeedScreen extends StatefulWidget {
   const SurveysFeedScreen({super.key});
 
   @override
-  State<SurveysFeedScreen> createState() => _SurveysFeedScreenState();
+  State<SurveysFeedScreen> createState() => SurveysFeedScreenState();
 }
 
-class _SurveysFeedScreenState extends State<SurveysFeedScreen> {
+class SurveysFeedScreenState extends State<SurveysFeedScreen> {
   final ApiClient _apiClient = ApiClient();
+  final ScrollController scrollController = ScrollController();
   List<Survey> _surveys = [];
   bool _isLoading = true;
+  bool _showBackToTop = false;
   String _selectedFilter = 'ALL';
   final List<String> _surveyFilters = [
     'ALL',
-    'RECENTLY ADDED',
     'MOST POPULAR',
     'ENDING SOON',
   ];
@@ -29,7 +30,51 @@ class _SurveysFeedScreenState extends State<SurveysFeedScreen> {
   @override
   void initState() {
     super.initState();
+    scrollController.addListener(() {
+      final show = scrollController.hasClients && scrollController.offset > 150;
+      if (show != _showBackToTop && mounted) {
+        setState(() => _showBackToTop = show);
+      }
+    });
     _loadUserAndSurveys();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  void scrollToTop() {
+    if (scrollController.hasClients) {
+      if (scrollController.offset > 10) {
+        scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+        );
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Already at top',
+              style: TextStyle(
+                color: Color(0xFF2A2A2A),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: Color(0xFFE5E5E5),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> scrollToTopAndRefresh() async {
+    scrollToTop();
+    await _loadSurveys();
   }
 
   Future<void> _loadUserAndSurveys() async {
@@ -173,6 +218,7 @@ class _SurveysFeedScreenState extends State<SurveysFeedScreen> {
                               ],
                             )
                           : ListView.builder(
+                              controller: scrollController,
                               physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.all(16),
                               itemCount: filteredSurveys.length,
@@ -276,6 +322,15 @@ class _SurveysFeedScreenState extends State<SurveysFeedScreen> {
           ],
         ),
       ),
+      floatingActionButton: _showBackToTop
+          ? FloatingActionButton.small(
+              onPressed: scrollToTop,
+              backgroundColor: const Color(0xFFE5E5E5),
+              foregroundColor: const Color(0xFF2A2A2A),
+              tooltip: 'Back to top',
+              child: const Icon(Icons.arrow_upward),
+            )
+          : null,
     );
   }
 }

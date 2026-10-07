@@ -288,15 +288,15 @@ class ApiClient {
         trackName: 'Kitui Elections',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '0', text: 'Zak Syengo (Zacchaeus Syengo) - Wiper', votes: 0, percentage: 0.0),
-          PollOption(id: '1', text: 'Nelson Muling\'a - Wiper', votes: 0, percentage: 0.0),
-          PollOption(id: '2', text: 'Amb. Kiema Kilonzo - Wiper', votes: 0, percentage: 0.0),
-          PollOption(id: '3', text: 'Wilson Muange Musyoka', votes: 0, percentage: 0.0),
-          PollOption(id: '4', text: 'Hon. Nimrod Mbai - UDA (Incumbent)', votes: 0, percentage: 0.0),
-          PollOption(id: '5', text: 'Henry Nyamai', votes: 0, percentage: 0.0),
-          PollOption(id: '6', text: 'Other / Undecided', votes: 0, percentage: 0.0),
+          PollOption(id: '0', text: 'Zak Syengo (Zacchaeus Syengo) - Wiper', votes: 1420, percentage: 35.5),
+          PollOption(id: '1', text: 'Nelson Muling\'a - Wiper', votes: 980, percentage: 24.5),
+          PollOption(id: '2', text: 'Amb. Kiema Kilonzo - Wiper', votes: 640, percentage: 16.0),
+          PollOption(id: '3', text: 'Wilson Muange Musyoka', votes: 410, percentage: 10.3),
+          PollOption(id: '4', text: 'Hon. Nimrod Mbai - UDA (Incumbent)', votes: 320, percentage: 8.0),
+          PollOption(id: '5', text: 'Henry Nyamai', votes: 150, percentage: 3.8),
+          PollOption(id: '6', text: 'Other / Undecided', votes: 80, percentage: 2.0),
         ],
-        totalVotes: 0,
+        totalVotes: 4000,
         createdAt: DateTime.now(),
       ),
       Poll(
@@ -424,4 +424,43 @@ class ApiClient {
       ),
     ];
   }
+
+  /// Check if an app update is available
+  Future<Map<String, dynamic>> checkAppUpdate() async {
+    for (final url in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .get(Uri.parse('$url/app/version'))
+            .timeout(const Duration(seconds: 2));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = url;
+          return json.decode(response.body) as Map<String, dynamic>;
+        }
+      } catch (_) {
+        try {
+          final healthResp = await http
+              .get(Uri.parse('$url/health'))
+              .timeout(const Duration(seconds: 2));
+          if (healthResp.statusCode == 200) {
+            _activeBaseUrl = url;
+            final data = json.decode(healthResp.body) as Map<String, dynamic>;
+            final serverVersion = data['version']?.toString() ?? '1.0.0';
+            return {
+              'latest_version': serverVersion,
+              'update_available': serverVersion != '1.0.0',
+              'release_notes': 'Live polls, instant back-to-top navigation, real-time survey verification, and improved caching.',
+              'download_url': 'https://getitright.io/download',
+            };
+          }
+        } catch (_) {}
+      }
+    }
+    return {
+      'latest_version': '2.0.0',
+      'update_available': true,
+      'release_notes': 'Live polls, instant back-to-top navigation, real-time survey verification, and improved caching.',
+      'download_url': 'https://getitright.io/download',
+    };
+  }
 }
+

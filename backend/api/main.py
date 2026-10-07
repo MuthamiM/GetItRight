@@ -46,6 +46,20 @@ def health_check():
         "timestamp": time.time()
     }
 
+@app.get("/app/version")
+@app.get(f"{settings.API_PREFIX}/app/version")
+def check_app_version():
+    return {
+        "latest_version": settings.VERSION,
+        "current_stable": "2.0.0",
+        "minimum_version": "1.0.0",
+        "update_available": True,
+        "force_update": False,
+        "title": f"GetItRight v{settings.VERSION} Available",
+        "release_notes": "Enhanced live polls, instant back-to-top navigation, real-time survey verification, and improved caching.",
+        "download_url": "https://getitright.io/download",
+    }
+
 @app.get(f"{settings.API_PREFIX}/cache/status")
 def cache_status():
     return {

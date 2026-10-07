@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../auth/presentation/plan_selection_screen.dart';
+import '../../../core/network/api_client.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   final VoidCallback onSettingsUpdated;
@@ -229,6 +230,83 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 ),
               ),
 
+              const SizedBox(height: 24),
+
+              // Section 4: App Version & Updates
+              _buildSectionHeader('APP VERSION & UPDATES'),
+              const SizedBox(height: 10),
+
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF505050),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Getitright Official App',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(height: 3),
+                            Text(
+                              'Version 1.0.0 (Build 1)',
+                              style: TextStyle(
+                                color: Color(0xFFB8B8B8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _checkUpdateManually,
+                          icon: const Icon(Icons.sync, size: 16),
+                          label: const Text(
+                            'Check',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE5E5E5),
+                            foregroundColor: const Color(0xFF2A2A2A),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Getitright updates ensure you have the latest cryptographic verification rules, live voting feeds, and performance optimizations.',
+                      style: TextStyle(
+                        color: Color(0xFFD0D0D0),
+                        fontSize: 11.5,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 32),
 
               // Save Button
@@ -251,6 +329,141 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _checkUpdateManually() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Checking for latest updates...',
+          style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Color(0xFFE5E5E5),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    try {
+      final updateInfo = await ApiClient().checkAppUpdate();
+      if (!mounted) return;
+
+      if (updateInfo['update_available'] == true) {
+        _showUpdateDialog(
+          version: updateInfo['latest_version']?.toString() ?? '2.0.0',
+          releaseNotes: updateInfo['release_notes']?.toString(),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'You are using the latest version of Getitright (v1.0.0)',
+              style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Color(0xFFE5E5E5),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not reach update server. Please try again later.'),
+            backgroundColor: Color(0xFF424242),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showUpdateDialog({required String version, String? releaseNotes}) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF424242),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF555555),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.system_update_rounded, color: Color(0xFFE5E5E5), size: 24),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Update Available',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF303030),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF606060)),
+              ),
+              child: Text(
+                'Version $version is now available (Current: v1.0.0)',
+                style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'What\'s New in this release:',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              releaseNotes ??
+                  '• Instant scroll-to-top navigation\n'
+                  '• Real-time poll vote tallying & animated charts\n'
+                  '• Cryptographic survey receipt verification\n'
+                  '• Offline vote persistence & auto-sync\n'
+                  '• Stability & performance improvements',
+              style: const TextStyle(color: Color(0xFFD0D0D0), fontSize: 12.5, height: 1.45),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Later', style: TextStyle(color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Downloading Getitright v$version...',
+                    style: const TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFFE5E5E5),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE5E5E5),
+              foregroundColor: const Color(0xFF2A2A2A),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

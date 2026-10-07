@@ -11,14 +11,16 @@ class PollsFeedScreen extends StatefulWidget {
   const PollsFeedScreen({super.key});
 
   @override
-  State<PollsFeedScreen> createState() => _PollsFeedScreenState();
+  State<PollsFeedScreen> createState() => PollsFeedScreenState();
 }
 
-class _PollsFeedScreenState extends State<PollsFeedScreen>
+class PollsFeedScreenState extends State<PollsFeedScreen>
     with SingleTickerProviderStateMixin {
   final ApiClient _apiClient = ApiClient();
+  final ScrollController scrollController = ScrollController();
   List<Poll> _polls = [];
   bool _isLoading = true;
+  bool _showBackToTop = false;
   String _selectedFilter = 'ALL';
   final List<String> _statusFilters = ['ALL', 'CLOSING', 'ENDED'];
   bool _showingSsup = false;
@@ -39,30 +41,76 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
     ).animate(CurvedAnimation(parent: _ssupController, curve: Curves.easeOut));
     _ssupOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(parent: _ssupController, curve: Curves.easeOut));
+
+    scrollController.addListener(() {
+      final show = scrollController.hasClients && scrollController.offset > 150;
+      if (show != _showBackToTop && mounted) {
+        setState(() => _showBackToTop = show);
+      }
+    });
+
     _loadPolls();
   }
 
   @override
   void dispose() {
+    scrollController.dispose();
     _ssupController.dispose();
     super.dispose();
   }
 
+  void scrollToTop() {
+    if (scrollController.hasClients) {
+      if (scrollController.offset > 10) {
+        scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+        );
+      } else {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Already at top',
+              style: TextStyle(
+                color: Color(0xFF2A2A2A),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: Color(0xFFE5E5E5),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    }
+  }
+
+  bool _isZakSyengoPoll(Poll p) {
+    final titleLower = p.title.toLowerCase();
+    final idLower = p.id.toLowerCase();
+    return idLower.contains('kitui-east') ||
+        titleLower.contains('kitui east') ||
+        titleLower.contains('zak syengo') ||
+        p.options.any((o) => o.text.toLowerCase().contains('syengo'));
+  }
+
   Future<void> _loadPolls() async {
     final polls = await _apiClient.fetchPolls();
+    // Prioritize Zak Syengo / Kitui East poll at the very top, then newest
+    polls.sort((a, b) {
+      final isZakA = _isZakSyengoPoll(a);
+      final isZakB = _isZakSyengoPoll(b);
+      if (isZakA && !isZakB) return -1;
+      if (!isZakA && isZakB) return 1;
+      return b.createdAt.compareTo(a.createdAt);
+    });
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
 
     final activePolls = <Poll>[];
     for (var p in polls) {
-      // 1. Check if user voted on this poll over 5 hours ago
-      final votedTimeStr = prefs.getString('gir_voted_time_${p.id}');
-      if (votedTimeStr != null) {
-        final votedTime = DateTime.tryParse(votedTimeStr);
-        if (votedTime != null && now.difference(votedTime).inHours >= 5) {
-          continue; // Hide 5 hours after vote
-        }
-      }
+      final isZak = _isZakSyengoPoll(p);
 
       // Restore saved vote selection so refreshing home DOES NOT reset votes
       final savedOptionId = prefs.getString('gir_voted_option_${p.id}');
@@ -70,11 +118,23 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
         p.selectedOptionId = savedOptionId;
       }
 
-      // 2. Only expire closed/ended polls where countdown expired over 5 hours ago
-      if (p.status == 'closed' || p.status == 'ended') {
-        final deadline = p.createdAt.add(const Duration(hours: 24));
-        if (now.isAfter(deadline.add(const Duration(hours: 5)))) {
-          continue; // Hide 5 hours after countdown / results final
+      // Never hide the Zak Syengo / Kitui East poll!
+      if (!isZak) {
+        // 1. Check if user voted on this poll over 5 hours ago
+        final votedTimeStr = prefs.getString('gir_voted_time_${p.id}');
+        if (votedTimeStr != null) {
+          final votedTime = DateTime.tryParse(votedTimeStr);
+          if (votedTime != null && now.difference(votedTime).inHours >= 5) {
+            continue; // Hide 5 hours after vote
+          }
+        }
+
+        // 2. Only expire closed/ended polls where countdown expired over 5 hours ago
+        if (p.status == 'closed' || p.status == 'ended') {
+          final deadline = p.createdAt.add(const Duration(hours: 24));
+          if (now.isAfter(deadline.add(const Duration(hours: 5)))) {
+            continue; // Hide 5 hours after countdown / results final
+          }
         }
       }
 
@@ -284,6 +344,7 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
                           onRefresh: _handleRefresh,
                           child: filteredPolls.isEmpty
                               ? ListView(
+                                  controller: scrollController,
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
                                   children: const [
@@ -298,6 +359,7 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
                                   ],
                                 )
                               : ListView.builder(
+                                  controller: scrollController,
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
                                   padding: const EdgeInsets.all(16),
@@ -306,6 +368,7 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
                                     final poll = filteredPolls[index];
                                     final hasVoted =
                                         poll.selectedOptionId != null;
+                                    final isZak = _isZakSyengoPoll(poll);
 
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 16),
@@ -314,7 +377,11 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
                                         color: const Color(0xFF424242),
                                         borderRadius: BorderRadius.circular(18),
                                         border: Border.all(
-                                            color: const Color(0xFF555555)),
+                                          color: isZak
+                                              ? const Color(0xFF2E7D32)
+                                              : const Color(0xFF555555),
+                                          width: isZak ? 1.5 : 1.0,
+                                        ),
                                       ),
                                       child: Column(
                                         crossAxisAlignment:
@@ -325,25 +392,75 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      const Color(0xFF505050),
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  poll.trackName.toUpperCase(),
-                                                  style: const TextStyle(
-                                                    color: Color(0xFFD0D0D0),
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
+                                              Row(
+                                                children: [
+                                                  if (isZak) ...[
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4),
+                                                      margin:
+                                                          const EdgeInsets
+                                                              .only(right: 6),
+                                                      decoration:
+                                                          BoxDecoration(
+                                                        color:
+                                                            const Color(0xFF2E7D32),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                      ),
+                                                      child: const Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          Icon(Icons.star,
+                                                              size: 10,
+                                                              color:
+                                                                  Colors.white),
+                                                          SizedBox(width: 3),
+                                                          Text(
+                                                            'FEATURED',
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontSize: 9,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                          0xFF505050),
+                                                      borderRadius:
+                                                          BorderRadius
+                                                              .circular(12),
+                                                    ),
+                                                    child: Text(
+                                                      poll.trackName
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        color:
+                                                            Color(0xFFD0D0D0),
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
+                                                ],
                                               ),
                                               Row(
                                                 children: [
@@ -662,6 +779,15 @@ class _PollsFeedScreenState extends State<PollsFeedScreen>
           ],
         ),
       ),
+      floatingActionButton: _showBackToTop
+          ? FloatingActionButton.small(
+              onPressed: scrollToTop,
+              backgroundColor: const Color(0xFFE5E5E5),
+              foregroundColor: const Color(0xFF2A2A2A),
+              tooltip: 'Back to top',
+              child: const Icon(Icons.arrow_upward),
+            )
+          : null,
     );
   }
 }
@@ -709,6 +835,18 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
   }
 
   String _formatMovingCountdown() {
+    final titleLower = widget.poll.title.toLowerCase();
+    final idLower = widget.poll.id.toLowerCase();
+    final isElectionOrZak = idLower.contains('kitui-east') ||
+        titleLower.contains('kitui east') ||
+        titleLower.contains('zak syengo') ||
+        titleLower.contains('2027') ||
+        titleLower.contains('aspirants');
+
+    if (isElectionOrZak && widget.poll.status == 'live') {
+      return 'Active 2027 Opinion Poll • Live Results';
+    }
+
     final deadline = widget.poll.createdAt.add(const Duration(hours: 24));
     final diff = deadline.difference(DateTime.now());
     if (diff.isNegative) {
