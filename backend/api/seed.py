@@ -88,11 +88,8 @@ def seed_users(db):
 
 
 def seed_polls(db):
-    kitui_east_exists = db.query(PollModel).filter(PollModel.Id == "PL-KITUI-EAST-2027").first()
-    
-    polls_data = []
-    if not kitui_east_exists:
-        polls_data.append({
+    polls_data = [
+        {
             "Id": "PL-KITUI-EAST-2027",
             "Title": "Kitui East Constituency MP Aspirants Poll 2027",
             "Description": "Official 2027 opinion poll for Kitui East Constituency Member of Parliament (MP) aspirants.",
@@ -108,36 +105,103 @@ def seed_polls(db):
                 "Henry Nyamai",
                 "Other / Undecided"
             ]
-        })
-
-    if db.query(PollModel).count() == 0:
-        polls_data.extend([
-            {"Id": "PL-FREE-A1B2", "Title": "Best Public Transport Option for Nairobi", "Description": "Help us decide which transport mode the city should invest in next.", "Category": "Civic Priority", "Plan": "free", "OwnerId": "USR-001", "Options": ["BRT Buses", "Light Rail", "Expanded Matatu Routes", "Cycling Infrastructure"]},
-            {"Id": "PL-FREE-C3D4", "Title": "Community Park Activities Preference", "Description": "What activities should we prioritize in the new community park?", "Category": "General", "Plan": "free", "OwnerId": "USR-006", "Options": ["Playground Equipment", "Sports Courts", "Walking Trails", "Community Garden"]},
-            {"Id": "PL-FREE-E5F6", "Title": "Preferred School Calendar Model", "Description": "Which academic calendar model works best for families?", "Category": "General", "Plan": "free", "OwnerId": "USR-008", "Options": ["Traditional (3 Terms)", "Semester System", "Year-Round", "Flexible Hybrid"]},
-            {"Id": "PL-PRO-G7H8", "Title": "Workplace Flexibility Survey", "Description": "How should our company approach remote work going forward?", "Category": "Enterprise Feedback", "Plan": "pro", "OwnerId": "USR-002", "Options": ["Fully Remote", "Hybrid (3 days office)", "Hybrid (2 days office)", "Fully On-Site", "Employee Choice"]},
-            {"Id": "PL-PRO-I9J0", "Title": "Digital Payment Preference", "Description": "Which digital payment platform do you use most?", "Category": "Product Roadmap", "Plan": "pro", "OwnerId": "USR-007", "Options": ["M-Pesa", "Airtel Money", "Bank App", "PayPal", "Crypto Wallet"]},
-            {"Id": "PL-PRO-K1L2", "Title": "Tech Conference Topic Priorities", "Description": "Vote for the topics you want covered at DevFest 2026.", "Category": "Product Roadmap", "Plan": "pro", "OwnerId": "USR-011", "Options": ["AI/ML", "Cybersecurity", "Cloud Native", "Mobile Development", "Blockchain"]},
-            {"Id": "PL-ORG-M3N4", "Title": "County Budget Allocation Priorities", "Description": "How should the county allocate the development budget?", "Category": "Civic Priority", "Plan": "org", "OwnerId": "USR-003", "Options": ["Healthcare", "Education", "Infrastructure", "Agriculture", "Security"]},
-            {"Id": "PL-ORG-O5P6", "Title": "Employee Benefits Package Selection", "Description": "Select the benefits package that matters most to you.", "Category": "Enterprise Feedback", "Plan": "org", "OwnerId": "USR-009", "Options": ["Extended Health Cover", "Education Allowance", "Remote Work Stipend", "Gym Membership", "Stock Options"]},
-            {"Id": "PL-ORG-Q7R8", "Title": "Renewable Energy Investment Priority", "Description": "Which renewable energy source should receive priority funding?", "Category": "Civic Priority", "Plan": "org", "OwnerId": "USR-004", "Options": ["Solar Farms", "Wind Turbines", "Geothermal", "Hydroelectric"]},
-            {"Id": "PL-FREE-S9T0", "Title": "Favorite Local Cuisine", "Description": "Vote for the cuisine that best represents our region.", "Category": "General", "Plan": "free", "OwnerId": "USR-010", "Options": ["Nyama Choma", "Ugali & Sukuma", "Pilau", "Chapati & Beans", "Fish & Chips"]},
-            {"Id": "PL-PRO-U1V2", "Title": "Product Feature Prioritization Q4", "Description": "Which feature should our team ship first in Q4?", "Category": "Product Roadmap", "Plan": "pro", "OwnerId": "USR-014", "Options": ["Dark Mode", "Offline Support", "Multi-language", "API Integrations"]},
-            {"Id": "PL-FREE-W3X4", "Title": "Weekend Market Location Vote", "Description": "Where should the new weekend market be located?", "Category": "General", "Plan": "free", "OwnerId": "USR-015", "Options": ["Central Park Area", "Riverside Drive", "Stadium Grounds", "University Field"]},
-        ])
-
-    # Distribute votes across months (last 6 months)
-    month_weights = [0.08, 0.12, 0.14, 0.18, 0.25, 0.23]  # May→Oct weights
+        },
+        {
+            "Id": "PL-KITUI-VOO-2027",
+            "Title": "Voo / Kyamatu Ward MCA Aspirants Poll 2027 (Kitui East)",
+            "Description": "Live opinion poll for Member of County Assembly (MCA) aspirants in Voo / Kyamatu Ward.",
+            "Category": "Kitui County Wards",
+            "Plan": "election",
+            "OwnerId": "USR-003",
+            "Options": [
+                "Hon. Boniface Kilaa Musyoka",
+                "Dr. Musyoka Wambua",
+                "Mary Mwinzi",
+                "Eng. Patrick Mutua",
+                "Samuel Kimanzi"
+            ]
+        },
+        {
+            "Id": "PL-KITUI-KYANG-2027",
+            "Title": "Kyangwithya West Ward MCA Aspirants Poll 2027 (Kitui Central)",
+            "Description": "Live ward opinion poll for Kyangwithya West MCA aspirants.",
+            "Category": "Kitui County Wards",
+            "Plan": "election",
+            "OwnerId": "USR-003",
+            "Options": [
+                "Hon. Boniface Kanangalu",
+                "Jackson Mwangangi",
+                "Agnes Syombua",
+                "David Nyamu",
+                "Titus Kilonzo"
+            ]
+        },
+        {
+            "Id": "PL-KITUI-TOWN-2027",
+            "Title": "Township Ward MCA Poll 2027 (Kitui Central)",
+            "Description": "Township Ward civic election candidates opinion poll.",
+            "Category": "Kitui County Wards",
+            "Plan": "election",
+            "OwnerId": "USR-003",
+            "Options": [
+                "Hon. Daniel Kimanzi",
+                "Dr. John Mwanza",
+                "Ruth Mueni",
+                "Josephat Kalu"
+            ]
+        },
+        {
+            "Id": "PL-KITUI-MUTOMO-2027",
+            "Title": "Mutomo Ward MCA Poll 2027 (Kitui South)",
+            "Description": "Mutomo Ward Assembly election preference poll.",
+            "Category": "Kitui County Wards",
+            "Plan": "election",
+            "OwnerId": "USR-003",
+            "Options": [
+                "Hon. David Munyoki",
+                "Peter Musyimi",
+                "Mercy Kalondu",
+                "Charles Nzioka"
+            ]
+        },
+        {
+            "Id": "PL-KITUI-IKUTHA-2027",
+            "Title": "Ikutha Ward MCA Poll 2027 (Kitui South)",
+            "Description": "Ikutha Ward Member of County Assembly poll.",
+            "Category": "Kitui County Wards",
+            "Plan": "election",
+            "OwnerId": "USR-003",
+            "Options": [
+                "Hon. Hussein Mwanzi",
+                "Julius Kitheka",
+                "Grace Mbula",
+                "Alex Mutuku"
+            ]
+        }
+    ]
 
     for pd in polls_data:
-        total_votes = random.randint(30, 450)
-        new_poll = PollModel(
-            Id=pd["Id"], Title=pd["Title"], Description=pd["Description"],
-            Category=pd["Category"], Plan=pd["Plan"], OwnerId=pd["OwnerId"],
-            CreatedAt=_ts_offset(random.randint(10, 160)),
-            Status="live", TotalVotes=total_votes,
-            MerkleRoot=_hash(f"{pd['Id']}:{pd['Title']}"),
-            IsEncryptedBallot=1 if pd["Plan"] in ["pro", "org", "election"] else 0
+        existing = db.query(PollModel).filter(PollModel.Id == pd["Id"]).first()
+        if not existing:
+            new_poll = PollModel(
+                Id=pd["Id"], Title=pd["Title"], Description=pd["Description"],
+                Category=pd["Category"], Plan=pd["Plan"], OwnerId=pd["OwnerId"],
+                CreatedAt=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                Status="live", TotalVotes=0,
+                MerkleRoot=_hash(f"{pd['Id']}:{pd['Title']}"),
+                IsEncryptedBallot=1
+            )
+            db.add(new_poll)
+            db.flush()
+
+            for idx, label in enumerate(pd["Options"]):
+                option = PollOptionModel(
+                    PollId=pd["Id"], Index=idx, Label=label, Votes=0, Percentage=0.0
+                )
+                db.add(option)
+    db.commit()
+    print(f"[SEED] Ensured {len(polls_data)} clean polls exist with 0 votes.")
+    return
         )
         db.add(new_poll)
         db.flush()
