@@ -21,8 +21,8 @@
 
     <div class="ln-nav-links" id="navLinks">
       <a href="#features">Features</a>
-      <a href="#discover">Discover</a>
-      <a href="#compare">Compare</a>
+      <a href="pages/vote.html">Active Polls</a>
+      <a href="#compare">Pricing</a>
       <a href="#how-it-works">How It Works</a>
       <a href="#contact">Contact</a>
     </div>
@@ -33,7 +33,10 @@
       <span></span>
     </button>
 
-    <a href="auth/signup.html" class="ln-nav-cta">Get Started <span>&rarr;</span></a>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <a href="auth/login.html" class="ln-nav-signin" style="color:#E5E5E5;text-decoration:none;font-size:14px;font-weight:600;padding:8px 16px;border:1px solid rgba(229,229,229,0.3);border-radius:20px;transition:all 0.2s;">Sign In</a>
+      <a href="auth/signup.html" class="ln-nav-cta">Get Started <span>&rarr;</span></a>
+    </div>
   </nav>
 
   <!-- ====== HERO SECTION ====== -->
@@ -47,6 +50,13 @@
     <p class="ln-hero-sub" style="animation-fill-mode: forwards;">
       The polling platform that empowers organizations to publish targeted surveys and engage citizens through mobile voting — with live analytics.
     </p>
+
+    <!-- Hero Action Buttons -->
+    <div class="ln-hero-actions" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:20px;margin-bottom:28px;animation:fadeSlideUp 0.7s ease 0.4s both;">
+      <a href="pages/vote.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(229,229,229,0.12);border:1px solid rgba(229,229,229,0.25);border-radius:30px;color:#E5E5E5;text-decoration:none;font-size:14px;font-weight:600;backdrop-filter:blur(8px);transition:all 0.25s;">🗳️ Vote in Live Polls</a>
+      <a href="https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#E5E5E5;border:none;border-radius:30px;color:#303030;text-decoration:none;font-size:14px;font-weight:700;transition:all 0.25s;">📱 Download App v1.2</a>
+      <a href="console/surveys.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(229,229,229,0.12);border:1px solid rgba(229,229,229,0.25);border-radius:30px;color:#E5E5E5;text-decoration:none;font-size:14px;font-weight:600;backdrop-filter:blur(8px);transition:all 0.25s;">📊 Organization Console</a>
+    </div>
 
     <!-- Device Mockup -->
     <div class="ln-hero-device" style="animation-fill-mode: forwards;">

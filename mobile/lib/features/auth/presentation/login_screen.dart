@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
 import 'plan_selection_screen.dart';
+import '../../legal/presentation/legal_dialogs.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(String role) onLoginSuccess;
@@ -107,12 +108,21 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString('gir_user_email', userData['email']?.toString() ?? email);
       await prefs.setString('gir_user_name', userData['fullName']?.toString() ?? 'User');
 
+      final phone = userData['phone']?.toString() ?? userData['phoneNumber']?.toString() ?? '';
+      if (phone.isNotEmpty) {
+        await prefs.setString('gir_user_phone', phone);
+      }
+
       final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
-      final savedPlan = prefs.getString('gir_user_plan');
+      final savedPlan = prefs.getString('gir_user_plan') ?? userData['plan']?.toString();
 
       if (mounted) {
-        if (planChosen || (savedPlan != null && savedPlan.isNotEmpty)) {
-          // Starter plan already chosen — proceed directly to app
+        // If signing in (not newly signing up) or if plan is already present, proceed straight to app
+        if (!_isSignUp || planChosen || (savedPlan != null && savedPlan.isNotEmpty)) {
+          if (savedPlan != null && savedPlan.isNotEmpty) {
+            await prefs.setString('gir_user_plan', savedPlan);
+            await prefs.setBool('gir_plan_chosen', true);
+          }
           widget.onLoginSuccess(role == 'admin' || role == 'org' ? 'org' : 'user');
         } else {
           Navigator.of(context).push(
@@ -374,24 +384,16 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Circle Avatar Icon
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.0),
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.person_outline,
-                        size: 65,
-                        color: Colors.white,
-                      ),
-                    ),
+                // Clean Brand Logo
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 95,
+                  height: 95,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.how_to_vote_rounded,
+                    size: 65,
+                    color: Colors.white,
                   ),
                 ),
 
@@ -517,7 +519,39 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-              ],
+
+                const SizedBox(height: 24),
+
+                // Terms and Policy Links
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () => LegalDialogs.showTermsOfService(context),
+                      child: const Text(
+                        'Terms of Service',
+                        style: TextStyle(
+                          color: Color(0xFFB8B8B8),
+                          fontSize: 12,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    const Text(' • ', style: TextStyle(color: Color(0xFF888888), fontSize: 12)),
+                    GestureDetector(
+                      onTap: () => LegalDialogs.showPrivacyPolicy(context),
+                      child: const Text(
+                        'Privacy Policy',
+                        style: TextStyle(
+                          color: Color(0xFFB8B8B8),
+                          fontSize: 12,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                ],
             ),
           ),
         ),

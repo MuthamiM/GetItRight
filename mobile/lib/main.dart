@@ -9,6 +9,7 @@ import 'features/dashboard/presentation/org_dashboard_screen.dart';
 import 'features/profile/presentation/profile_settings_screen.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'core/network/api_client.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -156,7 +157,7 @@ class _RootNavigationCoordinatorState
             child: const Text('Later', style: TextStyle(color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -168,6 +169,12 @@ class _RootNavigationCoordinatorState
                   duration: const Duration(seconds: 3),
                 ),
               );
+              try {
+                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              } catch (_) {}
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE5E5E5),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../auth/presentation/plan_selection_screen.dart';
 import '../../../core/network/api_client.dart';
+import '../../legal/presentation/legal_dialogs.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   final VoidCallback onSettingsUpdated;
@@ -15,6 +17,7 @@ class ProfileSettingsScreen extends StatefulWidget {
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _orgController = TextEditingController();
 
   String _currentPlan = 'free';
@@ -32,6 +35,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     setState(() {
       _nameController.text = prefs.getString('gir_user_name') ?? 'User';
       _emailController.text = prefs.getString('gir_user_email') ?? 'user@getitright.io';
+      _phoneController.text = prefs.getString('gir_user_phone') ?? '';
       _orgController.text = prefs.getString('gir_user_org') ?? 'Independent';
       _currentPlan = prefs.getString('gir_user_plan') ?? 'free';
       _notificationsEnabled = prefs.getBool('gir_notifications_enabled') ?? true;
@@ -44,6 +48,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     await prefs.setString('gir_user_name', _nameController.text.trim());
     await prefs.setString('gir_user_email', _emailController.text.trim());
+    await prefs.setString('gir_user_phone', _phoneController.text.trim());
     await prefs.setString('gir_user_org', _orgController.text.trim());
     await prefs.setBool('gir_notifications_enabled', _notificationsEnabled);
 
@@ -91,6 +96,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _orgController.dispose();
     super.dispose();
   }
@@ -143,6 +149,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               _buildFieldLabel('Email Address'),
               const SizedBox(height: 6),
               _buildPillInput(controller: _emailController, hint: 'Email', keyboardType: TextInputType.emailAddress),
+
+              const SizedBox(height: 14),
+
+              _buildFieldLabel('Linked Phone Number'),
+              const SizedBox(height: 6),
+              _buildPillInput(controller: _phoneController, hint: '+254 700 000 000', keyboardType: TextInputType.phone),
 
               const SizedBox(height: 14),
 
@@ -307,6 +319,38 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 ),
               ),
 
+              const SizedBox(height: 24),
+
+              // Section 5: Legal & Policies
+              _buildSectionHeader('LEGAL & POLICIES'),
+              const SizedBox(height: 10),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF505050),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.gavel_rounded, color: Colors.white, size: 20),
+                      title: const Text('Terms of Service', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Civic polling rules, account security & integrity', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 11.5)),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFB8B8B8), size: 14),
+                      onTap: () => LegalDialogs.showTermsOfService(context),
+                    ),
+                    const Divider(height: 1, color: Color(0xFF606060)),
+                    ListTile(
+                      leading: const Icon(Icons.shield_outlined, color: Colors.white, size: 20),
+                      title: const Text('Privacy Policy', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Zero data selling & cryptographic secret ballot', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 11.5)),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFB8B8B8), size: 14),
+                      onTap: () => LegalDialogs.showPrivacyPolicy(context),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 32),
 
               // Save Button
@@ -443,7 +487,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             child: const Text('Later', style: TextStyle(color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -455,6 +499,12 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   duration: const Duration(seconds: 3),
                 ),
               );
+              try {
+                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              } catch (_) {}
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE5E5E5),

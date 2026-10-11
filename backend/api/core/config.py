@@ -13,7 +13,7 @@ if not DEFAULT_DB_PATH.exists():
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "GetItRight Unified Sovereign Voting & Polling API"
-    VERSION: str = "2.0.0"
+    VERSION: str = "1.2.0"
     API_PREFIX: str = "/api"
     
     # Database
