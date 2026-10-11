@@ -51,13 +51,13 @@ def health_check():
 def check_app_version():
     return {
         "latest_version": settings.VERSION,
-        "current_stable": "2.0.0",
+        "current_stable": settings.VERSION,
         "minimum_version": "1.0.0",
-        "update_available": True,
+        "update_available": False,
         "force_update": False,
         "title": f"GetItRight v{settings.VERSION} Available",
-        "release_notes": "Enhanced live polls, instant back-to-top navigation, real-time survey verification, and improved caching.",
-        "download_url": "https://getitright.io/download",
+        "release_notes": "Clean 'VOTED' UI, brand logo splash fix, 5-poll feed pagination, and tamper-evident Merkle verification.",
+        "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk",
     }
 
 @app.get(f"{settings.API_PREFIX}/cache/status")

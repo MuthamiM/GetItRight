@@ -181,7 +181,7 @@ body.landing-new {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 28px;
+  padding: 10px 24px;
   background: var(--charcoal);
   color: var(--silver);
   font-family: var(--font-body);
@@ -196,6 +196,39 @@ body.landing-new {
 .ln-nav-cta:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+.ln-nav-signin {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--charcoal);
+  text-decoration: none;
+  padding: 8px 18px;
+  border-radius: 100px;
+  border: 1.5px solid var(--charcoal);
+  transition: transform var(--transition), background var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+
+.ln-nav-signin:hover {
+  background: var(--charcoal);
+  color: var(--silver);
+  transform: translateY(-1px);
+}
+
+.ln-mobile-only {
+  display: none;
+}
+
+.ln-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 0 auto 44px;
+  animation: fadeInUp 0.9s ease 0.3s forwards;
+  opacity: 0;
 }
 
 /* ── Mobile Nav Toggle ── */

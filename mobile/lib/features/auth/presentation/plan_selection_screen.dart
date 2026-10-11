@@ -83,20 +83,34 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
   ];
 
   final TextEditingController _phoneController = TextEditingController();
+  bool _phoneLinked = false;
 
   @override
   void initState() {
     super.initState();
     _selectedPlan =
         (widget.userData['plan'] as String? ?? 'free').toLowerCase();
-    _phoneController.text =
-        widget.userData['phone']?.toString() ?? '';
+    _loadExistingPhone();
     final initialIndex = _plans.indexWhere((p) => p['id'] == _selectedPlan);
     if (initialIndex != -1) {
       _currentPage = initialIndex;
     } else {
       _selectedPlan = 'free';
       _currentPage = 0;
+    }
+  }
+
+  Future<void> _loadExistingPhone() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existingPhone = prefs.getString('gir_user_phone')
+        ?? widget.userData['phone']?.toString()
+        ?? widget.userData['phoneNumber']?.toString()
+        ?? '';
+    if (existingPhone.isNotEmpty && mounted) {
+      setState(() {
+        _phoneController.text = existingPhone;
+        _phoneLinked = true;
+      });
     }
   }
 
@@ -180,7 +194,9 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Swipe horizontally to browse plans. Enter phone number to link your account.',
+                    _phoneLinked
+                        ? 'Your phone is linked. Swipe to browse plans.'
+                        : 'Swipe to browse plans. Optionally link a phone number.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withAlpha(140),
@@ -188,26 +204,55 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Phone Number Input Section
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF404040),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF606060)),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                    child: TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: const InputDecoration(
-                        icon: Icon(Icons.phone_android, color: Colors.white70, size: 20),
-                        hintText: 'Enter Phone Number (+254...)',
-                        hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
-                        border: InputBorder.none,
+                  // Phone Number Section — show badge if linked, input if not
+                  if (_phoneLinked)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3A4A3A),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF5A7A5A)),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Color(0xFF7BC47F), size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Phone linked: ${_phoneController.text}',
+                              style: const TextStyle(color: Color(0xFFD0E8D0), fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => setState(() => _phoneLinked = false),
+                            child: const Text(
+                              'Edit',
+                              style: TextStyle(color: Color(0xFF9AC09E), fontSize: 12, decoration: TextDecoration.underline),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF404040),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF606060)),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                      child: TextField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: const InputDecoration(
+                          icon: Icon(Icons.phone_android, color: Colors.white70, size: 20),
+                          hintText: 'Phone Number (optional, +254...)',
+                          hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

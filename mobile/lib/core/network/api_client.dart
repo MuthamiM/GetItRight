@@ -462,17 +462,17 @@ class ApiClient {
               'latest_version': serverVersion,
               'update_available': serverVersion != '1.2.0',
               'release_notes': 'Live polls, instant back-to-top navigation, real-time survey verification, and improved caching.',
-              'download_url': 'https://getitright.io/download',
+              'download_url': 'https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk',
             };
           }
         } catch (_) {}
       }
     }
     return {
-      'latest_version': '2.0.0',
-      'update_available': true,
-      'release_notes': 'Live polls, instant back-to-top navigation, real-time survey verification, and improved caching.',
-      'download_url': 'https://getitright.io/download',
+      'latest_version': '1.2.0',
+      'update_available': false,
+      'release_notes': 'Clean VOTED UI, splash screen logo fix, 5-poll feed pagination, and permanent voting integrity.',
+      'download_url': 'https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk',
     };
   }
 }
