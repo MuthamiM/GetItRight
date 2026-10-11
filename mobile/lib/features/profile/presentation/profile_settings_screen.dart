@@ -261,7 +261,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             ),
                             SizedBox(height: 3),
                             Text(
-                              'Version 1.0.0 (Build 1)',
+                              'Version 1.2.0 (Build 2)',
                               style: TextStyle(
                                 color: Color(0xFFB8B8B8),
                                 fontSize: 12,
@@ -358,7 +358,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'You are using the latest version of Getitright (v1.0.0)',
+              'You are using the latest version of Getitright (v1.2.0)',
               style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
             ),
             backgroundColor: Color(0xFFE5E5E5),
@@ -416,7 +416,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v1.0.0)',
+                'Version $version is now available (Current: v1.2.0)',
                 style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),

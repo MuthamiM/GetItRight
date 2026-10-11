@@ -331,22 +331,22 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
   void _handleVote(Poll poll, String optionId, {int? optionIndex}) async {
     final previousOptionId = poll.selectedOptionId;
-    final isChangingVote =
-        previousOptionId != null && previousOptionId != optionId;
 
-    if (previousOptionId == optionId) {
+    // REMEMBER: ONCE YOU VOTE, YOU CANNOT CHANGE YOUR VOTE!
+    if (previousOptionId != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle,
-                    color: Color(0xFF2A2A2A), size: 18),
+                const Icon(Icons.check_circle, color: Color(0xFF2A2A2A), size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Your vote is counted! (${poll.totalVotes} total votes)',
+                    previousOptionId == optionId
+                        ? 'Your vote is already recorded! (${poll.totalVotes} total votes)'
+                        : 'You have already voted on this poll. Votes cannot be changed.',
                     style: const TextStyle(
                       color: Color(0xFF2A2A2A),
                       fontWeight: FontWeight.bold,
@@ -372,14 +372,10 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     setState(() {
       poll.selectedOptionId = optionId;
       // When starting from 0, first vote increments to 1
-      if (!isChangingVote) {
-        poll.totalVotes += 1;
-      }
+      poll.totalVotes += 1;
       for (var opt in poll.options) {
         if (opt.id == optionId) {
           opt.votes += 1;
-        } else if (opt.id == previousOptionId && opt.votes > 0) {
-          opt.votes -= 1;
         }
         opt.percentage =
             poll.totalVotes > 0 ? (opt.votes / poll.totalVotes) * 100.0 : 0.0;
@@ -392,19 +388,19 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
-              const Icon(Icons.check_circle,
+              Icon(Icons.check_circle,
                   color: Color(0xFF2A2A2A), size: 18),
-              const SizedBox(width: 8),
-              Text(
-                isChangingVote
-                    ? 'Vote updated'
-                    : 'Vote recorded (1 vote added)',
-                style: const TextStyle(
-                  color: Color(0xFF2A2A2A),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Vote recorded! (Votes cannot be changed)',
+                  style: TextStyle(
+                    color: Color(0xFF2A2A2A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
@@ -706,6 +702,20 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                   ),
                                                   Row(
                                                     children: [
+                                                      if (poll.selectedOptionId != null) ...[
+                                                        const Icon(Icons.check_circle_outline, size: 11, color: Color(0xFFFFD54F)),
+                                                        const SizedBox(width: 3),
+                                                        const Text(
+                                                          'VOTED',
+                                                          style: TextStyle(
+                                                            color: Color(0xFFFFD54F),
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                            letterSpacing: 0.6,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                      ],
                                                       const Icon(
                                                           Icons
                                                               .radio_button_checked,
@@ -951,7 +961,9 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                         .spaceBetween,
                                                 children: [
                                                   Text(
-                                                    '${poll.totalVotes} total votes • Live updating',
+                                                    poll.selectedOptionId != null
+                                                        ? '${poll.totalVotes} total votes • Voted'
+                                                        : '${poll.totalVotes} total votes • Live updating',
                                                     style: const TextStyle(
                                                       color: Color(0xFFAAAAAA),
                                                       fontSize: 12,

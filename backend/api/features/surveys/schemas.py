@@ -58,3 +58,33 @@ class SurveySubmissionReceipt(BaseModel):
     receiptHash: str
     merkleLeafIndex: int
     timestamp: str
+
+class SurveyStatusUpdate(BaseModel):
+    status: str
+
+class QuestionAnalytics(BaseModel):
+    questionId: int
+    index: int
+    questionText: str
+    questionType: str
+    totalAnswers: int
+    breakdown: Dict[str, Any]
+
+class SurveyAnalyticsOut(BaseModel):
+    surveyId: str
+    title: str
+    status: str
+    plan: str
+    targetResponses: int
+    totalResponses: int
+    completionRate: float
+    merkleCohortRoot: str
+    questions: List[QuestionAnalytics]
+
+class ReceiptVerificationOut(BaseModel):
+    valid: bool
+    surveyId: str
+    receiptHash: str
+    merkleLeafIndex: int
+    timestamp: str
+    merkleCohortRoot: str

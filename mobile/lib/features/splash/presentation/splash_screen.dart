@@ -13,18 +13,26 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 700),
     );
 
     _fadeAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeIn,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutCubic,
+      ),
     );
 
     _controller.forward();
@@ -69,22 +77,17 @@ class _SplashScreenState extends State<SplashScreen>
               child: Center(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.person_outline,
-                          size: 80,
-                          color: Colors.white,
-                        ),
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.how_to_vote_rounded,
+                        size: 80,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -92,14 +95,14 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             const Padding(
-              padding: EdgeInsets.only(bottom: 28.0),
+              padding: EdgeInsets.only(bottom: 32.0),
               child: Text(
-                'Getitright',
+                'GetitRight',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 19,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.4,
                 ),
               ),
             ),

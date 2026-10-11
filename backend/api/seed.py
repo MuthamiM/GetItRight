@@ -202,45 +202,6 @@ def seed_polls(db):
     db.commit()
     print(f"[SEED] Ensured {len(polls_data)} clean polls exist with 0 votes.")
     return
-        )
-        db.add(new_poll)
-        db.flush()
-
-        # Distribute votes across options
-        remaining = total_votes
-        opts = pd["Options"]
-        for idx, label in enumerate(opts):
-            if idx == len(opts) - 1:
-                opt_votes = remaining
-            else:
-                opt_votes = random.randint(0, remaining)
-                remaining -= opt_votes
-
-            pct = round((opt_votes / total_votes) * 100, 1) if total_votes > 0 else 0.0
-            option = PollOptionModel(
-                PollId=pd["Id"], Index=idx, Label=label, Votes=opt_votes, Percentage=pct
-            )
-            db.add(option)
-
-        # Generate vote transactions spread over 6 months
-        for v in range(min(total_votes, 25)):  # cap transactions for performance
-            month_idx = random.choices(range(6), weights=month_weights, k=1)[0]
-            days_ago = (5 - month_idx) * 30 + random.randint(0, 29)
-            opt_idx = random.randint(0, len(opts) - 1)
-            voter_key = f"Voter-{uuid.uuid4().hex[:6]}"
-            ts = _ts_offset(days_ago, random.randint(6, 22))
-            receipt = _hash(f"{pd['Id']}:{opt_idx}:{voter_key}:{ts}")
-
-            tx = VoteTransactionModel(
-                PollId=pd["Id"], OptionIndex=opt_idx, OptionLabel=opts[opt_idx],
-                ReceiptHash=receipt, MerkleLeafIndex=v + 1,
-                VoterPseudonym=voter_key, Timestamp=ts
-            )
-            db.add(tx)
-
-    db.commit()
-    print(f"[SEED] Inserted {len(polls_data)} polls with options and vote transactions.")
-
 
 def seed_surveys(db):
     if db.query(SurveyModel).count() > 0:

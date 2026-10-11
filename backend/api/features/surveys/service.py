@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from backend.api.features.surveys.models import SurveyModel, SurveyQuestionModel, SurveyResponseModel
 from backend.api.features.surveys.schemas import (
-    SurveyOut, QuestionOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt
+    SurveyOut, QuestionOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
+    SurveyAnalyticsOut, QuestionAnalytics, ReceiptVerificationOut
 )
 
 def map_survey_to_out(s: SurveyModel) -> SurveyOut:
@@ -151,4 +152,82 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         receiptHash=receipt,
         merkleLeafIndex=leaf_index,
         timestamp=timestamp
+    )
+
+def update_survey_status(db: Session, survey_id: str, new_status: str) -> SurveyOut:
+    survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Survey {survey_id} not found")
+    valid_statuses = ["Active", "Paused", "Closed"]
+    formatted = next((s for s in valid_statuses if s.lower() == new_status.strip().lower()), new_status.capitalize())
+    survey.Status = formatted
+    db.commit()
+    db.refresh(survey)
+    return map_survey_to_out(survey)
+
+def get_survey_analytics(db: Session, survey_id: str) -> SurveyAnalyticsOut:
+    survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Survey {survey_id} not found")
+    
+    questions_sorted = sorted(survey.questions, key=lambda q: q.Index)
+    analytics_questions = []
+    
+    for q in questions_sorted:
+        resp_map = {}
+        try:
+            resp_map = json.loads(q.ResponsesJson) if q.ResponsesJson else {}
+        except Exception:
+            resp_map = {}
+        total_answers = sum(resp_map.values()) if isinstance(resp_map, dict) else 0
+        analytics_questions.append(QuestionAnalytics(
+            questionId=q.Id,
+            index=q.Index,
+            questionText=q.QuestionText,
+            questionType=q.QuestionType,
+            totalAnswers=total_answers,
+            breakdown=resp_map
+        ))
+    
+    comp_rate = round((survey.TotalResponses / survey.TargetResponses) * 100.0, 1) if survey.TargetResponses > 0 else 0.0
+    
+    return SurveyAnalyticsOut(
+        surveyId=survey.Id,
+        title=survey.Title,
+        status=survey.Status,
+        plan=survey.Plan,
+        targetResponses=survey.TargetResponses,
+        totalResponses=survey.TotalResponses,
+        completionRate=min(comp_rate, 100.0),
+        merkleCohortRoot=survey.MerkleCohortRoot,
+        questions=analytics_questions
+    )
+
+def verify_survey_receipt(db: Session, survey_id: str, receipt_hash: str) -> ReceiptVerificationOut:
+    survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Survey {survey_id} not found")
+    
+    resp = db.query(SurveyResponseModel).filter(
+        SurveyResponseModel.SurveyId == survey_id,
+        SurveyResponseModel.ReceiptHash == receipt_hash.strip()
+    ).first()
+    
+    if not resp:
+        return ReceiptVerificationOut(
+            valid=False,
+            surveyId=survey_id,
+            receiptHash=receipt_hash,
+            merkleLeafIndex=0,
+            timestamp="",
+            merkleCohortRoot=survey.MerkleCohortRoot
+        )
+    
+    return ReceiptVerificationOut(
+        valid=True,
+        surveyId=survey_id,
+        receiptHash=resp.ReceiptHash,
+        merkleLeafIndex=resp.MerkleLeafIndex,
+        timestamp=resp.Timestamp,
+        merkleCohortRoot=survey.MerkleCohortRoot
     )

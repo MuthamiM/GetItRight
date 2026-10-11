@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/poll_model.dart';
 import '../models/survey_model.dart';
 
@@ -50,9 +51,21 @@ class ApiClient {
 
   /// Cast vote on a poll
   Future<bool> castVote(String pollId, String optionId, {int? optionIndex}) async {
+    String voterKey = 'Voter-mobile';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var key = prefs.getString('gir_voter_key');
+      if (key == null) {
+        key = 'Voter-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
+        await prefs.setString('gir_voter_key', key);
+      }
+      voterKey = key;
+    } catch (_) {}
+
     final payload = {
       if (optionIndex != null) 'optionIndex': optionIndex,
       'option_id': optionId,
+      'voterKey': voterKey,
       'platform': 'mobile_android',
     };
 
@@ -444,10 +457,10 @@ class ApiClient {
           if (healthResp.statusCode == 200) {
             _activeBaseUrl = url;
             final data = json.decode(healthResp.body) as Map<String, dynamic>;
-            final serverVersion = data['version']?.toString() ?? '1.0.0';
+            final serverVersion = data['version']?.toString() ?? '1.2.0';
             return {
               'latest_version': serverVersion,
-              'update_available': serverVersion != '1.0.0',
+              'update_available': serverVersion != '1.2.0',
               'release_notes': 'Live polls, instant back-to-top navigation, real-time survey verification, and improved caching.',
               'download_url': 'https://getitright.io/download',
             };

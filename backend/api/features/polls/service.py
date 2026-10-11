@@ -132,7 +132,22 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         )
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    voter_key = vote_req.voterKey or f"Voter-{uuid.uuid4().hex[:6]}"
+
+    # REMEMBER: ONCE A VOTER VOTES, THEY CANNOT CHANGE THEIR VOTE
+    if vote_req.voterKey and vote_req.voterKey.strip():
+        voter_key = vote_req.voterKey.strip()
+        existing_tx = db.query(VoteTransactionModel).filter(
+            VoteTransactionModel.PollId == poll.Id,
+            VoteTransactionModel.VoterPseudonym == voter_key
+        ).first()
+        if existing_tx:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Vote already recorded. You cannot change your vote."
+            )
+    else:
+        voter_key = f"Voter-{uuid.uuid4().hex[:6]}"
+
     receipt_hash = generate_merkle_receipt(poll_id, target_option.Index, voter_key, timestamp)
 
     # Increment votes
