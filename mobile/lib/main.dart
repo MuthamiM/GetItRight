@@ -129,7 +129,7 @@ class _RootNavigationCoordinatorState
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v1.0.0)',
+                'Version $version is now available (Current: v1.2.0)',
                 style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),

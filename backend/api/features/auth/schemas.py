@@ -58,3 +58,19 @@ class AuthResponse(BaseModel):
     user: UserOut
     redirectUrl: str
     isAdmin: bool = False
+
+class ChangePasswordRequest(BaseModel):
+    oldPassword: str
+    newPassword: str
+
+class UpdateProfileRequest(BaseModel):
+    fullName: Optional[str] = None
+    phoneNumber: Optional[str] = None
+    organization: Optional[str] = None
+
+class VerifyTokenRequest(BaseModel):
+    token: str
+
+class VerifyTokenResponse(BaseModel):
+    valid: bool
+    user: Optional[UserOut] = None

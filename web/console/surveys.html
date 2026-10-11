@@ -202,7 +202,7 @@
               <span class="stat-card-title">Total Surveys</span>
               <span class="stat-card-icon" data-icon="surveys"></span>
             </div>
-            <div class="stat-card-value">12</div>
+            <div class="stat-card-value" id="kpi-total-surveys">...</div>
             <div class="stat-card-change positive">
               <span data-icon="trendUp"></span>
               +3 this month
@@ -214,7 +214,7 @@
               <span class="stat-card-title">Total Responses</span>
               <span class="stat-card-icon" data-icon="vote"></span>
             </div>
-            <div class="stat-card-value">18,490</div>
+            <div class="stat-card-value" id="kpi-total-responses">...</div>
             <div class="stat-card-change positive">
               <span data-icon="trendUp"></span>
               +14.2% velocity
@@ -226,7 +226,7 @@
               <span class="stat-card-title">Avg. Completion Rate</span>
               <span class="stat-card-icon" data-icon="target"></span>
             </div>
-            <div class="stat-card-value">84.6%</div>
+            <div class="stat-card-value" id="kpi-avg-completion">...</div>
             <div class="stat-card-change positive">
               <span data-icon="trendUp"></span>
               +2.1% benchmark
@@ -268,134 +268,58 @@
         </div>
 
         <!-- Surveys Grid List -->
-        <div class="surveys-grid" id="surveys-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">
-
-          <!-- Survey Card 1 -->
-          <div class="card survey-item" data-status="active" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                <span class="badge badge-success" style="padding:4px 10px; font-size:12px; border-radius:12px; background:rgba(74,92,255,0.15); color:var(--accent-primary);">Active</span>
-                <span style="font-size:12px; color:var(--text-secondary);">Updated 2h ago</span>
-              </div>
-              <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Q3 Customer Satisfaction & Experience</h3>
-              <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Evaluating enterprise product satisfaction, onboarding friction, and feature expectations across enterprise clients.</p>
-              
-              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">Track: Enterprise Feedback</span>
-                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">8 Questions</span>
-              </div>
-
-              <!-- Progress bar -->
-              <div style="margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                  <span style="color:var(--text-secondary);">Responses Target</span>
-                  <span style="color:var(--accent-primary); font-weight:600;">4,820 / 5,000 (96%)</span>
-                </div>
-                <div style="height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden;">
-                  <div style="width:96%; height:100%; background:var(--accent-primary); border-radius:3px;"></div>
-                </div>
-              </div>
-            </div>
-
-            <div style="border-top:1px solid var(--border-color); padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-secondary);">
-                <span data-icon="users"></span>
-                <span>4,820 participants</span>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <a href="analytics.html?survey=1" class="btn btn-ghost btn-sm" title="View Analytics">
-                  <span data-icon="analytics"></span>
-                </a>
-                <button class="btn btn-secondary btn-sm" onclick="App.showToast('Survey link copied to clipboard', 'success')">
-                  <span data-icon="share"></span>
-                </button>
-              </div>
-            </div>
+        <div class="surveys-grid" id="surveys-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
+          <div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-secondary);">
+            <span style="font-size:16px;">Loading active surveys and cohorts...</span>
           </div>
-
-          <!-- Survey Card 2 -->
-          <div class="card survey-item" data-status="active" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                <span class="badge badge-success" style="padding:4px 10px; font-size:12px; border-radius:12px; background:rgba(74,92,255,0.15); color:var(--accent-primary);">Active</span>
-                <span style="font-size:12px; color:var(--text-secondary);">Updated 5h ago</span>
-              </div>
-              <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Workplace Culture & Remote Pulse</h3>
-              <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Internal company assessment for hybrid balance, mental wellness, and tooling efficiency.</p>
-              
-              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">Track: Internal HR</span>
-                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">12 Questions</span>
-              </div>
-
-              <div style="margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                  <span style="color:var(--text-secondary);">Responses Target</span>
-                  <span style="color:var(--accent-primary); font-weight:600;">1,250 / 1,500 (83%)</span>
-                </div>
-                <div style="height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden;">
-                  <div style="width:83%; height:100%; background:var(--accent-primary); border-radius:3px;"></div>
-                </div>
-              </div>
-            </div>
-
-            <div style="border-top:1px solid var(--border-color); padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-secondary);">
-                <span data-icon="users"></span>
-                <span>1,250 participants</span>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <a href="analytics.html?survey=2" class="btn btn-ghost btn-sm" title="View Analytics">
-                  <span data-icon="analytics"></span>
-                </a>
-                <button class="btn btn-secondary btn-sm" onclick="App.showToast('Survey link copied to clipboard', 'success')">
-                  <span data-icon="share"></span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Survey Card 3 -->
-          <div class="card survey-item" data-status="draft" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                <span class="badge" style="padding:4px 10px; font-size:12px; border-radius:12px; background:rgba(255,215,64,0.15); color:var(--warning);">Draft</span>
-                <span style="font-size:12px; color:var(--text-secondary);">Created yesterday</span>
-              </div>
-              <h3 style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0 0 8px 0;">Mobile App 2.0 Feature Prioritization</h3>
-              <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px 0;">Gathering community preference on upcoming native widgets, offline caching, and biometric sign-in.</p>
-              
-              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">Track: Product Roadmap</span>
-                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">6 Questions</span>
-              </div>
-
-              <div style="margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                  <span style="color:var(--text-secondary);">Status</span>
-                  <span style="color:var(--warning); font-weight:600;">Draft - Not Published</span>
-                </div>
-                <div style="height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden;">
-                  <div style="width:0%; height:100%; background:var(--warning); border-radius:3px;"></div>
-                </div>
-              </div>
-            </div>
-
-            <div style="border-top:1px solid var(--border-color); padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-secondary);">
-                <span data-icon="edit"></span>
-                <span>Unpublished</span>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button class="btn btn-primary btn-sm" onclick="App.showToast('Survey published successfully', 'success')">
-                  Publish
-                </button>
-              </div>
-            </div>
-          </div>
-
         </div>
       </main>
+    </div>
+
+    <!-- ====== SURVEY ANALYTICS MODAL ====== -->
+    <div class="modal-backdrop" id="analytics-modal">
+      <div class="modal card" style="max-width:760px; width:92%; max-height:88vh; overflow-y:auto; padding:28px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--border-color); padding-bottom:14px;">
+          <div>
+            <h2 id="analytics-modal-title" style="font-size:20px; font-weight:700; color:var(--text-primary); margin:0 0 4px 0;">Survey Analytics</h2>
+            <p id="analytics-modal-meta" style="font-size:12px; color:var(--text-secondary); margin:0;">Live Statistical Distribution &amp; Cryptographic Proofs</p>
+          </div>
+          <button class="btn btn-ghost btn-icon" id="close-analytics-modal-btn" onclick="document.getElementById('analytics-modal').classList.remove('active')">
+            <span data-icon="close"></span>
+          </button>
+        </div>
+
+        <div id="analytics-content" style="display:flex; flex-direction:column; gap:18px;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== RECEIPT VERIFICATION MODAL ====== -->
+    <div class="modal-backdrop" id="verify-modal">
+      <div class="modal card" style="max-width:600px; width:90%; padding:26px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
+          <div>
+            <h3 style="font-size:18px; font-weight:700; color:var(--text-primary); margin:0 0 4px 0;">Verify Ballot Receipt</h3>
+            <p style="font-size:12px; color:var(--text-secondary); margin:0;">Verify cryptographic response receipt against Merkle Cohort Root</p>
+          </div>
+          <button class="btn btn-ghost btn-icon" onclick="document.getElementById('verify-modal').classList.remove('active')">
+            <span data-icon="close"></span>
+          </button>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Receipt Hash (from voter confirmation)</label>
+          <input type="text" id="verify-receipt-input" placeholder="0x..." style="width:100%; padding:10px 14px; border-radius:10px; background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); font-family:var(--font-mono); font-size:12px;">
+          <input type="hidden" id="verify-survey-id-input">
+        </div>
+
+        <button class="btn btn-primary btn-sm" id="verify-submit-btn" style="width:100%; margin-bottom:16px;">
+          Verify Cryptographic Proof
+        </button>
+
+        <div id="verify-result-box" style="display:none; padding:14px; border-radius:10px; font-size:13px;"></div>
+      </div>
     </div>
 
     <!-- ====== SURVEY BUILDER MODAL ====== -->
@@ -476,8 +400,334 @@
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
   <script>
+    const API_BASE = window.location.origin;
+    let allSurveys = [];
+    let currentFilter = 'all';
+
+    async function loadSurveys() {
+      try {
+        const res = await fetch(`${API_BASE}/api/surveys`);
+        if (!res.ok) throw new Error('Failed to load surveys');
+        allSurveys = await res.json();
+        updateKPIs(allSurveys);
+        renderSurveys(allSurveys);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('surveys-list').innerHTML = `
+          <div style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--text-secondary);">
+            Could not fetch live surveys. Ensure backend API is active.
+          </div>
+        `;
+      }
+    }
+
+    function updateKPIs(surveys) {
+      const totalSurveys = surveys.length;
+      const totalResponses = surveys.reduce((sum, s) => sum + (s.totalResponses || 0), 0);
+      const totalTarget = surveys.reduce((sum, s) => sum + (s.targetResponses || 1), 0);
+      const avgRate = totalTarget > 0 ? ((totalResponses / totalTarget) * 100).toFixed(1) : 0;
+      const activeCount = surveys.filter(s => (s.status || '').toLowerCase() === 'active').length;
+
+      const kpiSurveys = document.getElementById('kpi-total-surveys');
+      if (kpiSurveys) kpiSurveys.textContent = totalSurveys;
+
+      const kpiResponses = document.getElementById('kpi-total-responses');
+      if (kpiResponses) kpiResponses.textContent = totalResponses.toLocaleString();
+
+      const kpiCompletion = document.getElementById('kpi-avg-completion');
+      if (kpiCompletion) kpiCompletion.textContent = `${avgRate}%`;
+
+      // Update tab counts
+      const tabs = document.querySelectorAll('.tab[data-filter]');
+      tabs.forEach(tab => {
+        const f = tab.dataset.filter;
+        if (f === 'all') tab.textContent = `All Surveys (${totalSurveys})`;
+        if (f === 'active') tab.textContent = `Active (${activeCount})`;
+        if (f === 'paused') tab.textContent = `Paused (${surveys.filter(s => (s.status || '').toLowerCase() === 'paused').length})`;
+        if (f === 'closed') tab.textContent = `Closed (${surveys.filter(s => (s.status || '').toLowerCase() === 'closed').length})`;
+      });
+    }
+
+    function renderSurveys(surveys) {
+      const container = document.getElementById('surveys-list');
+      if (!container) return;
+
+      const filtered = surveys.filter(s => {
+        const st = (s.status || 'active').toLowerCase();
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'active') return st === 'active';
+        if (currentFilter === 'paused') return st === 'paused';
+        if (currentFilter === 'closed') return st === 'closed' || st === 'completed';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-secondary);">
+            No surveys match the selected filter.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => {
+        const total = s.totalResponses || 0;
+        const target = s.targetResponses || 500;
+        const pct = Math.min(Math.round((total / target) * 100), 100);
+        const statusLower = (s.status || 'active').toLowerCase();
+        const statusColor = statusLower === 'active' ? 'var(--accent-primary)' :
+                            (statusLower === 'paused' ? '#FFD54F' : '#9E9E9E');
+        const statusBg = statusLower === 'active' ? 'rgba(74,92,255,0.15)' :
+                         (statusLower === 'paused' ? 'rgba(255,213,79,0.15)' : 'rgba(255,255,255,0.08)');
+        const qCount = (s.questions || []).length;
+
+        return `
+          <div class="card survey-item" data-status="${statusLower}" style="display:flex; flex-direction:column; justify-content:space-between; padding:20px; border:1px solid var(--border-color);">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <span class="badge" style="padding:4px 10px; font-size:12px; border-radius:12px; background:${statusBg}; color:${statusColor}; font-weight:700;">
+                  ${s.status || 'Active'}
+                </span>
+                <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-secondary);">${s.id}</span>
+              </div>
+              <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin:0 0 6px 0; line-height:1.3;">
+                ${s.title}
+              </h3>
+              <p style="font-size:12.5px; color:var(--text-secondary); line-height:1.45; margin:0 0 14px 0;">
+                ${s.description || 'Verified multi-step research survey with cryptographic receipts.'}
+              </p>
+
+              <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;">
+                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">
+                  Track: ${s.track || 'General'}
+                </span>
+                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px;">
+                  ${qCount} Question${qCount === 1 ? '' : 's'}
+                </span>
+                <span class="badge" style="background:var(--bg-elevated); color:var(--text-secondary); font-size:11px; padding:3px 8px; border-radius:8px; font-family:var(--font-mono);">
+                  Root: ${s.merkleCohortRoot ? s.merkleCohortRoot.substring(0, 8) + '...' : '0x88bb...'}
+                </span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div style="margin-bottom:14px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                  <span style="color:var(--text-secondary);">Response Quota</span>
+                  <span style="color:${statusColor}; font-weight:700;">${total.toLocaleString()} / ${target.toLocaleString()} (${pct}%)</span>
+                </div>
+                <div style="height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden;">
+                  <div style="width:${pct}%; height:100%; background:${statusColor}; border-radius:3px; transition:width 0.4s ease;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-color); padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <select onchange="changeSurveyStatus('${s.id}', this.value)" style="background:var(--bg-elevated); color:var(--text-primary); border:1px solid var(--border-color); border-radius:6px; padding:4px 8px; font-size:11px; font-weight:600;">
+                  <option value="Active" ${statusLower === 'active' ? 'selected' : ''}>Active</option>
+                  <option value="Paused" ${statusLower === 'paused' ? 'selected' : ''}>Paused</option>
+                  <option value="Closed" ${statusLower === 'closed' ? 'selected' : ''}>Closed</option>
+                </select>
+              </div>
+
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-ghost btn-sm" onclick="showAnalytics('${s.id}')" title="View Live Breakdown &amp; Merkle Root">
+                  <span data-icon="analytics"></span> Stats
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="openVerifyModal('${s.id}')" title="Verify Cryptographic Receipt">
+                  <span data-icon="check"></span> Verify
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="copySurveyLink('${s.id}')" title="Copy Link">
+                  <span data-icon="share"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      App.injectIcons();
+    }
+
+    async function changeSurveyStatus(surveyId, newStatus) {
+      try {
+        const res = await fetch(`${API_BASE}/api/surveys/${surveyId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          App.showToast(`Survey ${surveyId} status updated to ${newStatus}`, 'success');
+          loadSurveys();
+        } else {
+          App.showToast('Could not update status', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        App.showToast('Network error updating status', 'error');
+      }
+    }
+
+    async function showAnalytics(surveyId) {
+      try {
+        const modal = document.getElementById('analytics-modal');
+        const content = document.getElementById('analytics-content');
+        modal.classList.add('active');
+        content.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-secondary);">Loading analytics breakdown...</div>';
+
+        const res = await fetch(`${API_BASE}/api/surveys/${surveyId}/analytics`);
+        if (!res.ok) throw new Error('Analytics fetch error');
+        const data = await res.json();
+
+        document.getElementById('analytics-modal-title').textContent = data.title;
+        document.getElementById('analytics-modal-meta').textContent = 
+          `Survey ID: ${data.surveyId} • Status: ${data.status} • Total Responses: ${data.totalResponses} • Merkle Root: ${data.merkleCohortRoot}`;
+
+        content.innerHTML = `
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:12px;">
+            <div style="background:var(--bg-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-color); text-align:center;">
+              <div style="font-size:11px; color:var(--text-secondary);">Total Responses</div>
+              <div style="font-size:18px; font-weight:700; color:var(--text-primary);">${data.totalResponses}</div>
+            </div>
+            <div style="background:var(--bg-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-color); text-align:center;">
+              <div style="font-size:11px; color:var(--text-secondary);">Completion Rate</div>
+              <div style="font-size:18px; font-weight:700; color:var(--accent-primary);">${data.completionRate}%</div>
+            </div>
+            <div style="background:var(--bg-elevated); padding:12px; border-radius:10px; border:1px solid var(--border-color); text-align:center;">
+              <div style="font-size:11px; color:var(--text-secondary);">Merkle Root</div>
+              <div style="font-size:13px; font-family:var(--font-mono); color:#FFD54F;">${data.merkleCohortRoot}</div>
+            </div>
+          </div>
+
+          <h4 style="font-size:15px; font-weight:700; color:var(--text-primary); margin:8px 0;">Question Response Breakdown</h4>
+          ${data.questions.map(q => {
+            const b = q.breakdown || {};
+            const entries = Object.entries(b);
+            const totalQ = q.totalAnswers || 1;
+            return `
+              <div style="background:var(--bg-elevated); border:1px solid var(--border-color); border-radius:10px; padding:14px;">
+                <div style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">
+                  Q${q.index + 1}: ${q.questionText} (${q.totalAnswers} answers)
+                </div>
+                ${entries.length === 0 ? '<div style="font-size:12px; color:var(--text-secondary);">No answers recorded yet</div>' : ''}
+                ${entries.map(([ans, count]) => {
+                  const p = Math.round((count / totalQ) * 100);
+                  return `
+                    <div style="margin-bottom:6px;">
+                      <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px;">
+                        <span style="color:var(--text-secondary);">${ans}</span>
+                        <span style="color:var(--text-primary); font-weight:600;">${count} (${p}%)</span>
+                      </div>
+                      <div style="height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+                        <div style="width:${p}%; height:100%; background:var(--accent-primary);"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          }).join('')}
+        `;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('analytics-content').innerHTML = `
+          <div style="color:red; text-align:center; padding:20px;">Could not load analytics.</div>
+        `;
+      }
+    }
+
+    function openVerifyModal(surveyId) {
+      document.getElementById('verify-survey-id-input').value = surveyId;
+      document.getElementById('verify-receipt-input').value = '';
+      document.getElementById('verify-result-box').style.display = 'none';
+      document.getElementById('verify-modal').classList.add('active');
+    }
+
+    async function handleVerifyReceipt() {
+      const surveyId = document.getElementById('verify-survey-id-input').value;
+      const hash = document.getElementById('verify-receipt-input').value.trim();
+      const resBox = document.getElementById('verify-result-box');
+
+      if (!hash) {
+        App.showToast('Please enter a receipt hash', 'warning');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/surveys/${surveyId}/verify-receipt/${encodeURIComponent(hash)}`);
+        if (!res.ok) throw new Error('Verification request error');
+        const data = await res.json();
+
+        resBox.style.display = 'block';
+        if (data.valid) {
+          resBox.style.background = 'rgba(0,230,118,0.12)';
+          resBox.style.border = '1px solid #00E676';
+          resBox.style.color = '#00E676';
+          resBox.innerHTML = `
+            <strong>&#10003; Ballot Cryptographically Verified</strong><br>
+            <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-primary);">
+              Merkle Leaf Index: #${data.merkleLeafIndex}<br>
+              Recorded Timestamp: ${data.timestamp}<br>
+              Root: ${data.merkleCohortRoot}
+            </span>
+          `;
+        } else {
+          resBox.style.background = 'rgba(255,82,82,0.12)';
+          resBox.style.border = '1px solid #FF5252';
+          resBox.style.color = '#FF5252';
+          resBox.innerHTML = `
+            <strong>&#10007; Receipt Not Found / Invalid</strong><br>
+            <span style="font-size:11px; color:var(--text-secondary);">
+              This hash does not exist in the survey Merkle tree.
+            </span>
+          `;
+        }
+      } catch (err) {
+        console.error(err);
+        App.showToast('Error verifying receipt', 'error');
+      }
+    }
+
+    function copySurveyLink(surveyId) {
+      const link = `${window.location.origin}/pages/survey.html?id=${surveyId}`;
+      navigator.clipboard.writeText(link).then(() => {
+        App.showToast('Survey link copied to clipboard', 'success');
+      }).catch(() => {
+        App.showToast('Link: ' + link, 'info');
+      });
+    }
+
+    function exportSurveys() {
+      if (allSurveys.length === 0) {
+        App.showToast('No survey data to export', 'warning');
+        return;
+      }
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(allSurveys, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute('href', dataStr);
+      dlAnchor.setAttribute('download', 'gir_surveys_export.json');
+      dlAnchor.click();
+      App.showToast('Surveys exported to JSON', 'success');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       App.injectIcons();
+      loadSurveys();
+
+      // Refresh button
+      const refreshBtn = document.getElementById('refresh-surveys-btn');
+      if (refreshBtn) refreshBtn.addEventListener('click', () => {
+        App.showToast('Refreshing surveys...', 'info');
+        loadSurveys();
+      });
+
+      // Export button
+      const exportBtn = document.getElementById('export-surveys-btn');
+      if (exportBtn) exportBtn.addEventListener('click', exportSurveys);
+
+      // Verify submit button
+      const verifySubmitBtn = document.getElementById('verify-submit-btn');
+      if (verifySubmitBtn) verifySubmitBtn.addEventListener('click', handleVerifyReceipt);
 
       // Modal handling
       const modal = document.getElementById('survey-modal');
@@ -492,19 +742,44 @@
       // Survey creation form submit
       const form = document.getElementById('create-survey-form');
       if (form) {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
           e.preventDefault();
-          modal.classList.remove('active');
-          App.showToast('Survey published successfully to poll track', 'success');
-        });
-      }
+          const title = document.getElementById('new-survey-title').value.trim();
+          const track = document.getElementById('new-survey-track').value;
+          const desc = document.getElementById('new-survey-desc').value.trim();
 
-      // Save draft
-      const draftBtn = document.getElementById('save-draft-btn');
-      if (draftBtn) {
-        draftBtn.addEventListener('click', () => {
-          modal.classList.remove('active');
-          App.showToast('Survey draft saved', 'info');
+          const questions = [
+            { questionText: 'How satisfied are you with our current platform speed?', questionType: 'choice', options: ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied'] },
+            { questionText: 'How intuitive is the console dashboard navigation? (1 to 5)', questionType: 'rating', options: ['1', '2', '3', '4', '5'] },
+            { questionText: 'What feature should our engineering team build next?', questionType: 'text', options: [] }
+          ];
+
+          try {
+            const res = await fetch(`${API_BASE}/api/surveys`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: title,
+                description: desc,
+                track: track,
+                plan: 'pro',
+                targetResponses: 500,
+                questions: questions
+              })
+            });
+
+            if (res.ok) {
+              modal.classList.remove('active');
+              form.reset();
+              App.showToast('Survey published successfully to poll track!', 'success');
+              loadSurveys();
+            } else {
+              App.showToast('Failed to create survey', 'error');
+            }
+          } catch (err) {
+            console.error(err);
+            App.showToast('Network error publishing survey', 'error');
+          }
         });
       }
 
@@ -513,14 +788,8 @@
         tab.addEventListener('click', () => {
           document.querySelectorAll('.tab[data-filter]').forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
-          const filter = tab.dataset.filter;
-          document.querySelectorAll('.survey-item').forEach(item => {
-            if (filter === 'all' || item.dataset.status === filter) {
-              item.style.display = 'flex';
-            } else {
-              item.style.display = 'none';
-            }
-          });
+          currentFilter = tab.dataset.filter;
+          renderSurveys(allSurveys);
         });
       });
 
@@ -528,7 +797,12 @@
       const logoutBtn = document.getElementById('logout-btn');
       if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-          AuthRedirect.logout();
+          if (typeof AuthRedirect !== 'undefined') {
+            AuthRedirect.logout();
+          } else {
+            localStorage.clear();
+            window.location.href = '../auth/login.html';
+          }
         });
       }
     });

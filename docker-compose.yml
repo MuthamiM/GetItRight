@@ -7,6 +7,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      - ./backend:/app/backend
       - poll_data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
@@ -20,6 +21,8 @@ services:
     ports:
       - "8888:80"
       - "8090:80"
+    volumes:
+      - ./web:/usr/share/nginx/html
     depends_on:
       - backend
     restart: unless-stopped

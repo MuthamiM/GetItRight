@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -205,4 +206,79 @@ def verify_otp_and_reset_password(db: Session, email: str, otp: str, new_passwor
 
 def reset_password_for_email(db: Session, email: str, new_password: str) -> dict:
     return verify_otp_and_reset_password(db, email, "123456", new_password)
+
+def change_user_password(db: Session, user_id: str, old_pass: str, new_pass: str) -> dict:
+    user = db.query(UserModel).filter(UserModel.Id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not verify_password(old_pass, user.Password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password incorrect")
+    user.Password = get_password_hash(new_pass.strip())
+    db.commit()
+    return {"success": True, "message": "Password changed successfully"}
+
+def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = None, phone: Optional[str] = None, org: Optional[str] = None) -> UserOut:
+    user = db.query(UserModel).filter(UserModel.Id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if full_name and full_name.strip():
+        user.FullName = full_name.strip()
+    if phone is not None:
+        user.PhoneNumber = phone.strip()
+    if org and org.strip():
+        user.Organization = org.strip()
+    db.commit()
+    db.refresh(user)
+    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/console.html"
+    return UserOut(
+        id=user.Id,
+        fullName=user.FullName,
+        email=user.Email,
+        phoneNumber=user.PhoneNumber,
+        ipAddress=user.IpAddress,
+        latitude=user.Latitude,
+        longitude=user.Longitude,
+        deviceDetails=user.DeviceDetails,
+        role=user.Role,
+        plan=user.Plan,
+        planName=user.PlanName,
+        organization=user.Organization,
+        status=user.Status,
+        voterQuota=user.VoterQuota,
+        pollsQuota=user.PollsQuota,
+        consoleUrl=redirect_url,
+        isAdmin=(user.Role == "Admin")
+    )
+
+def verify_user_token(db: Session, token_str: str) -> dict:
+    from backend.api.core.security import decode_access_token
+    payload = decode_access_token(token_str)
+    if not payload:
+        return {"valid": False, "user": None}
+    user_id = payload.get("sub")
+    user = db.query(UserModel).filter(UserModel.Id == user_id).first()
+    if not user:
+        return {"valid": False, "user": None}
+    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/console.html"
+    user_out = UserOut(
+        id=user.Id,
+        fullName=user.FullName,
+        email=user.Email,
+        phoneNumber=user.PhoneNumber,
+        ipAddress=user.IpAddress,
+        latitude=user.Latitude,
+        longitude=user.Longitude,
+        deviceDetails=user.DeviceDetails,
+        role=user.Role,
+        plan=user.Plan,
+        planName=user.PlanName,
+        organization=user.Organization,
+        status=user.Status,
+        voterQuota=user.VoterQuota,
+        pollsQuota=user.PollsQuota,
+        consoleUrl=redirect_url,
+        isAdmin=(user.Role == "Admin")
+    )
+    return {"valid": True, "user": user_out}
+
 

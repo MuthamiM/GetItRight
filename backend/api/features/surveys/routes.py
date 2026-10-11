@@ -3,10 +3,12 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.surveys.schemas import (
-    SurveyOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt
+    SurveyOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
+    SurveyStatusUpdate, SurveyAnalyticsOut, ReceiptVerificationOut
 )
 from backend.api.features.surveys.service import (
-    list_surveys, get_survey_by_id, create_survey, submit_survey_response
+    list_surveys, get_survey_by_id, create_survey, submit_survey_response,
+    update_survey_status, get_survey_analytics, verify_survey_receipt
 )
 
 router = APIRouter(prefix="/surveys", tags=["Surveys"])
@@ -26,6 +28,21 @@ def survey_templates_from_surveys():
 def get_survey(survey_id: str, db: Session = Depends(get_db)):
     """Get single survey with full question and response breakdown."""
     return get_survey_by_id(db, survey_id)
+
+@router.patch("/{survey_id}/status", response_model=SurveyOut)
+def change_survey_status(survey_id: str, data: SurveyStatusUpdate, db: Session = Depends(get_db)):
+    """Update survey operational status (Active, Paused, Closed)."""
+    return update_survey_status(db, survey_id, data.status)
+
+@router.get("/{survey_id}/analytics", response_model=SurveyAnalyticsOut)
+def fetch_survey_analytics(survey_id: str, db: Session = Depends(get_db)):
+    """Fetch detailed question breakdown, completion rates, and Merkle root."""
+    return get_survey_analytics(db, survey_id)
+
+@router.get("/{survey_id}/verify-receipt/{receipt_hash}", response_model=ReceiptVerificationOut)
+def verify_receipt_endpoint(survey_id: str, receipt_hash: str, db: Session = Depends(get_db)):
+    """Cryptographically verify survey respondent ballot receipt against Merkle tree."""
+    return verify_survey_receipt(db, survey_id, receipt_hash)
 
 @router.post("", response_model=SurveyOut)
 def create_new_survey(data: SurveyCreate, db: Session = Depends(get_db)):

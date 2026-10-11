@@ -233,17 +233,26 @@
                          (p.plan === 'org' ? '#7C4DFF' : 
                          (p.plan === 'pro' ? '#FFD740' : '#00B0FF'));
 
-        const optionsHtml = (p.options || []).map(opt => `
-          <button class="poll-opt-btn" onclick="submitPollVote('${p.id}', ${opt.index}, this)">
+        const savedVoteIdx = localStorage.getItem('gir_voted_poll_' + p.id);
+        const hasVoted = savedVoteIdx !== null;
+
+        const optionsHtml = (p.options || []).map(opt => {
+          const isVotedChoice = hasVoted && String(opt.index) === String(savedVoteIdx);
+          const votedClass = isVotedChoice ? 'voted' : '';
+          return `
+          <button class="poll-opt-btn ${votedClass}" ${hasVoted ? 'disabled style="cursor:not-allowed;"' : ''} onclick="submitPollVote('${p.id}', ${opt.index}, this)">
             <div class="poll-progress-bar-fill" style="width:${opt.percentage}%;"></div>
             <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:600; font-size:14px; color:var(--text-primary);">${opt.label}</span>
+              <span style="font-weight:600; font-size:14px; color:var(--text-primary);">
+                ${opt.label} ${isVotedChoice ? '<span style="color:#FFD54F; font-size:12px; margin-left:6px;">✓ Voted</span>' : ''}
+              </span>
               <span class="option-percent" style="font-weight:700; color:var(--accent-primary); font-size:14px; font-family:var(--font-mono);">
                 ${opt.percentage}% (${opt.votes.toLocaleString()})
               </span>
             </div>
           </button>
-        `).join('');
+        `;
+        }).join('');
 
         return `
           <div class="poll-feed-card" id="poll-card-${p.id}">
@@ -255,9 +264,16 @@
                 </span>
                 <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary);">${p.id}</span>
               </div>
-              <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">
-                Active &bull; Accepting Votes
-              </span>
+              <div style="display:flex; gap:6px;">
+                ${hasVoted ? `
+                  <span class="badge" style="background:rgba(255,213,79,0.15); color:#FFD54F; font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">
+                    VOTED
+                  </span>
+                ` : ''}
+                <span class="badge" style="background:rgba(0,230,118,0.12); color:var(--accent-primary); font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">
+                  Active &bull; Accepting Votes
+                </span>
+              </div>
             </div>
 
             <!-- Title & Description -->
@@ -274,7 +290,14 @@
             </div>
 
             <!-- Receipt Container -->
-            <div id="receipt-container-${p.id}" style="display:none; margin-bottom:14px;"></div>
+            <div id="receipt-container-${p.id}" style="${hasVoted ? 'display:block;' : 'display:none;'} margin-bottom:14px;">
+              ${hasVoted ? `
+                <div class="receipt-pill">
+                  <span>&#10003; Vote Cast</span> &bull; 
+                  <span style="color:#FFD54F;">VOTED</span>
+                </div>
+              ` : ''}
+            </div>
 
             <!-- Footer -->
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:14px; font-size:12.5px; color:var(--text-secondary);">
@@ -296,25 +319,41 @@
     }
 
     async function submitPollVote(pollId, optionIndex, btnEl) {
+      if (localStorage.getItem('gir_voted_poll_' + pollId) !== null) {
+        App.showToast('You have already voted on this poll.', 'warning');
+        return;
+      }
+
       try {
+        let voterKey = localStorage.getItem('gir_voter_key');
+        if (!voterKey) {
+          voterKey = 'Voter-' + Math.floor(Math.random()*90000 + 10000);
+          localStorage.setItem('gir_voter_key', voterKey);
+        }
+
         const res = await fetch(`${API_BASE}/api/polls/${pollId}/vote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             optionIndex: optionIndex,
-            voterKey: 'Voter-' + Math.floor(Math.random()*90000 + 10000),
+            voterKey: voterKey,
             platform: 'web'
           })
         });
 
         if (res.ok) {
           const data = await res.json();
-          App.showToast(`Ballot verified & recorded in database! (Total: ${data.totalVotes.toLocaleString()})`, 'success');
+          localStorage.setItem('gir_voted_poll_' + pollId, optionIndex);
+          App.showToast(`Vote recorded! (Total: ${data.totalVotes.toLocaleString()})`, 'success');
 
-          // Highlight selected
+          // Highlight selected and lock all options
           const card = document.getElementById(`poll-card-${pollId}`);
           if (card) {
-            card.querySelectorAll('.poll-opt-btn').forEach(b => b.classList.remove('voted'));
+            card.querySelectorAll('.poll-opt-btn').forEach(b => {
+              b.classList.remove('voted');
+              b.disabled = true;
+              b.style.cursor = 'not-allowed';
+            });
             btnEl.classList.add('voted');
 
             // Show receipt pill
@@ -324,7 +363,8 @@
               receiptBox.innerHTML = `
                 <div class="receipt-pill">
                   <span>&#10003; Merkle Leaf #${data.merkleLeafIndex}</span> &bull; 
-                  <span>Receipt: ${data.receiptHash.substring(0, 16)}...</span>
+                  <span>Receipt: ${data.receiptHash.substring(0, 16)}...</span> &bull;
+                  <span style="color:#FFD54F;">VOTED</span>
                 </div>
               `;
             }
@@ -340,6 +380,9 @@
               updatePollCardUI(updatedPoll);
             }
           }
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          App.showToast(errData.detail || 'Could not record vote', 'error');
         }
       } catch (err) {
         console.error(err);

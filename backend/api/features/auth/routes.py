@@ -1,8 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
-from backend.api.features.auth.schemas import LoginRequest, RegisterRequest, AuthResponse, UserOut, ForgotPasswordRequest, RequestOTPRequest, VerifyOTPResetRequest
-from backend.api.features.auth.service import authenticate_user, register_user, reset_password_for_email, generate_email_otp, verify_otp_and_reset_password
+from backend.api.features.auth.schemas import (
+    LoginRequest, RegisterRequest, AuthResponse, UserOut, ForgotPasswordRequest,
+    RequestOTPRequest, VerifyOTPResetRequest, ChangePasswordRequest, UpdateProfileRequest,
+    VerifyTokenRequest, VerifyTokenResponse
+)
+from backend.api.features.auth.service import (
+    authenticate_user, register_user, reset_password_for_email, generate_email_otp,
+    verify_otp_and_reset_password, change_user_password, update_user_profile, verify_user_token
+)
 from backend.api.features.auth.models import UserModel
 from backend.api.middleware.auth_middleware import get_current_user_token
 
@@ -36,6 +43,29 @@ def verify_otp_reset(data: VerifyOTPResetRequest, db: Session = Depends(get_db))
 @router.post("/forgot-password")
 def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
     return reset_password_for_email(db, data.email, data.newPassword)
+
+@router.post("/change-password")
+def change_password(
+    data: ChangePasswordRequest,
+    token_data: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    user_id = token_data.get("sub")
+    return change_user_password(db, user_id, data.oldPassword, data.newPassword)
+
+@router.put("/profile", response_model=UserOut)
+def update_profile(
+    data: UpdateProfileRequest,
+    token_data: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    user_id = token_data.get("sub")
+    return update_user_profile(db, user_id, data.fullName, data.phoneNumber, data.organization)
+
+@router.post("/verify-token", response_model=VerifyTokenResponse)
+def verify_token_endpoint(data: VerifyTokenRequest, db: Session = Depends(get_db)):
+    res = verify_user_token(db, data.token)
+    return VerifyTokenResponse(valid=res["valid"], user=res.get("user"))
 
 @router.get("/me", response_model=UserOut)
 def get_current_profile(token_data: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
