@@ -41,6 +41,7 @@ class Poll {
   final bool isMultipleChoice;
   final DateTime createdAt;
   String? selectedOptionId;
+  final DateTime? endDate;
 
   final String status;
 
@@ -55,6 +56,7 @@ class Poll {
     this.isMultipleChoice = false,
     required this.createdAt,
     this.selectedOptionId,
+    this.endDate,
     this.status = 'live',
   });
 
@@ -63,6 +65,12 @@ class Poll {
     final rawDate = json['created_at'] ?? json['createdAt'] ?? json['CreatedAt'];
     if (rawDate != null) {
       parsedDate = DateTime.tryParse(rawDate.toString()) ?? DateTime.now();
+    }
+
+    DateTime? parsedEndDate;
+    final rawEnd = json['endDate'] ?? json['end_date'] ?? json['EndDate'];
+    if (rawEnd != null && rawEnd.toString().isNotEmpty) {
+      parsedEndDate = DateTime.tryParse(rawEnd.toString().replaceAll(' ', 'T'));
     }
 
     return Poll(
@@ -78,6 +86,7 @@ class Poll {
       totalVotes: (json['total_votes'] ?? json['totalVotes'] ?? json['TotalVotes'] as num?)?.toInt() ?? 0,
       isMultipleChoice: json['is_multiple_choice'] as bool? ?? false,
       createdAt: parsedDate,
+      endDate: parsedEndDate,
       selectedOptionId: json['selected_option_id'] as String?,
       status: (json['status'] ?? json['Status'] ?? 'live').toString().toLowerCase(),
     );
@@ -94,6 +103,7 @@ class Poll {
       'total_votes': totalVotes,
       'is_multiple_choice': isMultipleChoice,
       'created_at': createdAt.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
       'selected_option_id': selectedOptionId,
       'status': status,
     };

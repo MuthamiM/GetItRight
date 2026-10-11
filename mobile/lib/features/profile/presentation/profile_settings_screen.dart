@@ -273,7 +273,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             ),
                             SizedBox(height: 3),
                             Text(
-                              'Version 1.2.0 (Build 2)',
+                              'Version 2.0.0 (Build 3)',
                               style: TextStyle(
                                 color: Color(0xFFB8B8B8),
                                 fontSize: 12,
@@ -402,7 +402,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'You are using the latest version of Getitright (v1.2.0)',
+              'You are using the latest version of Getitright (v2.0.0)',
               style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
             ),
             backgroundColor: Color(0xFFE5E5E5),
@@ -460,7 +460,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v1.2.0)',
+                'Version $version is now available (Current: v2.0.0)',
                 style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
@@ -500,7 +500,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 ),
               );
               try {
-                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk');
+                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk');
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }

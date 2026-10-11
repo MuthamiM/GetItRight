@@ -36,6 +36,7 @@ def map_poll_to_out(p: PollModel) -> PollOut:
             )
             for opt in options_sorted
         ],
+        endDate=getattr(p, 'EndDate', None),
         track_name=p.Category or "General",
         author_name=p.OwnerId or "GetItRight Sovereign",
         total_votes=p.TotalVotes or 0,
@@ -70,6 +71,16 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
 
     initial_root = "0x" + hashlib.sha256(f"{new_id}:{data.title}".encode("utf-8")).hexdigest()[:16]
 
+    now = datetime.now(timezone.utc)
+    if data.endDate:
+        end_date_str = data.endDate
+    elif data.durationHours:
+        from datetime import timedelta
+        end_date_str = (now + timedelta(hours=data.durationHours)).strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        from datetime import timedelta
+        end_date_str = (now + timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+
     new_poll = PollModel(
         Id=new_id,
         Title=data.title.strip(),
@@ -77,11 +88,12 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
         Category=data.category.strip() if data.category else "General",
         Plan=plan_key,
         OwnerId=data.ownerId or "USR-001",
-        CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        CreatedAt=now.strftime("%Y-%m-%d %H:%M"),
         Status="live",
         TotalVotes=0,
         MerkleRoot=initial_root,
-        IsEncryptedBallot=1 if plan_key in ["pro", "org", "election"] else 0
+        IsEncryptedBallot=1 if plan_key in ["pro", "org", "election"] else 0,
+        EndDate=end_date_str
     )
     db.add(new_poll)
     db.flush()
@@ -133,6 +145,19 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
+    # Store User ID if authenticated, prevent duplicate voting
+    user_id = vote_req.userId.strip() if vote_req.userId and str(vote_req.userId).strip() else None
+    if user_id:
+        existing_user_tx = db.query(VoteTransactionModel).filter(
+            VoteTransactionModel.PollId == poll.Id,
+            VoteTransactionModel.UserId == user_id
+        ).first()
+        if existing_user_tx:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Vote already recorded for this user. You cannot change your vote."
+            )
+
     # REMEMBER: ONCE A VOTER VOTES, THEY CANNOT CHANGE THEIR VOTE
     if vote_req.voterKey and vote_req.voterKey.strip():
         voter_key = vote_req.voterKey.strip()
@@ -146,7 +171,7 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
                 detail="Vote already recorded. You cannot change your vote."
             )
     else:
-        voter_key = f"Voter-{uuid.uuid4().hex[:6]}"
+        voter_key = f"Voter-{user_id}" if user_id else f"Voter-{uuid.uuid4().hex[:6]}"
 
     receipt_hash = generate_merkle_receipt(poll_id, target_option.Index, voter_key, timestamp)
 
@@ -163,9 +188,10 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     new_root = "0x" + hashlib.sha256(f"{poll.MerkleRoot}:{receipt_hash}".encode("utf-8")).hexdigest()[:16]
     poll.MerkleRoot = new_root
 
-    # Record Vote Transaction
+    # Record Vote Transaction with UserId
     tx = VoteTransactionModel(
         PollId=poll.Id,
+        UserId=user_id,
         OptionIndex=target_option.Index,
         OptionLabel=target_option.Label,
         ReceiptHash=receipt_hash,
@@ -208,6 +234,7 @@ def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionO
         VoteTransactionOut(
             id=t.Id,
             pollId=t.PollId,
+            userId=t.UserId,
             optionIndex=t.OptionIndex,
             optionLabel=t.OptionLabel,
             receiptHash=t.ReceiptHash,
@@ -217,3 +244,38 @@ def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionO
         )
         for t in txs
     ]
+
+def get_vote_status(db: Session, poll_id: str, user_id: Optional[str] = None, voter_key: Optional[str] = None):
+    from backend.api.features.polls.schemas import VoteStatusOut
+    tx = None
+    if user_id and str(user_id).strip():
+        tx = db.query(VoteTransactionModel).filter(
+            VoteTransactionModel.PollId == poll_id,
+            VoteTransactionModel.UserId == str(user_id).strip()
+        ).first()
+
+    if not tx and voter_key and str(voter_key).strip():
+        tx = db.query(VoteTransactionModel).filter(
+            VoteTransactionModel.PollId == poll_id,
+            VoteTransactionModel.VoterPseudonym == str(voter_key).strip()
+        ).first()
+
+    if tx:
+        return VoteStatusOut(
+            hasVoted=True,
+            pollId=poll_id,
+            userId=tx.UserId,
+            voterPseudonym=tx.VoterPseudonym,
+            optionIndex=tx.OptionIndex,
+            optionLabel=tx.OptionLabel,
+            merkleLeafIndex=tx.MerkleLeafIndex,
+            timestamp=tx.Timestamp
+        )
+
+    return VoteStatusOut(
+        hasVoted=False,
+        pollId=poll_id,
+        userId=user_id,
+        voterPseudonym=voter_key
+    )
+

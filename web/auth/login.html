@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Getitright — Sign in to your account.">
   <title>Getitright — Sign In</title>
-  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -168,7 +168,7 @@
   <div class="auth-container">
     <div class="auth-brand">
       <div class="auth-brand-logo">
-        <img src="../assets/images/logo.jpg" alt="Getitright Logo">
+        <img src="../assets/images/logo.png" alt="Getitright Logo">
       </div>
       <div class="auth-brand-name">Getitright</div>
       <div class="auth-brand-sub">Organization Management Portal</div>
@@ -201,7 +201,7 @@
   </div>
 
   <script>
-    const API_BASE = "http://localhost:8000/api";
+    const API_BASE = window.location.origin + '/api';
 
     async function handleLogin(e) {
       e.preventDefault();

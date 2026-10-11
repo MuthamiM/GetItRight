@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../css/index.css">
   <link rel="stylesheet" href="../css/pages.css">
   <link rel="stylesheet" href="../css/console.css">
-  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
   <style>
     :root {
       --an-navy: #1E2A4A;
@@ -135,22 +135,22 @@
     <aside class="an-sidebar">
       <div class="an-brand">
         <a href="dashboard.html">
-          <img src="../assets/images/logo.jpg" alt="Logo">
+          <img src="../assets/images/logo.png" alt="Logo">
           <span class="name">Get It Right</span>
         </a>
         <span class="an-label">Analytics</span>
       </div>
       <nav class="an-nav">
         <div class="an-nav-title">Views</div>
-        <a class="an-link active" onclick="switchView('overview')" id="vnav-overview">📊 Overview</a>
-        <a class="an-link" onclick="switchView('polls')" id="vnav-polls">🗳️ Poll Analytics</a>
-        <a class="an-link" onclick="switchView('surveys')" id="vnav-surveys">📋 Survey Analytics</a>
-        <a class="an-link" onclick="switchView('users')" id="vnav-users">👥 User Insights</a>
-        <a class="an-link" onclick="switchView('geo')" id="vnav-geo">🌍 Geographic Data</a>
+        <a class="an-link active" onclick="switchView('overview')" id="vnav-overview">Overview</a>
+        <a class="an-link" onclick="switchView('polls')" id="vnav-polls">Poll Analytics</a>
+        <a class="an-link" onclick="switchView('surveys')" id="vnav-surveys">Survey Analytics</a>
+        <a class="an-link" onclick="switchView('users')" id="vnav-users">User Insights</a>
+        <a class="an-link" onclick="switchView('geo')" id="vnav-geo">Geographic Data</a>
 
         <div class="an-nav-title">Navigation</div>
         <a class="an-link" href="dashboard.html">← Back to Dashboard</a>
-        <a class="an-link" href="admin.html">🔐 SuperAdmin Console</a>
+        <a class="an-link" href="admin.html">SuperAdmin Console</a>
       </nav>
       <div class="an-footer">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -173,7 +173,7 @@
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
           <span class="an-status-pill"><span class="an-status-dot"></span> SQLite DB Connected</span>
-          <button class="an-btn an-btn-primary an-btn-sm" onclick="exportReport()">📥 Export Report</button>
+          <button class="an-btn an-btn-primary an-btn-sm" onclick="exportReport()">Export Report</button>
         </div>
       </header>
 
@@ -250,7 +250,7 @@
                 <h3 style="font-size:16px;font-weight:700;margin:0 0 4px;">Active Poll Tracks & Tally Breakdown</h3>
                 <p style="font-size:12px;color:var(--an-sub);margin:0;">Real-time vote counts from database</p>
               </div>
-              <button class="an-btn an-btn-ghost an-btn-sm" onclick="exportReport()">📥 Export CSV</button>
+              <button class="an-btn an-btn-ghost an-btn-sm" onclick="exportReport()">Export CSV</button>
             </div>
             <div style="overflow-x:auto;">
               <table class="an-table">
@@ -359,7 +359,7 @@
   <div id="toast-box" style="position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
 
   <script>
-    const API = 'http://127.0.0.1:8000/api';
+    const API = window.location.origin + '/api';
     let polls=[], surveys=[], users=[];
 
     function toast(msg,t='info'){const b=document.getElementById('toast-box');const e=document.createElement('div');e.style.cssText=`padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;background:${t==='success'?'#1E2A4A':'#475569'};box-shadow:0 4px 12px rgba(0,0,0,0.15);`;e.textContent=msg;b.appendChild(e);setTimeout(()=>e.remove(),3000);}

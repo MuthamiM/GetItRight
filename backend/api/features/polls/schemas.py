@@ -1,4 +1,4 @@
-from typing import Optional, List, Any, Union
+from typing import Optional, List, Any
 from pydantic import BaseModel
 
 class PollOptionOut(BaseModel):
@@ -23,6 +23,7 @@ class PollOut(BaseModel):
     merkleRoot: str
     isEncryptedBallot: bool
     options: List[PollOptionOut] = []
+    endDate: Optional[str] = None
     track_name: Optional[str] = None
     author_name: Optional[str] = None
     total_votes: Optional[int] = None
@@ -38,6 +39,8 @@ class PollCreate(BaseModel):
     category: Optional[str] = "General"
     plan: Optional[str] = "free"
     ownerId: Optional[str] = "USR-001"
+    endDate: Optional[str] = None
+    durationHours: Optional[int] = None
     options: List[str]
 
 class VoteCastRequest(BaseModel):
@@ -46,6 +49,7 @@ class VoteCastRequest(BaseModel):
     optionId: Optional[Any] = None
     voterKey: Optional[str] = None
     voterFingerprint: Optional[str] = None
+    userId: Optional[str] = None
     platform: Optional[str] = "web"
 
 class VoteCastResponse(BaseModel):
@@ -60,9 +64,22 @@ class VoteCastResponse(BaseModel):
 class VoteTransactionOut(BaseModel):
     id: int
     pollId: str
+    userId: Optional[str] = None
     optionIndex: int
     optionLabel: str
     receiptHash: str
     merkleLeafIndex: int
     voterPseudonym: str
     timestamp: str
+
+class VoteStatusOut(BaseModel):
+    hasVoted: bool
+    pollId: str
+    userId: Optional[str] = None
+    voterPseudonym: Optional[str] = None
+    optionIndex: Optional[int] = None
+    optionLabel: Optional[str] = None
+    merkleLeafIndex: Optional[int] = None
+    timestamp: Optional[str] = None
+
+

@@ -174,8 +174,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
       };
     }).toList();
 
-    print('[SURVEY DETAIL] Submitting survey ${widget.survey.id} with ${formattedAnswers.length} answers');
-    print('[SURVEY DETAIL] Formatted answers: $formattedAnswers');
+    debugPrint('[SURVEY DETAIL] Submitting survey ${widget.survey.id} with ${formattedAnswers.length} answers');
+    debugPrint('[SURVEY DETAIL] Formatted answers: $formattedAnswers');
 
     try {
       final result = await _apiClient.submitSurveyResponse(
@@ -184,7 +184,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
         voterPseudonym: 'User_${widget.userId}',
       );
 
-      print('[SURVEY DETAIL] Submit result: $result');
+      debugPrint('[SURVEY DETAIL] Submit result: $result');
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('gir_survey_completed_time_${widget.survey.id}', DateTime.now().toIso8601String());
@@ -226,7 +226,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
         ),
       );
     } catch (e) {
-      print('[SURVEY DETAIL] Submit error: $e');
+      debugPrint('[SURVEY DETAIL] Submit error: $e');
       setState(() => _isSubmitting = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

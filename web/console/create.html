@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Getitright — Create a new survey or poll with the multi-step wizard.">
   <title>Getitright — Create Survey / Poll</title>
-  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
   <style>
     :root {
       --bg-shell: #FAFAFC;
@@ -190,12 +190,10 @@
 
         <div class="type-selector">
           <div class="type-card selected" id="type-survey" onclick="selectType('survey')">
-            <div class="type-card-icon">📋</div>
             <div class="type-card-title">Multi-Step Survey</div>
             <div class="type-card-desc">Multiple questions with choice, rating, and text input types</div>
           </div>
           <div class="type-card" id="type-poll" onclick="selectType('poll')">
-            <div class="type-card-icon">🗳️</div>
             <div class="type-card-title">Single Poll</div>
             <div class="type-card-desc">One question with multiple choice options for quick voting</div>
           </div>
@@ -238,7 +236,6 @@
         <div class="panel-desc">Choose a pre-built template to auto-populate questions, or start from scratch.</div>
 
         <div class="type-card" style="margin-bottom:14px;text-align:left;display:flex;align-items:center;gap:12px;padding:14px 18px;" id="template-scratch" onclick="selectTemplate(null)">
-          <span style="font-size:22px;">✨</span>
           <div>
             <div class="type-card-title" style="font-size:13px;">Start from Scratch</div>
             <div class="type-card-desc">Build your own questions from an empty canvas</div>
@@ -308,10 +305,21 @@
 
       <div class="panel-card">
         <div class="panel-title" style="font-size:16px;">Publication Settings</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px;">
           <div class="form-group">
             <label class="form-label">Target Responses</label>
             <input type="number" class="form-input" id="wizard-target" value="500" min="10" max="100000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration / Deadline</label>
+            <select class="form-select" id="wizard-duration">
+              <option value="24">24 Hours (1 Day)</option>
+              <option value="48">48 Hours (2 Days)</option>
+              <option value="72">72 Hours (3 Days)</option>
+              <option value="168" selected>7 Days (1 Week)</option>
+              <option value="336">14 Days (2 Weeks)</option>
+              <option value="720">30 Days (1 Month)</option>
+            </select>
           </div>
           <div class="form-group">
             <label class="form-label">Publish Mode</label>
@@ -323,13 +331,13 @@
         </div>
 
         <div class="info-box" style="margin-top:10px;">
-          🔗 Share link will be generated after publishing. Voters can access via the public vote page.
+          Share link and live countdown timer will be active immediately upon publishing.
         </div>
       </div>
 
       <div class="btn-row">
         <button class="btn-secondary" onclick="goToStep(2)">← Back to Edit</button>
-        <button class="btn-primary" onclick="publishWizard()" style="background:var(--color-green);">✓ Confirm & Publish</button>
+        <button class="btn-primary" onclick="publishWizard()" style="background:var(--color-green);">Confirm & Publish</button>
       </div>
     </div>
 
@@ -337,11 +345,81 @@
 
   <!-- JAVASCRIPT -->
   <script>
-    const API = 'http://127.0.0.1:8000/api';
+    const API = window.location.origin + '/api';
+
+    const DEFAULT_TEMPLATES = [
+      {
+        id: "tmpl-nps", name: "Customer Satisfaction (NPS)",
+        description: "Measure Net Promoter Score and customer happiness with targeted feedback questions.",
+        category: "Enterprise Feedback", icon: "star",
+        questions: [
+          { questionText: "How likely are you to recommend us to a friend or colleague? (0-10)", questionType: "rating", options: [] },
+          { questionText: "What is the primary reason for your score?", questionType: "text", options: [] },
+          { questionText: "Which aspect of our service impressed you the most?", questionType: "choice", options: ["Speed", "Quality", "Support", "Price", "Reliability"] },
+          { questionText: "Any additional feedback?", questionType: "text", options: [] }
+        ]
+      },
+      {
+        id: "tmpl-employee", name: "Employee Engagement",
+        description: "Assess team morale, workplace satisfaction, and identify areas for improvement.",
+        category: "Enterprise Feedback", icon: "users",
+        questions: [
+          { questionText: "How satisfied are you with your current role?", questionType: "choice", options: ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"] },
+          { questionText: "Do you feel your contributions are valued by the team?", questionType: "choice", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+          { questionText: "What would you change about the workplace?", questionType: "text", options: [] },
+          { questionText: "Rate your work-life balance (1-5)", questionType: "rating", options: [] }
+        ]
+      },
+      {
+        id: "tmpl-product", name: "Product Feedback",
+        description: "Gather user insights on product features, usability, and improvement priorities.",
+        category: "Product Roadmap", icon: "rocket",
+        questions: [
+          { questionText: "How often do you use our product?", questionType: "choice", options: ["Daily", "Weekly", "Monthly", "Rarely"] },
+          { questionText: "Which feature do you use the most?", questionType: "choice", options: ["Dashboard", "Reports", "Collaboration", "Integrations", "Other"] },
+          { questionText: "Rate the overall usability (1-5)", questionType: "rating", options: [] },
+          { questionText: "What feature should we build next?", questionType: "text", options: [] }
+        ]
+      },
+      {
+        id: "tmpl-civic", name: "Civic Community Priorities",
+        description: "Identify community needs and priorities for public resource allocation.",
+        category: "Civic Priority", icon: "building",
+        questions: [
+          { questionText: "What is the most pressing issue in your community?", questionType: "choice", options: ["Healthcare", "Education", "Infrastructure", "Security", "Employment", "Water & Sanitation"] },
+          { questionText: "How would you rate local government responsiveness?", questionType: "rating", options: [] },
+          { questionText: "Describe a specific improvement you'd like to see", questionType: "text", options: [] },
+          { questionText: "Would you participate in a follow-up town hall?", questionType: "choice", options: ["Yes", "No", "Maybe"] }
+        ]
+      },
+      {
+        id: "tmpl-event", name: "Event Feedback",
+        description: "Post-event evaluation to measure attendee satisfaction and gather improvement suggestions.",
+        category: "General", icon: "calendar",
+        questions: [
+          { questionText: "How would you rate the overall event experience?", questionType: "rating", options: [] },
+          { questionText: "Which session was most valuable?", questionType: "choice", options: ["Keynote", "Panel Discussion", "Workshop", "Networking", "Q&A"] },
+          { questionText: "Would you attend a future event?", questionType: "choice", options: ["Definitely", "Probably", "Unlikely", "No"] },
+          { questionText: "Suggestions for future events?", questionType: "text", options: [] }
+        ]
+      },
+      {
+        id: "tmpl-market", name: "Market Research",
+        description: "Understand market demographics, preferences, and purchasing behavior.",
+        category: "Enterprise Feedback", icon: "chart",
+        questions: [
+          { questionText: "What is your age range?", questionType: "choice", options: ["18-24", "25-34", "35-44", "45-54", "55+"] },
+          { questionText: "How did you hear about us?", questionType: "choice", options: ["Social Media", "Search Engine", "Word of Mouth", "Advertisement", "Other"] },
+          { questionText: "What factors most influence your purchasing decisions?", questionType: "choice", options: ["Price", "Quality", "Brand", "Reviews", "Convenience"] },
+          { questionText: "Any other comments about your preferences?", questionType: "text", options: [] }
+        ]
+      }
+    ];
+
     let currentStep = 1;
     let selectedType = 'survey';
     let selectedTemplate = null;
-    let templates = [];
+    let templates = [...DEFAULT_TEMPLATES];
     let questions = [
       { id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true }
     ];
@@ -419,9 +497,13 @@
 
     // === LOAD TEMPLATES FROM API ===
     async function loadTemplates() {
+      renderTemplateGallery();
       try {
         const res = await fetch(`${API}/surveys/templates`);
-        if (res.ok) templates = await res.json();
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length) templates = data;
+        }
       } catch (e) { console.error('Failed to load templates:', e); }
       renderTemplateGallery();
     }
@@ -435,7 +517,6 @@
       grid.innerHTML = templates.map(t => `
         <div class="template-card" data-template-id="${t.id}" onclick='selectTemplate(${JSON.stringify(t).replace(/'/g, "\\'")})'>
           <div class="template-badge">${t.category}</div>
-          <div class="template-icon">${t.icon || '📋'}</div>
           <div class="template-name">${t.name}</div>
           <div class="template-desc">${t.description}</div>
           <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-weight:700;">${t.questions.length} questions</div>
@@ -529,9 +610,9 @@
                 <button class="btn-add" style="margin-top:6px;" onclick="addChoice(${q.id})">+ Add Choice</button>
               </div>
             ` : isRating ? `
-              <div class="info-box">⭐ Respondents will rate on a scale from 1 to 5 stars.</div>
+              <div class="info-box">Respondents will rate on a scale from 1 to 5 stars.</div>
             ` : `
-              <div class="info-box">💡 Respondents will type a free-text answer in a text box.</div>
+              <div class="info-box">Respondents will type a free-text answer in a text box.</div>
             `}
           </div>
         `;
@@ -554,7 +635,7 @@
         if (q.type === 'choice') {
           content = q.choices.map(c => `<div class="preview-option"><div class="preview-radio"></div>${c}</div>`).join('');
         } else if (q.type === 'rating') {
-          content = '<div style="display:flex;gap:4px;margin-top:4px;">★★★★★</div>';
+          content = '<div style="font-size:12px;color:#94A3B8;margin-top:4px;">Rating (1 to 5)</div>';
         } else {
           content = '<input class="preview-text-input" placeholder="Type your answer..." disabled>';
         }
@@ -579,7 +660,7 @@
       const ratingCount = questions.filter(q => q.type === 'rating').length;
 
       document.getElementById('review-summary').innerHTML = `
-        <div class="summary-row"><span class="summary-label">Type</span><span class="summary-value">${selectedType === 'survey' ? '📋 Survey' : '🗳️ Poll'}</span></div>
+        <div class="summary-row"><span class="summary-label">Type</span><span class="summary-value">${selectedType === 'survey' ? 'Survey' : 'Poll'}</span></div>
         <div class="summary-row"><span class="summary-label">Title</span><span class="summary-value">${title}</span></div>
         <div class="summary-row"><span class="summary-label">Category</span><span class="summary-value">${track}</span></div>
         <div class="summary-row"><span class="summary-label">Plan</span><span class="summary-value">${plan}</span></div>
@@ -610,6 +691,7 @@
       const plan = document.getElementById('wizard-plan').value;
       const desc = document.getElementById('wizard-desc').value.trim();
       const target = parseInt(document.getElementById('wizard-target').value) || 500;
+      const durationHours = parseInt(document.getElementById('wizard-duration').value) || 168;
 
       if (!title) return alert('Please enter a title.');
       if (!questions.length || !questions[0].text) return alert('Please add at least one question.');
@@ -625,10 +707,10 @@
           const res = await fetch(`${API}/surveys`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, description: desc, track, plan, targetResponses: target, questions: questionsPayload })
+            body: JSON.stringify({ title, description: desc, track, plan, targetResponses: target, durationHours, questions: questionsPayload })
           });
           if (res.ok) {
-            alert('🎉 Survey published successfully!');
+            alert('Survey published successfully!');
             window.location.href = 'admin.html';
           } else {
             const err = await res.json();
@@ -641,10 +723,10 @@
           const res = await fetch(`${API}/polls`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, description: desc, category: track, plan, options: allChoices.length ? allChoices : ['Yes', 'No'] })
+            body: JSON.stringify({ title, description: desc, category: track, plan, durationHours, options: allChoices.length ? allChoices : ['Yes', 'No'] })
           });
           if (res.ok) {
-            alert('🎉 Poll published successfully!');
+            alert('Poll published successfully!');
             window.location.href = 'admin.html';
           } else {
             const err = await res.json();

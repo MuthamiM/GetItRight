@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Getitright — Create your organization account and choose a plan.">
   <title>Getitright — Create Account</title>
-  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -397,7 +397,7 @@
     }
 
     .plan-features-list li::before {
-      content: '✓';
+      content: '•';
       font-weight: 800;
       color: var(--silver);
       font-size: 12px;
@@ -491,7 +491,7 @@
     <!-- Brand Header -->
     <div class="auth-brand">
       <div class="auth-brand-logo">
-        <img src="../assets/images/logo.jpg" alt="Getitright Logo">
+        <img src="../assets/images/logo.png" alt="Getitright Logo">
       </div>
       <div class="auth-brand-name">Getitright</div>
       <div class="auth-brand-sub">Create your verified organization account</div>
@@ -569,7 +569,7 @@
             <!-- Free Plan -->
             <div class="plan-card-item selected" id="card-free" onclick="selectPlan('free', 0)">
               <div class="plan-card-top">
-                <div class="plan-badge-icon">⚡</div>
+                <div class="plan-badge-icon">S</div>
                 <div class="plan-info-head">
                   <div class="plan-info-title">Starter</div>
                   <div class="plan-info-tier">FREE TIER</div>
@@ -592,7 +592,7 @@
             <!-- Pro Plan -->
             <div class="plan-card-item" id="card-pro" onclick="selectPlan('pro', 1)">
               <div class="plan-card-top">
-                <div class="plan-badge-icon">✓</div>
+                <div class="plan-badge-icon">P</div>
                 <div class="plan-info-head">
                   <div class="plan-info-title">Pro</div>
                   <div class="plan-info-tier">PROFESSIONAL</div>
@@ -615,7 +615,7 @@
             <!-- Organization Plan -->
             <div class="plan-card-item" id="card-org" onclick="selectPlan('org', 2)">
               <div class="plan-card-top">
-                <div class="plan-badge-icon">🏢</div>
+                <div class="plan-badge-icon">O</div>
                 <div class="plan-info-head">
                   <div class="plan-info-title">Organization</div>
                   <div class="plan-info-tier">ENTERPRISE</div>
@@ -638,7 +638,7 @@
             <!-- Election Plan -->
             <div class="plan-card-item" id="card-election" onclick="selectPlan('election', 3)">
               <div class="plan-card-top">
-                <div class="plan-badge-icon">🛡️</div>
+                <div class="plan-badge-icon">E</div>
                 <div class="plan-info-head">
                   <div class="plan-info-title">Election</div>
                   <div class="plan-info-tier">GOVERNANCE</div>
@@ -687,7 +687,7 @@
   </div>
 
   <script>
-    const API_BASE = "http://localhost:8000/api";
+    const API_BASE = window.location.origin + '/api';
     let accountData = null;
     let selectedPlan = 'free';
     let currentPlanIndex = 0;

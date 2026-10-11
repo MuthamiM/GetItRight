@@ -120,9 +120,7 @@ body.landing-new {
 .ln-nav-logo-icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--charcoal);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,7 +129,7 @@ body.landing-new {
 .ln-nav-logo-icon img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .ln-nav-brand {
@@ -175,6 +173,12 @@ body.landing-new {
 
 .ln-nav-links a:hover::after {
   width: 100%;
+}
+
+.ln-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .ln-nav-cta {
@@ -1101,7 +1105,7 @@ body.landing-new {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .ln-nav-links {
     display: none;
     position: fixed;
@@ -1111,8 +1115,10 @@ body.landing-new {
     background: var(--silver);
     flex-direction: column;
     padding: 24px;
-    gap: 20px;
+    gap: 18px;
     border-bottom: 2px solid var(--charcoal);
+    box-shadow: 0 16px 36px rgba(48, 48, 48, 0.2);
+    z-index: 999;
   }
 
   .ln-nav-links.open {
@@ -1121,10 +1127,39 @@ body.landing-new {
 
   .ln-nav-toggle {
     display: flex;
+    order: 3;
+  }
+
+  .ln-nav-actions {
+    display: none !important;
   }
 
   .ln-nav-cta {
-    display: none;
+    display: none !important;
+  }
+
+  .ln-nav-signin {
+    display: none !important;
+  }
+
+  .ln-mobile-only {
+    display: block !important;
+    font-weight: 800 !important;
+    color: var(--charcoal) !important;
+    padding: 12px 20px !important;
+    border: 2px solid var(--charcoal) !important;
+    border-radius: 100px !important;
+    text-align: center !important;
+    margin-top: 10px !important;
+    background: rgba(48, 48, 48, 0.05) !important;
+    text-decoration: none !important;
+    font-size: 15px !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .ln-mobile-only:hover {
+    background: var(--charcoal) !important;
+    color: var(--silver) !important;
   }
 
   .ln-hero-headline {

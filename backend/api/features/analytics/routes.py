@@ -33,7 +33,7 @@ def survey_templates():
         SurveyTemplateOut(
             id="tmpl-nps", name="Customer Satisfaction (NPS)",
             description="Measure Net Promoter Score and customer happiness with targeted feedback questions.",
-            category="Enterprise Feedback", icon="⭐",
+            category="Enterprise Feedback", icon="star",
             questions=[
                 SurveyTemplateQuestionOut(questionText="How likely are you to recommend us to a friend or colleague? (0-10)", questionType="rating", options=[]),
                 SurveyTemplateQuestionOut(questionText="What is the primary reason for your score?", questionType="text", options=[]),
@@ -44,7 +44,7 @@ def survey_templates():
         SurveyTemplateOut(
             id="tmpl-employee", name="Employee Engagement",
             description="Assess team morale, workplace satisfaction, and identify areas for improvement.",
-            category="Enterprise Feedback", icon="👥",
+            category="Enterprise Feedback", icon="users",
             questions=[
                 SurveyTemplateQuestionOut(questionText="How satisfied are you with your current role?", questionType="choice", options=["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"]),
                 SurveyTemplateQuestionOut(questionText="Do you feel your contributions are valued by the team?", questionType="choice", options=["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"]),
@@ -55,7 +55,7 @@ def survey_templates():
         SurveyTemplateOut(
             id="tmpl-product", name="Product Feedback",
             description="Gather user insights on product features, usability, and improvement priorities.",
-            category="Product Roadmap", icon="🚀",
+            category="Product Roadmap", icon="rocket",
             questions=[
                 SurveyTemplateQuestionOut(questionText="How often do you use our product?", questionType="choice", options=["Daily", "Weekly", "Monthly", "Rarely"]),
                 SurveyTemplateQuestionOut(questionText="Which feature do you use the most?", questionType="choice", options=["Dashboard", "Reports", "Collaboration", "Integrations", "Other"]),
@@ -66,7 +66,7 @@ def survey_templates():
         SurveyTemplateOut(
             id="tmpl-civic", name="Civic Community Priorities",
             description="Identify community needs and priorities for public resource allocation.",
-            category="Civic Priority", icon="🏛️",
+            category="Civic Priority", icon="building",
             questions=[
                 SurveyTemplateQuestionOut(questionText="What is the most pressing issue in your community?", questionType="choice", options=["Healthcare", "Education", "Infrastructure", "Security", "Employment", "Water & Sanitation"]),
                 SurveyTemplateQuestionOut(questionText="How would you rate local government responsiveness?", questionType="rating", options=[]),
@@ -77,7 +77,7 @@ def survey_templates():
         SurveyTemplateOut(
             id="tmpl-event", name="Event Feedback",
             description="Post-event evaluation to measure attendee satisfaction and gather improvement suggestions.",
-            category="General", icon="🎪",
+            category="General", icon="calendar",
             questions=[
                 SurveyTemplateQuestionOut(questionText="How would you rate the overall event experience?", questionType="rating", options=[]),
                 SurveyTemplateQuestionOut(questionText="Which session was most valuable?", questionType="choice", options=["Keynote", "Panel Discussion", "Workshop", "Networking", "Q&A"]),
@@ -88,7 +88,7 @@ def survey_templates():
         SurveyTemplateOut(
             id="tmpl-market", name="Market Research",
             description="Understand market demographics, preferences, and purchasing behavior.",
-            category="Enterprise Feedback", icon="📊",
+            category="Enterprise Feedback", icon="chart",
             questions=[
                 SurveyTemplateQuestionOut(questionText="What is your age range?", questionType="choice", options=["18-24", "25-34", "35-44", "45-54", "55+"]),
                 SurveyTemplateQuestionOut(questionText="How did you hear about us?", questionType="choice", options=["Social Media", "Search Engine", "Word of Mouth", "Advertisement", "Other"]),

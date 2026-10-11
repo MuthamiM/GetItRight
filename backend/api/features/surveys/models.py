@@ -18,6 +18,7 @@ class SurveyModel(Base):
     MerkleCohortRoot = Column(String, nullable=False)
     TargetAudience = Column(String, nullable=True, default="General Public")
     OrganizationName = Column(String, nullable=True, default="Verified Civic Publisher")
+    EndDate = Column(String, nullable=True)
 
     questions = relationship("SurveyQuestionModel", back_populates="survey", cascade="all, delete-orphan", lazy="joined")
 
@@ -39,8 +40,10 @@ class SurveyResponseModel(Base):
 
     Id = Column(Integer, primary_key=True, autoincrement=True)
     SurveyId = Column(String, nullable=False, index=True)
+    UserId = Column(String, nullable=True, index=True)
     VoterPseudonym = Column(String, nullable=False)
     AnswersJson = Column(String, nullable=False)
     ReceiptHash = Column(String, nullable=False)
     MerkleLeafIndex = Column(Integer, nullable=False)
     Timestamp = Column(String, nullable=False)
+

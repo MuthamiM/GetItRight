@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Boolean
+from sqlalchemy import Column, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.api.core.database import Base
 
@@ -16,6 +16,7 @@ class PollModel(Base):
     TotalVotes = Column(Integer, default=0)
     MerkleRoot = Column(String, nullable=False)
     IsEncryptedBallot = Column(Integer, default=1)
+    EndDate = Column(String, nullable=True)
 
     options = relationship("PollOptionModel", back_populates="poll", cascade="all, delete-orphan", lazy="joined")
 
@@ -36,9 +37,11 @@ class VoteTransactionModel(Base):
 
     Id = Column(Integer, primary_key=True, autoincrement=True)
     PollId = Column(String, nullable=False, index=True)
+    UserId = Column(String, nullable=True, index=True)
     OptionIndex = Column(Integer, nullable=False)
     OptionLabel = Column(String, nullable=False)
     ReceiptHash = Column(String, nullable=False)
     MerkleLeafIndex = Column(Integer, nullable=False)
     VoterPseudonym = Column(String, nullable=False)
     Timestamp = Column(String, nullable=False)
+
