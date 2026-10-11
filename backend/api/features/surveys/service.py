@@ -4,6 +4,8 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Optional, List
 # pyrefly: ignore [missing-import]
+from sqlalchemy import or_
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 # pyrefly: ignore [missing-import]
 from fastapi import HTTPException, status
@@ -53,6 +55,7 @@ def map_survey_to_out(s: SurveyModel) -> SurveyOut:
         merkleCohortRoot=s.MerkleCohortRoot,
         targetAudience=s.TargetAudience or "General Public",
         organizationName=s.OrganizationName or "Verified Civic Publisher",
+        endDate=getattr(s, 'EndDate', None),
         questions=q_outs
     )
 
@@ -77,6 +80,16 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
     new_id = f"SRV-{plan_key.upper()[:4]}-{uuid.uuid4().hex[:4].upper()}"
     root = "0x" + hashlib.sha256(f"{new_id}:{data.title}".encode("utf-8")).hexdigest()[:16]
 
+    now = datetime.now(timezone.utc)
+    if data.endDate:
+        end_date_str = data.endDate
+    elif data.durationHours:
+        from datetime import timedelta
+        end_date_str = (now + timedelta(hours=data.durationHours)).strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        from datetime import timedelta
+        end_date_str = (now + timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+
     new_survey = SurveyModel(
         Id=new_id,
         Title=data.title.strip(),
@@ -86,11 +99,12 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
         Status="Active",
         TargetResponses=data.targetResponses or 500,
         TotalResponses=0,
-        CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        CreatedAt=now.strftime("%Y-%m-%d %H:%M"),
         OwnerId=data.ownerId or "USR-001",
         MerkleCohortRoot=root,
         TargetAudience=data.targetAudience or "General Public",
-        OrganizationName=data.organizationName or "Verified Civic Publisher"
+        OrganizationName=data.organizationName or "Verified Civic Publisher",
+        EndDate=end_date_str
     )
     db.add(new_survey)
     db.flush()
@@ -115,8 +129,34 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
     if not survey:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Survey {survey_id} not found")
 
+    user_id = sub.userId.strip() if sub.userId and str(sub.userId).strip() else None
+    voter = (sub.voterPseudonym or (f"User-{user_id}" if user_id else f"Respondent-{uuid.uuid4().hex[:6]}")).strip()
+
+    # NO RETAKING SURVEY: If user already completed survey, reject duplicate submission
+    if user_id:
+        existing_by_user = db.query(SurveyResponseModel).filter(
+            SurveyResponseModel.SurveyId == survey_id,
+            SurveyResponseModel.UserId == user_id
+        ).first()
+        if existing_by_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have already completed this survey."
+            )
+
+    # NO RETAKING SURVEY: If voter pseudonym/session already submitted, reject duplicate
+    if voter:
+        existing_by_voter = db.query(SurveyResponseModel).filter(
+            SurveyResponseModel.SurveyId == survey_id,
+            SurveyResponseModel.VoterPseudonym == voter
+        ).first()
+        if existing_by_voter:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have already completed this survey."
+            )
+
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    voter = sub.voterPseudonym or f"Respondent-{uuid.uuid4().hex[:6]}"
     receipt = "0x" + hashlib.sha256(f"{survey_id}:{voter}:{timestamp}".encode("utf-8")).hexdigest()
 
     survey.TotalResponses += 1
@@ -134,9 +174,10 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
             resp_map[ans_str] = resp_map.get(ans_str, 0) + 1
             q.ResponsesJson = json.dumps(resp_map)
 
-    # Save individual response
+    # Save individual response with UserId in DB
     resp_record = SurveyResponseModel(
         SurveyId=survey_id,
+        UserId=user_id,
         VoterPseudonym=voter,
         AnswersJson=json.dumps([{ "questionId": a.questionId, "answer": a.answer } for a in sub.answers]),
         ReceiptHash=receipt,
@@ -151,8 +192,25 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         surveyId=survey_id,
         receiptHash=receipt,
         merkleLeafIndex=leaf_index,
-        timestamp=timestamp
+        timestamp=timestamp,
+        userId=user_id
     )
+
+def get_survey_user_response(db: Session, survey_id: str, user_id: Optional[str] = None, voter_key: Optional[str] = None):
+    query = db.query(SurveyResponseModel).filter(SurveyResponseModel.SurveyId == survey_id)
+    u_id = user_id.strip() if user_id and str(user_id).strip() else None
+    v_key = voter_key.strip() if voter_key and str(voter_key).strip() else None
+
+    if u_id and v_key:
+        query = query.filter(or_(SurveyResponseModel.UserId == u_id, SurveyResponseModel.VoterPseudonym == v_key))
+    elif u_id:
+        query = query.filter(SurveyResponseModel.UserId == u_id)
+    elif v_key:
+        query = query.filter(SurveyResponseModel.VoterPseudonym == v_key)
+    else:
+        return None
+    return query.first()
+
 
 def update_survey_status(db: Session, survey_id: str, new_status: str) -> SurveyOut:
     survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()

@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.polls.schemas import (
-    PollOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut
+    PollOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut, VoteStatusOut
 )
 from backend.api.features.polls.service import (
-    list_polls, get_poll_by_id, create_poll, cast_vote, get_transactions_by_poll, reset_poll
+    list_polls, get_poll_by_id, create_poll, cast_vote, get_transactions_by_poll, reset_poll, get_vote_status
 )
 
 router = APIRouter(prefix="/polls", tags=["Polls"])
@@ -20,6 +20,16 @@ def get_polls(plan: Optional[str] = Query(None, description="Filter polls by tie
 def get_single_poll(poll_id: str, db: Session = Depends(get_db)):
     """Fetch a single poll by ID with real option counts and calculated percentages."""
     return get_poll_by_id(db, poll_id)
+
+@router.get("/{poll_id}/vote-status", response_model=VoteStatusOut)
+def check_vote_status(
+    poll_id: str,
+    userId: Optional[str] = Query(None),
+    voterKey: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """Check if a user or voter pseudonym has already voted on this poll."""
+    return get_vote_status(db, poll_id, user_id=userId, voter_key=voterKey)
 
 @router.post("", response_model=PollOut)
 def create_new_poll(data: PollCreate, db: Session = Depends(get_db)):
@@ -40,3 +50,4 @@ def reset_poll_endpoint(poll_id: str, db: Session = Depends(get_db)):
 def get_poll_audit_transactions(poll_id: str, db: Session = Depends(get_db)):
     """Retrieve audit transactions and Merkle receipts for a specific poll."""
     return get_transactions_by_poll(db, poll_id)
+

@@ -97,6 +97,29 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         p.options.any((o) => o.text.toLowerCase().contains('syengo'));
   }
 
+  /// Format countdown strictly as "Xd Xh XXmins left", no emojis, no Root, no 0x
+  String _formatPollCountdown(Poll poll) {
+    DateTime deadline;
+    if (poll.endDate != null) {
+      deadline = poll.endDate!;
+    } else {
+      deadline = poll.createdAt.add(const Duration(days: 7));
+    }
+    final diff = deadline.difference(DateTime.now());
+    if (diff.isNegative) {
+      return 'Voting Closed';
+    }
+    final days = diff.inDays;
+    final hours = diff.inHours % 24;
+    final minutes = diff.inMinutes % 60;
+    pad(int n) => n.toString().padLeft(2, '0');
+    if (days >= 1) {
+      return '${days}d ${hours}h ${pad(minutes)}mins left';
+    } else {
+      return '${hours}h ${pad(minutes)}mins left';
+    }
+  }
+
   Future<void> _loadPolls() async {
     final polls = await _apiClient.fetchPolls();
     // Prioritize Zak Syengo / Kitui East poll at the very top, then newest
@@ -181,7 +204,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
   Future<void> _sharePoll(Poll poll) async {
     final shareUrl = _apiClient.generateShareLink(type: 'poll', id: poll.id);
     final shareMessage =
-        '🗳️ Cast your vote on GetitRight!\n\n${poll.title}\n\n👉 Vote now: $shareUrl';
+        'Cast your vote on GetitRight!\n\n${poll.title}\n\nVote now: $shareUrl';
 
     // Copy to clipboard
     Clipboard.setData(ClipboardData(text: shareUrl));
@@ -243,7 +266,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.link, color: Color(0xFF64B5F6), size: 18),
+                      const Icon(Icons.link,
+                          color: Color(0xFF64B5F6), size: 18),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -287,7 +311,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                           ),
                         );
                       },
-                      icon: const Icon(Icons.copy, size: 16, color: Colors.white),
+                      icon:
+                          const Icon(Icons.copy, size: 16, color: Colors.white),
                       label: const Text('Copy Link',
                           style: TextStyle(color: Colors.white)),
                       style: OutlinedButton.styleFrom(
@@ -340,7 +365,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: Color(0xFF2A2A2A), size: 18),
+                const Icon(Icons.check_circle,
+                    color: Color(0xFF2A2A2A), size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -387,11 +413,10 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
+        const SnackBar(
+          content: Row(
             children: [
-              Icon(Icons.check_circle,
-                  color: Color(0xFF2A2A2A), size: 18),
+              Icon(Icons.check_circle, color: Color(0xFF2A2A2A), size: 18),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -405,8 +430,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
               ),
             ],
           ),
-          backgroundColor: const Color(0xFFE5E5E5),
-          duration: const Duration(seconds: 2),
+          backgroundColor: Color(0xFFE5E5E5),
+          duration: Duration(seconds: 2),
         ),
       );
     }
@@ -518,7 +543,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                     margin: const EdgeInsets.fromLTRB(10, 4, 10, 10),
                     decoration: BoxDecoration(
                       color: const Color(0xFF262626),
-                      borderRadius: BorderRadius.circular(24), // Curved edges all sides
+                      borderRadius:
+                          BorderRadius.circular(24), // Curved edges all sides
                       border: Border.all(
                         color: const Color(0xFF3E3E3E),
                         width: 1.2,
@@ -559,7 +585,9 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                           horizontal: 16, vertical: 14),
                                       // Displayed polls + optional "Next Poll" words button
                                       itemCount: displayedPolls.length +
-                                          (hasMorePolls || (_visibleCount > 5 && filteredPolls.length > 5)
+                                          (hasMorePolls ||
+                                                  (_visibleCount > 5 &&
+                                                      filteredPolls.length > 5)
                                               ? 1
                                               : 0),
                                       itemBuilder: (context, index) {
@@ -587,8 +615,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                     children: [
                                                       Text(
                                                         'Next Poll ($remaining remaining) →',
-                                                        style:
-                                                            const TextStyle(
+                                                        style: const TextStyle(
                                                           color:
                                                               Color(0xFF64B5F6),
                                                           fontSize: 16,
@@ -638,9 +665,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                       fontSize: 14,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      decoration:
-                                                          TextDecoration
-                                                              .underline,
+                                                      decoration: TextDecoration
+                                                          .underline,
                                                       decorationColor:
                                                           Color(0xFF64B5F6),
                                                     ),
@@ -653,8 +679,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
                                         final poll = displayedPolls[index];
                                         final isZak = _isZakSyengoPoll(poll);
-                                        final shareUrl = _apiClient
-                                            .generateShareLink(
+                                        final shareUrl =
+                                            _apiClient.generateShareLink(
                                                 type: 'poll', id: poll.id);
 
                                         // NOT A CARD: Pure words and typography layout!
@@ -675,10 +701,10 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                     children: [
                                                       if (isZak) ...[
                                                         const Text(
-                                                          '★ FEATURED • ',
+                                                          'FEATURED • ',
                                                           style: TextStyle(
                                                             color: Color(
-                                                                0xFF81C784),
+                                                                0xFFE5E5E5),
                                                             fontSize: 11,
                                                             fontWeight:
                                                                 FontWeight.w900,
@@ -702,39 +728,28 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                   ),
                                                   Row(
                                                     children: [
-                                                      if (poll.selectedOptionId != null) ...[
-                                                        const Icon(Icons.check_circle_outline, size: 11, color: Color(0xFFFFD54F)),
-                                                        const SizedBox(width: 3),
+                                                      if (poll.selectedOptionId !=
+                                                          null) ...[
+                                                        const Icon(Icons.check,
+                                                            size: 12,
+                                                            color: Color(
+                                                                0xFFE5E5E5)),
+                                                        const SizedBox(
+                                                            width: 3),
                                                         const Text(
-                                                          'VOTED',
+                                                          'Voted',
                                                           style: TextStyle(
-                                                            color: Color(0xFFFFD54F),
-                                                            fontSize: 10,
-                                                            fontWeight: FontWeight.bold,
-                                                            letterSpacing: 0.6,
+                                                            color: Color(
+                                                                0xFFE5E5E5),
+                                                            fontSize: 11,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            letterSpacing: 0.3,
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 8),
+                                                        const SizedBox(
+                                                            width: 8),
                                                       ],
-                                                      const Icon(
-                                                          Icons
-                                                              .radio_button_checked,
-                                                          size: 11,
-                                                          color: Colors
-                                                              .greenAccent),
-                                                      const SizedBox(width: 4),
-                                                      const Text(
-                                                        'LIVE TALLY',
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .greenAccent,
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          letterSpacing: 0.6,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 14),
                                                       InkWell(
                                                         onTap: () =>
                                                             _sharePoll(poll),
@@ -777,7 +792,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                               ),
 
                                               // Description Words
-                                              if (poll.description.isNotEmpty) ...[
+                                              if (poll
+                                                  .description.isNotEmpty) ...[
                                                 const SizedBox(height: 5),
                                                 Text(
                                                   poll.description,
@@ -873,12 +889,11 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                                   : const Color(
                                                                       0xFFECECEC),
                                                               fontSize: 14,
-                                                              fontWeight:
-                                                                  isSelected
-                                                                      ? FontWeight
-                                                                          .bold
-                                                                      : FontWeight
-                                                                          .w500,
+                                                              fontWeight: isSelected
+                                                                  ? FontWeight
+                                                                      .bold
+                                                                  : FontWeight
+                                                                      .w500,
                                                               height: 1.3,
                                                             ),
                                                           ),
@@ -936,9 +951,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                                     0xFF64B5F6),
                                                           ),
                                                           maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         ),
                                                       ),
                                                       const SizedBox(width: 4),
@@ -954,22 +968,46 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
                                               const SizedBox(height: 8),
 
-                                              // Total votes & Share button
+                                              // Total votes & countdown
                                               Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment
                                                         .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
                                                 children: [
-                                                  Text(
-                                                    poll.selectedOptionId != null
-                                                        ? '${poll.totalVotes} total votes • Voted'
-                                                        : '${poll.totalVotes} total votes • Live updating',
-                                                    style: const TextStyle(
-                                                      color: Color(0xFFAAAAAA),
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
+                                                  // Left column: total votes + countdown below
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        '${poll.totalVotes} total votes',
+                                                        style: const TextStyle(
+                                                          color:
+                                                              Color(0xFFAAAAAA),
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 3),
+                                                      Text(
+                                                        _formatPollCountdown(
+                                                            poll),
+                                                        style: const TextStyle(
+                                                          color:
+                                                              Color(0xFFE5E5E5),
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          letterSpacing: 0.02,
+                                                          fontFamily:
+                                                              'monospace',
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                   ElevatedButton.icon(
                                                     onPressed: () =>
@@ -1134,27 +1172,25 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
   }
 
   String _formatMovingCountdown() {
-    final titleLower = widget.poll.title.toLowerCase();
-    final idLower = widget.poll.id.toLowerCase();
-    final isElectionOrZak = idLower.contains('kitui-east') ||
-        titleLower.contains('kitui east') ||
-        titleLower.contains('zak syengo') ||
-        titleLower.contains('2027') ||
-        titleLower.contains('aspirants');
-
-    if (isElectionOrZak && widget.poll.status == 'live') {
-      return 'Active 2027 Opinion Poll • Live Results';
+    DateTime deadline;
+    if (widget.poll.endDate != null) {
+      deadline = widget.poll.endDate!;
+    } else {
+      deadline = widget.poll.createdAt.add(const Duration(days: 7));
     }
-
-    final deadline = widget.poll.createdAt.add(const Duration(hours: 24));
     final diff = deadline.difference(DateTime.now());
     if (diff.isNegative) {
-      return 'Voting Closed • Final Results';
+      return 'Voting Closed';
     }
-    final hours = diff.inHours.toString().padLeft(2, '0');
-    final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
-    return 'Voting Closes in $hours:$minutes:$seconds • Live Results';
+    final days = diff.inDays;
+    final hours = diff.inHours % 24;
+    final minutes = diff.inMinutes % 60;
+    pad(int n) => n.toString().padLeft(2, '0');
+    if (days >= 1) {
+      return '${days}d ${hours}h ${pad(minutes)}mins left';
+    } else {
+      return '${hours}h ${pad(minutes)}mins left';
+    }
   }
 
   @override

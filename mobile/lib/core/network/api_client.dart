@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/poll_model.dart';
@@ -131,27 +132,27 @@ class ApiClient {
       'answers': answers,
     };
 
-    print('[SURVEY SUBMIT] surveyId=$surveyId payload=${json.encode(payload)}');
+    debugPrint('[SURVEY SUBMIT] surveyId=$surveyId payload=${json.encode(payload)}');
 
     for (final url in baseUrls) {
       try {
-        print('[SURVEY SUBMIT] Trying $url/surveys/$surveyId/submit ...');
+        debugPrint('[SURVEY SUBMIT] Trying $url/surveys/$surveyId/submit ...');
         final response = await http.post(
           Uri.parse('$url/surveys/$surveyId/submit'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode(payload),
         ).timeout(const Duration(seconds: 12));
-        print('[SURVEY SUBMIT] Response: ${response.statusCode} ${response.body}');
+        debugPrint('[SURVEY SUBMIT] Response: ${response.statusCode} ${response.body}');
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
         }
       } catch (e) {
-        print('[SURVEY SUBMIT] Error on $url: $e');
+        debugPrint('[SURVEY SUBMIT] Error on $url: $e');
       }
     }
     // Fallback receipt
-    print('[SURVEY SUBMIT] All URLs failed, returning fallback receipt');
+    debugPrint('[SURVEY SUBMIT] All URLs failed, returning fallback receipt');
     return {
       'success': true,
       'surveyId': surveyId,
@@ -440,14 +441,20 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
+    const currentAppVersion = '2.0.0';
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http
-            .get(Uri.parse('$url/app/version'))
+            .get(Uri.parse('$url/app/version?version=$currentAppVersion'))
             .timeout(const Duration(seconds: 2));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          return json.decode(response.body) as Map<String, dynamic>;
+          final data = json.decode(response.body) as Map<String, dynamic>;
+          final latestVer = data['latest_version']?.toString() ?? currentAppVersion;
+          return {
+            ...data,
+            'update_available': (data['update_available'] == true && latestVer != currentAppVersion),
+          };
         }
       } catch (_) {
         try {
@@ -457,22 +464,22 @@ class ApiClient {
           if (healthResp.statusCode == 200) {
             _activeBaseUrl = url;
             final data = json.decode(healthResp.body) as Map<String, dynamic>;
-            final serverVersion = data['version']?.toString() ?? '1.2.0';
+            final serverVersion = data['version']?.toString() ?? currentAppVersion;
             return {
               'latest_version': serverVersion,
-              'update_available': serverVersion != '1.2.0',
-              'release_notes': 'Live polls, instant back-to-top navigation, real-time survey verification, and improved caching.',
-              'download_url': 'https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk',
+              'update_available': serverVersion != currentAppVersion,
+              'release_notes': 'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
+              'download_url': 'https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk',
             };
           }
         } catch (_) {}
       }
     }
     return {
-      'latest_version': '1.2.0',
+      'latest_version': currentAppVersion,
       'update_available': false,
-      'release_notes': 'Clean VOTED UI, splash screen logo fix, 5-poll feed pagination, and permanent voting integrity.',
-      'download_url': 'https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk',
+      'release_notes': 'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
+      'download_url': 'https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk',
     };
   }
 }

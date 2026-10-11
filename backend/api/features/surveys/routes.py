@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.surveys.schemas import (
     SurveyOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
-    SurveyStatusUpdate, SurveyAnalyticsOut, ReceiptVerificationOut
+    SurveyStatusUpdate, SurveyAnalyticsOut, ReceiptVerificationOut, SurveyResponseStatusOut
 )
 from backend.api.features.surveys.service import (
     list_surveys, get_survey_by_id, create_survey, submit_survey_response,
-    update_survey_status, get_survey_analytics, verify_survey_receipt
+    update_survey_status, get_survey_analytics, verify_survey_receipt, get_survey_user_response
 )
 
 router = APIRouter(prefix="/surveys", tags=["Surveys"])
@@ -49,8 +49,40 @@ def create_new_survey(data: SurveyCreate, db: Session = Depends(get_db)):
     """Author and publish a new multi-step qualitative survey."""
     return create_survey(db, data)
 
+@router.get("/{survey_id}/response-status", response_model=SurveyResponseStatusOut)
+@router.get("/{survey_id}/status-check", response_model=SurveyResponseStatusOut)
+def check_survey_user_status(
+    survey_id: str,
+    userId: Optional[str] = Query(None),
+    voterKey: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """Check if the user/voter has already taken this survey and return previous action receipt."""
+    import json
+    resp = get_survey_user_response(db, survey_id, user_id=userId, voter_key=voterKey)
+    if resp:
+        try:
+            answers = json.loads(resp.AnswersJson)
+        except Exception:
+            answers = []
+        return SurveyResponseStatusOut(
+            hasResponded=True,
+            surveyId=survey_id,
+            receiptHash=resp.ReceiptHash,
+            merkleLeafIndex=resp.MerkleLeafIndex,
+            timestamp=resp.Timestamp,
+            answers=answers,
+            userId=resp.UserId,
+            voterPseudonym=resp.VoterPseudonym
+        )
+    return SurveyResponseStatusOut(
+        hasResponded=False,
+        surveyId=survey_id
+    )
+
 @router.post("/{survey_id}/respond", response_model=SurveySubmissionReceipt)
 @router.post("/{survey_id}/submit", response_model=SurveySubmissionReceipt)
 def answer_survey(survey_id: str, sub: SurveyResponseSubmission, db: Session = Depends(get_db)):
     """Submit responses to a survey with Merkle receipt generation."""
     return submit_survey_response(db, survey_id, sub)
+

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Getitright Admin Console — Complete platform management, real-time vote analytics, and user access.">
   <title>Getitright — Admin Dashboard</title>
-  <link rel="icon" href="../assets/images/logo.jpg" type="image/jpeg">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
   <style>
     :root {
       --bg-outer: #E9EEF5;
@@ -370,9 +370,9 @@
                       <div class="ticket-time">12 min. ago</div>
                     </div>
                   </div>
-                  <div class="ticket-row">📍 <strong>GPS:</strong> -1.2921, 36.8219 (Nairobi)</div>
-                  <div class="ticket-row">🌐 <strong>IP:</strong> 102.217.156.42</div>
-                  <div class="ticket-row">📱 <strong>Device:</strong> Samsung Galaxy A54</div>
+                  <div class="ticket-row"><strong>GPS:</strong> -1.2921, 36.8219 (Nairobi)</div>
+                  <div class="ticket-row"><strong>IP:</strong> 102.217.156.42</div>
+                  <div class="ticket-row"><strong>Device:</strong> Samsung Galaxy A54</div>
                   <button class="btn-outline-sm" style="width:100%;margin-top:8px;">See vote details</button>
                 </div>
 
@@ -385,9 +385,9 @@
                       <div class="ticket-time">25 min. ago</div>
                     </div>
                   </div>
-                  <div class="ticket-row">📍 <strong>GPS:</strong> -0.5143, 35.2698 (Kericho)</div>
-                  <div class="ticket-row">🌐 <strong>IP:</strong> 197.232.12.89</div>
-                  <div class="ticket-row">📱 <strong>Device:</strong> Dell XPS 15 / Win11</div>
+                  <div class="ticket-row"><strong>GPS:</strong> -0.5143, 35.2698 (Kericho)</div>
+                  <div class="ticket-row"><strong>IP:</strong> 197.232.12.89</div>
+                  <div class="ticket-row"><strong>Device:</strong> Dell XPS 15 / Win11</div>
                   <button class="btn-outline-sm" style="width:100%;margin-top:8px;">See vote details</button>
                 </div>
               </div>
@@ -659,7 +659,7 @@
 
   <!-- JAVASCRIPT — ALL DATA FROM DB VIA API, ZERO HARDCODED CHART VALUES -->
   <script>
-    const API = 'http://127.0.0.1:8000/api';
+    const API = window.location.origin + '/api';
     let polls = [], surveys = [], users = [], checkpoints = [], roles = [], observers = [];
     let dashStats = null;
     let questionCards = [
@@ -840,10 +840,10 @@
               <div class="ticket-time">${v.time}</div>
             </div>
           </div>
-          <div class="ticket-row">📍 <strong>GPS:</strong> ${v.gps}</div>
-          <div class="ticket-row">🌐 <strong>IP:</strong> ${v.ip}</div>
-          <div class="ticket-row">📱 <strong>Device:</strong> ${v.device}</div>
-          <div class="ticket-row" style="color:var(--brand-accent);font-weight:700;">🗳️ ${v.pollTitle}</div>
+          <div class="ticket-row"><strong>GPS:</strong> ${v.gps}</div>
+          <div class="ticket-row"><strong>IP:</strong> ${v.ip}</div>
+          <div class="ticket-row"><strong>Device:</strong> ${v.device}</div>
+          <div class="ticket-row" style="color:var(--brand-accent);font-weight:700;">${v.pollTitle}</div>
           <button class="btn-outline-sm" style="width:100%;margin-top:8px;">See vote details</button>
         </div>
       `).join('');
@@ -965,7 +965,7 @@
               </div>
             ` : `
               <div style="background:#EEF2FF;border-radius:8px;padding:8px 12px;font-size:11px;color:#3B49DF;font-weight:600;">
-                💡 Free Text Input Field Enabled: Respondents will type their own custom answer.
+                Free Text Input Field Enabled: Respondents will type their own custom answer.
               </div>
             `}
           </div>

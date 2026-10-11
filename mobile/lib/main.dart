@@ -130,7 +130,7 @@ class _RootNavigationCoordinatorState
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v1.2.0)',
+                'Version $version is now available (Current: v2.0.0)',
                 style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
@@ -142,11 +142,10 @@ class _RootNavigationCoordinatorState
             const SizedBox(height: 6),
             Text(
               releaseNotes ??
-                  '• Instant scroll-to-top navigation\n'
-                  '• Real-time poll vote tallying & animated charts\n'
-                  '• Cryptographic survey receipt verification\n'
-                  '• Offline vote persistence & auto-sync\n'
-                  '• Stability & performance improvements',
+                  '• Strict charcoal & silver design with live countdown timers\n'
+                  '• Verified voting & real-time Merkle consensus\n'
+                  '• Seamless poll feed pagination & zero-overlay layout\n'
+                  '• Performance optimizations and instant back-to-top navigation',
               style: const TextStyle(color: Color(0xFFD0D0D0), fontSize: 12.5, height: 1.45),
             ),
           ],
@@ -170,7 +169,7 @@ class _RootNavigationCoordinatorState
                 ),
               );
               try {
-                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk');
+                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk');
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }

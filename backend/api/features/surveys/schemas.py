@@ -1,4 +1,3 @@
-import json
 from typing import Optional, List, Any, Dict
 # pyrefly: ignore [missing-import]
 from pydantic import BaseModel
@@ -26,6 +25,7 @@ class SurveyOut(BaseModel):
     merkleCohortRoot: str
     targetAudience: Optional[str] = "General Public"
     organizationName: Optional[str] = "Verified Civic Publisher"
+    endDate: Optional[str] = None
     questions: List[QuestionOut] = []
 
 class QuestionCreate(BaseModel):
@@ -42,6 +42,8 @@ class SurveyCreate(BaseModel):
     ownerId: Optional[str] = "USR-001"
     targetAudience: Optional[str] = "General Public"
     organizationName: Optional[str] = "Verified Civic Publisher"
+    endDate: Optional[str] = None
+    durationHours: Optional[int] = None
     questions: List[QuestionCreate]
 
 class SurveyAnswerSubmission(BaseModel):
@@ -50,6 +52,7 @@ class SurveyAnswerSubmission(BaseModel):
 
 class SurveyResponseSubmission(BaseModel):
     voterPseudonym: Optional[str] = None
+    userId: Optional[str] = None
     answers: List[SurveyAnswerSubmission]
 
 class SurveySubmissionReceipt(BaseModel):
@@ -58,6 +61,18 @@ class SurveySubmissionReceipt(BaseModel):
     receiptHash: str
     merkleLeafIndex: int
     timestamp: str
+    userId: Optional[str] = None
+
+class SurveyResponseStatusOut(BaseModel):
+    hasResponded: bool
+    surveyId: str
+    receiptHash: Optional[str] = None
+    merkleLeafIndex: Optional[int] = None
+    timestamp: Optional[str] = None
+    answers: Optional[List[Any]] = None
+    userId: Optional[str] = None
+    voterPseudonym: Optional[str] = None
+
 
 class SurveyStatusUpdate(BaseModel):
     status: str

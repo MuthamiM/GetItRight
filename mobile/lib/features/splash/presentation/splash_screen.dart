@@ -82,33 +82,17 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Logo in a clean circular frame
-                        Container(
+                        // Shield logo with white interior directly on dark background
+                        SizedBox(
                           width: 120,
                           height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white.withAlpha(30),
-                                blurRadius: 32,
-                                spreadRadius: 4,
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.how_to_vote_rounded,
-                                  size: 56,
-                                  color: Color(0xFF303030),
-                                ),
-                              ),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.shield,
+                              size: 72,
+                              color: Color(0xFFE5E5E5),
                             ),
                           ),
                         ),
@@ -141,7 +125,7 @@ class _SplashScreenState extends State<SplashScreen>
             Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
               child: Text(
-                'v1.2',
+                'v2.0',
                 style: TextStyle(
                   color: Colors.white.withAlpha(80),
                   fontSize: 12,

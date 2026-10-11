@@ -11,7 +11,7 @@ from datetime import datetime, timezone, timedelta
 
 from backend.api.core.database import SessionLocal, engine, Base
 from backend.api.features.auth.models import UserModel
-from backend.api.features.polls.models import PollModel, PollOptionModel, VoteTransactionModel
+from backend.api.features.polls.models import PollModel, PollOptionModel
 from backend.api.features.surveys.models import SurveyModel, SurveyQuestionModel, SurveyResponseModel
 from backend.api.features.analytics.models import (
     StationModel, AnomalyModel, DisputeModel, CheckpointModel,

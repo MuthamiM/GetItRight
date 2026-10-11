@@ -1,5 +1,5 @@
 import time
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.core.config import settings
 from backend.api.middleware.rate_limiter import InMemoryRateLimiter
@@ -48,16 +48,18 @@ def health_check():
 
 @app.get("/app/version")
 @app.get(f"{settings.API_PREFIX}/app/version")
-def check_app_version():
+def check_app_version(version: str = None):
+    # If client didn't supply version or has older version (< 2.0.0), flag update_available as True
+    is_older = (version is None or version.strip() not in ("2.0.0", "2.0", "v2.0", "v2"))
     return {
         "latest_version": settings.VERSION,
         "current_stable": settings.VERSION,
         "minimum_version": "1.0.0",
-        "update_available": False,
+        "update_available": is_older,
         "force_update": False,
         "title": f"GetItRight v{settings.VERSION} Available",
-        "release_notes": "Clean 'VOTED' UI, brand logo splash fix, 5-poll feed pagination, and tamper-evident Merkle verification.",
-        "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v1.2/app-release.apk",
+        "release_notes": "• Strict charcoal & silver design with live countdown timers\n• Verified voting & real-time Merkle consensus\n• Seamless poll feed pagination & zero-overlay layout\n• Performance optimizations and instant back-to-top navigation",
+        "download_url": "https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk",
     }
 
 @app.get(f"{settings.API_PREFIX}/cache/status")
@@ -81,7 +83,6 @@ def geo_currency():
     }
 
 # --- Serve frontend static files from /web ---
-import os
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse

@@ -125,17 +125,17 @@ class _LoginScreenState extends State<LoginScreen> {
           }
           widget.onLoginSuccess(role == 'admin' || role == 'org' ? 'org' : 'user');
         } else {
-          Navigator.of(context).push(
+          if (!mounted) return;
+          final navigator = Navigator.of(context);
+          navigator.push(
             MaterialPageRoute(
-              builder: (context) => PlanSelectionScreen(
+              builder: (subContext) => PlanSelectionScreen(
                 userData: userData!,
                 onProceed: () async {
                   final p = await SharedPreferences.getInstance();
                   await p.setBool('gir_plan_chosen', true);
-                  if (mounted) {
-                    Navigator.of(context).pop();
-                    widget.onLoginSuccess(role == 'admin' || role == 'org' ? 'org' : 'user');
-                  }
+                  navigator.pop();
+                  widget.onLoginSuccess(role == 'admin' || role == 'org' ? 'org' : 'user');
                 },
               ),
             ),
@@ -151,30 +151,29 @@ class _LoginScreenState extends State<LoginScreen> {
         'role': 'user',
         'plan': 'free',
       };
-      if (mounted) {
-        final prefs = await SharedPreferences.getInstance();
-        final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
-        final savedPlan = prefs.getString('gir_user_plan');
+      if (!mounted) return;
+      final navigator = Navigator.of(context);
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
+      final savedPlan = prefs.getString('gir_user_plan');
 
-        if (planChosen || (savedPlan != null && savedPlan.isNotEmpty)) {
-          widget.onLoginSuccess('user');
-        } else {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PlanSelectionScreen(
-                userData: fallbackData,
-                onProceed: () async {
-                  final p = await SharedPreferences.getInstance();
-                  await p.setBool('gir_plan_chosen', true);
-                  if (mounted) {
-                    Navigator.of(context).pop();
-                    widget.onLoginSuccess('user');
-                  }
-                },
-              ),
+      if (planChosen || (savedPlan != null && savedPlan.isNotEmpty)) {
+        widget.onLoginSuccess('user');
+      } else {
+        navigator.push(
+          MaterialPageRoute(
+            builder: (subContext) => PlanSelectionScreen(
+              userData: fallbackData,
+              onProceed: () async {
+                final p = await SharedPreferences.getInstance();
+                await p.setBool('gir_plan_chosen', true);
+                navigator.pop();
+                widget.onLoginSuccess('user');
+              },
             ),
-          );
-        }
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -321,6 +320,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               return;
                             }
 
+                            final navigator = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+
                             setDialogState(() {
                               isSubmitting = true;
                               resetError = null;
@@ -333,10 +335,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
 
                             if (mounted) {
-                              Navigator.of(context).pop();
+                              navigator.pop();
                               _emailController.text = email;
                               _passwordController.text = newPass;
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(
                                     res['message'] ?? 'Email confirmed with OTP! Password reset successfully.',
