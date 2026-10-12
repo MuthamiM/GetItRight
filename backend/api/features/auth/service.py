@@ -8,10 +8,10 @@ from backend.api.features.auth.schemas import LoginRequest, RegisterRequest, Aut
 from backend.api.core.security import verify_password, get_password_hash, create_access_token
 
 PLAN_META = {
-    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/console.html"},
-    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/console.html"},
-    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/console.html"},
-    "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/console.html"},
+    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/admin.html"},
+    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/admin.html"},
+    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/admin.html"},
+    "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/admin.html"},
 }
 
 def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
@@ -28,8 +28,8 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
             detail="Invalid password provided."
         )
 
-    # Separate Console: Admin gets /console/admin.html, Customers get /console/console.html
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/console.html"
+    # Unified Sovereign Console: Always redirect to /console/admin.html
+    redirect_url = "/console/admin.html"
     if user.ConsoleUrl != redirect_url:
         user.ConsoleUrl = redirect_url
         db.commit()
@@ -229,7 +229,7 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
         user.Organization = org.strip()
     db.commit()
     db.refresh(user)
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/console.html"
+    redirect_url = "/console/admin.html"
     return UserOut(
         id=user.Id,
         fullName=user.FullName,
@@ -259,7 +259,7 @@ def verify_user_token(db: Session, token_str: str) -> dict:
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user:
         return {"valid": False, "user": None}
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/console.html"
+    redirect_url = "/console/admin.html"
     user_out = UserOut(
         id=user.Id,
         fullName=user.FullName,

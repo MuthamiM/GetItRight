@@ -223,7 +223,7 @@
         if (res.ok && data.token) {
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
-          window.location.href = data.redirectUrl || '../console/console.html';
+          window.location.href = data.redirectUrl || '../console/admin.html';
         } else {
           // Fallback login session if endpoint returns error
           const userSession = {
@@ -233,7 +233,7 @@
             plan: "pro"
           };
           localStorage.setItem('gir_user', JSON.stringify(userSession));
-          window.location.href = '../console/console.html';
+          window.location.href = '../console/admin.html';
         }
       } catch (err) {
         console.warn("API login fallback:", err);
@@ -244,7 +244,7 @@
           plan: "pro"
         };
         localStorage.setItem('gir_user', JSON.stringify(userSession));
-        window.location.href = '../console/console.html';
+        window.location.href = '../console/admin.html';
       }
     }
   </script>

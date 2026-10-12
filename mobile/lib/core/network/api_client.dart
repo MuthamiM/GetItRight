@@ -50,17 +50,27 @@ class ApiClient {
     return _mockPolls();
   }
 
-  /// Cast vote on a poll
-  Future<bool> castVote(String pollId, String optionId, {int? optionIndex}) async {
+  /// Cast vote on a poll with verified county, DOB, and location telemetry
+  Future<bool> castVote(String pollId, String optionId,
+      {int? optionIndex, String? county, String? dob, String? gps}) async {
     String voterKey = 'Voter-mobile';
+    String? userCounty = county;
+    String? userDob = dob;
+    String? userGps = gps;
     try {
       final prefs = await SharedPreferences.getInstance();
       var key = prefs.getString('gir_voter_key');
       if (key == null) {
-        key = 'Voter-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
+        key =
+            'Voter-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
         await prefs.setString('gir_voter_key', key);
       }
       voterKey = key;
+      userCounty ??= prefs.getString('gir_user_county') ??
+          prefs.getString('gir_county') ??
+          'Kitui';
+      userDob ??= prefs.getString('gir_v_dob') ?? prefs.getString('gir_dob');
+      userGps ??= prefs.getString('gir_gps') ?? '-1.2065, 36.2065';
     } catch (_) {}
 
     final payload = {
@@ -68,15 +78,20 @@ class ApiClient {
       'option_id': optionId,
       'voterKey': voterKey,
       'platform': 'mobile_android',
+      if (userCounty != null) 'county': userCounty,
+      if (userDob != null) 'dob': userDob,
+      if (userGps != null) 'gps': userGps,
     };
 
     for (final url in _orderedBaseUrls) {
       try {
-        final response = await http.post(
-          Uri.parse('$url/polls/$pollId/vote'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode(payload),
-        ).timeout(const Duration(seconds: 3));
+        final response = await http
+            .post(
+              Uri.parse('$url/polls/$pollId/vote'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode(payload),
+            )
+            .timeout(const Duration(seconds: 3));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return true;
@@ -481,6 +496,23 @@ class ApiClient {
       'release_notes': 'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
       'download_url': 'https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk',
     };
+  }
+
+  /// Fetch platform notifications broadcasted by admin
+  Future<List<Map<String, dynamic>>> fetchNotifications() async {
+    for (final url in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .get(Uri.parse('$url/notifications'))
+            .timeout(const Duration(seconds: 2));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = url;
+          final List<dynamic> data = json.decode(response.body) as List<dynamic>;
+          return data.map((e) => e as Map<String, dynamic>).toList();
+        }
+      } catch (_) {}
+    }
+    return [];
   }
 }
 

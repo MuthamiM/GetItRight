@@ -39,6 +39,13 @@ def sync_db_schema():
     """Ensure all model tables and missing columns exist in SQLite database."""
     try:
         from sqlalchemy import inspect, text
+        try:
+            import backend.api.features.polls.models
+            import backend.api.features.users.models
+            import backend.api.features.surveys.models
+            import backend.api.features.analytics.models
+        except Exception:
+            pass
         Base.metadata.create_all(bind=engine)
         inspector = inspect(engine)
         with engine.connect() as conn:

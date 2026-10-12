@@ -99,3 +99,15 @@ class StatModel(Base):
     IngestionMsgPerSec = Column(Integer, default=1420)
     P99LatencyMs = Column(Float, default=2.4)
     ChainIntegrityPercent = Column(Float, default=100.0)
+
+class PlatformNotificationModel(Base):
+    __tablename__ = "PlatformNotifications"
+
+    Id = Column(Integer, primary_key=True, autoincrement=True)
+    Title = Column(String, nullable=True)
+    Message = Column(String, nullable=False)
+    Type = Column(String, default="info")
+    Audience = Column(String, default="all")
+    CreatedBy = Column(String, default="Admin")
+    CreatedAt = Column(String, nullable=False)
+    IsActive = Column(Integer, default=1)

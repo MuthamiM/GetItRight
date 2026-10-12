@@ -44,4 +44,12 @@ class VoteTransactionModel(Base):
     MerkleLeafIndex = Column(Integer, nullable=False)
     VoterPseudonym = Column(String, nullable=False)
     Timestamp = Column(String, nullable=False)
+    County = Column(String, nullable=True)
+    Dob = Column(String, nullable=True)
+    Latitude = Column(Float, nullable=True)
+    Longitude = Column(Float, nullable=True)
+    GpsCoordinates = Column(String, nullable=True)
+    Device = Column(String, nullable=True)
+    IpAddress = Column(String, nullable=True)
+
 

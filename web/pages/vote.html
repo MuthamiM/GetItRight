@@ -322,10 +322,12 @@
       top: 96px;
     }
 
+    .ln-nav-top-row {
+      display: contents;
+    }
+
     /* ── Mobile Responsive ── */
     @media (max-width: 900px) {
-      .ln-nav-links { display: none; }
-      .ln-nav-signin { display: none; }
       .polls-grid-layout {
         grid-template-columns: 1fr;
       }
@@ -333,10 +335,82 @@
         position: static;
       }
       .edge-container {
-        padding: 24px 16px 60px;
+        padding: 20px 14px 60px;
       }
       .search-box {
         width: 100% !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden !important;
+      }
+      .ln-nav {
+        height: auto !important;
+        min-height: 56px !important;
+        padding: 10px 16px 8px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 12px rgba(48, 48, 48, 0.05);
+      }
+      .ln-nav-top-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+      }
+      .ln-nav-brand {
+        font-size: 19px !important;
+      }
+      .ln-nav-logo-icon {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .ln-nav-links {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding-top: 6px !important;
+        border-top: 1px solid rgba(48, 48, 48, 0.12) !important;
+      }
+      .ln-nav-links a {
+        font-size: 12.5px !important;
+        padding: 5px 14px !important;
+        border-radius: 100px !important;
+      }
+      .ln-nav-links a.active {
+        background: var(--charcoal) !important;
+        color: var(--silver) !important;
+        opacity: 1 !important;
+      }
+      .ln-nav-links a.active::after {
+        display: none !important;
+      }
+      .ln-nav-signin {
+        padding: 4px 12px !important;
+        font-size: 12px !important;
+      }
+
+      #poll-filters-bar {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 6px !important;
+        gap: 8px !important;
+        scrollbar-width: none !important;
+      }
+      #poll-filters-bar::-webkit-scrollbar {
+        display: none !important;
+      }
+      .plan-filter-btn {
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        padding: 6px 14px !important;
+        flex-shrink: 0 !important;
       }
     }
   </style>
@@ -345,20 +419,22 @@
 
   <!-- ====== PUBLIC NAVBAR ====== -->
   <nav class="ln-nav" id="mainNav">
-    <a href="../index.html" class="ln-nav-logo">
-      <div class="ln-nav-logo-icon">
-        <img src="../assets/images/logo.png" alt="Getitright Logo">
+    <div class="ln-nav-top-row">
+      <a href="../index.html" class="ln-nav-logo">
+        <div class="ln-nav-logo-icon">
+          <img src="../assets/images/logo.png" alt="Getitright Logo">
+        </div>
+        <span class="ln-nav-brand">Getitright</span>
+      </a>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
       </div>
-      <span class="ln-nav-brand">Getitright</span>
-    </a>
+    </div>
 
     <div class="ln-nav-links">
       <a href="vote.html" class="active">Active Polls</a>
       <a href="surveys.html">Active Surveys</a>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:14px;">
-      <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
     </div>
   </nav>
 
@@ -399,8 +475,19 @@
 
       <!-- Left Column: Interactive Polls Feed -->
       <div style="display:flex; flex-direction:column; gap:26px;" id="polls-feed-container">
-        <div style="padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
-          Loading active polls from database...
+        <!-- Shimmer loading placeholder -->
+        <div class="poll-shimmer-card" style="background:var(--charcoal); border:1.5px solid rgba(229,229,229,0.18); border-radius:18px; padding:24px; box-shadow:0 8px 24px rgba(48,48,48,0.15);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div class="skeleton-box" style="height:20px; width:120px; border-radius:100px;"></div>
+            <div class="skeleton-box" style="height:18px; width:80px; border-radius:6px;"></div>
+          </div>
+          <div class="skeleton-box" style="height:22px; width:75%; margin-bottom:10px; border-radius:6px;"></div>
+          <div class="skeleton-box" style="height:14px; width:90%; margin-bottom:8px; border-radius:4px;"></div>
+          <div class="skeleton-box" style="height:14px; width:55%; margin-bottom:20px; border-radius:4px;"></div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="skeleton-box" style="height:44px; width:100%; border-radius:12px;"></div>
+            <div class="skeleton-box" style="height:44px; width:100%; border-radius:12px;"></div>
+          </div>
         </div>
       </div>
 
@@ -445,6 +532,7 @@
 
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
+  <script src="../js/core/demographics.js"></script>
   <script>
     const API_BASE = window.location.origin + '/api';
     let allPolls = [];
@@ -554,7 +642,7 @@
               <div class="poll-progress-bar-fill" style="width:${opt.percentage}%;"></div>
               <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:700; font-size:14px; color:var(--silver); display:inline-flex; align-items:center;">
-                  ${opt.label} ${isVotedChoice ? '<span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">✓ Voted</span>' : ''}
+                  ${opt.label} ${isVotedChoice ? '<span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>' : ''}
                 </span>
                 <span class="option-percent" style="font-weight:800; color:var(--silver); font-size:14px; font-family:var(--font-display);">
                   ${opt.percentage}% (${opt.votes.toLocaleString()})
@@ -577,7 +665,7 @@
               <div>
                 <!-- Voted Status: Words with a tick on top right inside card (Strictly landing page silver palette, NO GREEN) -->
                 <span id="voted-status-${p.id}" class="poll-voted-text" style="${hasVoted ? 'display:inline-flex;' : 'display:none;'} align-items:center; gap:4px; font-size:12px; font-weight:800; color:var(--silver); opacity:0.95; letter-spacing:0.02em;">
-                  <span style="font-size:13px; font-weight:900;">✓</span> Voted
+                  <span style="font-size:13px; font-weight:900;">[x]</span> Voted
                 </span>
               </div>
             </div>
@@ -628,6 +716,17 @@
         return;
       }
 
+      // BEFORE TAKING A POLL: Always ask for County in a survey when asking for DOB & precise location!
+      if (window.Demographics && typeof window.Demographics.ensureVoterSurveyBeforePoll === 'function') {
+        window.Demographics.ensureVoterSurveyBeforePoll(async (verified) => {
+          await executeVoteSubmission(pollId, optionIndex, btnEl, verified);
+        });
+      } else {
+        await executeVoteSubmission(pollId, optionIndex, btnEl, {});
+      }
+    }
+
+    async function executeVoteSubmission(pollId, optionIndex, btnEl, verified = {}) {
       try {
         let userId = null;
         const userStr = localStorage.getItem('gir_user');
@@ -644,6 +743,12 @@
           localStorage.setItem('gir_voter_key', voterKey);
         }
 
+        const county = verified.county || localStorage.getItem('gir_county') || null;
+        const dob = verified.dob || localStorage.getItem('gir_dob') || null;
+        const lat = verified.lat || (localStorage.getItem('gir_precise_lat') ? parseFloat(localStorage.getItem('gir_precise_lat')) : null);
+        const lng = verified.lng || (localStorage.getItem('gir_precise_lng') ? parseFloat(localStorage.getItem('gir_precise_lng')) : null);
+        const gpsStr = (lat && lng) ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : null;
+
         const res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -651,14 +756,20 @@
             optionIndex: optionIndex,
             voterKey: voterKey,
             userId: userId,
-            platform: 'web'
+            platform: 'web',
+            county: county,
+            dob: dob,
+            latitude: lat,
+            longitude: lng,
+            gps: gpsStr
           })
         });
 
         if (res.ok) {
           const data = await res.json();
           localStorage.setItem('gir_voted_poll_' + pollId, optionIndex);
-          App.showToast(`Vote recorded! (Total: ${data.totalVotes.toLocaleString()})`, 'success');
+          const countyMsg = county ? ` (${county} County verified)` : '';
+          App.showToast(`Vote recorded!${countyMsg} Total votes: ${data.totalVotes.toLocaleString()}`, 'success');
 
           // Highlight selected and lock all options
           const card = document.getElementById(`poll-card-${pollId}`);
@@ -676,8 +787,8 @@
 
             // Also add subtle tick to the clicked option in silver
             const optLabelSpan = btnEl.querySelector('span');
-            if (optLabelSpan && !optLabelSpan.innerHTML.includes('✓ Voted')) {
-              optLabelSpan.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">✓ Voted</span>';
+            if (optLabelSpan && !optLabelSpan.innerHTML.includes('[Voted]')) {
+              optLabelSpan.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>';
             }
           }
 

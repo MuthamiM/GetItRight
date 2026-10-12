@@ -830,7 +830,7 @@
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
           alert(`Account created successfully with ${planNames[selectedPlan]}! Saved to DB with IP and location details.`);
-          window.location.href = '../console/console.html';
+          window.location.href = '../console/admin.html';
         } else {
           // Fallback session
           const userSession = {
@@ -844,7 +844,7 @@
           };
           localStorage.setItem('gir_user', JSON.stringify(userSession));
           alert(`Account registered successfully with ${planNames[selectedPlan]}! Redirecting...`);
-          window.location.href = '../console/console.html';
+          window.location.href = '../console/admin.html';
         }
       } catch (err) {
         console.warn("API registration fallback:", err);
@@ -859,7 +859,7 @@
         };
         localStorage.setItem('gir_user', JSON.stringify(userSession));
         alert(`Account registered successfully with ${planNames[selectedPlan]}! Redirecting...`);
-        window.location.href = '../console/console.html';
+        window.location.href = '../console/admin.html';
       }
     }
   </script>

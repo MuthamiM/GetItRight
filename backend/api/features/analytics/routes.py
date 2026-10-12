@@ -5,7 +5,8 @@ from backend.api.core.database import get_db
 from backend.api.features.analytics.schemas import (
     TrackingTelemetryOut, StatsOut, StationOut, AnomalyOut, DisputeOut,
     CheckpointOut, ObserverOut, LedgerBlockOut, AuditLogOut,
-    AdminDashboardStatsOut, CustomerDashboardStatsOut, SurveyTemplateOut
+    AdminDashboardStatsOut, CustomerDashboardStatsOut, SurveyTemplateOut,
+    VisitorDemographicsIn, PlatformNotificationIn, PlatformNotificationOut
 )
 from backend.api.features.analytics.service import (
     get_tracking_telemetry, get_stats, list_stations, get_station_by_code,
@@ -18,7 +19,8 @@ router = APIRouter(tags=["Analytics & Cryptographic Telemetry"])
 @router.get("/admin/dashboard-stats", response_model=AdminDashboardStatsOut)
 def admin_dashboard_stats(db: Session = Depends(get_db)):
     """Aggregated admin dashboard stats — all KPIs, charts, and recent voters from DB."""
-    return get_admin_dashboard_stats(db)
+    from backend.api.controllers.analytics_controller import AnalyticsController
+    return AnalyticsController.get_admin_dashboard_stats(db)
 
 @router.get("/customer/dashboard-stats/{user_id}", response_model=CustomerDashboardStatsOut)
 def customer_dashboard_stats(user_id: str, db: Session = Depends(get_db)):
@@ -160,3 +162,88 @@ def ledger_blocks(db: Session = Depends(get_db)):
 def audit_logs(db: Session = Depends(get_db)):
     """Fetch cryptographic audit trail signatures."""
     return list_audit(db)
+
+@router.post("/visitor-demographics")
+def record_visitor_demographics(payload: VisitorDemographicsIn, db: Session = Depends(get_db)):
+    """Record first-time visitor or pre-poll demographics, county, DOB, and precise GPS location."""
+    import logging
+    logger = logging.getLogger("getitright.demographics")
+    gps_display = f"{payload.latitude}, {payload.longitude}" if payload.latitude and payload.longitude else "Location not granted"
+    logger.info(f"[VISITOR DEMOGRAPHICS] County: {payload.county}, DOB: {payload.dob}, GPS: {gps_display}, Platform: {payload.platform}")
+    return {
+        "success": True,
+        "message": "Visitor demographics and high-precision location recorded.",
+        "county": payload.county,
+        "dob": payload.dob,
+        "gps": gps_display
+    }
+
+@router.get("/notifications", response_model=List[PlatformNotificationOut])
+def get_platform_notifications(db: Session = Depends(get_db)):
+    """Fetch active platform notifications created by admin."""
+    from backend.api.features.analytics.models import PlatformNotificationModel
+    records = db.query(PlatformNotificationModel).filter(PlatformNotificationModel.IsActive == 1).order_by(PlatformNotificationModel.Id.desc()).limit(50).all()
+    return [
+        PlatformNotificationOut(
+            id=r.Id,
+            title=r.Title,
+            message=r.Message,
+            type=r.Type or "info",
+            audience=r.Audience or "all",
+            createdBy=r.CreatedBy or "Admin",
+            createdAt=r.CreatedAt,
+            isActive=r.IsActive or 1
+        )
+        for r in records
+    ]
+
+@router.post("/notifications", response_model=PlatformNotificationOut)
+async def create_platform_notification(payload: PlatformNotificationIn, db: Session = Depends(get_db)):
+    """Admin creates and broadcasts a platform notification to all connected clients."""
+    from datetime import datetime, timezone
+    from backend.api.features.analytics.models import PlatformNotificationModel
+    from backend.api.servers.websocket_server import ws_server
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    record = PlatformNotificationModel(
+        Title=payload.title or "Platform Notice",
+        Message=payload.message,
+        Type=payload.type or "info",
+        Audience=payload.audience or "all",
+        CreatedBy=payload.createdBy or "Admin",
+        CreatedAt=now_iso,
+        IsActive=1
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    out = PlatformNotificationOut(
+        id=record.Id,
+        title=record.Title,
+        message=record.Message,
+        type=record.Type,
+        audience=record.Audience,
+        createdBy=record.CreatedBy,
+        createdAt=record.CreatedAt,
+        isActive=record.IsActive
+    )
+
+    try:
+        await ws_server.broadcast_notification(out.dict())
+    except Exception:
+        pass
+
+    return out
+
+@router.delete("/notifications/{notification_id}")
+def delete_platform_notification(notification_id: int, db: Session = Depends(get_db)):
+    """Delete / dismiss a platform notification."""
+    from backend.api.features.analytics.models import PlatformNotificationModel
+    record = db.query(PlatformNotificationModel).filter(PlatformNotificationModel.Id == notification_id).first()
+    if not record:
+        return {"success": False, "message": "Notification not found"}
+    record.IsActive = 0
+    db.commit()
+    return {"success": True, "message": f"Notification {notification_id} dismissed."}
+
