@@ -391,18 +391,13 @@ def get_customer_dashboard_stats(db: Session, user_id: str):
 
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user:
-        # Fallback to defaults
-        user_plan = "free"
-        user_plan_name = "Civic Starter"
-        user_org = "Independent"
-        voter_quota = 1000
-        polls_quota = 5
-    else:
-        user_plan = user.Plan
-        user_plan_name = user.PlanName
-        user_org = user.Organization or "Independent"
-        voter_quota = user.VoterQuota
-        polls_quota = user.PollsQuota
+        from fastapi import HTTPException, status
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user_plan_name = user.PlanName
+    user_org = user.Organization
+    voter_quota = user.VoterQuota
+    polls_quota = user.PollsQuota
 
     my_polls = db.query(PollModel).filter(PollModel.OwnerId == user_id).all()
     my_poll_count = len(my_polls)
@@ -438,9 +433,8 @@ def get_customer_dashboard_stats(db: Session, user_id: str):
         pollsQuota=polls_quota,
         monthlyVotes=monthly_votes,
         turnoutRate=turnout,
-        avgResponseTime=1.8,
+        avgResponseTime=None,
         planName=user_plan_name,
         organization=user_org,
         quotaUsed=my_poll_count
     )
-

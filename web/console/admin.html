@@ -1147,7 +1147,7 @@
     window.fetch = (input, options = {}) => {
       const token = localStorage.getItem('gir_token');
       const headers = new Headers(options.headers || {});
-      if (token) headers.set('Authorization', `Bearer ${token}`);
+      if (token) headers.set('Authorization', 'Bearer ' + token);
       return nativeFetch(input, { ...options, headers });
     };
 
@@ -2428,9 +2428,7 @@
       const format = document.getElementById('admin-export-format').value;
       const selected = surveys.filter(s => !clientId || s.ownerId === clientId);
       const responsesBySurvey = await Promise.all(selected.map(async survey => {
-        const response = await fetch(`${API}/surveys/${encodeURIComponent(survey.id)}/responses`, {
-          headers: { Authorization: `****** }
-        });
+        const response = await fetch(`${API}/surveys/${encodeURIComponent(survey.id)}/responses`);
         return { survey, responses: response.ok ? await response.json() : [] };
       }));
       const body = responsesBySurvey.map(({ survey, responses }) =>
