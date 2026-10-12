@@ -4,11 +4,22 @@ from datetime import datetime, timezone
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from backend.api.features.auth.models import UserModel
 from backend.api.features.polls.models import PollModel, PollOptionModel, VoteTransactionModel
 from backend.api.features.polls.schemas import (
     PollOut, PollOptionOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut
 )
 from backend.api.core.security import generate_merkle_receipt
+
+
+def _plain_text(value: str, field: str, maximum: int) -> str:
+    clean = (value or "").strip()
+    if not clean or len(clean) > maximum or any(char in clean for char in "<>"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{field} must be plain text and no longer than {maximum} characters",
+        )
+    return clean
 
 def map_poll_to_out(p: PollModel) -> PollOut:
     options_sorted = sorted(p.options, key=lambda opt: opt.Index)
@@ -60,12 +71,27 @@ def get_poll_by_id(db: Session, poll_id: str) -> PollOut:
     return map_poll_to_out(poll)
 
 def create_poll(db: Session, data: PollCreate) -> PollOut:
-    options_list = [opt.strip() for opt in (data.options or []) if opt and opt.strip()]
-    if not options_list:
-        # Author left choices blank -> automatically enable open text input field option
-        options_list = ["Open Text Response Input Field"]
+    title = _plain_text(data.title, "Poll title", 200)
+    if len(title) < 3:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Poll title must be at least 3 characters")
+    description = _plain_text(data.description, "Poll description", 2_000) if data.description else ""
+    category = _plain_text(data.category, "Poll category", 100) if data.category else "General"
+    options_list = [_plain_text(option, "Poll option", 200) for option in (data.options or []) if option and option.strip()]
+    if len(options_list) < 2 or len(options_list) > 20:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A poll must have between 2 and 20 options")
+    if len(set(label.casefold() for label in options_list)) != len(options_list):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Poll options must be unique")
 
     plan_key = (data.plan or "free").lower()
+    owner_id = (data.ownerId or "").strip()
+    owner = db.query(UserModel).filter(UserModel.Id == owner_id).first()
+    if not owner or owner.Status != "Active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Active poll owner required")
+    if plan_key != owner.Plan:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Poll plan must match the owner's plan")
+    created_count = db.query(PollModel).filter(PollModel.OwnerId == owner_id).count()
+    if created_count >= (owner.PollsQuota or 0):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Poll quota has been reached")
     prefix = "PL-" + plan_key.upper()[:4]
     new_id = f"{prefix}-{uuid.uuid4().hex[:4].upper()}"
 
@@ -83,11 +109,11 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
 
     new_poll = PollModel(
         Id=new_id,
-        Title=data.title.strip(),
-        Description=data.description.strip() if data.description else "",
-        Category=data.category.strip() if data.category else "General",
+        Title=title,
+        Description=description,
+        Category=category,
         Plan=plan_key,
-        OwnerId=data.ownerId or "USR-001",
+        OwnerId=owner_id,
         CreatedAt=now.strftime("%Y-%m-%d %H:%M"),
         Status="live",
         TotalVotes=0,
@@ -110,12 +136,23 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
 
     db.commit()
     db.refresh(new_poll)
+    owner.TotalPollsCreated = created_count + 1
+    db.commit()
     return map_poll_to_out(new_poll)
 
 def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastResponse:
     poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()
     if not poll:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Poll {poll_id} not found")
+    if (poll.Status or "").lower() not in {"live", "open"}:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This poll is not accepting votes")
+    if poll.EndDate:
+        try:
+            end_at = datetime.fromisoformat(poll.EndDate.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+            if end_at <= datetime.now(timezone.utc):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This poll has ended")
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This poll has an invalid closing time")
 
     target_option = None
     opt_key = None
@@ -133,9 +170,6 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     if not target_option and vote_req.optionIndex is not None:
         idx = vote_req.optionIndex
         target_option = next((opt for opt in poll.options if opt.Index == idx or str(opt.Id) == str(idx)), None)
-
-    if not target_option and poll.options:
-        target_option = poll.options[0]
 
     if not target_option:
         raise HTTPException(
@@ -188,16 +222,9 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     new_root = "0x" + hashlib.sha256(f"{poll.MerkleRoot}:{receipt_hash}".encode("utf-8")).hexdigest()[:16]
     poll.MerkleRoot = new_root
 
-    # Determine GPS and device strings
-    gps_str = None
-    if vote_req.latitude is not None and vote_req.longitude is not None:
-        gps_str = f"{vote_req.latitude:.5f}, {vote_req.longitude:.5f}"
-    elif vote_req.gps:
-        gps_str = vote_req.gps.strip()
-
     device_str = "Mobile App" if "mobile" in (vote_req.platform or "").lower() else "Web Browser"
 
-    # Record Vote Transaction with real demographics & precise GPS location
+    # Do not retain date of birth, county, or precise location with a ballot.
     tx = VoteTransactionModel(
         PollId=poll.Id,
         UserId=user_id,
@@ -207,11 +234,11 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         MerkleLeafIndex=leaf_index,
         VoterPseudonym=voter_key,
         Timestamp=timestamp,
-        County=vote_req.county.strip() if vote_req.county else None,
-        Dob=vote_req.dob.strip() if vote_req.dob else None,
-        Latitude=vote_req.latitude,
-        Longitude=vote_req.longitude,
-        GpsCoordinates=gps_str,
+        County=None,
+        Dob=None,
+        Latitude=None,
+        Longitude=None,
+        GpsCoordinates=None,
         Device=device_str
     )
     db.add(tx)
@@ -228,17 +255,7 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     )
 
 def reset_poll(db: Session, poll_id: str) -> PollOut:
-    poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()
-    if not poll:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Poll {poll_id} not found")
-    
-    for opt in poll.options:
-        opt.Votes = 0
-        opt.Percentage = 0.0
-    poll.TotalVotes = 0
-    db.commit()
-    db.refresh(poll)
-    return map_poll_to_out(poll)
+    raise HTTPException(status_code=status.HTTP_410_GONE, detail="Poll resets are disabled. Publish a correction poll instead.")
 
 def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionOut]:
     txs = db.query(VoteTransactionModel).filter(

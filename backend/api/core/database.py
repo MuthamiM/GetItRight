@@ -1,5 +1,4 @@
 import os
-import shutil
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from backend.api.core.config import settings
@@ -21,19 +20,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-def backup_database():
-    """Creates a real-time copy backup of the database."""
-    try:
-        db_path = settings.DATABASE_PATH
-        if os.path.exists(db_path):
-            backup_path = os.path.join(os.path.dirname(db_path), "getitright_backup.db")
-            shutil.copy2(db_path, backup_path)
-            print(f"[DB BACKUP SUCCESS] Database mirrored to: {backup_path}")
-            return backup_path
-    except Exception as e:
-        print(f"[DB BACKUP WARNING] Could not sync backup db: {e}")
-        return None
 
 def sync_db_schema():
     """Ensure all model tables and missing columns exist in SQLite database."""
@@ -64,7 +50,5 @@ def sync_db_schema():
     except Exception as e:
         print(f"[DB SCHEMA SYNC WARNING] {e}")
 
-# Initial backup sync on startup
-backup_database()
 sync_db_schema()
 

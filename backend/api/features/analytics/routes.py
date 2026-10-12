@@ -1,13 +1,21 @@
 from typing import List
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.analytics.schemas import (
     TrackingTelemetryOut, StatsOut, StationOut, AnomalyOut, DisputeOut,
     CheckpointOut, ObserverOut, LedgerBlockOut, AuditLogOut,
     AdminDashboardStatsOut, CustomerDashboardStatsOut, SurveyTemplateOut,
-    VisitorDemographicsIn, PlatformNotificationIn, PlatformNotificationOut
+    PlatformNotificationIn, PlatformNotificationOut
 )
+from backend.api.middleware.auth_middleware import get_current_user_token, require_admin
+
+
+def _plain_text(value: str, field: str, maximum: int) -> str:
+    clean = (value or "").strip()
+    if not clean or len(clean) > maximum or any(char in clean for char in "<>"):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"{field} must be plain text")
+    return clean
 from backend.api.features.analytics.service import (
     get_tracking_telemetry, get_stats, list_stations, get_station_by_code,
     list_anomalies, list_disputes, list_checkpoints, list_observers,
@@ -17,14 +25,17 @@ from backend.api.features.analytics.service import (
 router = APIRouter(tags=["Analytics & Cryptographic Telemetry"])
 
 @router.get("/admin/dashboard-stats", response_model=AdminDashboardStatsOut)
-def admin_dashboard_stats(db: Session = Depends(get_db)):
+def admin_dashboard_stats(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Aggregated admin dashboard stats — all KPIs, charts, and recent voters from DB."""
     from backend.api.controllers.analytics_controller import AnalyticsController
     return AnalyticsController.get_admin_dashboard_stats(db)
 
 @router.get("/customer/dashboard-stats/{user_id}", response_model=CustomerDashboardStatsOut)
-def customer_dashboard_stats(user_id: str, db: Session = Depends(get_db)):
+def customer_dashboard_stats(user_id: str, current_user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
     """User-scoped dashboard stats — polls, votes, quotas, charts from DB."""
+    from fastapi import HTTPException, status
+    if current_user["role"] != "Admin" and current_user["sub"] != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You may only view your own dashboard")
     return get_customer_dashboard_stats(db, user_id)
 
 @router.get("/surveys/templates", response_model=List[SurveyTemplateOut])
@@ -102,7 +113,7 @@ def survey_templates():
     return templates
 
 @router.get("/admin/tracking-telemetry", response_model=TrackingTelemetryOut)
-def admin_tracking_telemetry(db: Session = Depends(get_db)):
+def admin_tracking_telemetry(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch live aggregate platform telemetry and real vote distribution across plans."""
     return get_tracking_telemetry(db)
 
@@ -112,27 +123,27 @@ def platform_stats(db: Session = Depends(get_db)):
     return get_stats(db)
 
 @router.get("/stations", response_model=List[StationOut])
-def stations_list(db: Session = Depends(get_db)):
+def stations_list(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch all 250 physical polling stations with turnout percentages and cryptographic observer hashes."""
     return list_stations(db)
 
 @router.get("/stations/{code}", response_model=StationOut)
-def station_detail(code: str, db: Session = Depends(get_db)):
+def station_detail(code: str, _: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch specific station telemetry and Form 34A hash."""
     return get_station_by_code(db, code)
 
 @router.get("/anomalies", response_model=List[AnomalyOut])
-def anomalies_list(db: Session = Depends(get_db)):
+def anomalies_list(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch active anomaly detection flags."""
     return list_anomalies(db)
 
 @router.get("/disputes", response_model=List[DisputeOut])
-def disputes_list(db: Session = Depends(get_db)):
+def disputes_list(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch dual-observer dispute reconciliations."""
     return list_disputes(db)
 
 @router.post("/disputes/{id}/resolve")
-def resolve_dispute_endpoint(id: str, db: Session = Depends(get_db)):
+def resolve_dispute_endpoint(id: str, _: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Resolve dual observer variance and mark polling station as verified."""
     from backend.api.features.analytics.service import resolve_dispute
     return resolve_dispute(db, id)
@@ -143,40 +154,25 @@ def checkpoints_list(db: Session = Depends(get_db)):
     return list_checkpoints(db)
 
 @router.post("/checkpoints/publish", response_model=CheckpointOut)
-def publish_checkpoint_endpoint(db: Session = Depends(get_db)):
+def publish_checkpoint_endpoint(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Anchor current ledger state to Bitcoin blockchain."""
     from backend.api.features.analytics.service import publish_checkpoint
     return publish_checkpoint(db)
 
 @router.get("/observers", response_model=List[ObserverOut])
-def observers_list(db: Session = Depends(get_db)):
+def observers_list(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch hardware observers and cryptographic public keys."""
     return list_observers(db)
 
 @router.get("/ledger", response_model=List[LedgerBlockOut])
-def ledger_blocks(db: Session = Depends(get_db)):
+def ledger_blocks(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch verifiable cryptographic ledger blocks."""
     return list_ledger(db)
 
 @router.get("/audit", response_model=List[AuditLogOut])
-def audit_logs(db: Session = Depends(get_db)):
+def audit_logs(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Fetch cryptographic audit trail signatures."""
     return list_audit(db)
-
-@router.post("/visitor-demographics")
-def record_visitor_demographics(payload: VisitorDemographicsIn, db: Session = Depends(get_db)):
-    """Record first-time visitor or pre-poll demographics, county, DOB, and precise GPS location."""
-    import logging
-    logger = logging.getLogger("getitright.demographics")
-    gps_display = f"{payload.latitude}, {payload.longitude}" if payload.latitude and payload.longitude else "Location not granted"
-    logger.info(f"[VISITOR DEMOGRAPHICS] County: {payload.county}, DOB: {payload.dob}, GPS: {gps_display}, Platform: {payload.platform}")
-    return {
-        "success": True,
-        "message": "Visitor demographics and high-precision location recorded.",
-        "county": payload.county,
-        "dob": payload.dob,
-        "gps": gps_display
-    }
 
 @router.get("/notifications", response_model=List[PlatformNotificationOut])
 def get_platform_notifications(db: Session = Depends(get_db)):
@@ -198,7 +194,11 @@ def get_platform_notifications(db: Session = Depends(get_db)):
     ]
 
 @router.post("/notifications", response_model=PlatformNotificationOut)
-async def create_platform_notification(payload: PlatformNotificationIn, db: Session = Depends(get_db)):
+async def create_platform_notification(
+    payload: PlatformNotificationIn,
+    current_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
     """Admin creates and broadcasts a platform notification to all connected clients."""
     from datetime import datetime, timezone
     from backend.api.features.analytics.models import PlatformNotificationModel
@@ -206,11 +206,11 @@ async def create_platform_notification(payload: PlatformNotificationIn, db: Sess
 
     now_iso = datetime.now(timezone.utc).isoformat()
     record = PlatformNotificationModel(
-        Title=payload.title or "Platform Notice",
-        Message=payload.message,
+        Title=_plain_text(payload.title or "Platform Notice", "Notification title", 120),
+        Message=_plain_text(payload.message, "Notification message", 500),
         Type=payload.type or "info",
         Audience=payload.audience or "all",
-        CreatedBy=payload.createdBy or "Admin",
+        CreatedBy=current_user["name"],
         CreatedAt=now_iso,
         IsActive=1
     )
@@ -237,7 +237,7 @@ async def create_platform_notification(payload: PlatformNotificationIn, db: Sess
     return out
 
 @router.delete("/notifications/{notification_id}")
-def delete_platform_notification(notification_id: int, db: Session = Depends(get_db)):
+def delete_platform_notification(notification_id: int, _: dict = Depends(require_admin), db: Session = Depends(get_db)):
     """Delete / dismiss a platform notification."""
     from backend.api.features.analytics.models import PlatformNotificationModel
     record = db.query(PlatformNotificationModel).filter(PlatformNotificationModel.Id == notification_id).first()

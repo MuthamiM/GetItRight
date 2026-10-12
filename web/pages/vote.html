@@ -728,48 +728,30 @@
 
     async function executeVoteSubmission(pollId, optionIndex, btnEl, verified = {}) {
       try {
-        let userId = null;
-        const userStr = localStorage.getItem('gir_user');
-        if (userStr) {
-          try {
-            const u = JSON.parse(userStr);
-            userId = u.id || u.email || null;
-          } catch (e) {}
-        }
-
         let voterKey = localStorage.getItem('gir_voter_key');
         if (!voterKey) {
-          voterKey = userId ? `User-${userId}` : ('Voter-' + Math.floor(Math.random()*90000 + 10000));
+          voterKey = `Voter-${crypto.randomUUID()}`;
           localStorage.setItem('gir_voter_key', voterKey);
         }
-
-        const county = verified.county || localStorage.getItem('gir_county') || null;
-        const dob = verified.dob || localStorage.getItem('gir_dob') || null;
-        const lat = verified.lat || (localStorage.getItem('gir_precise_lat') ? parseFloat(localStorage.getItem('gir_precise_lat')) : null);
-        const lng = verified.lng || (localStorage.getItem('gir_precise_lng') ? parseFloat(localStorage.getItem('gir_precise_lng')) : null);
-        const gpsStr = (lat && lng) ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : null;
+        const token = localStorage.getItem('gir_token');
 
         const res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({
             optionIndex: optionIndex,
             voterKey: voterKey,
-            userId: userId,
-            platform: 'web',
-            county: county,
-            dob: dob,
-            latitude: lat,
-            longitude: lng,
-            gps: gpsStr
+            platform: 'web'
           })
         });
 
         if (res.ok) {
           const data = await res.json();
           localStorage.setItem('gir_voted_poll_' + pollId, optionIndex);
-          const countyMsg = county ? ` (${county} County verified)` : '';
-          App.showToast(`Vote recorded!${countyMsg} Total votes: ${data.totalVotes.toLocaleString()}`, 'success');
+          App.showToast(`Vote recorded! Total votes: ${data.totalVotes.toLocaleString()}`, 'success');
 
           // Highlight selected and lock all options
           const card = document.getElementById(`poll-card-${pollId}`);

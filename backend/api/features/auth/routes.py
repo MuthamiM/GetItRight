@@ -90,5 +90,11 @@ def get_current_profile(token_data: dict = Depends(get_current_user_token), db: 
     )
 
 @router.post("/logout")
-def logout():
+def logout(
+    token_data: dict = Depends(get_current_user_token), db: Session = Depends(get_db)
+):
+    user = db.query(UserModel).filter(UserModel.Id == token_data["sub"]).first()
+    if user:
+        user.TokenVersion = (user.TokenVersion or 0) + 1
+        db.commit()
     return {"success": True, "message": "Logged out successfully"}

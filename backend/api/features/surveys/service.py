@@ -10,10 +10,21 @@ from sqlalchemy.orm import Session
 # pyrefly: ignore [missing-import]
 from fastapi import HTTPException, status
 from backend.api.features.surveys.models import SurveyModel, SurveyQuestionModel, SurveyResponseModel
+from backend.api.features.auth.models import UserModel
 from backend.api.features.surveys.schemas import (
     SurveyOut, QuestionOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
     SurveyAnalyticsOut, QuestionAnalytics, ReceiptVerificationOut
 )
+
+
+def _plain_text(value: str, field: str, maximum: int) -> str:
+    clean = (value or "").strip()
+    if not clean or len(clean) > maximum or any(char in clean for char in "<>"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{field} must be plain text and no longer than {maximum} characters",
+        )
+    return clean
 
 def map_survey_to_out(s: SurveyModel) -> SurveyOut:
     questions_sorted = sorted(s.questions, key=lambda q: q.Index)
@@ -75,8 +86,21 @@ def get_survey_by_id(db: Session, survey_id: str) -> SurveyOut:
 def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
     if not data.questions:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Survey must have at least one question")
+    title = _plain_text(data.title, "Survey title", 200)
+    if len(title) < 3:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Survey title must be at least 3 characters")
+    description = _plain_text(data.description, "Survey description", 2_000) if data.description else ""
+    track = _plain_text(data.track, "Survey track", 100) if data.track else "General"
+    if len(data.questions) > 50:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A survey may contain at most 50 questions")
 
     plan_key = (data.plan or "free").lower()
+    owner_id = (data.ownerId or "").strip()
+    owner = db.query(UserModel).filter(UserModel.Id == owner_id).first()
+    if not owner or owner.Status != "Active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Active survey owner required")
+    if plan_key != owner.Plan:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Survey plan must match the owner's plan")
     new_id = f"SRV-{plan_key.upper()[:4]}-{uuid.uuid4().hex[:4].upper()}"
     root = "0x" + hashlib.sha256(f"{new_id}:{data.title}".encode("utf-8")).hexdigest()[:16]
 
@@ -92,18 +116,18 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
 
     new_survey = SurveyModel(
         Id=new_id,
-        Title=data.title.strip(),
-        Description=data.description.strip() if data.description else "",
-        Track=data.track or "General",
+        Title=title,
+        Description=description,
+        Track=track,
         Plan=plan_key,
         Status="Active",
         TargetResponses=data.targetResponses or 500,
         TotalResponses=0,
         CreatedAt=now.strftime("%Y-%m-%d %H:%M"),
-        OwnerId=data.ownerId or "USR-001",
+        OwnerId=owner_id,
         MerkleCohortRoot=root,
-        TargetAudience=data.targetAudience or "General Public",
-        OrganizationName=data.organizationName or "Verified Civic Publisher",
+        TargetAudience=_plain_text(data.targetAudience, "Target audience", 100) if data.targetAudience else "General Public",
+        OrganizationName=_plain_text(data.organizationName, "Organization name", 200) if data.organizationName else "Verified Civic Publisher",
         EndDate=end_date_str
     )
     db.add(new_survey)
@@ -113,9 +137,9 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
         q = SurveyQuestionModel(
             SurveyId=new_id,
             Index=idx,
-            QuestionText=q_data.questionText.strip(),
+            QuestionText=_plain_text(q_data.questionText, "Question text", 500),
             QuestionType=q_data.questionType or "choice",
-            OptionsJson=json.dumps(q_data.options or []),
+            OptionsJson=json.dumps([_plain_text(option, "Question option", 200) for option in (q_data.options or [])]),
             ResponsesJson=json.dumps({})
         )
         db.add(q)
@@ -128,6 +152,21 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
     survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
     if not survey:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Survey {survey_id} not found")
+    if (survey.Status or "").lower() != "active":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This survey is not accepting responses")
+    if survey.EndDate:
+        try:
+            end_at = datetime.fromisoformat(survey.EndDate.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+            if end_at <= datetime.now(timezone.utc):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This survey has ended")
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This survey has an invalid closing time")
+    if not sub.answers or len(sub.answers) > len(survey.questions):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Survey answers are incomplete or invalid")
+    valid_question_ids = {q.Id for q in survey.questions}
+    submitted_question_ids = [answer.questionId for answer in sub.answers]
+    if len(submitted_question_ids) != len(set(submitted_question_ids)) or any(qid not in valid_question_ids for qid in submitted_question_ids):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Survey answers contain invalid questions")
 
     user_id = sub.userId.strip() if sub.userId and str(sub.userId).strip() else None
     voter = (sub.voterPseudonym or (f"User-{user_id}" if user_id else f"Respondent-{uuid.uuid4().hex[:6]}")).strip()

@@ -698,21 +698,6 @@
       election: 'Election Plan'
     };
 
-    let userGeo = { latitude: null, longitude: null };
-
-    // Request browser accurate location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          userGeo.latitude = pos.coords.latitude;
-          userGeo.longitude = pos.coords.longitude;
-          console.log("[GEOLOCATION CAPTURED]", userGeo);
-        },
-        (err) => console.warn("Geolocation permission skipped:", err),
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
-    }
-
     function handleAccountSubmit(e) {
       e.preventDefault();
       const fullName = document.getElementById('full-name').value.trim();
@@ -812,11 +797,7 @@
           phoneNumber: accountData.phoneNumber,
           password: accountData.password,
           organization: accountData.organization,
-          role: "Admin",
-          plan: selectedPlan,
-          latitude: userGeo.latitude,
-          longitude: userGeo.longitude,
-          deviceDetails: navigator.userAgent
+          plan: selectedPlan
         };
 
         const res = await fetch(`${API_BASE}/auth/register`, {
@@ -825,41 +806,19 @@
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (res.ok && data.token) {
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
-          alert(`Account created successfully with ${planNames[selectedPlan]}! Saved to DB with IP and location details.`);
-          window.location.href = '../console/admin.html';
+          alert('Account created successfully. Your account starts on the Free plan; upgrades require administrator approval.');
+          window.location.href = data.redirectUrl || '../pages/vote.html';
         } else {
-          // Fallback session
-          const userSession = {
-            email: accountData.email,
-            name: accountData.fullName,
-            phoneNumber: accountData.phoneNumber,
-            orgName: accountData.organization,
-            role: 'admin',
-            plan: selectedPlan,
-            signupTime: new Date().toISOString()
-          };
-          localStorage.setItem('gir_user', JSON.stringify(userSession));
-          alert(`Account registered successfully with ${planNames[selectedPlan]}! Redirecting...`);
-          window.location.href = '../console/admin.html';
+          throw new Error(data.detail || 'Account creation failed.');
         }
       } catch (err) {
-        console.warn("API registration fallback:", err);
-        const userSession = {
-          email: accountData.email,
-          name: accountData.fullName,
-          phoneNumber: accountData.phoneNumber,
-          orgName: accountData.organization,
-          role: 'admin',
-          plan: selectedPlan,
-          signupTime: new Date().toISOString()
-        };
-        localStorage.setItem('gir_user', JSON.stringify(userSession));
-        alert(`Account registered successfully with ${planNames[selectedPlan]}! Redirecting...`);
-        window.location.href = '../console/admin.html';
+        alert(err.message || 'Account creation failed. Please try again.');
+        proceedBtn.disabled = false;
+        proceedBtn.textContent = `Proceed with ${planNames[selectedPlan]} →`;
       }
     }
   </script>

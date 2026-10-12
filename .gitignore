@@ -19,3 +19,4 @@ __pycache__/
 mobile/build/
 .dart_tool/
 *.apk
+.env

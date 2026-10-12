@@ -15,19 +15,32 @@ class InMemoryRateLimiter(BaseHTTPMiddleware):
         if request.url.path in ["/health", "/docs", "/openapi.json"]:
             return await call_next(request)
 
-        client_ip = request.client.host if request.client else "127.0.0.1"
+        client_ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "127.0.0.1")
         now = time.time()
+
+        path = request.url.path
+        if path.endswith("/auth/login"):
+            max_requests, window_seconds = 5, 15 * 60
+        elif path.endswith("/auth/register"):
+            max_requests, window_seconds = 5, 60 * 60
+        elif path.endswith("/vote") or path.endswith("/respond") or path.endswith("/submit"):
+            max_requests, window_seconds = 20, 60
+        else:
+            max_requests, window_seconds = self.max_requests, self.window_seconds
         
         # Clean expired timestamps
         timestamps = self.request_counts[client_ip]
-        self.request_counts[client_ip] = [ts for ts in timestamps if now - ts < self.window_seconds]
+        key = f"{client_ip}:{path}"
+        timestamps = self.request_counts[key]
+        self.request_counts[key] = [ts for ts in timestamps if now - ts < window_seconds]
 
-        if len(self.request_counts[client_ip]) >= self.max_requests:
+        if len(self.request_counts[key]) >= max_requests:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Velocity rate limit exceeded. Please wait before casting additional ballots."
+                detail="Rate limit exceeded. Please wait before trying again.",
+                headers={"Retry-After": str(window_seconds)}
             )
 
-        self.request_counts[client_ip].append(now)
+        self.request_counts[key].append(now)
         response = await call_next(request)
         return response

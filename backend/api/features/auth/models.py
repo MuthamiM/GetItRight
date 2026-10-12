@@ -25,3 +25,4 @@ class UserModel(Base):
     PollsQuota = Column(Integer, default=5)
     ConsoleUrl = Column(String, nullable=False, default="/console/community.html")
     LastLogin = Column(String, nullable=True, default="Just now")
+    TokenVersion = Column(Integer, nullable=False, default=0)

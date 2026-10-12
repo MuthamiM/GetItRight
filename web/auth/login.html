@@ -223,28 +223,14 @@
         if (res.ok && data.token) {
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
-          window.location.href = data.redirectUrl || '../console/admin.html';
+          window.location.href = data.redirectUrl || '../pages/vote.html';
         } else {
-          // Fallback login session if endpoint returns error
-          const userSession = {
-            email: email,
-            name: email.split('@')[0] || "Admin",
-            role: "admin",
-            plan: "pro"
-          };
-          localStorage.setItem('gir_user', JSON.stringify(userSession));
-          window.location.href = '../console/admin.html';
+          throw new Error(data.detail || 'Invalid email or password.');
         }
       } catch (err) {
-        console.warn("API login fallback:", err);
-        const userSession = {
-          email: email,
-          name: email.split('@')[0] || "Admin",
-          role: "admin",
-          plan: "pro"
-        };
-        localStorage.setItem('gir_user', JSON.stringify(userSession));
-        window.location.href = '../console/admin.html';
+        alert(err.message || 'Unable to sign in. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Sign In →';
       }
     }
   </script>

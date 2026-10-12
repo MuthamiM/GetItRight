@@ -42,10 +42,10 @@ app.add_middleware(GlobalExceptionMiddleware)
 # 2. Cross-Origin Resource Sharing (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # 3. Security Headers & Privacy Boundary
@@ -62,6 +62,10 @@ app.add_middleware(InMemoryRateLimiter, max_requests=600, window_seconds=60)
 @app.websocket(f"{settings.API_PREFIX}/ws/votes")
 async def websocket_votes(websocket: WebSocket):
     """Real-time live voting broadcast server for mobile and web clients."""
+    origin = websocket.headers.get("origin")
+    if origin and origin.rstrip("/") not in settings.cors_origins:
+        await websocket.close(code=1008)
+        return
     await ws_server.connect_vote(websocket)
     try:
         while True:
@@ -76,6 +80,10 @@ async def websocket_votes(websocket: WebSocket):
 @app.websocket(f"{settings.API_PREFIX}/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
     """Real-time live telemetry streaming server for platform monitoring dashboards."""
+    origin = websocket.headers.get("origin")
+    if origin and origin.rstrip("/") not in settings.cors_origins:
+        await websocket.close(code=1008)
+        return
     await ws_server.connect_telemetry(websocket)
     try:
         while True:
