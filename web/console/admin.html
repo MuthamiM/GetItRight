@@ -744,8 +744,9 @@
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0;">
             <select id="admin-export-client" class="select-dropdown"><option value="">All clients</option></select>
-            <select id="admin-export-format" class="select-dropdown"><option value="pdf">PDF (print/save)</option><option value="doc">Word document</option></select>
+            <select id="admin-export-format" class="select-dropdown"><option value="pdf">PDF (print/save)</option>            <option value="docx">Word document (.docx)</option></select>
             <button class="btn-create" onclick="exportAdminSurveyReport()">Export survey responses</button>
+            <button class="btn-create" onclick="exportAdminPollReport()">Export poll results</button>
           </div>
           <div class="bottom-card">
             <div class="table-responsive">
@@ -2426,24 +2427,31 @@
     async function exportAdminSurveyReport() {
       const clientId = document.getElementById('admin-export-client').value;
       const format = document.getElementById('admin-export-format').value;
-      const selected = surveys.filter(s => !clientId || s.ownerId === clientId);
-      const responsesBySurvey = await Promise.all(selected.map(async survey => {
-        const response = await fetch(`${API}/surveys/${encodeURIComponent(survey.id)}/responses`);
-        return { survey, responses: response.ok ? await response.json() : [] };
-      }));
-      const body = responsesBySurvey.map(({ survey, responses }) =>
-        `<h1>${escapeHtml(survey.title)}</h1><p>Owner: ${escapeHtml(users.find(u => u.id === survey.ownerId)?.fullName || 'Unknown')}</p><p>Responses: ${responses.length}</p>` +
-        responses.map((item, index) => `<h3>Response ${index + 1} — ${escapeHtml(item.timestamp)}</h3><p>${(item.answers || []).map(a => `${escapeHtml(a.questionId)}: ${escapeHtml(a.answer ?? a)}`).join('<br>')}</p>`).join('')
-      ).join('<hr>');
-      if (!body) return alert('No survey responses found for this client.');
-      if (format === 'doc') {
-        const blob = new Blob([`<html><body>${body}</body></html>`], { type: 'application/msword' });
-        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'getitright-survey-responses.doc'; link.click(); URL.revokeObjectURL(link.href);
-      } else {
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`<html><head><title>GetItRight survey responses</title></head><body>${body}</body></html>`);
-        printWindow.document.close(); printWindow.print();
-      }
+      const query = new URLSearchParams({ format: format === 'docx' ? 'docx' : 'pdf' });
+      if (clientId) query.set('owner_id', clientId);
+      const response = await fetch(`${API}/surveys/exports/responses?${query}`);
+      if (!response.ok) return alert('Unable to export survey responses.');
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(await response.blob());
+      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'getitright-survey-responses.pdf';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    async function exportAdminPollReport() {
+      const clientId = document.getElementById('admin-export-client').value;
+      const format = document.getElementById('admin-export-format').value;
+      const query = new URLSearchParams({ format: format === 'docx' ? 'docx' : 'pdf' });
+      if (clientId) query.set('owner_id', clientId);
+      const response = await fetch(`${API}/polls/exports/results?${query}`, {
+        headers: { Authorization: 'Bearer ' + (localStorage.getItem('gir_token') || '') }
+      });
+      if (!response.ok) return alert('Unable to export poll results.');
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(await response.blob());
+      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'getitright-poll-results.pdf';
+      link.click();
+      URL.revokeObjectURL(link.href);
     }
 
     function renderTables() {

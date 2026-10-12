@@ -29,19 +29,23 @@ class InMemoryRateLimiter(BaseHTTPMiddleware):
         else:
             max_requests, window_seconds = self.max_requests, self.window_seconds
         
-        # Clean expired timestamps
-        timestamps = self.request_counts[client_ip]
         key = f"{client_ip}:{path}"
         timestamps = self.request_counts[key]
-        self.request_counts[key] = [ts for ts in timestamps if now - ts < window_seconds]
+        timestamps = [ts for ts in timestamps if now - ts < window_seconds]
+        self.request_counts[key] = timestamps
 
-        if len(self.request_counts[key]) >= max_requests:
+        if len(timestamps) >= max_requests:
+            retry_after = max(1, int(window_seconds - (now - min(timestamps))))
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={"detail": "Rate limit exceeded. Please wait before trying again."},
-                headers={"Retry-After": str(window_seconds)},
+                headers={"Retry-After": str(retry_after)},
             )
 
-        self.request_counts[key].append(now)
         response = await call_next(request)
+        # Successful authentication must not consume the failed-login budget.
+        # This keeps the limit useful for credential attacks without locking
+        # out valid admin and client users sharing one IP address.
+        if path.endswith("/auth/login") and response.status_code in {401, 403}:
+            self.request_counts[key].append(now)
         return response

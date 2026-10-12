@@ -825,9 +825,13 @@
   <!-- JAVASCRIPT: NO HARDCODING, REAL-TIME API & DATABASE CONNECTION -->
   <script>
     const API = window.location.origin + '/api';
+    const authHeaders = () => ({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + (localStorage.getItem('gir_token') || '')
+    });
 
     let currentStep = 1;
-    let selectedType = 'survey'; // 'survey' or 'poll'
+    let selectedType = new URLSearchParams(window.location.search).get('type') === 'poll' ? 'poll' : 'survey'; // 'survey' or 'poll'
     let selectedTemplate = null;
     let templates = [];
     let questions = [
@@ -1237,7 +1241,7 @@
         try {
           const res = await fetch(`${API}/surveys`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
               title,
               description: desc,
@@ -1251,7 +1255,7 @@
           if (res.ok) {
             playBeep(true);
             alert('Survey successfully published to the database ledger!');
-            window.location.href = 'admin.html';
+            window.location.href = localStorage.getItem('gir_user') && JSON.parse(localStorage.getItem('gir_user')).role === 'Admin' ? 'admin.html' : 'user.html';
           } else {
             const err = await res.json().catch(() => ({}));
             playBeep(false);
@@ -1270,7 +1274,7 @@
         try {
           const res = await fetch(`${API}/polls`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({
               title,
               description: desc,
@@ -1283,7 +1287,7 @@
           if (res.ok) {
             playBeep(true);
             alert('Poll referendum published successfully to the database!');
-            window.location.href = 'admin.html';
+            window.location.href = localStorage.getItem('gir_user') && JSON.parse(localStorage.getItem('gir_user')).role === 'Admin' ? 'admin.html' : 'user.html';
           } else {
             const err = await res.json().catch(() => ({}));
             playBeep(false);
@@ -1307,6 +1311,7 @@
 
     // === INITIALIZATION ===
     window.addEventListener('DOMContentLoaded', () => {
+      selectType(selectedType);
       loadTemplates();
       document.getElementById('wizard-title').addEventListener('input', updatePreview);
     });
