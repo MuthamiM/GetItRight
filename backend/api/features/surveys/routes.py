@@ -1,5 +1,5 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.surveys.schemas import (
@@ -9,6 +9,10 @@ from backend.api.features.surveys.schemas import (
 from backend.api.features.surveys.service import (
     list_surveys, get_survey_by_id, create_survey, submit_survey_response,
     update_survey_status, get_survey_analytics, verify_survey_receipt, get_survey_user_response
+)
+from backend.api.middleware.auth_middleware import (
+    get_current_user_token,
+    get_optional_current_user_token,
 )
 
 router = APIRouter(prefix="/surveys", tags=["Surveys"])
@@ -30,13 +34,28 @@ def get_survey(survey_id: str, db: Session = Depends(get_db)):
     return get_survey_by_id(db, survey_id)
 
 @router.patch("/{survey_id}/status", response_model=SurveyOut)
-def change_survey_status(survey_id: str, data: SurveyStatusUpdate, db: Session = Depends(get_db)):
+def change_survey_status(
+    survey_id: str,
+    data: SurveyStatusUpdate,
+    current_user: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db),
+):
     """Update survey operational status (Active, Paused, Closed)."""
+    survey = get_survey_by_id(db, survey_id)
+    if current_user["role"] != "Admin" and survey.ownerId != current_user["sub"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this survey")
     return update_survey_status(db, survey_id, data.status)
 
 @router.get("/{survey_id}/analytics", response_model=SurveyAnalyticsOut)
-def fetch_survey_analytics(survey_id: str, db: Session = Depends(get_db)):
+def fetch_survey_analytics(
+    survey_id: str,
+    current_user: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db),
+):
     """Fetch detailed question breakdown, completion rates, and Merkle root."""
+    survey = get_survey_by_id(db, survey_id)
+    if current_user["role"] != "Admin" and survey.ownerId != current_user["sub"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this survey")
     return get_survey_analytics(db, survey_id)
 
 @router.get("/{survey_id}/verify-receipt/{receipt_hash}", response_model=ReceiptVerificationOut)
@@ -45,8 +64,14 @@ def verify_receipt_endpoint(survey_id: str, receipt_hash: str, db: Session = Dep
     return verify_survey_receipt(db, survey_id, receipt_hash)
 
 @router.post("", response_model=SurveyOut)
-def create_new_survey(data: SurveyCreate, db: Session = Depends(get_db)):
+def create_new_survey(
+    data: SurveyCreate,
+    current_user: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db),
+):
     """Author and publish a new multi-step qualitative survey."""
+    data.ownerId = current_user["sub"]
+    data.plan = current_user["plan"]
     return create_survey(db, data)
 
 @router.get("/{survey_id}/response-status", response_model=SurveyResponseStatusOut)
@@ -55,11 +80,12 @@ def check_survey_user_status(
     survey_id: str,
     userId: Optional[str] = Query(None),
     voterKey: Optional[str] = Query(None),
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
     db: Session = Depends(get_db)
 ):
     """Check if the user/voter has already taken this survey and return previous action receipt."""
     import json
-    resp = get_survey_user_response(db, survey_id, user_id=userId, voter_key=voterKey)
+    resp = get_survey_user_response(db, survey_id, user_id=current_user["sub"] if current_user else None, voter_key=voterKey)
     if resp:
         try:
             answers = json.loads(resp.AnswersJson)
@@ -82,7 +108,15 @@ def check_survey_user_status(
 
 @router.post("/{survey_id}/respond", response_model=SurveySubmissionReceipt)
 @router.post("/{survey_id}/submit", response_model=SurveySubmissionReceipt)
-def answer_survey(survey_id: str, sub: SurveyResponseSubmission, db: Session = Depends(get_db)):
+def answer_survey(
+    survey_id: str,
+    sub: SurveyResponseSubmission,
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
+    db: Session = Depends(get_db),
+):
     """Submit responses to a survey with Merkle receipt generation."""
+    sub.userId = current_user["sub"] if current_user else None
+    if not sub.userId and not (sub.voterPseudonym and sub.voterPseudonym.strip()):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A respondent key or authenticated session is required")
     return submit_survey_response(db, survey_id, sub)
 

@@ -14,6 +14,15 @@ PLAN_META = {
     "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/admin.html"},
 }
 
+
+def _plain_text(value: Optional[str], field: str, maximum: int, required: bool = False) -> Optional[str]:
+    clean = (value or "").strip()
+    if not clean and not required:
+        return None
+    if not clean or len(clean) > maximum or any(char in clean for char in "<>"):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"{field} must be plain text")
+    return clean
+
 def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
     user = db.query(UserModel).filter(UserModel.Email == creds.email.strip()).first()
     if not user:
@@ -22,14 +31,16 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
             detail="Invalid credentials. No user registered with this email."
         )
 
+    if user.Status != "Active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account is not active")
+
     if not verify_password(creds.password, user.Password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid password provided."
         )
 
-    # Unified Sovereign Console: Always redirect to /console/admin.html
-    redirect_url = "/console/admin.html"
+    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/pages/vote.html"
     if user.ConsoleUrl != redirect_url:
         user.ConsoleUrl = redirect_url
         db.commit()
@@ -39,7 +50,8 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         "email": user.Email,
         "role": user.Role,
         "plan": user.Plan,
-        "name": user.FullName
+        "name": user.FullName,
+        "tokenVersion": user.TokenVersion or 0,
     })
 
     user_out = UserOut(
@@ -66,7 +78,6 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
     )
 
 def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
-    from backend.api.core.database import backup_database
     existing = db.query(UserModel).filter(UserModel.Email == data.email.strip()).first()
     if existing:
         raise HTTPException(
@@ -74,24 +85,26 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
             detail="A user with this email address already exists."
         )
 
-    plan_key = (data.plan or "free").lower()
-    meta = PLAN_META.get(plan_key, PLAN_META["free"])
+    # Public registration never grants paid plans or administrative access.
+    # Plan changes must be approved through the protected administration API.
+    plan_key = "free"
+    meta = PLAN_META[plan_key]
 
     new_id = f"USR-{uuid.uuid4().hex[:6].upper()}"
     new_user = UserModel(
         Id=new_id,
-        FullName=data.fullName.strip(),
+        FullName=_plain_text(data.fullName, "Full name", 120, required=True),
         Email=data.email.strip(),
         Password=get_password_hash(data.password),
-        PhoneNumber=data.phoneNumber.strip() if data.phoneNumber else None,
-        IpAddress=data.ipAddress.strip() if data.ipAddress else None,
-        Latitude=data.latitude,
-        Longitude=data.longitude,
-        DeviceDetails=data.deviceDetails.strip() if data.deviceDetails else None,
+        PhoneNumber=_plain_text(data.phoneNumber, "Phone number", 30),
+        IpAddress=None,
+        Latitude=None,
+        Longitude=None,
+        DeviceDetails=None,
         Role="Customer",
         Plan=plan_key,
         PlanName=meta["name"],
-        Organization=data.organization.strip() if data.organization else "Independent",
+        Organization=_plain_text(data.organization, "Organization", 200) or "Independent",
         CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
         Status="Active",
         TotalPollsCreated=0,
@@ -106,15 +119,13 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
     db.commit()
     db.refresh(new_user)
 
-    # Perform real-time DB backup copy
-    backup_database()
-
     token = create_access_token({
         "sub": new_user.Id,
         "email": new_user.Email,
         "role": new_user.Role,
         "plan": new_user.Plan,
-        "name": new_user.FullName
+        "name": new_user.FullName,
+        "tokenVersion": new_user.TokenVersion or 0,
     })
 
     user_out = UserOut(
@@ -145,67 +156,22 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
         isAdmin=False
     )
 
-_OTP_STORE = {}
-
 def generate_email_otp(db: Session, email: str) -> dict:
-    import random
-    email_clean = email.strip().lower()
-    user = db.query(UserModel).filter(UserModel.Email == email_clean).first()
-    
-    # Generate 6-digit numeric OTP
-    otp_code = f"{random.randint(100000, 999999)}"
-    _OTP_STORE[email_clean] = {
-        "otp": otp_code,
-        "created_at": datetime.now(timezone.utc)
-    }
-
-    if user:
-        return {
-            "success": True,
-            "otp": otp_code,
-            "message": f"6-digit OTP code ({otp_code}) and reset link sent to {email_clean}."
-        }
-
+    # No mail delivery provider is configured. Do not expose OTPs in an API
+    # response or pretend delivery has occurred.
     return {
         "success": True,
-        "otp": otp_code,
-        "message": f"6-digit OTP code ({otp_code}) and reset link sent to {email_clean}."
+        "message": "If the account exists, password recovery instructions will be sent when email delivery is configured."
     }
 
 def verify_otp_and_reset_password(db: Session, email: str, otp: str, new_password: str) -> dict:
-    email_clean = email.strip().lower()
-    otp_clean = otp.strip()
-    
-    cached = _OTP_STORE.get(email_clean)
-    is_valid_otp = (cached and cached.get("otp") == otp_clean) or otp_clean == "123456"
-
-    if not is_valid_otp:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired OTP code. Please check your email and try again."
-        )
-
-    user = db.query(UserModel).filter(UserModel.Email == email_clean).first()
-    if not user:
-        # Create or update user password
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No account found with this email address."
-        )
-
-    user.Password = get_password_hash(new_password.strip())
-    db.commit()
-    
-    if email_clean in _OTP_STORE:
-        del _OTP_STORE[email_clean]
-
-    return {
-        "success": True,
-        "message": f"Email confirmed! Password for {email_clean} has been successfully reset."
-    }
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="Password recovery is temporarily unavailable because secure email delivery is not configured."
+    )
 
 def reset_password_for_email(db: Session, email: str, new_password: str) -> dict:
-    return verify_otp_and_reset_password(db, email, "123456", new_password)
+    raise HTTPException(status_code=status.HTTP_410_GONE, detail="Use the OTP password recovery flow")
 
 def change_user_password(db: Session, user_id: str, old_pass: str, new_pass: str) -> dict:
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
@@ -214,6 +180,7 @@ def change_user_password(db: Session, user_id: str, old_pass: str, new_pass: str
     if not verify_password(old_pass, user.Password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password incorrect")
     user.Password = get_password_hash(new_pass.strip())
+    user.TokenVersion = (user.TokenVersion or 0) + 1
     db.commit()
     return {"success": True, "message": "Password changed successfully"}
 
@@ -222,11 +189,11 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if full_name and full_name.strip():
-        user.FullName = full_name.strip()
+        user.FullName = _plain_text(full_name, "Full name", 120, required=True)
     if phone is not None:
-        user.PhoneNumber = phone.strip()
+        user.PhoneNumber = _plain_text(phone, "Phone number", 30)
     if org and org.strip():
-        user.Organization = org.strip()
+        user.Organization = _plain_text(org, "Organization", 200)
     db.commit()
     db.refresh(user)
     redirect_url = "/console/admin.html"
@@ -257,7 +224,7 @@ def verify_user_token(db: Session, token_str: str) -> dict:
         return {"valid": False, "user": None}
     user_id = payload.get("sub")
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
-    if not user:
+    if not user or user.Status != "Active" or payload.get("tokenVersion") != (user.TokenVersion or 0):
         return {"valid": False, "user": None}
     redirect_url = "/console/admin.html"
     user_out = UserOut(

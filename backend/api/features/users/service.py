@@ -105,7 +105,10 @@ def update_user_status(db: Session, user_id: str, update_data: UserStatusUpdate)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
     if user.Role == "Admin":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot modify the primary Admin status.")
+    if update_data.status not in {"Active", "Suspended"}:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Status must be Active or Suspended")
     user.Status = update_data.status
+    user.TokenVersion = (user.TokenVersion or 0) + 1
     db.commit()
     db.refresh(user)
     return map_user(user)
@@ -121,6 +124,7 @@ def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest) -> U
     user.ConsoleUrl = meta["url"]
     user.VoterQuota = meta["voters"]
     user.PollsQuota = meta["polls"]
+    user.TokenVersion = (user.TokenVersion or 0) + 1
     db.commit()
     db.refresh(user)
     return map_user(user)
@@ -191,7 +195,11 @@ def update_user_role(db: Session, user_id: str, req) -> UserDetailOut:
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
+    allowed_roles = {role["name"] for role in SYSTEM_ROLES}
+    if req.role not in allowed_roles:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown system role")
     user.Role = req.role
+    user.TokenVersion = (user.TokenVersion or 0) + 1
     db.commit()
     db.refresh(user)
     return map_user(user)

@@ -29,23 +29,10 @@
     },
 
     init() {
-      // 1. Immediately request high-precision location on session start
-      this.acquireLocation();
-
-      // 2. Inject Modal Styles and Modal Container into DOM
+      // Demographic information and location are not required to browse or
+      // participate. Consent must be explicit and data remains local.
       this.injectStyles();
       this.injectModal();
-
-      // 3. If first-time visitor, show mandatory onboarding survey modal
-      if (!this.hasCompletedDemographics()) {
-        setTimeout(() => {
-          this.openSurveyModal({
-            title: "Welcome to Getitright — Civic Verification",
-            subtitle: "Mandatory First-Time Visitor Survey",
-            notice: "To prevent electoral manipulation and ensure accurate regional representation across Kenya's 47 counties, all citizens must declare their County and Date of Birth (DOB)."
-          });
-        }, 600);
-      }
     },
 
     hasCompletedDemographics() {
@@ -113,41 +100,8 @@
     },
 
     fallbackIpLocation() {
-      fetch('https://ipapi.co/json/')
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.latitude && data.longitude) {
-            this.currentLocation = {
-              lat: data.latitude,
-              lng: data.longitude,
-              accuracy: 2500,
-              status: 'ip_fallback'
-            };
-            if (!localStorage.getItem('gir_precise_lat')) {
-              localStorage.setItem('gir_precise_lat', data.latitude);
-              localStorage.setItem('gir_precise_lng', data.longitude);
-              localStorage.setItem('gir_location_accuracy', 2500);
-            }
-            if (data.region && !localStorage.getItem('gir_county')) {
-              const matched = KENYA_COUNTIES.find(c => data.region.toLowerCase().includes(c.toLowerCase()));
-              if (matched) {
-                const sel = document.getElementById('gir-survey-county');
-                if (sel && !sel.value) sel.value = matched;
-              }
-            }
-          }
-          this.updateLocationBadge();
-        })
-        .catch(() => {
-          // Default to Nairobi Central if all offline
-          if (!this.currentLocation.lat) {
-            this.currentLocation.lat = -1.286389;
-            this.currentLocation.lng = 36.817223;
-            this.currentLocation.accuracy = 5000;
-            this.currentLocation.status = 'ip_fallback';
-            this.updateLocationBadge();
-          }
-        });
+      this.currentLocation.status = 'unavailable';
+      this.updateLocationBadge();
     },
 
     updateLocationBadge() {
@@ -451,37 +405,6 @@
       localStorage.setItem('gir_demographics_completed', 'true');
       localStorage.setItem('gir_voter_verified', 'true');
 
-      const loc = this.getLocation();
-
-      // Submit to Backend API
-      try {
-        const voterKey = localStorage.getItem('gir_voter_key') || ('Voter-' + Math.floor(Math.random() * 90000 + 10000));
-        localStorage.setItem('gir_voter_key', voterKey);
-
-        let userId = null;
-        try {
-          const uStr = localStorage.getItem('gir_user');
-          if (uStr) userId = JSON.parse(uStr).id;
-        } catch (_) {}
-
-        await fetch('/api/visitor-demographics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            county: county,
-            dob: dob,
-            latitude: loc.lat,
-            longitude: loc.lng,
-            accuracy: loc.accuracy,
-            voterKey: voterKey,
-            userId: userId,
-            platform: 'web'
-          })
-        });
-      } catch (err) {
-        console.warn('[Demographics] Demographic API sync:', err);
-      }
-
       submitBtn.disabled = false;
       submitBtn.textContent = 'Confirm & Proceed \u2192';
       this.closeSurveyModal();
@@ -490,7 +413,7 @@
         window.App.showToast(`Verified: ${county} County. Demographics secured!`, 'success');
       }
 
-      // If a vote was waiting for this verification, resume the vote immediately!
+      const loc = this.getLocation();
       if (typeof this.pendingVoteCallback === 'function') {
         const cb = this.pendingVoteCallback;
         this.pendingVoteCallback = null;
@@ -498,27 +421,8 @@
       }
     },
 
-    // Guard called before taking any poll:
-    // ALWAYS asks for County and DOB as a survey if not yet completed!
     ensureVoterSurveyBeforePoll(onVerifiedCallback) {
-      if (this.hasCompletedDemographics()) {
-        const loc = this.getLocation();
-        onVerifiedCallback({
-          county: this.getCounty(),
-          dob: this.getDob(),
-          lat: loc.lat,
-          lng: loc.lng
-        });
-        return;
-      }
-
-      // Not yet verified -> open mandatory pre-poll survey modal
-      this.pendingVoteCallback = onVerifiedCallback;
-      this.openSurveyModal({
-        title: "Voter Survey Required Before Voting",
-        subtitle: "County & Date of Birth (DOB) Verification",
-        notice: "Before casting your vote, Kenyan civic verification requires confirming your County and Date of Birth (DOB) for ledger inclusion."
-      });
+      onVerifiedCallback({});
     }
   };
 

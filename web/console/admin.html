@@ -1107,6 +1107,34 @@
   <!-- JAVASCRIPT — ALL DATA FROM DB VIA API, ZERO HARDCODED CHART VALUES -->
   <script>
     const API = window.location.origin + '/api';
+    const nativeFetch = window.fetch.bind(window);
+
+    window.fetch = (input, options = {}) => {
+      const token = localStorage.getItem('gir_token');
+      const headers = new Headers(options.headers || {});
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+      return nativeFetch(input, { ...options, headers });
+    };
+
+    async function verifyAdminSession() {
+      if (!localStorage.getItem('gir_token')) {
+        window.location.replace('../auth/login.html');
+        return false;
+      }
+      try {
+        const res = await fetch(`${API}/auth/me`);
+        const user = await res.json();
+        if (!res.ok || !user.isAdmin) throw new Error('Administrator access required');
+        localStorage.setItem('gir_user', JSON.stringify(user));
+        return true;
+      } catch (_) {
+        localStorage.removeItem('gir_token');
+        localStorage.removeItem('gir_user');
+        window.location.replace('../auth/login.html');
+        return false;
+      }
+    }
+
     let polls = [], surveys = [], users = [], checkpoints = [], roles = [], observers = [];
     let dashStats = null;
     let notifications = [];
@@ -1124,8 +1152,9 @@
     }
 
     // === LOG OUT ===
-    function handleLogout() {
+    async function handleLogout() {
       if (confirm('Are you sure you want to log out?')) {
+        try { await fetch(`${API}/auth/logout`, { method: 'POST' }); } catch (_) {}
         localStorage.clear();
         sessionStorage.clear();
         window.location.href = '../auth/login.html';
@@ -2428,7 +2457,8 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', function() {
+    window.addEventListener('DOMContentLoaded', async function() {
+      if (!await verifyAdminSession()) return;
       loadAllData();
       // Set profile last login
       const loginEl = document.getElementById('profile-last-login');

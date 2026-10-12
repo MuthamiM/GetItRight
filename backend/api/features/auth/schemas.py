@@ -1,8 +1,15 @@
 from typing import Optional
-from pydantic import BaseModel
+
+from pydantic import BaseModel, EmailStr, field_validator
+
+
+def validate_password(value: str) -> str:
+    if len(value) < 12 or not any(c.islower() for c in value) or not any(c.isupper() for c in value) or not any(c.isdigit() for c in value):
+        raise ValueError("Password must be at least 12 characters and include upper-case, lower-case, and numeric characters")
+    return value
 
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
     ipAddress: Optional[str] = None
     latitude: Optional[float] = None
@@ -10,20 +17,22 @@ class LoginRequest(BaseModel):
     deviceDetails: Optional[str] = None
 
 class ForgotPasswordRequest(BaseModel):
-    email: str
+    email: EmailStr
     newPassword: Optional[str] = None
 
 class RequestOTPRequest(BaseModel):
-    email: str
+    email: EmailStr
 
 class VerifyOTPResetRequest(BaseModel):
-    email: str
+    email: EmailStr
     otp: str
     newPassword: str
 
+    _password_strength = field_validator("newPassword")(validate_password)
+
 class RegisterRequest(BaseModel):
     fullName: str
-    email: str
+    email: EmailStr
     password: str
     phoneNumber: Optional[str] = None
     organization: Optional[str] = "Independent"
@@ -33,15 +42,12 @@ class RegisterRequest(BaseModel):
     longitude: Optional[float] = None
     deviceDetails: Optional[str] = None
 
+    _password_strength = field_validator("password")(validate_password)
+
 class UserOut(BaseModel):
     id: str
     fullName: str
     email: str
-    phoneNumber: Optional[str] = None
-    ipAddress: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    deviceDetails: Optional[str] = None
     role: str
     plan: str
     planName: str
@@ -62,6 +68,8 @@ class AuthResponse(BaseModel):
 class ChangePasswordRequest(BaseModel):
     oldPassword: str
     newPassword: str
+
+    _password_strength = field_validator("newPassword")(validate_password)
 
 class UpdateProfileRequest(BaseModel):
     fullName: Optional[str] = None
