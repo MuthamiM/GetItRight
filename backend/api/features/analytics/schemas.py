@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional, Any
 from pydantic import BaseModel
 
 class OverviewStatsOut(BaseModel):
@@ -129,6 +129,10 @@ class RecentVoterOut(BaseModel):
     gps: str
     pollTitle: str
 
+class HourlyVelocityOut(BaseModel):
+    hour: str
+    votes: int
+
 class AdminDashboardStatsOut(BaseModel):
     activePolls: int
     activeSurveys: int
@@ -141,6 +145,13 @@ class AdminDashboardStatsOut(BaseModel):
     verificationRate: float
     anomalyBlockRate: float
     anomalyDailyBars: List[int]
+    hourlyVelocity: Optional[List[HourlyVelocityOut]] = []
+    deviceBreakdown: Optional[Dict[str, int]] = {}
+    p99LatencyMs: Optional[float] = 2.4
+    totalVoterQuota: Optional[int] = 0
+    totalVotesConsumed: Optional[int] = 0
+    totalPollsQuota: Optional[int] = 0
+    quotaByPlan: Optional[Dict[str, Any]] = {}
 
 class CustomerDashboardStatsOut(BaseModel):
     myActivePolls: int
@@ -166,3 +177,31 @@ class SurveyTemplateOut(BaseModel):
     category: str
     icon: str
     questions: List[SurveyTemplateQuestionOut]
+
+class VisitorDemographicsIn(BaseModel):
+    county: str
+    dob: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    accuracy: Optional[float] = None
+    voterKey: Optional[str] = None
+    userId: Optional[str] = None
+    platform: Optional[str] = "web"
+
+class PlatformNotificationIn(BaseModel):
+    message: str
+    title: Optional[str] = None
+    type: Optional[str] = "info"
+    audience: Optional[str] = "all"
+    createdBy: Optional[str] = "Admin"
+
+class PlatformNotificationOut(BaseModel):
+    id: int
+    title: Optional[str] = None
+    message: str
+    type: str
+    audience: str
+    createdBy: str
+    createdAt: str
+    isActive: int
+

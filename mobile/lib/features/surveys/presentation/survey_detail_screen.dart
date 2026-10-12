@@ -127,6 +127,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
       await prefs.setString('gir_v_dob', dob);
       await prefs.setString('gir_v_place', _selectedPlaceOfBirth);
       await prefs.setString('gir_v_zip', zip);
+      await prefs.setString('gir_user_county', 'Kitui');
+      await prefs.setString('gir_gps', '-1.2065, 36.2065');
       await prefs.setBool('gir_voter_verified', true);
     }
 

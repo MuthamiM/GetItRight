@@ -78,7 +78,7 @@ def seed_users(db):
             Status="Active",
             TotalPollsCreated=u["TotalPollsCreated"], TotalVotesReceived=u["TotalVotesReceived"],
             VoterQuota=u["VoterQuota"], PollsQuota=u["PollsQuota"],
-            ConsoleUrl="/console/console.html" if u["Role"] == "Customer" else "/console/admin.html",
+            ConsoleUrl="/console/admin.html",
             LastLogin=f"{random.randint(1,48)} hours ago"
         )
         db.add(user)

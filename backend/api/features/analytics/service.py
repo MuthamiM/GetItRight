@@ -373,7 +373,11 @@ def get_admin_dashboard_stats(db: Session):
         recentVoters=recent_voters,
         verificationRate=verification_rate,
         anomalyBlockRate=anomaly_rate,
-        anomalyDailyBars=anomaly_bars
+        anomalyDailyBars=anomaly_bars,
+        totalVoterQuota=int(db.query(func.sum(UserModel.VoterQuota)).scalar() or 0),
+        totalVotesConsumed=int(db.query(func.sum(UserModel.TotalVotesReceived)).scalar() or 0),
+        totalPollsQuota=int(db.query(func.sum(UserModel.PollsQuota)).scalar() or 0),
+        quotaByPlan={}
     )
 
 

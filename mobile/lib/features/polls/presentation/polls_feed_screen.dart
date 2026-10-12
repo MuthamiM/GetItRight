@@ -354,6 +354,195 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     );
   }
 
+  static const List<String> _kenyaCounties = [
+    'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu',
+    'Garissa', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho',
+    'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui',
+    'Kwale', 'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera',
+    'Marsabit', 'Meru', 'Migori', 'Mombasa', "Murang'a", 'Nairobi',
+    'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua', 'Nyeri',
+    'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi',
+    'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'
+  ];
+
+  Future<bool> _showVoterDemographicsDialog(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!context.mounted) return false;
+    String selectedCounty = prefs.getString('gir_user_county') ?? 'Kitui';
+    final dobController =
+        TextEditingController(text: prefs.getString('gir_v_dob') ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            return Dialog(
+              backgroundColor: const Color(0xFF303030),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Padding(
+                padding: const EdgeInsets.all(22.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE5E5E5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.how_to_vote,
+                              size: 18, color: Color(0xFF303030)),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Voter Demographics Survey',
+                            style: TextStyle(
+                                color: Color(0xFFE5E5E5),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Kenyan civic verification requires confirming your County and Date of Birth (DOB) before recording your ballot.',
+                      style: TextStyle(
+                          color: Color(0xFFB8B8B8), fontSize: 12, height: 1.4),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text('Select County',
+                        style: TextStyle(
+                            color: Color(0xFFE5E5E5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF404040),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF606060)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedCounty,
+                          dropdownColor: const Color(0xFF404040),
+                          isExpanded: true,
+                          style: const TextStyle(
+                              color: Color(0xFFE5E5E5),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold),
+                          items: _kenyaCounties
+                              .map((c) => DropdownMenuItem(
+                                  value: c, child: Text('$c County')))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => selectedCounty = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text('Date of Birth (DD/MM/YYYY)',
+                        style: TextStyle(
+                            color: Color(0xFFE5E5E5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: dobController,
+                      style: const TextStyle(
+                          color: Color(0xFFE5E5E5), fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: 'e.g. 15/08/1995',
+                        hintStyle: const TextStyle(color: Color(0xFF888888)),
+                        filled: true,
+                        fillColor: const Color(0xFF404040),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF606060))),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF606060))),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel',
+                                style: TextStyle(
+                                    color: Color(0xFFB8B8B8),
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE5E5E5),
+                              foregroundColor: const Color(0xFF2A2A2A),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed: () async {
+                              final dob = dobController.text.trim();
+                              if (dob.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Please enter your Date of Birth')),
+                                );
+                                return;
+                              }
+                              await prefs.setString(
+                                  'gir_user_county', selectedCounty);
+                              await prefs.setString('gir_v_dob', dob);
+                              await prefs.setString(
+                                  'gir_gps', '-1.2065, 36.2065');
+                              await prefs.setBool('gir_voter_verified', true);
+                              if (!ctx.mounted) return;
+                              Navigator.pop(ctx, true);
+                            },
+                            child: const Text('Confirm & Vote',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 13)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
   void _handleVote(Poll poll, String optionId, {int? optionIndex}) async {
     final previousOptionId = poll.selectedOptionId;
 
@@ -391,6 +580,16 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     }
 
     final prefs = await SharedPreferences.getInstance();
+    final savedDob = prefs.getString('gir_v_dob');
+    final savedCounty = prefs.getString('gir_user_county');
+
+    // BEFORE TAKING A POLL ALWAYS ASK FOR COUNTY IN AS A SURVEY WHEN ASKING FOR DOB
+    if (savedDob == null || savedCounty == null) {
+      if (!mounted) return;
+      final verified = await _showVoterDemographicsDialog(context);
+      if (!verified) return; // User cancelled or did not provide survey answers
+    }
+
     await prefs.setString(
         'gir_voted_time_${poll.id}', DateTime.now().toIso8601String());
     await prefs.setString('gir_voted_option_${poll.id}', optionId);

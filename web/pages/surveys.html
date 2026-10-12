@@ -458,30 +458,221 @@
       box-sizing: border-box;
       padding: 40px clamp(24px, 4vw, 64px) 80px;
     }
+
+    .surveys-grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 32px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .ln-nav-top-row {
+      display: contents;
+    }
+
+    /* ── Tablet & Mobile Responsive ── */
+    @media (max-width: 900px) {
+      .surveys-grid-layout {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden !important;
+      }
+      .ln-nav {
+        height: auto !important;
+        min-height: 56px !important;
+        padding: 10px 16px 8px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        box-shadow: 0 4px 12px rgba(48, 48, 48, 0.05);
+      }
+      .ln-nav-top-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+      }
+      .ln-nav-brand {
+        font-size: 19px !important;
+      }
+      .ln-nav-logo-icon {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .ln-nav-links {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding-top: 6px !important;
+        border-top: 1px solid rgba(48, 48, 48, 0.12) !important;
+      }
+      .ln-nav-links a {
+        font-size: 12.5px !important;
+        padding: 5px 14px !important;
+        border-radius: 100px !important;
+      }
+      .ln-nav-links a.active {
+        background: var(--charcoal) !important;
+        color: var(--silver) !important;
+        opacity: 1 !important;
+      }
+      .ln-nav-links a.active::after {
+        display: none !important;
+      }
+      .nav-live-pill {
+        padding: 4px 10px !important;
+        font-size: 11.5px !important;
+        gap: 6px !important;
+      }
+      .ln-nav-signin {
+        padding: 4px 12px !important;
+        font-size: 12px !important;
+      }
+
+      .edge-container {
+        padding: 16px 14px 60px !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+      }
+
+      .page-banner-row {
+        flex-direction: column !important;
+        gap: 16px !important;
+        margin-bottom: 22px !important;
+      }
+      .page-banner-title {
+        font-size: 22px !important;
+        line-height: 1.2 !important;
+        margin-bottom: 8px !important;
+      }
+      .page-banner-desc {
+        font-size: 13.5px !important;
+        line-height: 1.5 !important;
+      }
+      .search-box-wrap {
+        width: 100% !important;
+      }
+      .search-box {
+        width: 100% !important;
+      }
+      .search-input {
+        width: 100% !important;
+        font-size: 13px !important;
+        padding: 9px 14px 9px 38px !important;
+      }
+
+      #audience-filters-bar {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 6px !important;
+        gap: 8px !important;
+        scrollbar-width: none !important;
+      }
+      #audience-filters-bar::-webkit-scrollbar {
+        display: none !important;
+      }
+      .audience-filter-pill {
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        padding: 6px 14px !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* ── Survey Card Mobile Fit ── */
+      .survey-card {
+        padding: 20px 16px !important;
+        min-height: auto !important;
+        border-radius: 18px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .survey-card h3 {
+        font-size: 17.5px !important;
+        margin: 0 0 8px 0 !important;
+        line-height: 1.35 !important;
+      }
+      .survey-card p {
+        font-size: 13px !important;
+        margin: 0 0 16px 0 !important;
+        line-height: 1.5 !important;
+      }
+      .publisher-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 12.5px !important;
+        border-radius: 10px !important;
+      }
+      .audience-tag {
+        font-size: 11px !important;
+        padding: 4px 10px !important;
+        margin-top: 6px !important;
+        margin-bottom: 12px !important;
+      }
+      .card-footer-actions {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+      .btn-share-survey {
+        padding: 9px 12px !important;
+        font-size: 12.5px !important;
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+      }
+      .btn-take-survey, .btn-completed-survey {
+        padding: 9px 14px !important;
+        font-size: 12.5px !important;
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+        text-align: center !important;
+      }
+
+      .ln-modal-dialog {
+        padding: 20px 16px !important;
+        border-radius: 18px !important;
+        width: 94% !important;
+        max-height: 88vh !important;
+      }
+    }
   </style>
 </head>
 <body>
 
   <!-- ====== PUBLIC NAVBAR ====== -->
   <nav class="ln-nav" id="mainNav">
-    <a href="../index.html" class="ln-nav-logo">
-      <div class="ln-nav-logo-icon">
-        <img src="../assets/images/logo.png" alt="Getitright Logo">
+    <div class="ln-nav-top-row">
+      <a href="../index.html" class="ln-nav-logo">
+        <div class="ln-nav-logo-icon">
+          <img src="../assets/images/logo.png" alt="Getitright Logo">
+        </div>
+        <span class="ln-nav-brand">Getitright</span>
+      </a>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="nav-live-pill">
+          <span class="nav-live-dot"></span>
+          <span id="active-surveys-pill">Live Surveys</span>
+        </div>
+        <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
       </div>
-      <span class="ln-nav-brand">Getitright</span>
-    </a>
+    </div>
 
     <div class="ln-nav-links">
       <a href="vote.html">Active Polls</a>
       <a href="surveys.html" class="active">Active Surveys</a>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:14px;">
-      <div class="nav-live-pill">
-        <span class="nav-live-dot"></span>
-        <span id="active-surveys-pill">8 Live Surveys</span>
-      </div>
-      <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
     </div>
   </nav>
 
@@ -489,20 +680,20 @@
   <main class="edge-container">
 
     <!-- Top Banner -->
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:36px;">
-      <div>
-        <div style="font-family:var(--font-display); font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); opacity:0.7; margin-bottom:6px;">
+    <div class="page-banner-row" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px;">
+      <div style="max-width:760px; min-width:0;">
+        <div style="font-family:var(--font-display); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); opacity:0.7; margin-bottom:6px;">
           Public &amp; Institutional Participation
         </div>
-        <h1 style="font-family:var(--font-display); font-size:clamp(2rem, 3.5vw, 2.7rem); font-weight:900; color:var(--charcoal); letter-spacing:-0.03em; margin:0 0 10px 0; line-height:1.1;">
+        <h1 class="page-banner-title" style="font-family:var(--font-display); font-size:clamp(1.75rem, 3.5vw, 2.7rem); font-weight:900; color:var(--charcoal); letter-spacing:-0.03em; margin:0 0 10px 0; line-height:1.15;">
           Active Surveys &amp; Research Inquiries
         </h1>
-        <p style="font-size:15px; color:var(--charcoal); opacity:0.8; margin:0; max-width:760px; line-height:1.6;">
+        <p class="page-banner-desc" style="font-size:14.5px; color:var(--charcoal); opacity:0.8; margin:0; line-height:1.6;">
           Direct participation surveys published by verified institutions, labor unions, healthcare boards, and civic assemblies. Filter by your target group, voice your experience, and share direct links with your community.
         </p>
       </div>
 
-      <div style="display:flex; gap:12px; align-items:center;">
+      <div class="search-box-wrap" style="display:flex; gap:12px; align-items:center;">
         <div class="search-box" style="width:320px;">
           <span class="search-icon" data-icon="search"></span>
           <input type="text" class="search-input" id="survey-search-input" placeholder="Search by audience, topic, publisher...">
@@ -511,11 +702,11 @@
     </div>
 
     <!-- Target Audience Filter Bar -->
-    <div style="margin-bottom:36px;">
+    <div style="margin-bottom:32px;">
       <div style="font-family:var(--font-display); font-size:12px; font-weight:800; color:var(--charcoal); opacity:0.75; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">
         Filter by Target Audience:
       </div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;" id="audience-filters-bar">
+      <div id="audience-filters-bar">
         <button class="audience-filter-pill active" data-audience="all">All Audiences (8)</button>
         <button class="audience-filter-pill" data-audience="patients">Healthcare &amp; Patients</button>
         <button class="audience-filter-pill" data-audience="teachers">Teachers &amp; Educators</button>
@@ -527,10 +718,11 @@
       </div>
     </div>
 
-    <!-- Active Surveys Grid (RENDERED DYNAMICALLY FROM DB - BIGGER CARDS) -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(460px, 1fr)); gap:32px;" id="surveys-grid">
-      <div style="grid-column:1/-1; padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
-        Loading active surveys directly from database...
+    <!-- Active Surveys Grid (RENDERED DYNAMICALLY FROM DB) -->
+    <div class="surveys-grid-layout" id="surveys-grid">
+      <div style="grid-column:1/-1; padding:40px 10px; text-align:center;">
+        <div class="skeleton-box" style="height:24px; width:220px; margin:0 auto 12px; border-radius:6px;"></div>
+        <div style="font-size:14px; font-weight:700; color:var(--charcoal); opacity:0.8;">Loading active surveys...</div>
       </div>
     </div>
 
@@ -633,6 +825,7 @@
 
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
+  <script src="../js/core/demographics.js"></script>
   <script>
     const API_BASE = window.location.origin + '/api';
     let allSurveys = [];
@@ -721,10 +914,12 @@
         // Asynchronously sync completions with backend DB for logged in or session voters
         verifyCompletedSurveysWithDb();
       } catch (err) {
-        console.error(err);
+        console.warn('Surveys fetch status:', err);
         grid.innerHTML = `
-          <div style="grid-column:1/-1; padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
-            Failed to connect to backend. Please ensure the API service is active on port 5000.
+          <div style="grid-column:1/-1; padding:40px 10px; text-align:center;">
+            <div class="skeleton-box" style="height:22px; width:200px; margin:0 auto 12px; border-radius:6px;"></div>
+            <div style="font-size:14px; font-weight:700; color:var(--charcoal); opacity:0.8;">Loading active surveys...</div>
+            <button onclick="loadActiveSurveys()" style="margin-top:14px; background:var(--charcoal); color:var(--silver); border:none; padding:8px 18px; border-radius:100px; font-size:12px; font-weight:700; cursor:pointer;">Retry</button>
           </div>
         `;
       }
@@ -847,7 +1042,7 @@
             </div>
 
             <!-- Footer Action Row -->
-            <div style="border-top:1px solid rgba(229,229,229,0.15); padding-top:18px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+            <div class="card-footer-actions" style="border-top:1px solid rgba(229,229,229,0.15); padding-top:18px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
               <button class="btn-share-survey" onclick="openShareModal('${s.id}')">
                 <span data-icon="share"></span> Share Link
               </button>

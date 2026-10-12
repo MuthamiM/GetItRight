@@ -11,7 +11,29 @@ const App = {
     this.initModals();
     this.initScrollEffects();
     this.initSearch();
+    this.initLiveNotifications();
     this.logInit();
+  },
+
+  // -- Real-time platform notifications via WebSocket --
+  initLiveNotifications() {
+    try {
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${proto}//${window.location.host}/ws/votes`;
+      const ws = new WebSocket(wsUrl);
+      ws.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.type === 'notification' && data.data) {
+            const notif = data.data;
+            if (notif.audience === 'all' || notif.audience === 'public') {
+              const typeMap = { success: 'success', warning: 'error', security: 'info', info: 'info' };
+              App.showToast(`<strong>${notif.title || 'Platform Alert'}:</strong> ${notif.message}`, typeMap[notif.type] || 'info');
+            }
+          }
+        } catch (err) {}
+      };
+    } catch (e) {}
   },
 
   // -- Inject SVG icons into all [data-icon] elements --
@@ -218,7 +240,7 @@ const AuthRedirect = {
     const role = this.getRole();
     if (!this.isLoggedIn()) return;
     if (role === 'org') {
-      window.location.href = 'console/console.html';
+      window.location.href = 'console/admin.html';
     } else {
       window.location.href = 'pages/vote.html';
     }

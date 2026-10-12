@@ -188,7 +188,16 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     new_root = "0x" + hashlib.sha256(f"{poll.MerkleRoot}:{receipt_hash}".encode("utf-8")).hexdigest()[:16]
     poll.MerkleRoot = new_root
 
-    # Record Vote Transaction with UserId
+    # Determine GPS and device strings
+    gps_str = None
+    if vote_req.latitude is not None and vote_req.longitude is not None:
+        gps_str = f"{vote_req.latitude:.5f}, {vote_req.longitude:.5f}"
+    elif vote_req.gps:
+        gps_str = vote_req.gps.strip()
+
+    device_str = "Mobile App" if "mobile" in (vote_req.platform or "").lower() else "Web Browser"
+
+    # Record Vote Transaction with real demographics & precise GPS location
     tx = VoteTransactionModel(
         PollId=poll.Id,
         UserId=user_id,
@@ -197,7 +206,13 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         ReceiptHash=receipt_hash,
         MerkleLeafIndex=leaf_index,
         VoterPseudonym=voter_key,
-        Timestamp=timestamp
+        Timestamp=timestamp,
+        County=vote_req.county.strip() if vote_req.county else None,
+        Dob=vote_req.dob.strip() if vote_req.dob else None,
+        Latitude=vote_req.latitude,
+        Longitude=vote_req.longitude,
+        GpsCoordinates=gps_str,
+        Device=device_str
     )
     db.add(tx)
     db.commit()

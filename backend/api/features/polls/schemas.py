@@ -51,6 +51,12 @@ class VoteCastRequest(BaseModel):
     voterFingerprint: Optional[str] = None
     userId: Optional[str] = None
     platform: Optional[str] = "web"
+    county: Optional[str] = None
+    dob: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    accuracy: Optional[float] = None
+    gps: Optional[str] = None
 
 class VoteCastResponse(BaseModel):
     success: bool
