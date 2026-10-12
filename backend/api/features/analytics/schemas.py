@@ -160,7 +160,7 @@ class CustomerDashboardStatsOut(BaseModel):
     pollsQuota: int
     monthlyVotes: List[MonthlyVoteOut]
     turnoutRate: float
-    avgResponseTime: float
+    avgResponseTime: Optional[float] = None
     planName: str
     organization: str
     quotaUsed: int
@@ -204,4 +204,3 @@ class PlatformNotificationOut(BaseModel):
     createdBy: str
     createdAt: str
     isActive: int
-
