@@ -13,6 +13,10 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8888,http://localhost:8090}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}
+      - RESEND_TEST_RECIPIENT=${RESEND_TEST_RECIPIENT:-}
+      - PASSWORD_RESET_URL=${PASSWORD_RESET_URL:-http://127.0.0.1:8090/auth/forgot-password.html}
     restart: unless-stopped
 
   web:

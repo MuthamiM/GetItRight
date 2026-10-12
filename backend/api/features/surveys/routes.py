@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
+from backend.api.features.surveys.models import SurveyModel
 from backend.api.features.surveys.schemas import (
     SurveyOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
     SurveyStatusUpdate, SurveyAnalyticsOut, ReceiptVerificationOut, SurveyResponseStatusOut
@@ -27,6 +28,34 @@ def survey_templates_from_surveys():
     """Returns pre-built survey templates for the creation wizard (alias route)."""
     from backend.api.features.analytics.routes import survey_templates
     return survey_templates()
+
+@router.get("/{survey_id}/responses")
+def get_survey_responses(
+    survey_id: str,
+    current_user: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db),
+):
+    """Return survey interactions to the owner or an administrator."""
+    from backend.api.features.surveys.models import SurveyResponseModel
+    import json
+
+    survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Survey not found")
+    if current_user["role"] != "Admin" and survey.OwnerId != current_user["sub"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this survey")
+    responses = db.query(SurveyResponseModel).filter(
+        SurveyResponseModel.SurveyId == survey_id
+    ).order_by(SurveyResponseModel.Timestamp.desc()).all()
+    return [{
+        "id": response.Id,
+        "surveyId": response.SurveyId,
+        "userId": response.UserId,
+        "respondent": response.VoterPseudonym,
+        "answers": json.loads(response.AnswersJson or "[]"),
+        "receiptHash": response.ReceiptHash,
+        "timestamp": response.Timestamp,
+    } for response in responses]
 
 @router.get("/{survey_id}", response_model=SurveyOut)
 def get_survey(survey_id: str, db: Session = Depends(get_db)):
@@ -119,4 +148,3 @@ def answer_survey(
     if not sub.userId and not (sub.voterPseudonym and sub.voterPseudonym.strip()):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A respondent key or authenticated session is required")
     return submit_survey_response(db, survey_id, sub)
-

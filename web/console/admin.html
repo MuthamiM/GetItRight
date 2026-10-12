@@ -463,6 +463,10 @@
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           Overview
         </a>
+        <a class="nav-link" onclick="switchPanel('database', this)">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/></svg>
+          Database Records
+        </a>
         <a class="nav-link" onclick="switchPanel('polls', this)">
           <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           Polls &amp; Ballots
@@ -689,6 +693,32 @@
         </div>
 
         <!-- TAB: POLLS -->
+        <div class="panel-tab" id="tab-database">
+          <div class="page-title-bar">
+            <h1 class="page-title">Database Records</h1>
+            <p class="page-desc">Read-only view of the current records loaded from the production database.</p>
+          </div>
+          <div class="kpi-grid" style="margin-bottom:24px;">
+            <div class="kpi-card"><div class="kpi-head"><span class="kpi-title">Users</span></div><div class="kpi-number" id="db-count-users">0</div></div>
+            <div class="kpi-card"><div class="kpi-head"><span class="kpi-title">Polls</span></div><div class="kpi-number" id="db-count-polls">0</div></div>
+            <div class="kpi-card"><div class="kpi-head"><span class="kpi-title">Surveys</span></div><div class="kpi-number" id="db-count-surveys">0</div></div>
+            <div class="kpi-card"><div class="kpi-head"><span class="kpi-title">Checkpoints</span></div><div class="kpi-number" id="db-count-checkpoints">0</div></div>
+          </div>
+          <div class="bottom-card" style="margin-bottom:20px;">
+            <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:14px;">Users</h3>
+            <div class="table-responsive"><table class="data-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Status</th></tr></thead><tbody id="database-users-tbody"></tbody></table></div>
+          </div>
+          <div class="bottom-card" style="margin-bottom:20px;">
+            <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:14px;">Polls and Surveys</h3>
+            <div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>ID</th><th>Title</th><th>Plan/Track</th><th>Count</th><th>Status</th></tr></thead><tbody id="database-content-tbody"></tbody></table></div>
+          </div>
+          <div class="bottom-card">
+            <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:14px;">Audit Checkpoints and Observers</h3>
+            <div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>ID</th><th>Reference</th><th>Count/Station</th><th>Status</th></tr></thead><tbody id="database-audit-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- TAB: POLLS -->
         <div class="panel-tab" id="tab-polls">
           <div class="page-title-bar">
             <h1 class="page-title">Manage All Polls</h1>
@@ -711,6 +741,11 @@
               <div class="page-desc">Author surveys with choice options or open free-text input fields.</div>
             </div>
             <button class="btn-create" onclick="openCreateModal('survey')">+ Create Survey</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0;">
+            <select id="admin-export-client" class="select-dropdown"><option value="">All clients</option></select>
+            <select id="admin-export-format" class="select-dropdown"><option value="pdf">PDF (print/save)</option><option value="doc">Word document</option></select>
+            <button class="btn-create" onclick="exportAdminSurveyReport()">Export survey responses</button>
           </div>
           <div class="bottom-card">
             <div class="table-responsive">
@@ -1516,13 +1551,14 @@
 
     async function loadAllData() {
       try {
-        const [pRes, sRes, uRes, cRes, rRes, dsRes] = await Promise.all([
+        const [pRes, sRes, uRes, cRes, rRes, dsRes, oRes] = await Promise.all([
           fetch(`${API}/polls`),
           fetch(`${API}/surveys`),
           fetch(`${API}/users`),
           fetch(`${API}/checkpoints`),
           fetch(`${API}/users/roles`).catch(() => null),
-          fetch(`${API}/admin/dashboard-stats`)
+          fetch(`${API}/admin/dashboard-stats`),
+          fetch(`${API}/observers`)
         ]);
         if (pRes.ok) polls = await pRes.json();
         if (sRes.ok) surveys = await sRes.json();
@@ -1530,10 +1566,12 @@
         if (cRes.ok) checkpoints = await cRes.json();
         if (rRes && rRes.ok) roles = await rRes.json();
         if (dsRes.ok) dashStats = await dsRes.json();
+        if (oRes.ok) observers = await oRes.json();
 
         renderDashboard();
         renderRolesTab();
         renderTables();
+        renderDatabaseRecords();
         renderPlatformVisualAnalytics();
       } catch (e) { console.error('Data load error:', e); }
     }
@@ -2385,7 +2423,37 @@
       }
     }
 
+    async function exportAdminSurveyReport() {
+      const clientId = document.getElementById('admin-export-client').value;
+      const format = document.getElementById('admin-export-format').value;
+      const selected = surveys.filter(s => !clientId || s.ownerId === clientId);
+      const responsesBySurvey = await Promise.all(selected.map(async survey => {
+        const response = await fetch(`${API}/surveys/${encodeURIComponent(survey.id)}/responses`, {
+          headers: { Authorization: `****** }
+        });
+        return { survey, responses: response.ok ? await response.json() : [] };
+      }));
+      const body = responsesBySurvey.map(({ survey, responses }) =>
+        `<h1>${escapeHtml(survey.title)}</h1><p>Owner: ${escapeHtml(users.find(u => u.id === survey.ownerId)?.fullName || 'Unknown')}</p><p>Responses: ${responses.length}</p>` +
+        responses.map((item, index) => `<h3>Response ${index + 1} — ${escapeHtml(item.timestamp)}</h3><p>${(item.answers || []).map(a => `${escapeHtml(a.questionId)}: ${escapeHtml(a.answer ?? a)}`).join('<br>')}</p>`).join('')
+      ).join('<hr>');
+      if (!body) return alert('No survey responses found for this client.');
+      if (format === 'doc') {
+        const blob = new Blob([`<html><body>${body}</body></html>`], { type: 'application/msword' });
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'getitright-survey-responses.doc'; link.click(); URL.revokeObjectURL(link.href);
+      } else {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`<html><head><title>GetItRight survey responses</title></head><body>${body}</body></html>`);
+        printWindow.document.close(); printWindow.print();
+      }
+    }
+
     function renderTables() {
+      const clientSelect = document.getElementById('admin-export-client');
+      if (clientSelect) {
+        clientSelect.innerHTML = '<option value="">All clients</option>' +
+          users.filter(u => u.role !== 'Admin').map(u => `<option value="${u.id}">${escapeHtml(u.fullName)} (${escapeHtml(u.email)})</option>`).join('');
+      }
       const pTbody = document.getElementById('polls-table-tbody');
       if (pTbody && polls.length) {
         pTbody.innerHTML = polls.map(p => `
@@ -2454,6 +2522,46 @@
             <td><span class="badge-pill">${c.status}</span></td>
           </tr>
         `).join('');
+      }
+    }
+
+    function renderDatabaseRecords() {
+      const count = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value.toLocaleString();
+      };
+      count('db-count-users', users.length);
+      count('db-count-polls', polls.length);
+      count('db-count-surveys', surveys.length);
+      count('db-count-checkpoints', checkpoints.length);
+
+      const usersBody = document.getElementById('database-users-tbody');
+      if (usersBody) {
+        usersBody.innerHTML = users.length ? users.map(u => `
+          <tr><td style="font-family:monospace;font-weight:700;">${u.id}</td><td>${u.fullName}</td><td>${u.email}</td><td>${u.role}</td><td>${u.plan}</td><td><span class="badge-pill">${u.status || 'Active'}</span></td></tr>
+        `).join('') : '<tr><td colspan="6">No user records found.</td></tr>';
+      }
+
+      const contentBody = document.getElementById('database-content-tbody');
+      if (contentBody) {
+        const pollRows = polls.map(p => `
+          <tr><td>Poll</td><td style="font-family:monospace;font-weight:700;">${p.id}</td><td>${p.title}</td><td>${p.plan || 'General'}</td><td>${(p.totalVotes || 0).toLocaleString()} votes</td><td><span class="badge-pill">Active</span></td></tr>
+        `);
+        const surveyRows = surveys.map(s => `
+          <tr><td>Survey</td><td style="font-family:monospace;font-weight:700;">${s.id}</td><td>${s.title}</td><td>${s.track || 'General'}</td><td>${(s.totalResponses || 0).toLocaleString()} responses</td><td><span class="badge-pill">Active</span></td></tr>
+        `);
+        contentBody.innerHTML = pollRows.concat(surveyRows).join('') || '<tr><td colspan="6">No poll or survey records found.</td></tr>';
+      }
+
+      const auditBody = document.getElementById('database-audit-tbody');
+      if (auditBody) {
+        const checkpointRows = checkpoints.map(c => `
+          <tr><td>Checkpoint</td><td style="font-family:monospace;font-weight:700;">${c.checkpointId}</td><td style="font-family:monospace;font-size:10px;">${c.merkleRootHash}</td><td>${c.submissionsCount}</td><td><span class="badge-pill">${c.status}</span></td></tr>
+        `);
+        const observerRows = observers.map(o => `
+          <tr><td>Observer</td><td style="font-family:monospace;font-weight:700;">${o.observerId}</td><td>${o.name || '—'}</td><td>${o.stationCode || o.station || '—'}</td><td><span class="badge-pill">${o.status || 'Unknown'}</span></td></tr>
+        `);
+        auditBody.innerHTML = checkpointRows.concat(observerRows).join('') || '<tr><td colspan="5">No audit records found.</td></tr>';
       }
     }
 

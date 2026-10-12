@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float
+from sqlalchemy import Column, String, Integer, Float, DateTime
 from backend.api.core.database import Base
 
 class UserModel(Base):
@@ -26,3 +26,14 @@ class UserModel(Base):
     ConsoleUrl = Column(String, nullable=False, default="/console/community.html")
     LastLogin = Column(String, nullable=True, default="Just now")
     TokenVersion = Column(Integer, nullable=False, default=0)
+
+
+class PasswordRecoveryCodeModel(Base):
+    __tablename__ = "PasswordRecoveryCodes"
+
+    Id = Column(String, primary_key=True)
+    UserId = Column(String, nullable=False, index=True)
+    CodeHash = Column(String, nullable=False)
+    ExpiresAt = Column(DateTime(timezone=True), nullable=False)
+    UsedAt = Column(DateTime(timezone=True), nullable=True)
+    CreatedAt = Column(DateTime(timezone=True), nullable=False)

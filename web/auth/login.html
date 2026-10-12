@@ -162,6 +162,15 @@
       font-weight: 800;
       text-decoration: underline;
     }
+
+    .forgot-link {
+      display: inline;
+      margin-top: 0;
+      color: var(--charcoal);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -196,6 +205,8 @@
     </div>
 
     <div class="auth-footer">
+      <a class="forgot-link" href="forgot-password.html">Forgot password?</a>
+      <span class="footer-separator">|</span>
       Don't have an account? <a href="signup.html">Create Account &rarr;</a>
     </div>
   </div>
@@ -219,13 +230,23 @@
           body: JSON.stringify({ email, password })
         });
 
-        const data = await res.json();
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          throw new Error('Unable to sign in right now. Please try again.');
+        }
         if (res.ok && data.token) {
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
           window.location.href = data.redirectUrl || '../pages/vote.html';
         } else {
-          throw new Error(data.detail || 'Invalid email or password.');
+          const message = res.status === 401
+            ? 'Invalid email or password.'
+            : res.status === 429
+              ? 'Too many login attempts. Please wait and try again.'
+              : (data.detail || 'Unable to sign in. Please try again.');
+          throw new Error(message);
         }
       } catch (err) {
         alert(err.message || 'Unable to sign in. Please try again.');

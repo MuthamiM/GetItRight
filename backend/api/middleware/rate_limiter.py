@@ -1,7 +1,8 @@
 import time
 from collections import defaultdict
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
 class InMemoryRateLimiter(BaseHTTPMiddleware):
     def __init__(self, app, max_requests: int = 300, window_seconds: int = 60):
@@ -35,10 +36,10 @@ class InMemoryRateLimiter(BaseHTTPMiddleware):
         self.request_counts[key] = [ts for ts in timestamps if now - ts < window_seconds]
 
         if len(self.request_counts[key]) >= max_requests:
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded. Please wait before trying again.",
-                headers={"Retry-After": str(window_seconds)}
+                content={"detail": "Rate limit exceeded. Please wait before trying again."},
+                headers={"Retry-After": str(window_seconds)},
             )
 
         self.request_counts[key].append(now)

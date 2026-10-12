@@ -30,6 +30,7 @@ def sync_db_schema():
             import backend.api.features.users.models
             import backend.api.features.surveys.models
             import backend.api.features.analytics.models
+            import backend.api.features.auth.models
         except Exception:
             pass
         Base.metadata.create_all(bind=engine)
@@ -51,4 +52,3 @@ def sync_db_schema():
         print(f"[DB SCHEMA SYNC WARNING] {e}")
 
 sync_db_schema()
-
