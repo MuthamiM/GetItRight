@@ -3,155 +3,577 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright — Create a new survey or poll with the multi-step wizard.">
+  <meta name="description" content="Getitright — Create a new survey or poll with the multi-step sovereign wizard.">
   <title>Getitright — Create Survey / Poll</title>
   <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-shell: #FAFAFC;
-      --bg-card: #FFFFFF;
-      --border-color: #E2E8F0;
-      --text-main: #0F172A;
-      --text-sub: #475569;
-      --text-muted: #94A3B8;
-      --brand-accent: #3B49DF;
-      --brand-hover: #2563EB;
-      --color-pink: #EC4899;
-      --color-green: #10B981;
-      --color-blue: #0288D1;
-      --color-purple: #7B1FA2;
-      --color-orange: #F57C00;
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --bg-shell: #1E1E1E;
+      --bg-card: #282828;
+      --bg-card-hover: #303030;
+      --bg-input: #323232;
+      --border-color: rgba(229, 229, 229, 0.14);
+      --border-hover: rgba(229, 229, 229, 0.35);
+      --text-main: #FFFFFF;
+      --text-sub: #E5E5E5;
+      --text-muted: #A3A3A3;
+      --silver: #E5E5E5;
+      --silver-muted: #B8B8B8;
+      --charcoal-dark: #141414;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-display: 'Space+Grotesk', 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg-shell); color: var(--text-main); font-family: var(--font-family); font-size: 13px; line-height: 1.5; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--bg-shell);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: 13px;
+      line-height: 1.55;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
 
     /* Top Bar */
     .topbar {
-      height: 68px; background: #FFFFFF; border-bottom: 1px solid var(--border-color);
-      padding: 0 28px; display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+      background: #242424;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .brand-logo { font-size: 22px; font-weight: 800; color: #0F172A; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    .brand-logo span { color: var(--brand-accent); }
-    .btn-back { background: #F1F5F9; color: var(--text-sub); border: none; border-radius: 100px; padding: 8px 18px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-    .btn-back:hover { background: #E2E8F0; }
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFFFFF;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.02em;
+    }
+    .brand-logo img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .btn-back {
+      background: rgba(229, 229, 229, 0.08);
+      color: var(--silver);
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 8px 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-back:hover {
+      background: rgba(229, 229, 229, 0.16);
+      border-color: rgba(229, 229, 229, 0.3);
+      color: #FFFFFF;
+    }
 
     /* Main Container */
-    .wizard-container { max-width: 880px; margin: 0 auto; padding: 32px 24px 60px; }
+    .wizard-container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 36px 24px 72px;
+    }
 
     /* Step Progress Bar */
-    .step-progress { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+    .step-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
     .step-item {
-      flex: 1; display: flex; align-items: center; gap: 10px; padding: 14px 18px;
-      background: #FFFFFF; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
     }
-    .step-item:first-child { border-radius: 14px 0 0 14px; }
-    .step-item:last-child { border-radius: 0 14px 14px 0; }
-    .step-item.active { background: #EEF2FF; border-color: var(--brand-accent); }
-    .step-item.completed { background: #ECFDF5; border-color: var(--color-green); }
+    .step-item.active {
+      background: #333333;
+      border-color: var(--silver);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .step-item.completed {
+      background: rgba(229, 229, 229, 0.06);
+      border-color: rgba(229, 229, 229, 0.25);
+    }
     .step-num {
-      width: 30px; height: 30px; border-radius: 50%; background: #F1F5F9; color: var(--text-muted);
-      font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(229, 229, 229, 0.12);
+      color: var(--silver-muted);
+      font-weight: 800;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      transition: all 0.2s ease;
     }
-    .step-item.active .step-num { background: var(--brand-accent); color: #FFF; }
-    .step-item.completed .step-num { background: var(--color-green); color: #FFF; }
-    .step-label { font-weight: 700; font-size: 13px; color: var(--text-sub); }
-    .step-item.active .step-label { color: var(--brand-accent); }
-    .step-item.completed .step-label { color: var(--color-green); }
+    .step-item.active .step-num {
+      background: var(--silver);
+      color: #1E1E1E;
+      font-weight: 900;
+    }
+    .step-item.completed .step-num {
+      background: rgba(229, 229, 229, 0.25);
+      color: var(--silver);
+    }
+    .step-label {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--silver-muted);
+      letter-spacing: 0.01em;
+    }
+    .step-item.active .step-label {
+      color: #FFFFFF;
+    }
+    .step-item.completed .step-label {
+      color: var(--silver);
+    }
 
     /* Wizard Panels */
     .wizard-panel { display: none; }
-    .wizard-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    .wizard-panel.active { display: block; animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    .panel-card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 18px; padding: 28px; box-shadow: 0 2px 8px rgba(15,23,42,0.03); margin-bottom: 20px; }
-    .panel-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-    .panel-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      margin-bottom: 24px;
+    }
+    .panel-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .panel-desc {
+      font-size: 13.5px;
+      color: var(--silver-muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
 
-    /* Type selector cards */
-    .type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    /* Type selector cards (No emojis, sleek SVGs) */
+    .type-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
     .type-card {
-      border: 2px solid var(--border-color); border-radius: 14px; padding: 20px; cursor: pointer;
-      transition: all 0.2s ease; text-align: center;
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.02);
+      position: relative;
     }
-    .type-card:hover { border-color: var(--brand-accent); background: #FAFAFF; }
-    .type-card.selected { border-color: var(--brand-accent); background: #EEF2FF; }
-    .type-card-icon { font-size: 32px; margin-bottom: 8px; }
-    .type-card-title { font-size: 15px; font-weight: 800; color: var(--text-main); }
-    .type-card-desc { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
-
-    /* Template Gallery */
-    .templates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
-    .template-card {
-      border: 2px solid var(--border-color); border-radius: 14px; padding: 18px; cursor: pointer;
-      transition: all 0.2s ease; position: relative;
+    .type-card:hover {
+      border-color: rgba(229, 229, 229, 0.4);
+      background: rgba(229, 229, 229, 0.05);
+      transform: translateY(-2px);
     }
-    .template-card:hover { border-color: var(--brand-accent); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59,73,223,0.08); }
-    .template-card.selected { border-color: var(--brand-accent); background: #EEF2FF; }
-    .template-icon { font-size: 24px; margin-bottom: 8px; }
-    .template-name { font-size: 14px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-    .template-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
-    .template-badge { position: absolute; top: 10px; right: 10px; font-size: 9px; font-weight: 800; background: #F1F5F9; color: var(--text-muted); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
-    .template-card.selected .template-badge { background: var(--brand-accent); color: #FFF; }
+    .type-card.selected {
+      border-color: var(--silver);
+      background: rgba(229, 229, 229, 0.08);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .type-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(229, 229, 229, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      color: var(--silver);
+    }
+    .type-card.selected .type-card-icon {
+      background: var(--silver);
+      color: #1E1E1E;
+    }
+    .type-card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.01em;
+    }
+    .type-card-desc {
+      font-size: 12.5px;
+      color: var(--silver-muted);
+      margin-top: 6px;
+      line-height: 1.45;
+    }
 
     /* Form inputs */
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #CBD5E1;
-      font-size: 13px; font-family: inherit; color: var(--text-main); transition: border-color 0.15s;
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--silver);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--brand-accent); }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      font-size: 13.5px;
+      font-family: inherit;
+      color: #FFFFFF;
+      transition: all 0.2s ease;
+    }
+    .form-input::placeholder, .form-textarea::placeholder {
+      color: #777777;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--silver);
+      background: #383838;
+      box-shadow: 0 0 0 3px rgba(229, 229, 229, 0.1);
+    }
     .form-textarea { resize: vertical; }
+
+    /* Template Gallery */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .template-card {
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .template-card:hover {
+      border-color: rgba(229, 229, 229, 0.4);
+      background: rgba(229, 229, 229, 0.06);
+      transform: translateY(-2px);
+    }
+    .template-card.selected {
+      border-color: var(--silver);
+      background: rgba(229, 229, 229, 0.1);
+    }
+    .template-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(229, 229, 229, 0.1);
+      color: var(--silver);
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      width: fit-content;
+      margin-bottom: 10px;
+    }
+    .template-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+    }
+    .template-desc {
+      font-size: 11.5px;
+      color: var(--silver-muted);
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+    .template-meta {
+      font-size: 11px;
+      color: var(--silver-muted);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
     /* Question Builder */
     .question-card {
-      background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px;
-      margin-bottom: 14px; transition: all 0.2s ease;
+      background: #202020;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all 0.2s ease;
     }
-    .question-card:hover { border-color: #CBD5E1; }
-    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .question-badge { font-size: 12px; font-weight: 800; color: var(--brand-accent); }
-    .question-actions { display: flex; gap: 8px; }
-    .btn-sm { background: none; border: none; font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-    .btn-sm:hover { background: #E2E8F0; }
-    .btn-sm.danger { color: var(--color-pink); }
-    .btn-sm.move { color: var(--text-muted); }
+    .question-card:hover {
+      border-color: rgba(229, 229, 229, 0.3);
+    }
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .question-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--silver);
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+    }
+    .question-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sm {
+      background: rgba(229, 229, 229, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--silver);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .btn-sm:hover {
+      background: rgba(229, 229, 229, 0.18);
+      color: #FFFFFF;
+    }
+    .btn-sm.danger {
+      color: #FF8A80;
+    }
+    .btn-sm.danger:hover {
+      background: rgba(255, 138, 128, 0.15);
+      border-color: rgba(255, 138, 128, 0.4);
+    }
 
-    .choice-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
-    .choice-input { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid #CBD5E1; font-size: 12px; font-family: inherit; }
-    .choice-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; }
+    .choice-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .choice-input {
+      flex: 1;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      font-size: 13px;
+      font-family: inherit;
+      color: #FFFFFF;
+    }
+    .choice-input:focus {
+      outline: none;
+      border-color: var(--silver);
+    }
+    .choice-remove {
+      background: none;
+      border: none;
+      color: var(--silver-muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .choice-remove:hover {
+      color: #FFFFFF;
+    }
 
     /* Live Preview Panel */
-    .preview-panel { background: #0F172A; border-radius: 14px; padding: 24px; color: #FFFFFF; }
-    .preview-title { font-size: 16px; font-weight: 800; margin-bottom: 12px; }
-    .preview-question { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
-    .preview-q-text { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-    .preview-option { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #94A3B8; margin-bottom: 4px; }
-    .preview-radio { width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; }
-    .preview-text-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #334155; border-radius: 8px; padding: 8px; color: #CBD5E1; font-size: 12px; }
+    .preview-panel {
+      background: #181818;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 24px;
+      color: #FFFFFF;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .preview-header {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--silver-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: #FFFFFF;
+      letter-spacing: -0.01em;
+    }
+    .preview-question {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(229, 229, 229, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .preview-q-text {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--silver);
+    }
+    .preview-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--silver-muted);
+      margin-bottom: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .preview-radio {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid var(--silver-muted);
+      border-radius: 50%;
+    }
+    .preview-text-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(229, 229, 229, 0.1);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--silver-muted);
+      font-size: 12px;
+    }
 
     /* Review Summary */
-    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; }
-    .summary-label { font-weight: 700; color: var(--text-sub); }
-    .summary-value { font-weight: 800; color: var(--text-main); }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(229, 229, 229, 0.08);
+      font-size: 13px;
+    }
+    .summary-label { font-weight: 600; color: var(--silver-muted); }
+    .summary-value { font-weight: 800; color: #FFFFFF; }
 
-    /* Buttons */
-    .btn-row { display: flex; justify-content: space-between; margin-top: 24px; }
-    .btn-primary { background: var(--brand-accent); color: #FFF; border: none; border-radius: 100px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
-    .btn-primary:hover { background: var(--brand-hover); transform: translateY(-1px); }
-    .btn-secondary { background: #F1F5F9; color: var(--text-sub); border: none; border-radius: 100px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; }
-    .btn-secondary:hover { background: #E2E8F0; }
-    .btn-add { background: #EEF2FF; color: var(--brand-accent); border: none; border-radius: 100px; padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; }
-    .btn-add:hover { background: #DDD6FE; }
+    /* Action Buttons */
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+    }
+    .btn-primary {
+      background: var(--silver);
+      color: #1E1E1E;
+      border: none;
+      border-radius: 100px;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover {
+      background: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px rgba(229, 229, 229, 0.25);
+    }
+    .btn-secondary {
+      background: rgba(229, 229, 229, 0.08);
+      color: var(--silver);
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: rgba(229, 229, 229, 0.15);
+      border-color: rgba(229, 229, 229, 0.3);
+      color: #FFFFFF;
+    }
+    .btn-add {
+      background: rgba(229, 229, 229, 0.1);
+      color: var(--silver);
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 8px 18px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-add:hover {
+      background: var(--silver);
+      color: #1E1E1E;
+    }
 
-    .info-box { background: #EEF2FF; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--brand-accent); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .info-box {
+      background: rgba(229, 229, 229, 0.06);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 12.5px;
+      color: var(--silver);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
     @media (max-width: 768px) {
       .type-selector { grid-template-columns: 1fr; }
-      .templates-grid { grid-template-columns: 1fr 1fr; }
+      .templates-grid { grid-template-columns: 1fr; }
       .step-label { display: none; }
+      .topbar { padding: 0 16px; }
+      .wizard-container { padding: 20px 16px 40px; }
     }
   </style>
 </head>
@@ -159,8 +581,14 @@
 
   <!-- TOP BAR -->
   <header class="topbar">
-    <a href="../index.html" class="brand-logo"><span>@</span>Getitright</a>
-    <button class="btn-back" onclick="history.back()">← Back to Dashboard</button>
+    <a href="admin.html" class="brand-logo">
+      <img src="../assets/images/logo.png" alt="Getitright Logo">
+      Getitright
+    </a>
+    <a href="admin.html" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Dashboard
+    </a>
   </header>
 
   <!-- WIZARD CONTAINER -->
@@ -170,7 +598,7 @@
     <div class="step-progress">
       <div class="step-item active" id="step-indicator-1" onclick="goToStep(1)">
         <div class="step-num">1</div>
-        <span class="step-label">Type & Template</span>
+        <span class="step-label">Type &amp; Track</span>
       </div>
       <div class="step-item" id="step-indicator-2" onclick="goToStep(2)">
         <div class="step-num">2</div>
@@ -178,7 +606,7 @@
       </div>
       <div class="step-item" id="step-indicator-3" onclick="goToStep(3)">
         <div class="step-num">3</div>
-        <span class="step-label">Review & Publish</span>
+        <span class="step-label">Review &amp; Publish</span>
       </div>
     </div>
 
@@ -186,16 +614,36 @@
     <div class="wizard-panel active" id="panel-1">
       <div class="panel-card">
         <div class="panel-title">What would you like to create?</div>
-        <div class="panel-desc">Choose whether you're building a multi-question survey or a single-question poll.</div>
+        <div class="panel-desc">Choose whether you're building a comprehensive multi-step survey or a single-question voting ballot.</div>
 
         <div class="type-selector">
+          <!-- Multi-Step Survey Card (Clean SVG icon, zero emojis) -->
           <div class="type-card selected" id="type-survey" onclick="selectType('survey')">
+            <div class="type-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <line x1="10" y1="9" x2="8" y2="9"/>
+              </svg>
+            </div>
             <div class="type-card-title">Multi-Step Survey</div>
-            <div class="type-card-desc">Multiple questions with choice, rating, and text input types</div>
+            <div class="type-card-desc">Comprehensive questionnaires with multiple choices, rating metrics, and open response fields.</div>
           </div>
+
+          <!-- Single Poll Card (Clean SVG icon, zero emojis) -->
           <div class="type-card" id="type-poll" onclick="selectType('poll')">
+            <div class="type-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+                <line x1="2" y1="20" x2="22" y2="20"/>
+              </svg>
+            </div>
             <div class="type-card-title">Single Poll</div>
-            <div class="type-card-desc">One question with multiple choice options for quick voting</div>
+            <div class="type-card-desc">Targeted sovereign referendum with choice options for instant civic and community voting.</div>
           </div>
         </div>
 
@@ -204,11 +652,13 @@
           <input type="text" class="form-input" id="wizard-title" placeholder="e.g. Employee & Community Feedback Q4 2026" required>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div class="form-group">
             <label class="form-label">Category / Track</label>
             <select class="form-select" id="wizard-track">
-              <option value="General">General Public</option>
+              <option value="Constituency MP Election">Constituency MP Election</option>
+              <option value="Kitui County Wards">Kitui County Wards</option>
+              <option value="General Public">General Public</option>
               <option value="Enterprise Feedback">Enterprise Feedback</option>
               <option value="Product Roadmap">Product Roadmap</option>
               <option value="Civic Priority">Civic Priority</option>
@@ -217,53 +667,64 @@
           <div class="form-group">
             <label class="form-label">Plan Tier</label>
             <select class="form-select" id="wizard-plan">
-              <option value="free">Free</option>
-              <option value="pro">Pro</option>
-              <option value="org">Organization</option>
+              <option value="free">Civic Starter (Free)</option>
+              <option value="pro">Civic Pro</option>
+              <option value="org">Institutional Org</option>
+              <option value="election">Sovereign Election Guard</option>
             </select>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea class="form-textarea" id="wizard-desc" rows="2" placeholder="Briefly describe the purpose..."></textarea>
+          <label class="form-label">Description / Purpose</label>
+          <textarea class="form-textarea" id="wizard-desc" rows="2" placeholder="Briefly state context, background, or objectives..."></textarea>
         </div>
       </div>
 
       <!-- TEMPLATE GALLERY -->
       <div class="panel-card" id="template-gallery-section">
         <div class="panel-title">Start from a Template</div>
-        <div class="panel-desc">Choose a pre-built template to auto-populate questions, or start from scratch.</div>
+        <div class="panel-desc">Select an institutional template to auto-populate research questions, or start from an empty canvas.</div>
 
-        <div class="type-card" style="margin-bottom:14px;text-align:left;display:flex;align-items:center;gap:12px;padding:14px 18px;" id="template-scratch" onclick="selectTemplate(null)">
+        <!-- Start from Scratch Card (Clean SVG icon, zero emojis) -->
+        <div class="type-card selected" style="margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:14px;padding:16px 20px;" id="template-scratch" onclick="selectTemplate(null)">
+          <div class="type-card-icon" style="margin-bottom:0;width:38px;height:38px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
           <div>
-            <div class="type-card-title" style="font-size:13px;">Start from Scratch</div>
-            <div class="type-card-desc">Build your own questions from an empty canvas</div>
+            <div class="type-card-title" style="font-size:14px;">Start from Scratch</div>
+            <div class="type-card-desc" style="margin-top:2px;">Build your own questions from an empty canvas</div>
           </div>
         </div>
 
         <div class="templates-grid" id="templates-grid">
-          <div style="text-align:center;color:var(--text-muted);padding:20px;grid-column:1/-1;">Loading templates...</div>
+          <!-- Rendered dynamically, guaranteed fallback -->
         </div>
       </div>
 
       <div class="btn-row">
         <div></div>
-        <button class="btn-primary" onclick="goToStep(2)">Continue to Questions →</button>
+        <button class="btn-primary" onclick="goToStep(2)">
+          Continue to Questions
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
     </div>
 
     <!-- ====== STEP 2: BUILD QUESTIONS ====== -->
     <div class="wizard-panel" id="panel-2">
-      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;">
+      <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:24px;">
 
         <!-- Left: Question Builder -->
         <div>
           <div class="panel-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
               <div>
-                <div class="panel-title">Questions & Configuration</div>
-                <div class="panel-desc" style="margin-bottom:0;">Add, reorder, and configure your questions.</div>
+                <div class="panel-title" style="font-size:18px;">Questions Configuration</div>
+                <div class="panel-desc" style="margin-bottom:0;">Configure questions, input formats, and options.</div>
               </div>
               <button class="btn-add" onclick="addQuestion()">+ Add Question</button>
             </div>
@@ -276,68 +737,66 @@
 
         <!-- Right: Live Preview -->
         <div>
-          <div class="preview-panel" style="position:sticky;top:20px;">
-            <div style="font-size:10px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">LIVE PREVIEW</div>
+          <div class="preview-panel" style="position:sticky;top:90px;">
+            <div class="preview-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              REAL-TIME PREVIEW
+            </div>
             <div class="preview-title" id="preview-title">Your Survey Title</div>
             <div id="preview-questions">
-              <div style="color:#64748B;font-size:12px;">Add questions to see a live preview.</div>
+              <div style="color:var(--silver-muted);font-size:12px;">Add questions to see a live preview.</div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="btn-row">
-        <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
-        <button class="btn-primary" onclick="goToStep(3)">Review & Publish →</button>
+        <button class="btn-secondary" onclick="goToStep(1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <button class="btn-primary" onclick="goToStep(3)">
+          Review &amp; Publish
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
     </div>
 
     <!-- ====== STEP 3: REVIEW & PUBLISH ====== -->
     <div class="wizard-panel" id="panel-3">
       <div class="panel-card">
-        <div class="panel-title">Review & Publish</div>
-        <div class="panel-desc">Confirm your survey/poll details before publishing.</div>
+        <div class="panel-title">Review &amp; Publish</div>
+        <div class="panel-desc">Confirm campaign configuration, target metrics, and cryptographic ledger settings.</div>
 
-        <div id="review-summary">
-          <!-- Rendered dynamically -->
+        <div id="review-summary" style="margin-bottom:24px;">
+          <!-- Dynamically populated -->
         </div>
-      </div>
 
-      <div class="panel-card">
-        <div class="panel-title" style="font-size:16px;">Publication Settings</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px;">
-          <div class="form-group">
-            <label class="form-label">Target Responses</label>
-            <input type="number" class="form-input" id="wizard-target" value="500" min="10" max="100000">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Target Verified Responses</label>
+            <input type="number" class="form-input" id="wizard-target" value="500" min="10">
           </div>
-          <div class="form-group">
-            <label class="form-label">Duration / Deadline</label>
-            <select class="form-select" id="wizard-duration">
-              <option value="24">24 Hours (1 Day)</option>
-              <option value="48">48 Hours (2 Days)</option>
-              <option value="72">72 Hours (3 Days)</option>
-              <option value="168" selected>7 Days (1 Week)</option>
-              <option value="336">14 Days (2 Weeks)</option>
-              <option value="720">30 Days (1 Month)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Publish Mode</label>
-            <select class="form-select" id="wizard-publish-mode">
-              <option value="immediate">Publish Immediately</option>
-              <option value="scheduled">Schedule for Later</option>
-            </select>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Active Duration (Hours)</label>
+            <input type="number" class="form-input" id="wizard-duration" value="168" min="1">
           </div>
         </div>
 
-        <div class="info-box" style="margin-top:10px;">
-          Share link and live countdown timer will be active immediately upon publishing.
+        <div class="info-box" style="margin-top:16px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Share links and live countdown timer will be active immediately upon publishing.
         </div>
       </div>
 
       <div class="btn-row">
-        <button class="btn-secondary" onclick="goToStep(2)">← Back to Edit</button>
-        <button class="btn-primary" onclick="publishWizard()" style="background:var(--color-green);">Confirm & Publish</button>
+        <button class="btn-secondary" onclick="goToStep(2)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Edit
+        </button>
+        <button class="btn-primary" onclick="publishWizard()">
+          Confirm &amp; Publish Now
+        </button>
       </div>
     </div>
 
@@ -345,73 +804,75 @@
 
   <!-- JAVASCRIPT -->
   <script>
-    const API = window.location.origin + '/api';
+    const API = (window.location.port === '8090' || window.location.port === '5000') 
+      ? window.location.origin + '/api' 
+      : (window.location.origin.includes('localhost') ? 'http://127.0.0.1:5000/api' : '/api');
 
     const DEFAULT_TEMPLATES = [
       {
         id: "tmpl-nps", name: "Customer Satisfaction (NPS)",
-        description: "Measure Net Promoter Score and customer happiness with targeted feedback questions.",
-        category: "Enterprise Feedback", icon: "star",
+        description: "Measure Net Promoter Score and consumer happiness with targeted metric inquiries.",
+        category: "Enterprise Feedback",
         questions: [
-          { questionText: "How likely are you to recommend us to a friend or colleague? (0-10)", questionType: "rating", options: [] },
-          { questionText: "What is the primary reason for your score?", questionType: "text", options: [] },
-          { questionText: "Which aspect of our service impressed you the most?", questionType: "choice", options: ["Speed", "Quality", "Support", "Price", "Reliability"] },
-          { questionText: "Any additional feedback?", questionType: "text", options: [] }
+          { questionText: "How likely are you to recommend our services to colleagues or community? (0-10)", questionType: "rating", options: [] },
+          { questionText: "What is the primary factor behind your score?", questionType: "text", options: [] },
+          { questionText: "Which aspect of our service impressed you the most?", questionType: "choice", options: ["Speed & Latency", "Integrity & Trust", "Customer Support", "Cost Value", "Reliability"] },
+          { questionText: "Any additional suggestions for platform improvement?", questionType: "text", options: [] }
         ]
       },
       {
         id: "tmpl-employee", name: "Employee Engagement",
-        description: "Assess team morale, workplace satisfaction, and identify areas for improvement.",
-        category: "Enterprise Feedback", icon: "users",
+        description: "Assess workforce morale, institutional alignment, and operational efficiency.",
+        category: "Enterprise Feedback",
         questions: [
-          { questionText: "How satisfied are you with your current role?", questionType: "choice", options: ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"] },
-          { questionText: "Do you feel your contributions are valued by the team?", questionType: "choice", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
-          { questionText: "What would you change about the workplace?", questionType: "text", options: [] },
-          { questionText: "Rate your work-life balance (1-5)", questionType: "rating", options: [] }
+          { questionText: "How satisfied are you with your current role and responsibilities?", questionType: "choice", options: ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"] },
+          { questionText: "Do you feel your contributions are recognized and valued?", questionType: "choice", options: ["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"] },
+          { questionText: "What is one key change that would improve workplace output?", questionType: "text", options: [] },
+          { questionText: "Rate your overall work-life balance (1 to 5)", questionType: "rating", options: [] }
         ]
       },
       {
-        id: "tmpl-product", name: "Product Feedback",
-        description: "Gather user insights on product features, usability, and improvement priorities.",
-        category: "Product Roadmap", icon: "rocket",
+        id: "tmpl-product", name: "Product Roadmap Feedback",
+        description: "Gather feedback on features, user experience, and next priorities.",
+        category: "Product Roadmap",
         questions: [
-          { questionText: "How often do you use our product?", questionType: "choice", options: ["Daily", "Weekly", "Monthly", "Rarely"] },
-          { questionText: "Which feature do you use the most?", questionType: "choice", options: ["Dashboard", "Reports", "Collaboration", "Integrations", "Other"] },
-          { questionText: "Rate the overall usability (1-5)", questionType: "rating", options: [] },
-          { questionText: "What feature should we build next?", questionType: "text", options: [] }
+          { questionText: "How frequently do you interact with the platform?", questionType: "choice", options: ["Daily", "Weekly", "Monthly", "Infrequently"] },
+          { questionText: "Which core capability provides the greatest utility?", questionType: "choice", options: ["Live Tally Feed", "Verified Merkle Consensus", "Mobile Polling App", "Export Reports", "Audit Logs"] },
+          { questionText: "Rate the overall user interface clarity (1 to 5)", questionType: "rating", options: [] },
+          { questionText: "Which capability should the engineering team prioritize next?", questionType: "text", options: [] }
         ]
       },
       {
         id: "tmpl-civic", name: "Civic Community Priorities",
-        description: "Identify community needs and priorities for public resource allocation.",
-        category: "Civic Priority", icon: "building",
+        description: "Identify regional community needs and priorities for development allocation.",
+        category: "Civic Priority",
         questions: [
-          { questionText: "What is the most pressing issue in your community?", questionType: "choice", options: ["Healthcare", "Education", "Infrastructure", "Security", "Employment", "Water & Sanitation"] },
-          { questionText: "How would you rate local government responsiveness?", questionType: "rating", options: [] },
-          { questionText: "Describe a specific improvement you'd like to see", questionType: "text", options: [] },
-          { questionText: "Would you participate in a follow-up town hall?", questionType: "choice", options: ["Yes", "No", "Maybe"] }
+          { questionText: "What is the most pressing development priority in your constituency?", questionType: "choice", options: ["Clean Water Access", "Feeder Roads & Transit", "Healthcare Dispensaries", "Youth Employment", "Rural Electrification", "Education Bursaries"] },
+          { questionText: "How would you rate local leadership transparency and accountability?", questionType: "rating", options: [] },
+          { questionText: "Specify an urgent public project needed in your ward:", questionType: "text", options: [] },
+          { questionText: "Would you participate in scheduled public citizen audits?", questionType: "choice", options: ["Yes, Definitely", "No", "Interested Online Only"] }
         ]
       },
       {
-        id: "tmpl-event", name: "Event Feedback",
-        description: "Post-event evaluation to measure attendee satisfaction and gather improvement suggestions.",
-        category: "General", icon: "calendar",
+        id: "tmpl-event", name: "Institutional Event Evaluation",
+        description: "Post-event evaluation to measure attendee engagement and session impact.",
+        category: "General Public",
         questions: [
-          { questionText: "How would you rate the overall event experience?", questionType: "rating", options: [] },
-          { questionText: "Which session was most valuable?", questionType: "choice", options: ["Keynote", "Panel Discussion", "Workshop", "Networking", "Q&A"] },
-          { questionText: "Would you attend a future event?", questionType: "choice", options: ["Definitely", "Probably", "Unlikely", "No"] },
-          { questionText: "Suggestions for future events?", questionType: "text", options: [] }
+          { questionText: "Rate the overall effectiveness of the symposium (1 to 5)", questionType: "rating", options: [] },
+          { questionText: "Which segment provided the highest actionable value?", questionType: "choice", options: ["Keynote Address", "Panel Deliberation", "Working Groups", "Public Q&A Forum"] },
+          { questionText: "Will you recommend future cohorts to colleagues?", questionType: "choice", options: ["Definitely", "Probably", "Unlikely", "No"] },
+          { questionText: "Key recommendations for future organizational sessions:", questionType: "text", options: [] }
         ]
       },
       {
-        id: "tmpl-market", name: "Market Research",
-        description: "Understand market demographics, preferences, and purchasing behavior.",
-        category: "Enterprise Feedback", icon: "chart",
+        id: "tmpl-market", name: "Regional Market Analysis",
+        description: "Understand citizen demographics, expenditure preferences, and market dynamics.",
+        category: "Enterprise Feedback",
         questions: [
-          { questionText: "What is your age range?", questionType: "choice", options: ["18-24", "25-34", "35-44", "45-54", "55+"] },
-          { questionText: "How did you hear about us?", questionType: "choice", options: ["Social Media", "Search Engine", "Word of Mouth", "Advertisement", "Other"] },
-          { questionText: "What factors most influence your purchasing decisions?", questionType: "choice", options: ["Price", "Quality", "Brand", "Reviews", "Convenience"] },
-          { questionText: "Any other comments about your preferences?", questionType: "text", options: [] }
+          { questionText: "Select your demographic age range:", questionType: "choice", options: ["18-24", "25-34", "35-44", "45-54", "55+"] },
+          { questionText: "Through which channel did you first discover the initiative?", questionType: "choice", options: ["Community Assembly", "Social Platforms", "Peer Recommendation", "Official Press", "Broadcast Media"] },
+          { questionText: "What consideration holds the highest weight in your decision?", questionType: "choice", options: ["Demonstrated Integrity", "Ease of Access", "Sovereign Protection", "Speed"] },
+          { questionText: "General feedback regarding civic service accessibility:", questionType: "text", options: [] }
         ]
       }
     ];
@@ -421,13 +882,13 @@
     let selectedTemplate = null;
     let templates = [...DEFAULT_TEMPLATES];
     let questions = [
-      { id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true }
+      { id: 1, text: 'What is your primary choice?', type: 'choice', choices: ['Option A', 'Option B'], required: true }
     ];
 
     // === STEP NAVIGATION ===
     function goToStep(n) {
       if (n === 2 && !document.getElementById('wizard-title').value.trim()) {
-        alert('Please enter a title first.');
+        alert('Please enter a campaign title to continue.');
         return;
       }
       currentStep = n;
@@ -443,6 +904,7 @@
 
       if (n === 2) { renderQuestions(); updatePreview(); }
       if (n === 3) renderReview();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // === TYPE SELECTION ===
@@ -455,15 +917,17 @@
       document.getElementById('template-gallery-section').style.display = type === 'survey' ? 'block' : 'none';
 
       if (type === 'poll') {
-        questions = [{ id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B', 'Option C'], required: true }];
+        questions = [{ id: 1, text: 'Cast your verifiable ballot:', type: 'choice', choices: ['Candidate A', 'Candidate B', 'Undecided'], required: true }];
+      } else {
+        questions = [{ id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true }];
       }
+      updatePreview();
     }
 
     // === TEMPLATE SELECTION ===
     function selectTemplate(tmpl) {
       selectedTemplate = tmpl;
 
-      // Deselect all
       document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
       document.getElementById('template-scratch').classList.remove('selected');
 
@@ -474,7 +938,6 @@
         const card = document.querySelector(`[data-template-id="${tmpl.id}"]`);
         if (card) card.classList.add('selected');
 
-        // Auto-populate questions from template
         questions = tmpl.questions.map((q, i) => ({
           id: Date.now() + i,
           text: q.questionText,
@@ -483,208 +946,250 @@
           required: true
         }));
 
-        // Auto-fill title and track if empty
         if (!document.getElementById('wizard-title').value.trim()) {
           document.getElementById('wizard-title').value = tmpl.name;
         }
-        // Match category
         const trackSel = document.getElementById('wizard-track');
         for (let opt of trackSel.options) {
           if (opt.value === tmpl.category) { trackSel.value = tmpl.category; break; }
         }
       }
+      updatePreview();
     }
 
-    // === LOAD TEMPLATES FROM API ===
+    // === LOAD TEMPLATES FROM API WITH GUARANTEED FALLBACK ===
     async function loadTemplates() {
       renderTemplateGallery();
       try {
-        const res = await fetch(`${API}/surveys/templates`);
-        if (res.ok) {
+        const res = await fetch(`${API}/surveys/templates`).catch(() => null);
+        if (res && res.ok) {
           const data = await res.json();
-          if (data && data.length) templates = data;
+          if (data && data.length) {
+            templates = data;
+          }
         }
-      } catch (e) { console.error('Failed to load templates:', e); }
+      } catch (e) {
+        // Fallback already assigned
+      }
       renderTemplateGallery();
     }
 
     function renderTemplateGallery() {
       const grid = document.getElementById('templates-grid');
-      if (!templates.length) {
-        grid.innerHTML = '<div style="color:var(--text-muted);padding:20px;grid-column:1/-1;text-align:center;">No templates available.</div>';
-        return;
+      if (!templates || !templates.length) {
+        templates = [...DEFAULT_TEMPLATES];
       }
       grid.innerHTML = templates.map(t => `
         <div class="template-card" data-template-id="${t.id}" onclick='selectTemplate(${JSON.stringify(t).replace(/'/g, "\\'")})'>
-          <div class="template-badge">${t.category}</div>
-          <div class="template-name">${t.name}</div>
-          <div class="template-desc">${t.description}</div>
-          <div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-weight:700;">${t.questions.length} questions</div>
+          <div>
+            <div class="template-badge">${t.category}</div>
+            <div class="template-name">${t.name}</div>
+            <div class="template-desc">${t.description}</div>
+          </div>
+          <div class="template-meta">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            ${(t.questions || []).length} Inquiries
+          </div>
         </div>
       `).join('');
     }
 
     // === QUESTION BUILDER ===
+    function renderQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = questions.map((q, i) => `
+        <div class="question-card" data-qid="${q.id}">
+          <div class="question-header">
+            <span class="question-badge">QUESTION 0${i + 1}</span>
+            <div class="question-actions">
+              ${questions.length > 1 ? `<button class="btn-sm danger" onclick="removeQuestion(${q.id})">Delete</button>` : ''}
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:12px;">
+            <input type="text" class="form-input" placeholder="Type inquiry text here..." value="${escapeHtml(q.text)}" oninput="updateQuestionText(${q.id}, this.value)">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label class="form-label">Response Format</label>
+              <select class="form-select" onchange="updateQuestionType(${q.id}, this.value)" style="padding:8px 12px;font-size:12px;">
+                <option value="choice" ${q.type === 'choice' ? 'selected' : ''}>Multiple Choice</option>
+                <option value="rating" ${q.type === 'rating' ? 'selected' : ''}>Rating Scale (1 to 5)</option>
+                <option value="text" ${q.type === 'text' ? 'selected' : ''}>Open Text Answer</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Requirement</label>
+              <select class="form-select" onchange="updateQuestionRequired(${q.id}, this.value)" style="padding:8px 12px;font-size:12px;">
+                <option value="true" ${q.required ? 'selected' : ''}>Mandatory</option>
+                <option value="false" ${!q.required ? 'selected' : ''}>Optional</option>
+              </select>
+            </div>
+          </div>
+
+          ${q.type === 'choice' ? `
+            <div style="margin-top:14px;">
+              <label class="form-label">Choice Options</label>
+              <div id="choices-container-${q.id}">
+                ${q.choices.map((c, ci) => `
+                  <div class="choice-row">
+                    <input type="text" class="choice-input" value="${escapeHtml(c)}" placeholder="Option ${ci + 1}" oninput="updateChoiceText(${q.id}, ${ci}, this.value)">
+                    ${q.choices.length > 2 ? `<button class="choice-remove" onclick="removeChoice(${q.id}, ${ci})" title="Remove option">&times;</button>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+              <button class="btn-sm" style="margin-top:6px;" onclick="addChoice(${q.id})">+ Add Choice</button>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
     function addQuestion() {
-      questions.push({ id: Date.now(), text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true });
+      questions.push({
+        id: Date.now(),
+        text: '',
+        type: 'choice',
+        choices: ['Option A', 'Option B'],
+        required: true
+      });
       renderQuestions();
       updatePreview();
     }
 
-    function removeQuestion(id) {
-      if (questions.length <= 1) return alert('Must have at least 1 question.');
-      questions = questions.filter(q => q.id !== id);
+    function removeQuestion(qid) {
+      if (questions.length <= 1) return;
+      questions = questions.filter(q => q.id !== qid);
       renderQuestions();
       updatePreview();
     }
 
-    function moveQuestion(id, dir) {
-      const idx = questions.findIndex(q => q.id === id);
-      const newIdx = idx + dir;
-      if (newIdx < 0 || newIdx >= questions.length) return;
-      [questions[idx], questions[newIdx]] = [questions[newIdx], questions[idx]];
-      renderQuestions();
-      updatePreview();
+    function updateQuestionText(qid, val) {
+      const q = questions.find(q => q.id === qid);
+      if (q) { q.text = val; updatePreview(); }
     }
 
-    function addChoice(qId) {
-      const q = questions.find(x => x.id === qId);
+    function updateQuestionType(qid, val) {
+      const q = questions.find(q => q.id === qid);
       if (q) {
+        q.type = val;
+        if (val === 'choice' && (!q.choices || !q.choices.length)) {
+          q.choices = ['Option A', 'Option B'];
+        }
+        renderQuestions();
+        updatePreview();
+      }
+    }
+
+    function updateQuestionRequired(qid, val) {
+      const q = questions.find(q => q.id === qid);
+      if (q) { q.required = (val === 'true'); updatePreview(); }
+    }
+
+    function addChoice(qid) {
+      const q = questions.find(q => q.id === qid);
+      if (q && q.choices) {
         q.choices.push(`Option ${String.fromCharCode(65 + q.choices.length)}`);
         renderQuestions();
         updatePreview();
       }
     }
 
-    function removeChoice(qId, idx) {
-      const q = questions.find(x => x.id === qId);
-      if (q && q.choices.length > 1) {
-        q.choices.splice(idx, 1);
+    function removeChoice(qid, ci) {
+      const q = questions.find(q => q.id === qid);
+      if (q && q.choices && q.choices.length > 2) {
+        q.choices.splice(ci, 1);
         renderQuestions();
         updatePreview();
       }
     }
 
-    function renderQuestions() {
-      const container = document.getElementById('questions-container');
-      container.innerHTML = questions.map((q, qIdx) => {
-        const isChoice = q.type === 'choice';
-        const isRating = q.type === 'rating';
-        const isText = q.type === 'text';
-
-        return `
-          <div class="question-card">
-            <div class="question-header">
-              <span class="question-badge">Q${qIdx + 1}: ${isChoice ? 'Multiple Choice' : isRating ? 'Rating Scale' : 'Text Input'}</span>
-              <div class="question-actions">
-                <button class="btn-sm move" onclick="moveQuestion(${q.id}, -1)" title="Move up">↑</button>
-                <button class="btn-sm move" onclick="moveQuestion(${q.id}, 1)" title="Move down">↓</button>
-                <button class="btn-sm danger" onclick="removeQuestion(${q.id})">Delete</button>
-              </div>
-            </div>
-
-            <input type="text" class="form-input" placeholder="Type your question..." value="${q.text}"
-              oninput="questions[${qIdx}].text = this.value; updatePreview();" style="margin-bottom:10px;">
-
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
-              <select class="form-select" style="width:auto;padding:6px 12px;font-size:12px;"
-                onchange="questions[${qIdx}].type = this.value; renderQuestions(); updatePreview();">
-                <option value="choice" ${isChoice ? 'selected' : ''}>Multiple Choice</option>
-                <option value="rating" ${isRating ? 'selected' : ''}>Rating Scale (1-5)</option>
-                <option value="text" ${isText ? 'selected' : ''}>Free Text Input</option>
-              </select>
-              <label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--text-sub);cursor:pointer;">
-                <input type="checkbox" ${q.required ? 'checked' : ''} onchange="questions[${qIdx}].required = this.checked"> Required
-              </label>
-            </div>
-
-            ${isChoice ? `
-              <div style="margin-top:6px;">
-                ${q.choices.map((c, cIdx) => `
-                  <div class="choice-row">
-                    <input type="text" class="choice-input" value="${c}" placeholder="Choice text..."
-                      oninput="questions[${qIdx}].choices[${cIdx}] = this.value; updatePreview();">
-                    <button class="choice-remove" onclick="removeChoice(${q.id}, ${cIdx})">&times;</button>
-                  </div>
-                `).join('')}
-                <button class="btn-add" style="margin-top:6px;" onclick="addChoice(${q.id})">+ Add Choice</button>
-              </div>
-            ` : isRating ? `
-              <div class="info-box">Respondents will rate on a scale from 1 to 5 stars.</div>
-            ` : `
-              <div class="info-box">Respondents will type a free-text answer in a text box.</div>
-            `}
-          </div>
-        `;
-      }).join('');
+    function updateChoiceText(qid, ci, val) {
+      const q = questions.find(q => q.id === qid);
+      if (q && q.choices && q.choices[ci] !== undefined) {
+        q.choices[ci] = val;
+        updatePreview();
+      }
     }
 
     // === LIVE PREVIEW ===
     function updatePreview() {
-      const title = document.getElementById('wizard-title').value || 'Your Survey Title';
+      const title = document.getElementById('wizard-title').value.trim() || 'Untitled Campaign';
       document.getElementById('preview-title').textContent = title;
 
       const container = document.getElementById('preview-questions');
       if (!questions.length) {
-        container.innerHTML = '<div style="color:#64748B;font-size:12px;">Add questions to see a live preview.</div>';
+        container.innerHTML = '<div style="color:var(--silver-muted);font-size:12px;">Add questions to see a live preview.</div>';
         return;
       }
 
       container.innerHTML = questions.map((q, i) => {
         let content = '';
         if (q.type === 'choice') {
-          content = q.choices.map(c => `<div class="preview-option"><div class="preview-radio"></div>${c}</div>`).join('');
+          content = q.choices.map(c => `
+            <div class="preview-option">
+              <div class="preview-radio"></div>
+              <span>${c || 'Empty option'}</span>
+            </div>
+          `).join('');
         } else if (q.type === 'rating') {
-          content = '<div style="font-size:12px;color:#94A3B8;margin-top:4px;">Rating (1 to 5)</div>';
+          content = `
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              ${[1,2,3,4,5].map(num => `
+                <div style="flex:1;text-align:center;padding:6px;border-radius:6px;background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;color:var(--silver);font-family:var(--font-mono);">${num}</div>
+              `).join('')}
+            </div>
+          `;
         } else {
-          content = '<input class="preview-text-input" placeholder="Type your answer..." disabled>';
+          content = '<input class="preview-text-input" placeholder="Type verified response..." disabled>';
         }
         return `
           <div class="preview-question">
-            <div class="preview-q-text">${i + 1}. ${q.text || 'Untitled Question'}${q.required ? ' *' : ''}</div>
+            <div class="preview-q-text">${i + 1}. ${q.text || 'Untitled Inquiry'}${q.required ? ' *' : ''}</div>
             ${content}
           </div>
         `;
       }).join('');
     }
 
-    // === REVIEW ===
+    // === REVIEW SUMMARY ===
     function renderReview() {
       const title = document.getElementById('wizard-title').value || 'Untitled';
       const track = document.getElementById('wizard-track').value;
       const plan = document.getElementById('wizard-plan').value;
-      const desc = document.getElementById('wizard-desc').value || 'No description';
+      const desc = document.getElementById('wizard-desc').value || 'No description provided';
 
       const choiceCount = questions.filter(q => q.type === 'choice').length;
       const textCount = questions.filter(q => q.type === 'text').length;
       const ratingCount = questions.filter(q => q.type === 'rating').length;
 
       document.getElementById('review-summary').innerHTML = `
-        <div class="summary-row"><span class="summary-label">Type</span><span class="summary-value">${selectedType === 'survey' ? 'Survey' : 'Poll'}</span></div>
+        <div class="summary-row"><span class="summary-label">Format Type</span><span class="summary-value">${selectedType === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}</span></div>
         <div class="summary-row"><span class="summary-label">Title</span><span class="summary-value">${title}</span></div>
-        <div class="summary-row"><span class="summary-label">Category</span><span class="summary-value">${track}</span></div>
-        <div class="summary-row"><span class="summary-label">Plan</span><span class="summary-value">${plan}</span></div>
-        <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:400px;text-align:right;">${desc}</span></div>
-        <div class="summary-row"><span class="summary-label">Total Questions</span><span class="summary-value">${questions.length}</span></div>
-        <div class="summary-row"><span class="summary-label">Question Types</span><span class="summary-value">${choiceCount} choice · ${textCount} text · ${ratingCount} rating</span></div>
-        ${selectedTemplate ? `<div class="summary-row"><span class="summary-label">Template Used</span><span class="summary-value">${selectedTemplate.name}</span></div>` : ''}
+        <div class="summary-row"><span class="summary-label">Track / Classification</span><span class="summary-value">${track}</span></div>
+        <div class="summary-row"><span class="summary-label">Consensus Tier</span><span class="summary-value">${plan.toUpperCase()}</span></div>
+        <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:440px;text-align:right;">${desc}</span></div>
+        <div class="summary-row"><span class="summary-label">Total Inquiries</span><span class="summary-value">${questions.length}</span></div>
+        <div class="summary-row"><span class="summary-label">Input Breakdown</span><span class="summary-value">${choiceCount} Choice · ${textCount} Text · ${ratingCount} Rating</span></div>
+        ${selectedTemplate ? `<div class="summary-row"><span class="summary-label">Institutional Template</span><span class="summary-value">${selectedTemplate.name}</span></div>` : ''}
 
-        <div style="margin-top:20px;">
-          <div style="font-size:14px;font-weight:800;color:var(--text-main);margin-bottom:12px;">Questions Preview</div>
+        <div style="margin-top:24px;">
+          <div style="font-size:13px;font-weight:800;color:var(--silver);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em;">Questions Structure</div>
           ${questions.map((q, i) => `
-            <div style="background:#F8FAFC;border:1px solid var(--border-color);border-radius:10px;padding:12px;margin-bottom:8px;">
-              <div style="font-weight:700;font-size:13px;color:var(--text-main);">Q${i+1}: ${q.text || 'Untitled Question'}</div>
-              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-                Type: ${q.type}${q.type === 'choice' ? ` · ${q.choices.length} options` : ''}${q.required ? ' · Required' : ''}
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(229,229,229,0.1);border-radius:12px;padding:14px;margin-bottom:10px;">
+              <div style="font-weight:700;font-size:13px;color:#FFFFFF;">Q${i+1}: ${q.text || 'Untitled Question'}</div>
+              <div style="font-size:11.5px;color:var(--silver-muted);margin-top:4px;font-family:var(--font-mono);">
+                Format: ${q.type.toUpperCase()}${q.type === 'choice' ? ` · ${q.choices.length} options` : ''}${q.required ? ' · Mandatory' : ''}
               </div>
-              ${q.type === 'choice' ? `<div style="font-size:11px;color:var(--text-sub);margin-top:4px;">${q.choices.join(' • ')}</div>` : ''}
+              ${q.type === 'choice' ? `<div style="font-size:11.5px;color:var(--silver);margin-top:6px;">${q.choices.join(' • ')}</div>` : ''}
             </div>
           `).join('')}
         </div>
       `;
     }
 
-    // === PUBLISH ===
+    // === PUBLISH HANDLER ===
     async function publishWizard() {
       const title = document.getElementById('wizard-title').value.trim();
       const track = document.getElementById('wizard-track').value;
@@ -693,8 +1198,8 @@
       const target = parseInt(document.getElementById('wizard-target').value) || 500;
       const durationHours = parseInt(document.getElementById('wizard-duration').value) || 168;
 
-      if (!title) return alert('Please enter a title.');
-      if (!questions.length || !questions[0].text) return alert('Please add at least one question.');
+      if (!title) return alert('Please enter a campaign title.');
+      if (!questions.length || !questions[0].text) return alert('Please enter question text before publishing.');
 
       if (selectedType === 'survey') {
         const questionsPayload = questions.map(q => ({
@@ -707,39 +1212,62 @@
           const res = await fetch(`${API}/surveys`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, description: desc, track, plan, targetResponses: target, durationHours, questions: questionsPayload })
+            body: JSON.stringify({
+              title,
+              description: desc,
+              track,
+              plan,
+              targetResponses: target,
+              durationHours,
+              questions: questionsPayload
+            })
           });
           if (res.ok) {
-            alert('Survey published successfully!');
+            alert('Survey successfully published to the sovereign ledger!');
             window.location.href = 'admin.html';
           } else {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
             alert('Error: ' + (err.detail || 'Could not create survey'));
           }
-        } catch (e) { alert('Network error creating survey'); }
+        } catch (e) {
+          alert('Network error communicating with the API endpoint.');
+        }
       } else {
         const allChoices = questions.flatMap(q => q.choices || []).filter(c => c.trim());
         try {
           const res = await fetch(`${API}/polls`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, description: desc, category: track, plan, durationHours, options: allChoices.length ? allChoices : ['Yes', 'No'] })
+            body: JSON.stringify({
+              title,
+              description: desc,
+              category: track,
+              plan,
+              durationHours,
+              options: allChoices.length ? allChoices : ['Yes', 'No']
+            })
           });
           if (res.ok) {
-            alert('Poll published successfully!');
+            alert('Poll referendum published successfully!');
             window.location.href = 'admin.html';
           } else {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
             alert('Error: ' + (err.detail || 'Could not create poll'));
           }
-        } catch (e) { alert('Network error creating poll'); }
+        } catch (e) {
+          alert('Network error communicating with the API endpoint.');
+        }
       }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
     // === INIT ===
     window.addEventListener('DOMContentLoaded', () => {
       loadTemplates();
-      // Listen for title changes to update preview
       document.getElementById('wizard-title').addEventListener('input', updatePreview);
     });
   </script>
