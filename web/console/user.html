@@ -66,6 +66,8 @@
       <div class="brand">GetItRight <span class="muted">/ Client Dashboard</span></div>
       <div class="top-actions">
         <span id="user-name" class="muted"></span>
+        <button id="create-survey">+ Create survey</button>
+        <button id="create-poll">+ Create poll</button>
         <button id="refresh">Refresh</button>
         <button id="logout">Log out</button>
       </div>
@@ -162,22 +164,15 @@
         : '<div class="empty">No response data yet.</div>';
     }
 
-    function exportSurvey(survey, responses, format) {
-      const body = `<h1>${esc(survey.title)}</h1><p>${esc(survey.description || '')}</p><p>Responses: ${responses.length}</p>` +
-        responses.map((r, i) => `<h3>Response ${i + 1} — ${esc(r.timestamp)}</h3><p>Respondent: ${esc(r.respondent)}</p><p>${(r.answers || []).map(a => `${esc(a.questionId)}: ${esc(a.answer ?? a)}`).join('<br>')}</p>`).join('');
-
-      if (format === 'doc') {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(new Blob([`<html><body>${body}</body></html>`], { type: 'application/msword' }));
-        link.download = `${survey.title.replace(/[^a-z0-9]+/gi, '-')}.doc`;
-        link.click();
-        return;
-      }
-
-      const win = window.open('', '_blank');
-      win.document.write(`<html><body>${body}</body></html>`);
-      win.document.close();
-      win.print();
+    async function exportSurvey(survey, format) {
+      const response = await request(`/surveys/${encodeURIComponent(survey.id)}/export?format=${format === 'docx' ? 'docx' : 'pdf'}`);
+      if (!response.ok) throw new Error('Unable to export survey responses.');
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${survey.title}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
     }
 
     async function renderSurvey(survey) {
@@ -190,7 +185,7 @@
           <select data-export="${esc(survey.id)}">
             <option value="">Export responses...</option>
             <option value="pdf">PDF (print/save)</option>
-            <option value="doc">Word document</option>
+            <option value="docx">Word document (.docx)</option>
           </select>
           <button data-toggle="${esc(survey.id)}">View interactions</button>
         </div>
@@ -260,8 +255,7 @@
         select.onchange = async () => {
           if (!select.value) return;
           const survey = surveys.find(s => s.id === select.dataset.export);
-          const r = await request(`/surveys/${encodeURIComponent(survey.id)}/responses`);
-          exportSurvey(survey, r.ok ? await r.json() : [], select.value);
+          await exportSurvey(survey, select.value);
           select.value = '';
         };
       });
@@ -316,6 +310,8 @@
     document.getElementById('logout').onclick = logout;
     document.getElementById('sidebar-logout').onclick = logout;
     document.getElementById('refresh').onclick = () => loadDashboard();
+    document.getElementById('create-survey').onclick = () => location.href = 'create.html?type=survey';
+    document.getElementById('create-poll').onclick = () => location.href = 'create.html?type=poll';
 
     bindNavigation();
     loadDashboard().catch(() => {

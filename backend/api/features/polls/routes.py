@@ -1,5 +1,7 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.polls.schemas import (
@@ -17,10 +19,69 @@ from backend.api.middleware.auth_middleware import (
 
 router = APIRouter(prefix="/polls", tags=["Polls"])
 
+
+def _build_poll_export(db: Session, owner_id: Optional[str], export_format: str):
+    from backend.api.features.polls.models import PollModel, VoteTransactionModel
+
+    query = db.query(PollModel)
+    if owner_id:
+        query = query.filter(PollModel.OwnerId == owner_id)
+    polls = query.all()
+    poll_ids = [poll.Id for poll in polls]
+    transactions = db.query(VoteTransactionModel).filter(
+        VoteTransactionModel.PollId.in_(poll_ids)
+    ).order_by(VoteTransactionModel.Timestamp.desc()).all() if poll_ids else []
+    transactions_by_poll = {}
+    for transaction in transactions:
+        transactions_by_poll.setdefault(transaction.PollId, []).append(transaction)
+
+    if export_format == "pdf":
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
+        output = BytesIO()
+        document = SimpleDocTemplate(output, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+        styles = getSampleStyleSheet()
+        story = [Paragraph("GetItRight poll results", styles["Title"])]
+        for poll in polls:
+            votes = transactions_by_poll.get(poll.Id, [])
+            story.extend([Spacer(1, 12), Paragraph(poll.Title, styles["Heading2"]), Paragraph(f"Votes: {len(votes)}", styles["BodyText"])])
+            for index, vote in enumerate(votes, 1):
+                story.append(Paragraph(f"Vote {index} — {vote.Timestamp}: {vote.OptionLabel}", styles["BodyText"]))
+        document.build(story)
+        return output.getvalue(), "application/pdf", "getitright-poll-results.pdf"
+
+    from docx import Document
+    document = Document()
+    document.add_heading("GetItRight poll results", 0)
+    for poll in polls:
+        votes = transactions_by_poll.get(poll.Id, [])
+        document.add_heading(poll.Title, level=1)
+        document.add_paragraph(f"Votes: {len(votes)}")
+        for index, vote in enumerate(votes, 1):
+            document.add_paragraph(f"Vote {index} — {vote.Timestamp}: {vote.OptionLabel}", style="List Bullet")
+    output = BytesIO()
+    document.save(output)
+    return output.getvalue(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "getitright-poll-results.docx"
+
 @router.get("", response_model=List[PollOut])
 def get_polls(plan: Optional[str] = Query(None, description="Filter polls by tier plan"), db: Session = Depends(get_db)):
     """Fetch real polls directly from database, optionally filtered by plan (free, pro, org, election)."""
     return PollsController.get_polls(db, plan)
+
+
+@router.get("/exports/results")
+def export_poll_results(
+    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx)$"),
+    owner_id: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db),
+):
+    if current_user["role"] != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Administrator access required")
+    data, media_type, filename = _build_poll_export(db, owner_id, export_format)
+    return StreamingResponse(BytesIO(data), media_type=media_type, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 @router.get("/{poll_id}", response_model=PollOut)
 def get_single_poll(poll_id: str, db: Session = Depends(get_db)):
@@ -81,4 +142,3 @@ def get_poll_audit_transactions(
     if current_user["role"] != "Admin" and poll.ownerId != current_user["sub"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this poll")
     return get_transactions_by_poll(db, poll_id)
-
