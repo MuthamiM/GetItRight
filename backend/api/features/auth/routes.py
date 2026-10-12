@@ -86,7 +86,8 @@ def get_current_profile(token_data: dict = Depends(get_current_user_token), db: 
         status=user.Status,
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,
-        consoleUrl=redirect_url
+        consoleUrl=redirect_url,
+        isAdmin=(user.Role == "Admin")
     )
 
 @router.post("/logout")

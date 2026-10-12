@@ -27,6 +27,10 @@ class Settings(BaseSettings):
 
     # Comma-separated explicit origin allowlist.
     CORS_ORIGINS: str = "http://localhost:8888,http://localhost:8090"
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "onboarding@resend.dev"
+    RESEND_TEST_RECIPIENT: str = ""
+    PASSWORD_RESET_URL: str = "http://127.0.0.1:8090/auth/forgot-password.html"
 
     model_config = {"case_sensitive": True}
 

@@ -1,9 +1,15 @@
+import hashlib
+import json
+import secrets
+import urllib.parse
+import urllib.request
 import uuid
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from backend.api.features.auth.models import UserModel
+from backend.api.features.auth.models import PasswordRecoveryCodeModel, UserModel
+from backend.api.core.config import settings
 from backend.api.features.auth.schemas import LoginRequest, RegisterRequest, AuthResponse, UserOut
 from backend.api.core.security import verify_password, get_password_hash, create_access_token
 
@@ -40,7 +46,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
             detail="Invalid password provided."
         )
 
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/pages/vote.html"
+    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/user.html"
     if user.ConsoleUrl != redirect_url:
         user.ConsoleUrl = redirect_url
         db.commit()
@@ -157,18 +163,83 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
     )
 
 def generate_email_otp(db: Session, email: str) -> dict:
-    # No mail delivery provider is configured. Do not expose OTPs in an API
-    # response or pretend delivery has occurred.
-    return {
-        "success": True,
-        "message": "If the account exists, password recovery instructions will be sent when email delivery is configured."
-    }
+    user = db.query(UserModel).filter(UserModel.Email == email.strip()).first()
+    generic = "If the account exists, a recovery code has been sent to its email address."
+    if not user or not settings.RESEND_API_KEY:
+        return {"success": True, "message": generic}
+
+    now = datetime.now(timezone.utc)
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    db.query(PasswordRecoveryCodeModel).filter(
+        PasswordRecoveryCodeModel.UserId == user.Id,
+        PasswordRecoveryCodeModel.UsedAt.is_(None),
+    ).update({"UsedAt": now})
+    db.add(PasswordRecoveryCodeModel(
+        Id=str(uuid.uuid4()),
+        UserId=user.Id,
+        CodeHash=hashlib.sha256(code.encode()).hexdigest(),
+        ExpiresAt=now + timedelta(minutes=10),
+        CreatedAt=now,
+    ))
+    db.commit()
+    reset_link = (
+        f"{settings.PASSWORD_RESET_URL}?email={urllib.parse.quote(user.Email)}"
+        f"&otp={urllib.parse.quote(code)}"
+    )
+    payload = json.dumps({
+        "from": settings.RESEND_FROM_EMAIL,
+        "to": [settings.RESEND_TEST_RECIPIENT or user.Email],
+        "subject": "GetItRight password recovery code",
+        "text": (
+            "Use this link to update your GetItRight password:\n\n"
+            f"{reset_link}\n\n"
+            f"If the link does not open, use recovery code {code}. It expires in 10 minutes."
+        ),
+        "html": (
+            "<p>Use the button below to update your GetItRight password.</p>"
+            f'<p><a href="{reset_link}">Update your password</a></p>'
+            f"<p>This link expires in 10 minutes. Your recovery code is {code}.</p>"
+        ),
+    }).encode()
+    request = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+            "Content-Type": "application/json",
+            "User-Agent": "GetItRight/1.0",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10):
+            return {"success": True, "message": generic}
+    except Exception as error:
+        db.query(PasswordRecoveryCodeModel).filter(
+            PasswordRecoveryCodeModel.UserId == user.Id,
+            PasswordRecoveryCodeModel.CodeHash == hashlib.sha256(code.encode()).hexdigest(),
+        ).update({"UsedAt": datetime.now(timezone.utc)})
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Password recovery email could not be sent. Please try again later.",
+        ) from error
 
 def verify_otp_and_reset_password(db: Session, email: str, otp: str, new_password: str) -> dict:
-    raise HTTPException(
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail="Password recovery is temporarily unavailable because secure email delivery is not configured."
-    )
+    user = db.query(UserModel).filter(UserModel.Email == email.strip()).first()
+    now = datetime.now(timezone.utc)
+    recovery = db.query(PasswordRecoveryCodeModel).filter(
+        PasswordRecoveryCodeModel.UserId == (user.Id if user else ""),
+        PasswordRecoveryCodeModel.UsedAt.is_(None),
+        PasswordRecoveryCodeModel.ExpiresAt > now,
+    ).order_by(PasswordRecoveryCodeModel.CreatedAt.desc()).first()
+    if not recovery or not secrets.compare_digest(recovery.CodeHash, hashlib.sha256(otp.strip().encode()).hexdigest()):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired recovery code.")
+    user.Password = get_password_hash(new_password.strip())
+    user.TokenVersion = (user.TokenVersion or 0) + 1
+    recovery.UsedAt = now
+    db.commit()
+    return {"success": True, "message": "Password reset successfully. You can now sign in."}
 
 def reset_password_for_email(db: Session, email: str, new_password: str) -> dict:
     raise HTTPException(status_code=status.HTTP_410_GONE, detail="Use the OTP password recovery flow")
@@ -196,7 +267,7 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
         user.Organization = _plain_text(org, "Organization", 200)
     db.commit()
     db.refresh(user)
-    redirect_url = "/console/admin.html"
+    redirect_url = "/console/admin.html" if user.Role == "Admin" else user.ConsoleUrl
     return UserOut(
         id=user.Id,
         fullName=user.FullName,
@@ -247,5 +318,3 @@ def verify_user_token(db: Session, token_str: str) -> dict:
         isAdmin=(user.Role == "Admin")
     )
     return {"valid": True, "user": user_out}
-
-
