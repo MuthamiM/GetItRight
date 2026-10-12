@@ -6,89 +6,328 @@
   <title>GetItRight — Client Dashboard</title>
   <style>
     :root { font-family: Inter, system-ui, sans-serif; color: #303030; background: #e5e5e5; }
-    * { box-sizing: border-box; } body { margin: 0; } button, input, select { font: inherit; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input, select { font: inherit; }
     .shell { min-height: 100vh; display: flex; flex-direction: column; }
     .topbar { height: 68px; padding: 0 24px; background: #fff; border-bottom: 1px solid #d0d0d0; display: flex; justify-content: space-between; align-items: center; }
-    .brand { font-size: 21px; font-weight: 800; } .top-actions { display: flex; gap: 10px; align-items: center; }
-    .top-actions button, .sidebar button { border: 1px solid #d0d0d0; border-radius: 20px; padding: 8px 15px; background: #fff; cursor: pointer; }
-    .layout { display: flex; flex: 1; } .sidebar { width: 240px; flex-shrink: 0; background: #fff; border-right: 1px solid #d0d0d0; padding: 22px 14px; }
+    .brand { font-size: 21px; font-weight: 800; }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .top-actions button,
+    .sidebar button { border: 1px solid #d0d0d0; border-radius: 20px; padding: 8px 15px; background: #fff; cursor: pointer; }
+    .layout { display: flex; flex: 1; }
+    .sidebar { width: 240px; flex-shrink: 0; background: #fff; border-right: 1px solid #d0d0d0; padding: 22px 14px; }
     .sidebar h3 { margin: 0 12px 18px; font-size: 12px; text-transform: uppercase; color: #888; }
     .nav { display: block; width: 100%; padding: 12px; border: 0 !important; border-radius: 8px !important; text-align: left; margin-bottom: 5px; color: #555; }
-    .nav.active, .nav:hover { background: #303030; color: #fff; } .sidebar .logout { margin: 28px 12px 0; width: calc(100% - 24px); }
-    main { flex: 1; min-width: 0; padding: 28px; max-width: 1400px; } .muted { color: #777; font-size: 14px; }
+    .nav.active, .nav:hover { background: #303030; color: #fff; }
+    .sidebar .logout { margin: 28px 12px 0; width: calc(100% - 24px); }
+    main { flex: 1; min-width: 0; padding: 28px; max-width: 1400px; }
+    .muted { color: #777; font-size: 14px; }
     .panel { background: #fff; border: 1px solid #d0d0d0; border-radius: 14px; padding: 20px; margin-bottom: 18px; }
-    .kpis, .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .kpi strong { display: block; font-size: 27px; margin-top: 8px; } .kpi span { color: #777; font-size: 12px; text-transform: uppercase; font-weight: 700; }
+    .kpis, .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kpi strong { display: block; font-size: 27px; margin-top: 8px; }
+    .kpi span { color: #777; font-size: 12px; text-transform: uppercase; font-weight: 700; }
     .chart { min-height: 220px; display: flex; align-items: end; gap: 10px; padding: 22px 8px 4px; border-bottom: 1px solid #ddd; }
     .bar-wrap { flex: 1; height: 175px; display: flex; flex-direction: column; justify-content: end; align-items: center; gap: 6px; }
-    .bar { width: 100%; max-width: 42px; min-height: 2px; background: #303030; border-radius: 5px 5px 0 0; } .bar-label, .bar-value { font-size: 11px; color: #777; }
+    .bar { width: 100%; max-width: 42px; min-height: 2px; background: #303030; border-radius: 5px 5px 0 0; }
+    .bar-label, .bar-value { font-size: 11px; color: #777; }
     .notification { border-left: 4px solid #303030; background: #f8f8f8; border-radius: 8px; padding: 11px 13px; margin: 8px 0; }
-    .notification strong { display: block; } .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
-    .toolbar select, .toolbar button, form button { border: 1px solid #d0d0d0; border-radius: 8px; padding: 8px 12px; background: #303030; color: #fff; cursor: pointer; }
-    .toolbar select { background: #fff; color: #303030; } .survey-card { border: 1px solid #e1e5ea; border-radius: 10px; padding: 15px; margin: 12px 0; }
-    .survey-card h3 { margin: 0 0 5px; } .summary { display: flex; gap: 18px; flex-wrap: wrap; color: #777; font-size: 13px; }
+    .notification strong { display: block; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+    .toolbar select, .toolbar button, form button, .pill-button { border: 1px solid #d0d0d0; border-radius: 8px; padding: 8px 12px; background: #303030; color: #fff; cursor: pointer; }
+    .toolbar select { background: #fff; color: #303030; }
+    .survey-card { border: 1px solid #e1e5ea; border-radius: 10px; padding: 15px; margin: 12px 0; }
+    .survey-card h3 { margin: 0 0 5px; }
+    .summary { display: flex; gap: 18px; flex-wrap: wrap; color: #777; font-size: 13px; }
     .response { background: #f8f9fa; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; }
-    label { display: block; margin: 10px 0 5px; font-weight: 700; font-size: 13px; } input { width: 100%; padding: 10px; border: 1px solid #d0d0d0; border-radius: 8px; }
-    form button { width: 100%; margin-top: 12px; } .notice { min-height: 20px; margin-top: 10px; font-size: 13px; } .empty { color: #777; padding: 12px 0; }
-    @media (max-width: 900px) { .sidebar { width: 190px; } .kpis { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 640px) { .layout { display: block; } .sidebar { width: 100%; display: flex; overflow-x: auto; padding: 8px; gap: 5px; } .sidebar h3, .logout { display: none; } .nav { white-space: nowrap; width: auto; } main { padding: 16px; } .grid { grid-template-columns: 1fr; } }
+    label { display: block; margin: 10px 0 5px; font-weight: 700; font-size: 13px; }
+    input { width: 100%; padding: 10px; border: 1px solid #d0d0d0; border-radius: 8px; }
+    form button { width: 100%; margin-top: 12px; }
+    .notice { min-height: 20px; margin-top: 10px; font-size: 13px; }
+    .empty { color: #777; padding: 12px 0; }
+    @media (max-width: 900px) {
+      .sidebar { width: 190px; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .layout { display: block; }
+      .sidebar { width: 100%; display: flex; overflow-x: auto; padding: 8px; gap: 5px; }
+      .sidebar h3, .logout { display: none; }
+      .nav { white-space: nowrap; width: auto; }
+      main { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <div class="shell">
-    <header class="topbar"><div class="brand">GetItRight <span class="muted">/ Client Dashboard</span></div><div class="top-actions"><span id="user-name" class="muted"></span><button id="logout">Log out</button></div></header>
+    <header class="topbar">
+      <div class="brand">GetItRight <span class="muted">/ Client Dashboard</span></div>
+      <div class="top-actions">
+        <span id="user-name" class="muted"></span>
+        <button id="refresh">Refresh</button>
+        <button id="logout">Log out</button>
+      </div>
+    </header>
+
     <div class="layout">
-      <aside class="sidebar"><h3>Workspace</h3><button class="nav active" data-section="overview">Overview</button><button class="nav" data-section="surveys">My surveys</button><button class="nav" data-section="profile">Profile</button><button class="nav logout" id="sidebar-logout">Log out</button></aside>
+      <aside class="sidebar">
+        <h3>Workspace</h3>
+        <button class="nav active" data-section="overview">Overview</button>
+        <button class="nav" data-section="surveys">My surveys</button>
+        <button class="nav" data-section="profile">Profile</button>
+        <button class="nav logout" id="sidebar-logout">Log out</button>
+      </aside>
+
       <main>
         <section id="overview">
-          <h1 id="welcome">Your dashboard</h1><p class="muted">Live performance for your posted surveys and responses.</p>
-          <div class="kpis"><div class="panel kpi"><span>Posted surveys</span><strong id="kpi-surveys">—</strong></div><div class="panel kpi"><span>Total responses</span><strong id="kpi-responses">—</strong></div><div class="panel kpi"><span>Active surveys</span><strong id="kpi-active">—</strong></div><div class="panel kpi"><span>Response target</span><strong id="kpi-target">—</strong></div></div>
-          <div class="grid"><section class="panel"><h2>Responses by survey</h2><div id="survey-chart" class="chart"><div class="empty">Loading live data...</div></div></section><section class="panel"><h2>Monthly response activity</h2><div id="monthly-chart" class="chart"><div class="empty">Loading live data...</div></div></section></div>
-          <section class="panel"><h2>Notifications</h2><div id="notifications"><div class="empty">Loading...</div></div></section>
+          <h1 id="welcome">Your dashboard</h1>
+          <p class="muted">Live performance for your posted surveys and responses.</p>
+          <div class="kpis">
+            <div class="panel kpi"><span>Posted surveys</span><strong id="kpi-surveys">—</strong></div>
+            <div class="panel kpi"><span>Total responses</span><strong id="kpi-responses">—</strong></div>
+            <div class="panel kpi"><span>Active surveys</span><strong id="kpi-active">—</strong></div>
+            <div class="panel kpi"><span>Response target</span><strong id="kpi-target">—</strong></div>
+          </div>
+          <div class="grid">
+            <section class="panel">
+              <h2>Responses by survey</h2>
+              <div id="survey-chart" class="chart"><div class="empty">Loading live data...</div></div>
+            </section>
+            <section class="panel">
+              <h2>Monthly response activity</h2>
+              <div id="monthly-chart" class="chart"><div class="empty">Loading live data...</div></div>
+            </section>
+          </div>
+          <section class="panel">
+            <h2>Notifications</h2>
+            <div id="notifications"><div class="empty">Loading...</div></div>
+          </section>
         </section>
-        <section id="surveys" hidden><h2>My surveys and interactions</h2><div id="survey-list"><div class="empty">Loading...</div></div></section>
-        <section id="profile" hidden><div class="grid"><div class="panel"><h2>Profile</h2><form id="profile-form"><label for="full-name">Full name</label><input id="full-name" required maxlength="120"><label for="organization">Organization</label><input id="organization" maxlength="200"><button type="submit">Save profile</button></form><div class="notice" id="profile-notice"></div></div><div class="panel"><h2>Change password</h2><form id="password-form"><label for="old-password">Current password</label><input id="old-password" type="password" required><label for="new-password">New password</label><input id="new-password" type="password" minlength="12" required><button type="submit">Change password</button></form><div class="notice" id="password-notice"></div></div></div></section>
+
+        <section id="surveys" hidden>
+          <h2>My surveys and interactions</h2>
+          <div id="survey-list"><div class="empty">Loading...</div></div>
+        </section>
+
+        <section id="profile" hidden>
+          <div class="grid">
+            <div class="panel">
+              <h2>Profile</h2>
+              <form id="profile-form">
+                <label for="full-name">Full name</label>
+                <input id="full-name" required maxlength="120">
+                <label for="organization">Organization</label>
+                <input id="organization" maxlength="200">
+                <button type="submit">Save profile</button>
+              </form>
+              <div class="notice" id="profile-notice"></div>
+            </div>
+            <div class="panel">
+              <h2>Change password</h2>
+              <form id="password-form">
+                <label for="old-password">Current password</label>
+                <input id="old-password" type="password" required>
+                <label for="new-password">New password</label>
+                <input id="new-password" type="password" minlength="12" required>
+                <button type="submit">Change password</button>
+              </form>
+              <div class="notice" id="password-notice"></div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   </div>
+
   <script>
-    const API = `${window.location.origin}/api`, token = () => localStorage.getItem('gir_token');
-    const request = (path, options = {}) => fetch(`${API}${path}`, {...options, headers: {'Content-Type':'application/json', ...(options.headers || {}), Authorization: `Bearer ${token() || ''}`}});
-    const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const API = `${window.location.origin}/api`;
+    const token = () => localStorage.getItem('gir_token');
+    const request = (path, options = {}) => fetch(`${API}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+        Authorization: `Bearer ${token() || ''}`,
+      },
+    });
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
     const setNotice = (id, text, error = false) => { const el = document.getElementById(id); el.textContent = text; el.style.color = error ? '#b42318' : '#16794c'; };
+
     function renderBars(target, values, label) {
       const max = Math.max(...values.map(item => item.value), 1);
-      target.innerHTML = values.length ? values.map(item => `<div class="bar-wrap"><span class="bar-value">${item.value}</span><div class="bar" style="height:${Math.max(2, item.value / max * 145)}px" title="${esc(label)}: ${item.value}"></div><span class="bar-label">${esc(item.label)}</span></div>`).join('') : '<div class="empty">No response data yet.</div>';
+      target.innerHTML = values.length
+        ? values.map(item => `<div class="bar-wrap"><span class="bar-value">${item.value}</span><div class="bar" style="height:${Math.max(2, item.value / max * 145)}px" title="${esc(label)}: ${item.value}"></div><span class="bar-label">${esc(item.label)}</span></div>`).join('')
+        : '<div class="empty">No response data yet.</div>';
     }
+
     function exportSurvey(survey, responses, format) {
-      const body = `<h1>${esc(survey.title)}</h1><p>${esc(survey.description || '')}</p><p>Responses: ${responses.length}</p>` + responses.map((r, i) => `<h3>Response ${i + 1} — ${esc(r.timestamp)}</h3><p>Respondent: ${esc(r.respondent)}</p><p>${(r.answers || []).map(a => `${esc(a.questionId)}: ${esc(a.answer ?? a)}`).join('<br>')}</p>`).join('');
-      if (format === 'doc') { const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([`<html><body>${body}</body></html>`], {type:'application/msword'})); link.download = `${survey.title.replace(/[^a-z0-9]+/gi,'-')}.doc`; link.click(); } else { const win = window.open('','_blank'); win.document.write(`<html><body>${body}</body></html>`); win.document.close(); win.print(); }
+      const body = `<h1>${esc(survey.title)}</h1><p>${esc(survey.description || '')}</p><p>Responses: ${responses.length}</p>` +
+        responses.map((r, i) => `<h3>Response ${i + 1} — ${esc(r.timestamp)}</h3><p>Respondent: ${esc(r.respondent)}</p><p>${(r.answers || []).map(a => `${esc(a.questionId)}: ${esc(a.answer ?? a)}`).join('<br>')}</p>`).join('');
+
+      if (format === 'doc') {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([`<html><body>${body}</body></html>`], { type: 'application/msword' }));
+        link.download = `${survey.title.replace(/[^a-z0-9]+/gi, '-')}.doc`;
+        link.click();
+        return;
+      }
+
+      const win = window.open('', '_blank');
+      win.document.write(`<html><body>${body}</body></html>`);
+      win.document.close();
+      win.print();
     }
+
     async function renderSurvey(survey) {
-      const response = await request(`/surveys/${encodeURIComponent(survey.id)}/responses`), responses = response.ok ? await response.json() : [];
-      return `<article class="survey-card"><h3>${esc(survey.title)}</h3><div class="summary"><span>Status: ${esc(survey.status)}</span><span>${responses.length} responses</span><span>${survey.questions.length} questions</span></div><div class="toolbar"><select data-export="${esc(survey.id)}"><option value="">Export responses...</option><option value="pdf">PDF (print/save)</option><option value="doc">Word document</option></select><button data-toggle="${esc(survey.id)}">View interactions</button></div><div id="responses-${esc(survey.id)}" hidden>${responses.length ? responses.map((r,i) => `<div class="response"><strong>Response ${i+1}</strong> · ${esc(r.timestamp)}<br>${(r.answers || []).map(a => `${esc(a.questionId)}: ${esc(a.answer ?? a)}`).join('<br>')}</div>`).join('') : '<div class="empty">No responses yet.</div>'}</div></article>`;
+      const response = await request(`/surveys/${encodeURIComponent(survey.id)}/responses`);
+      const responses = response.ok ? await response.json() : [];
+      return `<article class="survey-card">
+        <h3>${esc(survey.title)}</h3>
+        <div class="summary"><span>Status: ${esc(survey.status)}</span><span>${responses.length} responses</span><span>${(survey.questions || []).length} questions</span></div>
+        <div class="toolbar">
+          <select data-export="${esc(survey.id)}">
+            <option value="">Export responses...</option>
+            <option value="pdf">PDF (print/save)</option>
+            <option value="doc">Word document</option>
+          </select>
+          <button data-toggle="${esc(survey.id)}">View interactions</button>
+        </div>
+        <div id="responses-${esc(survey.id)}" hidden>
+          ${responses.length ? responses.map((r, i) => `<div class="response"><strong>Response ${i + 1}</strong> · ${esc(r.timestamp)}<br>${(r.answers || []).map(a => `${esc(a.questionId)}: ${esc(a.answer ?? a)}`).join('<br>')}</div>`).join('') : '<div class="empty">No responses yet.</div>'}
+        </div>
+      </article>`;
     }
-    async function load() {
+
+    async function loadDashboard() {
       if (!token()) return location.replace('../auth/login.html');
-      const me = await request('/auth/me'); if (!me.ok) { localStorage.clear(); return location.replace('../auth/login.html'); }
-      const user = await me.json(); if (user.isAdmin) return location.replace('admin.html');
-      document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`; document.getElementById('user-name').textContent = user.fullName;
-      document.getElementById('full-name').value = user.fullName || ''; document.getElementById('organization').value = user.organization || '';
-      const [surveysRes, notificationsRes, statsRes] = await Promise.all([request('/surveys'), request('/notifications'), request(`/customer/dashboard-stats/${encodeURIComponent(user.id)}`)]);
-      const allSurveys = surveysRes.ok ? await surveysRes.json() : [], surveys = allSurveys.filter(s => s.ownerId === user.id), stats = statsRes.ok ? await statsRes.json() : null;
-      const responseCounts = await Promise.all(surveys.map(async s => { const r = await request(`/surveys/${encodeURIComponent(s.id)}/responses`); return r.ok ? await r.json() : []; }));
-      document.getElementById('kpi-surveys').textContent = surveys.length; document.getElementById('kpi-responses').textContent = responseCounts.reduce((n,r) => n+r.length, 0); document.getElementById('kpi-active').textContent = surveys.filter(s => s.status === 'Active').length; document.getElementById('kpi-target').textContent = surveys.reduce((n,s) => n+(s.targetResponses || 0), 0);
-      renderBars(document.getElementById('survey-chart'), surveys.map((s,i) => ({label:s.title.slice(0,12), value:responseCounts[i].length})), 'Responses');
-      renderBars(document.getElementById('monthly-chart'), (stats?.monthlyVotes || []).map(m => ({label:m.month, value:m.votes})), 'Monthly responses');
-      const notices = notificationsRes.ok ? await notificationsRes.json() : []; document.getElementById('notifications').innerHTML = notices.length ? notices.map(n => `<div class="notification"><strong>${esc(n.title || 'Platform notice')}</strong>${esc(n.message)}</div>`).join('') : '<div class="empty">No new notifications.</div>';
-      document.getElementById('survey-list').innerHTML = surveys.length ? (await Promise.all(surveys.map(renderSurvey))).join('') : '<div class="empty">No posted surveys.</div>';
-      document.querySelectorAll('[data-toggle]').forEach(button => button.onclick = () => { const el=document.getElementById(`responses-${button.dataset.toggle}`); el.hidden=!el.hidden; button.textContent=el.hidden?'View interactions':'Hide interactions'; });
-      document.querySelectorAll('[data-export]').forEach(select => select.onchange = async () => { if (!select.value) return; const survey=surveys.find(s=>s.id===select.dataset.export), r=await request(`/surveys/${encodeURIComponent(survey.id)}/responses`); exportSurvey(survey, r.ok ? await r.json() : [], select.value); select.value=''; });
+      const me = await request('/auth/me');
+      if (!me.ok) {
+        localStorage.clear();
+        return location.replace('../auth/login.html');
+      }
+
+      const user = await me.json();
+      if (user.isAdmin) return location.replace('admin.html');
+
+      document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`;
+      document.getElementById('user-name').textContent = user.fullName;
+      document.getElementById('full-name').value = user.fullName || '';
+      document.getElementById('organization').value = user.organization || '';
+
+      const [surveysRes, notificationsRes, statsRes] = await Promise.all([
+        request('/surveys'),
+        request('/notifications'),
+        request(`/customer/dashboard-stats/${encodeURIComponent(user.id)}`),
+      ]);
+
+      const allSurveys = surveysRes.ok ? await surveysRes.json() : [];
+      const surveys = allSurveys.filter(s => s.ownerId === user.id);
+      const stats = statsRes.ok ? await statsRes.json() : null;
+      const responseCounts = await Promise.all(surveys.map(async s => {
+        const r = await request(`/surveys/${encodeURIComponent(s.id)}/responses`);
+        return r.ok ? await r.json() : [];
+      }));
+
+      const totalResponses = responseCounts.reduce((n, r) => n + r.length, 0);
+      document.getElementById('kpi-surveys').textContent = surveys.length;
+      document.getElementById('kpi-responses').textContent = totalResponses;
+      document.getElementById('kpi-active').textContent = surveys.filter(s => s.status === 'Active').length;
+      document.getElementById('kpi-target').textContent = surveys.reduce((n, s) => n + (s.targetResponses || 0), 0);
+
+      renderBars(document.getElementById('survey-chart'), surveys.map((s, i) => ({ label: s.title.slice(0, 12), value: responseCounts[i].length })), 'Responses');
+      renderBars(document.getElementById('monthly-chart'), (stats?.monthlyVotes || []).map(m => ({ label: m.month, value: m.votes })), 'Monthly responses');
+
+      const notices = notificationsRes.ok ? await notificationsRes.json() : [];
+      document.getElementById('notifications').innerHTML = notices.length
+        ? notices.map(n => `<div class="notification"><strong>${esc(n.title || 'Platform notice')}</strong>${esc(n.message)}</div>`).join('')
+        : '<div class="empty">No new notifications.</div>';
+
+      document.getElementById('survey-list').innerHTML = surveys.length
+        ? (await Promise.all(surveys.map(renderSurvey))).join('')
+        : '<div class="empty">No posted surveys.</div>';
+
+      document.querySelectorAll('[data-toggle]').forEach(button => {
+        button.onclick = () => {
+          const el = document.getElementById(`responses-${button.dataset.toggle}`);
+          el.hidden = !el.hidden;
+          button.textContent = el.hidden ? 'View interactions' : 'Hide interactions';
+        };
+      });
+
+      document.querySelectorAll('[data-export]').forEach(select => {
+        select.onchange = async () => {
+          if (!select.value) return;
+          const survey = surveys.find(s => s.id === select.dataset.export);
+          const r = await request(`/surveys/${encodeURIComponent(survey.id)}/responses`);
+          exportSurvey(survey, r.ok ? await r.json() : [], select.value);
+          select.value = '';
+        };
+      });
     }
-    document.querySelectorAll('.nav').forEach(button => button.onclick = () => { document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active')); button.classList.add('active'); document.querySelectorAll('main > section').forEach(s=>s.hidden=s.id!==button.dataset.section); });
-    document.getElementById('profile-form').onsubmit = async e => { e.preventDefault(); const r=await request('/auth/profile',{method:'PUT',body:JSON.stringify({fullName:document.getElementById('full-name').value,organization:document.getElementById('organization').value})}); setNotice('profile-notice',r.ok?'Profile updated.':'Unable to update profile.',!r.ok); };
-    document.getElementById('password-form').onsubmit = async e => { e.preventDefault(); const r=await request('/auth/change-password',{method:'POST',body:JSON.stringify({oldPassword:document.getElementById('old-password').value,newPassword:document.getElementById('new-password').value})}); if(r.ok){localStorage.clear();location.replace('../auth/login.html')}else{const d=await r.json().catch(()=>({}));setNotice('password-notice',d.detail||'Unable to change password.',true)} };
-    async function logout(){await request('/auth/logout',{method:'POST'}).catch(()=>{});localStorage.clear();location.replace('../auth/login.html')} document.getElementById('logout').onclick=logout; document.getElementById('sidebar-logout').onclick=logout; load().catch(() => { localStorage.clear(); location.replace('../auth/login.html'); });
+
+    function bindNavigation() {
+      document.querySelectorAll('.nav').forEach(button => {
+        button.onclick = () => {
+          document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
+          button.classList.add('active');
+          document.querySelectorAll('main > section').forEach(s => { s.hidden = s.id !== button.dataset.section; });
+        };
+      });
+    }
+
+    document.getElementById('profile-form').onsubmit = async e => {
+      e.preventDefault();
+      const r = await request('/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify({
+          fullName: document.getElementById('full-name').value,
+          organization: document.getElementById('organization').value,
+        }),
+      });
+      setNotice('profile-notice', r.ok ? 'Profile updated.' : 'Unable to update profile.', !r.ok);
+    };
+
+    document.getElementById('password-form').onsubmit = async e => {
+      e.preventDefault();
+      const r = await request('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          oldPassword: document.getElementById('old-password').value,
+          newPassword: document.getElementById('new-password').value,
+        }),
+      });
+      if (r.ok) {
+        localStorage.clear();
+        location.replace('../auth/login.html');
+        return;
+      }
+      const d = await r.json().catch(() => ({}));
+      setNotice('password-notice', d.detail || 'Unable to change password.', true);
+    };
+
+    async function logout() {
+      await request('/auth/logout', { method: 'POST' }).catch(() => {});
+      localStorage.clear();
+      location.replace('../auth/login.html');
+    }
+
+    document.getElementById('logout').onclick = logout;
+    document.getElementById('sidebar-logout').onclick = logout;
+    document.getElementById('refresh').onclick = () => loadDashboard();
+
+    bindNavigation();
+    loadDashboard().catch(() => {
+      localStorage.clear();
+      location.replace('../auth/login.html');
+    });
+
+    setInterval(() => {
+      if (document.visibilityState === 'visible' && token()) {
+        loadDashboard().catch(() => {});
+      }
+    }, 60000);
   </script>
 </body>
 </html>
