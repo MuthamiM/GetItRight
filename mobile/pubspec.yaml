@@ -1,7 +1,7 @@
 name: getitright_mobile
-description: "Getitright - Production Survey and Polling Cross-Platform App"
+description: "IcapsQ - Production Survey and Feedback Cross-Platform App"
 publish_to: "none"
-version: 2.0.0+3
+version: 2.1.0+4
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

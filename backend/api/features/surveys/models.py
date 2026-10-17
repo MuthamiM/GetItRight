@@ -1,9 +1,10 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.api.core.database import Base
 
 class SurveyModel(Base):
     __tablename__ = "Surveys"
+    __table_args__ = {"extend_existing": True}
 
     Id = Column(String, primary_key=True, index=True)
     Title = Column(String, nullable=False)
@@ -24,6 +25,7 @@ class SurveyModel(Base):
 
 class SurveyQuestionModel(Base):
     __tablename__ = "SurveyQuestions"
+    __table_args__ = {"extend_existing": True}
 
     Id = Column(Integer, primary_key=True, autoincrement=True)
     SurveyId = Column(String, ForeignKey("Surveys.Id"), nullable=False, index=True)
@@ -37,6 +39,7 @@ class SurveyQuestionModel(Base):
 
 class SurveyResponseModel(Base):
     __tablename__ = "SurveyResponses"
+    __table_args__ = {"extend_existing": True}
 
     Id = Column(Integer, primary_key=True, autoincrement=True)
     SurveyId = Column(String, nullable=False, index=True)
@@ -46,4 +49,12 @@ class SurveyResponseModel(Base):
     ReceiptHash = Column(String, nullable=False)
     MerkleLeafIndex = Column(Integer, nullable=False)
     Timestamp = Column(String, nullable=False)
+    VoterName = Column(String, nullable=True)
+    VoterIdNumber = Column(String, nullable=True)
+    DeviceName = Column(String, nullable=True)
+    DeviceOS = Column(String, nullable=True)
+    County = Column(String, nullable=True)
+    Latitude = Column(Float, nullable=True)
+    Longitude = Column(Float, nullable=True)
+    GpsCoordinates = Column(String, nullable=True)
 

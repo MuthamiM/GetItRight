@@ -264,7 +264,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Getitright Official App',
+                              'IcapsQ Official App',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -273,7 +273,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                             ),
                             SizedBox(height: 3),
                             Text(
-                              'Version 2.0.0 (Build 3)',
+                              'Version 2.1.0 (Build 4)',
                               style: TextStyle(
                                 color: Color(0xFFB8B8B8),
                                 fontSize: 12,
@@ -308,7 +308,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'Getitright updates ensure you have the latest cryptographic verification rules, live voting feeds, and performance optimizations.',
+                      'IcapsQ updates ensure you have the latest cryptographic verification rules, live voting feeds, and performance optimizations.',
                       style: TextStyle(
                         color: Color(0xFFD0D0D0),
                         fontSize: 11.5,
@@ -402,7 +402,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'You are using the latest version of Getitright (v2.0.0)',
+              'You are using the latest version of IcapsQ (v2.1.0)',
               style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
             ),
             backgroundColor: Color(0xFFE5E5E5),
@@ -492,7 +492,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'Downloading Getitright v$version...',
+                    'Downloading IcapsQ v$version...',
                     style: const TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
                   ),
                   backgroundColor: const Color(0xFFE5E5E5),

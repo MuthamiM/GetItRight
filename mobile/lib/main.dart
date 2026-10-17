@@ -13,16 +13,16 @@ import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const GetitrightApp());
+  runApp(const IcapsQApp());
 }
 
-class GetitrightApp extends StatelessWidget {
-  const GetitrightApp({super.key});
+class IcapsQApp extends StatelessWidget {
+  const IcapsQApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Getitright',
+      title: 'IcapsQ',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: const SplashScreen(),
@@ -161,7 +161,7 @@ class _RootNavigationCoordinatorState
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'Downloading Getitright v$version...',
+                    'Downloading IcapsQ v$version...',
                     style: const TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
                   ),
                   backgroundColor: const Color(0xFFE5E5E5),
@@ -205,7 +205,7 @@ class _RootNavigationCoordinatorState
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: const Text(
-            'Getitright would like to send you notifications for live poll results and survey updates.',
+            'IcapsQ would like to send you notifications for live poll results and survey updates.',
             style: TextStyle(color: Color(0xFFD0D0D0), fontSize: 13),
           ),
           actions: [

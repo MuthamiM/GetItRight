@@ -3,15 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright Admin Console — Complete platform management, real-time vote analytics, and user access.">
-  <title>Getitright — Admin Dashboard</title>
-  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <meta name="description" content="IcapsQ Admin Console — Complete platform management, real-time vote analytics, and user access.">
+  <title>IcapsQ — Admin Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
+  <meta name="theme-color" content="#2E3035">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
     :root {
-      --charcoal: #303030;
-      --silver: #E5E5E5;
-      --bg-shell: #E5E5E5;
+      --graphite-900: #1F2023;
+      --graphite-700: #2E3035;
+      --graphite-500: #6B6E76;
+      --graphite-300: #B8BAC0;
+      --graphite-50:  #F2F2F3;
+      --white: #FFFFFF;
+
+      --charcoal: #1F2023;
+      --silver: #F2F2F3;
+      --bg-shell: #F2F2F3;
       --bg-card: #FFFFFF;
       --border-color: #D0D0D0;
       --border-sub: #DCDCDC;
@@ -560,6 +571,8 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.07);
       border-color: var(--charcoal, #303030);
     }
+
+    /* Floating toasts removed per user directive. Notifications expand cleanly from the bell button */
   </style>
 </head>
 <body>
@@ -573,8 +586,9 @@
         <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
           <span></span><span></span><span></span>
         </button>
-        <a href="../index.html" class="brand-logo">
-          <span>@</span>Getitright
+        <a href="../index.html" class="brand-logo" style="display:inline-flex;align-items:center;gap:8px;">
+          <img src="../assets/images/logo.png" style="width:24px;height:24px;border-radius:6px;" alt="IcapsQ Logo">
+          <span>Icaps<span style="color:var(--graphite-500,#6B6E76);">Q</span></span>
         </a>
         <div class="search-box">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1057,8 +1071,7 @@
                 <tbody>
                   <tr><td style="font-weight:700;">Full Name</td><td>Admin User</td></tr>
                   <tr><td style="font-weight:700;">Email</td><td>admin@getitright.io</td></tr>
-                  <tr><td style="font-weight:700;">Role</td><td><span style="font-weight:700;font-size:11px;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">Admin</span></td></tr>
-                  <tr><td style="font-weight:700;">Plan</td><td>Enterprise</td></tr>
+                  <tr><td style="font-weight:700;">Role</td><td><span style="font-weight:700;font-size:11px;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">Super Admin</span></td></tr>
                   <tr><td style="font-weight:700;">Last Login</td><td id="profile-last-login">—</td></tr>
                 </tbody>
               </table>
@@ -1188,7 +1201,7 @@
               <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:18px;">System Information</h3>
               <table class="data-table">
                 <tbody>
-                  <tr><td style="font-weight:700;">Platform Version</td><td>GetItRight v2.4.1</td></tr>
+                  <tr><td style="font-weight:700;">Platform Version</td><td>IcapsQ v2.4.1</td></tr>
                   <tr><td style="font-weight:700;">API Endpoint</td><td style="font-family:monospace;color:var(--charcoal);">http://127.0.0.1:8000/api</td></tr>
                   <tr><td style="font-weight:700;">Database Engine</td><td>SQLite3 + SQLAlchemy ORM</td></tr>
                   <tr><td style="font-weight:700;">Cryptographic Ledger</td><td>Merkle SHA-256 Chain</td></tr>
@@ -1399,27 +1412,56 @@
       }
     }
 
-    // === NOTIFICATION SYSTEM WITH BEEP ===
-    function playNotifBeep() {
+    // === NOTIFICATION SYSTEM WITH BEEP & TOP-RIGHT TOAST ===
+    function playNotifBeep(type = 'info') {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.frequency.value = 880;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.3);
+        const now = ctx.currentTime;
+        if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.setValueAtTime(220, now + 0.12);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.start(now);
+          osc.stop(now + 0.32);
+        } else if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now);
+          osc.frequency.setValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(659.25, now);
+          osc.frequency.setValueAtTime(987.77, now + 0.09);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+          osc.start(now);
+          osc.stop(now + 0.38);
+        }
       } catch(e) {}
+    }
+
+    // Floating toasts removed per user directive. Notifications expand cleanly from the bell button
+    function showTopRightToast(title, message, type = 'info') {
+      playNotifBeep(type);
+      const dd = document.getElementById('notifDropdown');
+      if (dd) dd.classList.add('open');
     }
 
     function addNotification(msg, type = 'info') {
       notifications.unshift({ id: Date.now(), msg, type, time: new Date(), read: false });
       renderNotifications();
-      playNotifBeep();
+      playNotifBeep(type);
+      const dd = document.getElementById('notifDropdown');
+      if (dd) dd.classList.add('open');
     }
 
     function renderNotifications() {
@@ -2939,7 +2981,7 @@
               </select>
             </td>
             <td>${statusBadge}</td>
-            <td>${escapeHtml(u.plan || '')}</td>
+            <td>${(u.role === 'Admin' || u.role === 'Super Admin' || !u.plan) ? '—' : escapeHtml(u.plan)}</td>
             <td style="font-family:monospace;color:var(--text-main);font-weight:700;">${u.ipAddress || '—'}</td>
           </tr>
         `;
@@ -2984,7 +3026,7 @@
               <option value="Customer" ${u.role==='Customer'?'selected':''}>Customer</option>
             </select>
           </td>
-          <td><span style="font-weight:700;font-size:11px;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">${escapeHtml(u.plan || '')}</span></td>
+          <td><span style="font-weight:700;font-size:11px;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">${(u.role === 'Admin' || u.role === 'Super Admin' || !u.plan) ? '—' : escapeHtml(u.plan)}</span></td>
           <td><span class="badge-pill">Active</span></td>
         </tr>
       `).join('');
@@ -3076,7 +3118,7 @@
       if (!response.ok) return alert('Unable to export survey responses.');
       const link = document.createElement('a');
       link.href = URL.createObjectURL(await response.blob());
-      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'getitright-survey-responses.pdf';
+      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'icapsq-survey-responses.pdf';
       link.click();
       URL.revokeObjectURL(link.href);
     }
@@ -3092,7 +3134,7 @@
       if (!response.ok) return alert('Unable to export poll results.');
       const link = document.createElement('a');
       link.href = URL.createObjectURL(await response.blob());
-      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'getitright-poll-results.pdf';
+      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'icapsq-poll-results.pdf';
       link.click();
       URL.revokeObjectURL(link.href);
     }
@@ -3124,7 +3166,7 @@
       const usersBody = document.getElementById('database-users-tbody');
       if (usersBody) {
         usersBody.innerHTML = activeUsers.length ? activeUsers.map(u => `
-          <tr><td style="font-family:monospace;font-weight:700;">${u.id}</td><td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(u.plan)}</td><td><span class="badge-pill">${u.status || 'Active'}</span></td></tr>
+          <tr><td style="font-family:monospace;font-weight:700;">${u.id}</td><td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role)}</td><td>${(u.role === 'Admin' || u.role === 'Super Admin' || !u.plan) ? '—' : escapeHtml(u.plan)}</td><td><span class="badge-pill">${u.status || 'Active'}</span></td></tr>
         `).join('') : '<tr><td colspan="6">No user records found.</td></tr>';
       }
 

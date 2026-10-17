@@ -49,12 +49,12 @@ class UserOut(BaseModel):
     fullName: str
     email: str
     role: str
-    plan: str
-    planName: str
+    plan: Optional[str] = None
+    planName: Optional[str] = None
     organization: Optional[str] = "Independent"
     status: str
-    voterQuota: int
-    pollsQuota: int
+    voterQuota: Optional[int] = None
+    pollsQuota: Optional[int] = None
     consoleUrl: str
     isAdmin: bool = False
 

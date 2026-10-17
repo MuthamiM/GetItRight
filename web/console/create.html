@@ -3,43 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright — Author surveys and sovereign polls with real-time database connectivity and cryptographic verification.">
-  <title>Getitright — Create Survey / Poll</title>
-  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <meta name="description" content="IcapsQ — Author surveys and sovereign polls with real-time database connectivity and cryptographic verification.">
+  <title>IcapsQ — Create Survey / Poll</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
+  <meta name="theme-color" content="#2E3035">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     /* =============================================================
-       GETITRIGHT — SOVEREIGN CREATION WIZARD
-       STRICT CANONICAL PALETTE:
-       1. #303030 (App Charcoal)
-       2. #E5E5E5 (App Metallic Silver)
-       Clean #FFFFFF Cards, #D0D0D0 Borders
+       ICAPSQ — SOVEREIGN CREATION WIZARD (GRAPHITE BRAND SPEC)
+       Tokens:
+       --graphite-900: #1F2023 (Darkest surfaces)
+       --graphite-700: #2E3035 (Brand primary, logo bubble, favicon bg)
+       --graphite-500: #6B6E76 ("Q" on light, tagline on light)
+       --graphite-300: #B8BAC0 ("Q" on dark, tagline on dark)
+       --graphite-50:  #F2F2F3 (Light surfaces)
+       --white:        #FFFFFF (Checkmark, reversed bubble)
        ============================================================= */
     :root {
-      --charcoal: #303030;
-      --silver: #E5E5E5;
-      --bg-shell: #E5E5E5;
-      --bg-card: #FFFFFF;
-      --bg-card-hover: #F8F8F8;
-      --bg-input: #FFFFFF;
-      --border-color: #D0D0D0;
-      --border-sub: #E2E2E2;
-      --text-main: #303030;
-      --text-sub: #555555;
-      --text-muted: #888888;
-      --color-green: #2E7D32;
-      --color-red: #C62828;
+      --graphite-900: #1F2023;
+      --graphite-700: #2E3035; /* brand primary */
+      --graphite-500: #6B6E76;
+      --graphite-300: #B8BAC0;
+      --graphite-50:  #F2F2F3;
+      --white: #FFFFFF;
+
+      --charcoal: #2E3035;
+      --silver: #F2F2F3;
+      --bg-shell: #F2F2F3;
+      --bg-card: #2E3035;
+      --bg-card-hover: #1F2023;
+      --bg-input: rgba(242, 242, 243, 0.08);
+      --border-color: rgba(242, 242, 243, 0.2);
+      --border-sub: rgba(242, 242, 243, 0.12);
+      --text-main: #F2F2F3;
+      --text-sub: rgba(242, 242, 243, 0.75);
+      --text-muted: rgba(242, 242, 243, 0.6);
+      --color-green: #B8BAC0;
+      --color-red: #B8BAC0;
       --font-display: 'Outfit', sans-serif;
-      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
+    }
+    .brand-text {
+      font-family: var(--font-display);
+      font-weight: 800;
+      color: var(--charcoal);
+    }
+    .brand-text .brand-q {
+      color: var(--graphite-500);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: var(--bg-shell);
-      color: var(--text-main);
+      color: var(--charcoal);
       font-family: var(--font-family);
       font-size: 13.5px;
       line-height: 1.55;
@@ -50,8 +71,8 @@
     /* Top Bar */
     .topbar {
       height: 68px;
-      background: #FFFFFF;
-      border-bottom: 1px solid var(--border-color);
+      background: var(--silver);
+      border-bottom: 2px solid var(--charcoal);
       padding: 0 32px;
       display: flex;
       align-items: center;
@@ -77,9 +98,9 @@
       object-fit: contain;
     }
     .btn-back {
-      background: #FFFFFF;
+      background: transparent;
       color: var(--charcoal);
-      border: 1px solid var(--border-color);
+      border: 1.5px solid var(--charcoal);
       border-radius: 100px;
       padding: 8px 20px;
       font-size: 12.5px;
@@ -94,7 +115,7 @@
     .btn-back:hover {
       background: var(--charcoal);
       border-color: var(--charcoal);
-      color: #FFFFFF;
+      color: var(--silver);
     }
 
     /* Main Container */
@@ -117,8 +138,8 @@
       align-items: center;
       gap: 12px;
       padding: 14px 20px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
+      background: var(--silver);
+      border: 1.5px solid rgba(48, 48, 48, 0.25);
       border-radius: 14px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -126,18 +147,18 @@
     .step-item.active {
       background: var(--charcoal);
       border-color: var(--charcoal);
-      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.15);
+      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.2);
     }
     .step-item.completed {
-      background: #F0F0F0;
-      border-color: #C0C0C0;
+      background: rgba(48, 48, 48, 0.08);
+      border-color: var(--charcoal);
     }
     .step-num {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: #F0F0F0;
-      color: var(--text-main);
+      background: rgba(48, 48, 48, 0.12);
+      color: var(--charcoal);
       font-weight: 800;
       font-size: 12px;
       display: flex;
@@ -153,15 +174,15 @@
     }
     .step-item.completed .step-num {
       background: var(--charcoal);
-      color: #FFFFFF;
+      color: var(--silver);
     }
     .step-label {
       font-weight: 700;
       font-size: 13px;
-      color: var(--text-sub);
+      color: rgba(48, 48, 48, 0.7);
     }
     .step-item.active .step-label {
-      color: #FFFFFF;
+      color: var(--silver);
     }
     .step-item.completed .step-label {
       color: var(--charcoal);
@@ -173,24 +194,25 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     .panel-card {
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
-      border-radius: 18px;
+      background: var(--charcoal);
+      border: 1.5px solid rgba(229, 229, 229, 0.2);
+      border-radius: 20px;
       padding: 32px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 8px 24px rgba(48, 48, 48, 0.15);
       margin-bottom: 24px;
+      color: var(--silver);
     }
     .panel-title {
       font-size: 22px;
       font-weight: 800;
-      color: var(--charcoal);
+      color: var(--silver);
       margin-bottom: 6px;
       letter-spacing: -0.5px;
       font-family: var(--font-display);
     }
     .panel-desc {
       font-size: 13.5px;
-      color: var(--text-sub);
+      color: rgba(229, 229, 229, 0.75);
       margin-bottom: 24px;
       line-height: 1.5;
     }
@@ -203,51 +225,51 @@
       margin-bottom: 28px;
     }
     .type-card {
-      border: 1.5px solid var(--border-color);
+      border: 1.5px solid rgba(229, 229, 229, 0.2);
       border-radius: 16px;
       padding: 24px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-align: left;
-      background: #FFFFFF;
+      background: rgba(229, 229, 229, 0.05);
       position: relative;
     }
     .type-card:hover {
-      border-color: var(--charcoal);
-      background: #FDFDFD;
+      border-color: var(--silver);
+      background: rgba(229, 229, 229, 0.1);
       transform: translateY(-2px);
     }
     .type-card.selected {
-      border-color: var(--charcoal);
+      border-color: var(--silver);
       border-width: 2px;
-      background: #F8F8F8;
-      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.08);
+      background: rgba(229, 229, 229, 0.15);
+      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.2);
     }
     .type-card-icon {
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: #F0F0F0;
+      background: rgba(229, 229, 229, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 14px;
-      color: var(--charcoal);
+      color: var(--silver);
     }
     .type-card.selected .type-card-icon {
-      background: var(--charcoal);
-      color: #FFFFFF;
+      background: var(--silver);
+      color: var(--charcoal);
     }
     .type-card-title {
       font-size: 16px;
       font-weight: 800;
-      color: var(--charcoal);
+      color: var(--silver);
       letter-spacing: -0.01em;
       font-family: var(--font-display);
     }
     .type-card-desc {
       font-size: 12.5px;
-      color: var(--text-sub);
+      color: rgba(229, 229, 229, 0.7);
       margin-top: 6px;
       line-height: 1.45;
     }
@@ -258,7 +280,7 @@
       display: block;
       font-size: 12px;
       font-weight: 700;
-      color: var(--text-sub);
+      color: rgba(229, 229, 229, 0.8);
       margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -267,20 +289,24 @@
       width: 100%;
       padding: 12px 16px;
       border-radius: 12px;
-      border: 1px solid var(--border-color);
-      background: #FFFFFF;
+      border: 1.5px solid rgba(229, 229, 229, 0.25);
+      background: rgba(229, 229, 229, 0.08);
       font-size: 13.5px;
       font-family: inherit;
-      color: var(--text-main);
+      color: var(--silver);
       transition: all 0.2s ease;
     }
     .form-input::placeholder, .form-textarea::placeholder {
-      color: var(--text-muted);
+      color: rgba(229, 229, 229, 0.5);
     }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       outline: none;
-      border-color: var(--charcoal);
-      box-shadow: 0 0 0 3px rgba(48, 48, 48, 0.08);
+      border-color: var(--silver);
+      box-shadow: 0 0 0 3px rgba(229, 229, 229, 0.15);
+    }
+    .form-select option {
+      background: var(--charcoal);
+      color: var(--silver);
     }
     .form-textarea { resize: vertical; }
 
@@ -292,24 +318,24 @@
       margin-top: 18px;
     }
     .template-card {
-      border: 1px solid var(--border-color);
+      border: 1.5px solid rgba(229, 229, 229, 0.2);
       border-radius: 14px;
       padding: 18px;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: #FFFFFF;
+      background: rgba(229, 229, 229, 0.05);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
     .template-card:hover {
-      border-color: var(--charcoal);
+      border-color: var(--silver);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(48, 48, 48, 0.06);
+      box-shadow: 0 4px 12px rgba(48, 48, 48, 0.2);
     }
     .template-card.selected {
-      border: 2px solid var(--charcoal);
-      background: #F8F8F8;
+      border: 2px solid var(--silver);
+      background: rgba(229, 229, 229, 0.15);
     }
     .template-badge {
       font-size: 10px;
@@ -326,18 +352,18 @@
     .template-name {
       font-size: 14px;
       font-weight: 800;
-      color: var(--charcoal);
+      color: var(--silver);
       margin-bottom: 6px;
     }
     .template-desc {
       font-size: 12px;
-      color: var(--text-sub);
+      color: rgba(229, 229, 229, 0.7);
       line-height: 1.45;
       margin-bottom: 12px;
     }
     .template-meta {
       font-size: 11px;
-      color: var(--text-muted);
+      color: rgba(229, 229, 229, 0.6);
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
@@ -346,15 +372,16 @@
 
     /* Question Builder */
     .question-card {
-      background: #FBFBFB;
-      border: 1px solid var(--border-color);
+      background: rgba(229, 229, 229, 0.05);
+      border: 1.5px solid rgba(229, 229, 229, 0.18);
       border-radius: 16px;
       padding: 20px;
       margin-bottom: 16px;
       transition: all 0.2s ease;
+      color: var(--silver);
     }
     .question-card:hover {
-      border-color: #B0B0B0;
+      border-color: rgba(229, 229, 229, 0.35);
     }
     .question-header {
       display: flex;
@@ -365,7 +392,7 @@
     .question-badge {
       font-size: 11px;
       font-weight: 800;
-      color: var(--charcoal);
+      color: var(--silver);
       font-family: var(--font-mono);
       letter-spacing: 0.06em;
     }
@@ -374,9 +401,9 @@
       gap: 8px;
     }
     .btn-sm {
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
-      color: var(--charcoal);
+      background: rgba(229, 229, 229, 0.1);
+      border: 1px solid rgba(229, 229, 229, 0.25);
+      color: var(--silver);
       font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
@@ -385,18 +412,19 @@
       transition: all 0.15s;
     }
     .btn-sm:hover {
-      background: var(--charcoal);
-      color: #FFFFFF;
-      border-color: var(--charcoal);
+      background: var(--silver);
+      color: var(--charcoal);
+      border-color: var(--silver);
     }
     .btn-sm.danger {
-      color: var(--color-red);
-      border-color: #FFCDD2;
+      background: rgba(229, 229, 229, 0.08);
+      color: var(--silver);
+      border-color: rgba(229, 229, 229, 0.25);
     }
     .btn-sm.danger:hover {
-      background: var(--color-red);
-      color: #FFFFFF;
-      border-color: var(--color-red);
+      background: var(--silver);
+      color: var(--charcoal);
+      border-color: var(--silver);
     }
 
     .choice-row {
@@ -409,42 +437,42 @@
       flex: 1;
       padding: 9px 14px;
       border-radius: 10px;
-      border: 1px solid var(--border-color);
-      background: #FFFFFF;
+      border: 1.5px solid rgba(229, 229, 229, 0.22);
+      background: rgba(229, 229, 229, 0.08);
       font-size: 13px;
       font-family: inherit;
-      color: var(--text-main);
+      color: var(--silver);
     }
     .choice-input:focus {
       outline: none;
-      border-color: var(--charcoal);
+      border-color: var(--silver);
     }
     .choice-remove {
       background: none;
       border: none;
-      color: var(--text-muted);
+      color: rgba(229, 229, 229, 0.6);
       cursor: pointer;
       font-size: 18px;
       padding: 4px;
       border-radius: 6px;
     }
     .choice-remove:hover {
-      color: var(--color-red);
+      color: var(--silver);
     }
 
     /* Live Preview Panel */
     .preview-panel {
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
+      background: var(--charcoal);
+      border: 1.5px solid rgba(229, 229, 229, 0.2);
       border-radius: 18px;
       padding: 24px;
-      color: var(--text-main);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      color: var(--silver);
+      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.15);
     }
     .preview-header {
       font-size: 11px;
       font-weight: 800;
-      color: var(--text-muted);
+      color: rgba(229, 229, 229, 0.6);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-bottom: 12px;
@@ -456,13 +484,13 @@
       font-size: 17px;
       font-weight: 800;
       margin-bottom: 16px;
-      color: var(--charcoal);
+      color: var(--silver);
       letter-spacing: -0.01em;
       font-family: var(--font-display);
     }
     .preview-question {
-      background: #F8F8F8;
-      border: 1px solid var(--border-sub);
+      background: rgba(229, 229, 229, 0.05);
+      border: 1px solid rgba(229, 229, 229, 0.15);
       border-radius: 12px;
       padding: 14px;
       margin-bottom: 12px;
@@ -471,34 +499,34 @@
       font-size: 13px;
       font-weight: 700;
       margin-bottom: 10px;
-      color: var(--text-main);
+      color: var(--silver);
     }
     .preview-option {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-color);
+      background: rgba(229, 229, 229, 0.08);
+      border: 1px solid rgba(229, 229, 229, 0.2);
       border-radius: 8px;
       margin-bottom: 6px;
       font-size: 12.5px;
-      color: var(--text-main);
+      color: var(--silver);
     }
     .preview-radio {
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      border: 2px solid var(--border-color);
+      border: 2px solid rgba(229, 229, 229, 0.4);
     }
     .preview-text-input {
       width: 100%;
       padding: 10px 14px;
       border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background: #FFFFFF;
+      border: 1px solid rgba(229, 229, 229, 0.2);
+      background: rgba(229, 229, 229, 0.08);
       font-size: 12.5px;
-      color: var(--text-muted);
+      color: rgba(229, 229, 229, 0.6);
     }
 
     /* Summary Rows */
@@ -507,15 +535,15 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 0;
-      border-bottom: 1px solid var(--border-sub);
+      border-bottom: 1px solid rgba(229, 229, 229, 0.12);
       font-size: 13.5px;
     }
     .summary-label {
-      color: var(--text-sub);
+      color: rgba(229, 229, 229, 0.7);
       font-weight: 600;
     }
     .summary-value {
-      color: var(--charcoal);
+      color: var(--silver);
       font-weight: 800;
     }
 
@@ -527,8 +555,8 @@
       margin-top: 28px;
     }
     .btn-primary {
-      background: var(--charcoal);
-      color: #FFFFFF;
+      background: var(--silver);
+      color: var(--charcoal);
       border: none;
       border-radius: 100px;
       padding: 12px 32px;
@@ -541,14 +569,14 @@
       gap: 8px;
     }
     .btn-primary:hover {
-      background: #1a1a1a;
+      background: rgba(229, 229, 229, 0.85);
       transform: translateY(-1px);
       box-shadow: 0 4px 14px rgba(48, 48, 48, 0.2);
     }
     .btn-secondary {
-      background: #FFFFFF;
-      color: var(--charcoal);
-      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--silver);
+      border: 1.5px solid rgba(229, 229, 229, 0.3);
       border-radius: 100px;
       padding: 12px 28px;
       font-size: 14px;
@@ -557,12 +585,12 @@
       transition: all 0.15s ease;
     }
     .btn-secondary:hover {
-      background: #F5F5F5;
-      border-color: var(--charcoal);
+      background: rgba(229, 229, 229, 0.1);
+      border-color: var(--silver);
     }
     .btn-add {
-      background: var(--charcoal);
-      color: #FFFFFF;
+      background: var(--silver);
+      color: var(--charcoal);
       border: none;
       border-radius: 100px;
       padding: 8px 18px;
@@ -572,16 +600,16 @@
       transition: all 0.15s ease;
     }
     .btn-add:hover {
-      background: #1a1a1a;
+      background: rgba(229, 229, 229, 0.85);
     }
 
     .info-box {
-      background: #F8F8F8;
-      border: 1px solid var(--border-color);
+      background: rgba(229, 229, 229, 0.08);
+      border: 1px solid rgba(229, 229, 229, 0.2);
       border-radius: 12px;
       padding: 14px 18px;
       font-size: 12.5px;
-      color: var(--text-main);
+      color: var(--silver);
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -594,26 +622,47 @@
       .step-label { display: none; }
       .topbar { padding: 0 16px; }
       .wizard-container { padding: 20px 16px 40px; }
-      .wizard-grid-builder { grid-template-columns: 1fr !important; }
     }
+    /* Floating toasts removed per user directive */
   </style>
 </head>
 <body>
 
   <!-- TOP BAR -->
   <header class="topbar">
-    <a href="admin.html" class="brand-logo">
-      <img src="../assets/images/logo.png" alt="Getitright Logo">
-      Getitright
+    <a href="admin.html" class="brand-logo" id="brand-logo-link">
+      <img src="../assets/images/logo.png" alt="IcapsQ Logo">
+      <span class="brand-text">Icaps<span class="brand-q">Q</span></span>
     </a>
-    <a href="admin.html" class="btn-back">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      Back to Dashboard
-    </a>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span id="draft-autosave-indicator" style="font-size:12px;font-weight:600;color:var(--charcoal);display:inline-flex;align-items:center;gap:6px;">
+        <span id="draft-autosave-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--charcoal);border:1.5px solid var(--charcoal);transition:all 0.25s ease;"></span>
+        <span id="draft-autosave-text">Auto-save ready</span>
+      </span>
+      <a href="admin.html" class="btn-back" id="btn-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Dashboard
+      </a>
+    </div>
   </header>
 
   <!-- WIZARD CONTAINER -->
   <div class="wizard-container">
+
+    <!-- DRAFT RECOVERY NOTIFICATION BANNER (STRICT LANDING PALETTE) -->
+    <div id="draft-recovery-banner" style="display:none;background:var(--charcoal);color:var(--silver);border-radius:14px;padding:16px 20px;margin-bottom:24px;border:1.5px solid rgba(229,229,229,0.25);border-left:5px solid var(--silver);box-shadow:0 4px 18px rgba(48,48,48,0.2);justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:20px;">📝</span>
+        <div>
+          <div style="font-weight:700;font-size:13.5px;color:var(--silver);">Unfinished Draft Restored</div>
+          <div style="font-size:12px;color:rgba(229,229,229,0.75);" id="draft-recovery-time">Your previous campaign progress was automatically recovered.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" onclick="discardSavedDraft()" style="background:transparent;border:1.5px solid rgba(229,229,229,0.3);color:var(--silver);padding:6px 14px;border-radius:100px;font-size:12px;cursor:pointer;font-weight:600;">Discard Draft</button>
+        <button type="button" onclick="document.getElementById('draft-recovery-banner').style.display='none'" style="background:var(--silver);color:var(--charcoal);border:none;padding:6px 16px;border-radius:100px;font-size:12px;cursor:pointer;font-weight:700;">Continue Editing</button>
+      </div>
+    </div>
 
     <!-- STEP PROGRESS BAR -->
     <div class="step-progress">
@@ -677,29 +726,17 @@
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div class="form-group">
-            <label class="form-label">Category / Classification Track</label>
-            <select class="form-select" id="wizard-track">
-              <option value="Constituency MP Election">Constituency MP Election</option>
-              <option value="Kitui County Wards">Kitui County Wards</option>
-              <option value="General Public">General Public</option>
-              <option value="Enterprise Feedback">Enterprise Feedback</option>
-              <option value="Product Roadmap">Product Roadmap</option>
-              <option value="Civic Priority">Civic Priority</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Consensus Plan Tier</label>
-            <div style="padding:10px 14px;background:#F0F0F0;border:1px solid var(--border-color);border-radius:10px;font-size:13px;font-weight:700;color:var(--charcoal);display:flex;align-items:center;justify-content:space-between;height:42px;">
-              <span style="display:flex;align-items:center;gap:8px;">
-                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--charcoal);"></span>
-                <span id="wizard-plan-label">Civic Pro (Assigned via Session)</span>
-              </span>
-              <span style="font-size:11px;padding:2px 8px;border-radius:100px;background:var(--charcoal);color:#FFFFFF;font-family:var(--font-mono);letter-spacing:0.04em;">PRO</span>
-            </div>
-            <input type="hidden" id="wizard-plan" value="pro">
-          </div>
+        <div class="form-group">
+          <label class="form-label">Category / Classification Track</label>
+          <select class="form-select" id="wizard-track">
+            <option value="Constituency MP Election">Constituency MP Election</option>
+            <option value="Kitui County Wards">Kitui County Wards</option>
+            <option value="General Public">General Public</option>
+            <option value="Enterprise Feedback">Enterprise Feedback</option>
+            <option value="Product Roadmap">Product Roadmap</option>
+            <option value="Civic Priority">Civic Priority</option>
+          </select>
+          <input type="hidden" id="wizard-plan" value="pro">
         </div>
 
         <div class="form-group">
@@ -880,26 +917,197 @@
       }
     }
 
+    
+    // =============================================================
+    // DRAFTS ENGINE WITH CONTINUOUS AUTO-SAVING & INSTANT RECOVERY
+    // =============================================================
+    let autoSaveTimer = null;
+
+    function getDraftStorageKey() {
+      try {
+        const u = JSON.parse(localStorage.getItem('gir_user') || '{}');
+        if (u.id) return `gir_create_draft_${u.id}`;
+      } catch (_) {}
+      return 'gir_create_draft_guest';
+    }
+
+    function queueAutoSaveDraft() {
+      const dot = document.getElementById('draft-autosave-dot');
+      const text = document.getElementById('draft-autosave-text');
+      if (dot) {
+        dot.style.background = 'rgba(48, 48, 48, 0.4)';
+      }
+      if (text) {
+        text.textContent = 'Saving draft...';
+      }
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        executeSaveDraft();
+      }, 400);
+    }
+
+    function executeSaveDraft() {
+      try {
+        const title = (document.getElementById('wizard-title')?.value || '').trim();
+        const desc = (document.getElementById('wizard-desc')?.value || '').trim();
+        const track = document.getElementById('wizard-track')?.value || 'Constituency MP Election';
+        const target = parseInt(document.getElementById('wizard-target')?.value) || 500;
+        const durationHours = parseInt(document.getElementById('wizard-duration')?.value) || 168;
+
+        // Only save if there is some progress
+        if (!title && !desc && questions.length <= 1 && (!questions[0]?.text)) {
+          const text = document.getElementById('draft-autosave-text');
+          const dot = document.getElementById('draft-autosave-dot');
+          if (text) text.textContent = 'Auto-save ready';
+          if (dot) dot.style.background = 'var(--charcoal)';
+          return;
+        }
+
+        const draftData = {
+          type: selectedType,
+          title,
+          desc,
+          track,
+          target,
+          durationHours,
+          selectedTemplate: selectedTemplate ? selectedTemplate.id : null,
+          questions: questions,
+          updatedAt: new Date().toISOString()
+        };
+
+        const key = getDraftStorageKey();
+        localStorage.setItem(key, JSON.stringify(draftData));
+
+        const dot = document.getElementById('draft-autosave-dot');
+        const text = document.getElementById('draft-autosave-text');
+        if (dot) {
+          dot.style.background = 'var(--charcoal)';
+        }
+        if (text) {
+          const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          text.textContent = `Draft saved ${time}`;
+        }
+      } catch (e) {
+        console.warn('Draft auto-save notice:', e);
+      }
+    }
+
+    function restoreSavedDraft() {
+      try {
+        const key = getDraftStorageKey();
+        const raw = localStorage.getItem(key);
+        if (!raw) return false;
+        const draft = JSON.parse(raw);
+        if (!draft || (!draft.title && !draft.desc && (!draft.questions || !draft.questions.length))) {
+          return false;
+        }
+
+        if (draft.type) {
+          selectedType = draft.type;
+          document.getElementById('type-survey').classList.toggle('selected', draft.type === 'survey');
+          document.getElementById('type-poll').classList.toggle('selected', draft.type === 'poll');
+          document.getElementById('template-gallery-section').style.display = draft.type === 'survey' ? 'block' : 'none';
+        }
+
+        if (draft.title && document.getElementById('wizard-title')) {
+          document.getElementById('wizard-title').value = draft.title;
+        }
+        if (draft.desc && document.getElementById('wizard-desc')) {
+          document.getElementById('wizard-desc').value = draft.desc;
+        }
+        if (draft.track && document.getElementById('wizard-track')) {
+          document.getElementById('wizard-track').value = draft.track;
+        }
+        if (draft.target && document.getElementById('wizard-target')) {
+          document.getElementById('wizard-target').value = draft.target;
+        }
+        if (draft.durationHours && document.getElementById('wizard-duration')) {
+          document.getElementById('wizard-duration').value = draft.durationHours;
+        }
+        if (Array.isArray(draft.questions) && draft.questions.length > 0) {
+          questions = draft.questions;
+        }
+
+        // Show draft recovery banner
+        const banner = document.getElementById('draft-recovery-banner');
+        const timeEl = document.getElementById('draft-recovery-time');
+        if (banner) {
+          banner.style.display = 'flex';
+          if (timeEl && draft.updatedAt) {
+            const date = new Date(draft.updatedAt);
+            timeEl.textContent = `Your draft from ${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} was automatically restored.`;
+          }
+        }
+
+        // Update auto-save text
+        const text = document.getElementById('draft-autosave-text');
+        if (text) text.textContent = 'Draft restored';
+
+        renderQuestions();
+        updatePreview();
+        validateStep1();
+        validateStep2();
+
+        playBeep(true);
+        return true;
+      } catch (e) {
+        console.warn('Failed to restore draft:', e);
+        return false;
+      }
+    }
+
+    function discardSavedDraft() {
+      try {
+        const key = getDraftStorageKey();
+        localStorage.removeItem(key);
+        const banner = document.getElementById('draft-recovery-banner');
+        if (banner) banner.style.display = 'none';
+
+        // Reset to clean slate
+        document.getElementById('wizard-title').value = '';
+        document.getElementById('wizard-desc').value = '';
+        selectType('survey');
+        const text = document.getElementById('draft-autosave-text');
+        if (text) text.textContent = 'Auto-save ready';
+        playBeep(false);
+      } catch (e) {
+        console.warn('Failed to discard draft:', e);
+      }
+    }
+
+    function clearDraftOnPublish() {
+      try {
+        const key = getDraftStorageKey();
+        localStorage.removeItem(key);
+      } catch (_) {}
+    }
+
     // === SESSION PLAN RESOLUTION ===
-    function getUserAssignedPlan() {
+    async function initAssignedPlan() {
+      let plan = 'free';
       try {
         const raw = localStorage.getItem('gir_user');
         if (raw) {
           const u = JSON.parse(raw);
-          if (u.plan) return u.plan.toLowerCase();
+          if (u.plan) plan = u.plan.toLowerCase();
         }
       } catch (_) {}
-      return 'pro';
-    }
 
-    function initAssignedPlan() {
-      const plan = getUserAssignedPlan();
+      // Refresh from /users/me if authenticated
+      const token = localStorage.getItem('gir_token');
+      if (token) {
+        try {
+          const res = await fetch(`${API}/users/me`, { headers: authHeaders() });
+          if (res.ok) {
+            const u = await res.json();
+            localStorage.setItem('gir_user', JSON.stringify(u));
+            if (u.plan) plan = u.plan.toLowerCase();
+          }
+        } catch (_) {}
+      }
+
       const planInput = document.getElementById('wizard-plan');
       if (planInput) planInput.value = plan;
-      const label = document.getElementById('wizard-plan-label');
-      if (label) {
-        label.textContent = `${plan === 'pro' ? 'Civic Pro' : (plan === 'election' ? 'Sovereign Election Guard' : (plan === 'org' ? 'Institutional Org' : 'Civic Pro'))} (Assigned via Session)`;
-      }
     }
 
     // === STEP 1 VALIDATION (MIN/MAX CHARACTERS) ===
@@ -1049,6 +1257,7 @@
         renderQuestions();
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
       if (n === 3) renderReview();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1174,6 +1383,7 @@
       renderQuestions();
       updatePreview();
       validateStep2();
+      queueAutoSaveDraft();
     }
 
     // === QUESTION BUILDER ===
@@ -1233,11 +1443,11 @@
               <button class="btn-sm" style="margin-top:6px;" onclick="addChoice(${q.id})">+ Add Choice</button>
             </div>
           ` : (q.type === 'text' ? `
-            <div style="background:#F0F0F0;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-sub);font-weight:600;">
+            <div style="background:rgba(229,229,229,0.08);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--silver);font-weight:600;">
               Open Free-Text Field Enabled: Respondents will type their own custom answer.
             </div>
           ` : `
-            <div style="background:#F0F0F0;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-sub);font-weight:600;">
+            <div style="background:rgba(229,229,229,0.08);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--silver);font-weight:600;">
               Rating Scale (1 to 5) Enabled: Respondents will rate on a 5-point scale.
             </div>
           `)}
@@ -1256,6 +1466,7 @@
       renderQuestions();
       updatePreview();
       validateStep2();
+      queueAutoSaveDraft();
     }
 
     function removeQuestion(qid) {
@@ -1264,6 +1475,7 @@
       renderQuestions();
       updatePreview();
       validateStep2();
+      queueAutoSaveDraft();
     }
 
     function updateQuestionText(qid, val) {
@@ -1272,6 +1484,7 @@
         q.text = val;
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
     }
 
@@ -1285,6 +1498,7 @@
         renderQuestions();
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
     }
 
@@ -1294,6 +1508,7 @@
         q.required = (val === 'true');
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
     }
 
@@ -1304,6 +1519,7 @@
         renderQuestions();
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
     }
 
@@ -1314,6 +1530,7 @@
         renderQuestions();
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
     }
 
@@ -1323,6 +1540,7 @@
         q.choices[ci] = val;
         updatePreview();
         validateStep2();
+        queueAutoSaveDraft();
       }
     }
 
@@ -1350,7 +1568,7 @@
           content = `
             <div style="display:flex;gap:8px;margin-top:6px;">
               ${[1,2,3,4,5].map(num => `
-                <div style="flex:1;text-align:center;padding:8px;border-radius:6px;background:#F0F0F0;font-size:12px;font-weight:800;color:var(--charcoal);font-family:var(--font-mono);">${num}</div>
+                <div style="flex:1;text-align:center;padding:8px;border-radius:6px;background:rgba(229,229,229,0.12);font-size:12px;font-weight:800;color:var(--silver);font-family:var(--font-mono);">${num}</div>
               `).join('')}
             </div>
           `;
@@ -1370,7 +1588,6 @@
     function renderReview() {
       const title = document.getElementById('wizard-title').value || 'Untitled';
       const track = document.getElementById('wizard-track').value;
-      const plan = getUserAssignedPlan();
       const desc = document.getElementById('wizard-desc').value || 'No description provided';
 
       const choiceCount = questions.filter(q => q.type === 'choice').length;
@@ -1381,17 +1598,16 @@
         <div class="summary-row"><span class="summary-label">Format Type</span><span class="summary-value">${selectedType === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}</span></div>
         <div class="summary-row"><span class="summary-label">Campaign Title</span><span class="summary-value">${title}</span></div>
         <div class="summary-row"><span class="summary-label">Track / Classification</span><span class="summary-value">${track}</span></div>
-        <div class="summary-row"><span class="summary-label">Consensus Tier</span><span class="summary-value">${plan.toUpperCase()} (ASSIGNED PRO VIA SESSION)</span></div>
         <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:440px;text-align:right;">${desc}</span></div>
         <div class="summary-row"><span class="summary-label">Total Inquiries</span><span class="summary-value">${questions.length}</span></div>
         <div class="summary-row"><span class="summary-label">Breakdown</span><span class="summary-value">${choiceCount} Choice · ${textCount} Text Field · ${ratingCount} Rating</span></div>
         ${selectedTemplate ? `<div class="summary-row"><span class="summary-label">Institutional Template</span><span class="summary-value">${selectedTemplate.name}</span></div>` : ''}
 
         <div style="margin-top:24px;">
-          <div style="font-size:13px;font-weight:800;color:var(--charcoal);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em;">Questions Structure</div>
+          <div style="font-size:13px;font-weight:800;color:var(--silver);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em;">Questions Structure</div>
           ${questions.map((q, i) => `
-            <div style="background:#F8F8F8;border:1px solid var(--border-color);border-radius:12px;padding:14px;margin-bottom:10px;">
-              <div style="font-weight:700;font-size:13.5px;color:var(--charcoal);">Q${i+1}: ${q.text || 'Untitled Question'}</div>
+            <div style="background:rgba(229,229,229,0.06);border:1.5px solid rgba(229,229,229,0.15);border-radius:12px;padding:14px;margin-bottom:10px;">
+              <div style="font-weight:700;font-size:13.5px;color:var(--silver);">Q${i+1}: ${q.text || 'Untitled Question'}</div>
               <div style="font-size:11.5px;color:var(--text-sub);margin-top:4px;font-family:var(--font-mono);">
                 Format: ${q.type.toUpperCase()}${q.type === 'choice' ? ` · ${q.choices.length} options` : ''}${q.required ? ' · Mandatory' : ''}
               </div>
@@ -1407,7 +1623,7 @@
       const btn = document.getElementById('btn-publish');
       const title = document.getElementById('wizard-title').value.trim();
       const track = document.getElementById('wizard-track').value;
-      const plan = getUserAssignedPlan();
+      const plan = document.getElementById('wizard-plan')?.value || 'free';
       const desc = document.getElementById('wizard-desc').value.trim();
       const target = parseInt(document.getElementById('wizard-target').value) || 500;
       const durationHours = parseInt(document.getElementById('wizard-duration').value) || 168;
@@ -1449,8 +1665,13 @@
           });
           if (res.ok) {
             playBeep(true);
-            alert('Survey successfully published to the database ledger!');
-            window.location.href = localStorage.getItem('gir_user') && JSON.parse(localStorage.getItem('gir_user')).role === 'Admin' ? 'admin.html' : 'user.html';
+            clearDraftOnPublish();
+            let dest = 'user.html';
+            try {
+              const u = JSON.parse(localStorage.getItem('gir_user') || '{}');
+              if (u.role === 'Admin' || u.role === 'Super Admin' || u.isAdmin) dest = 'admin.html';
+            } catch (_) {}
+            window.location.href = dest;
           } else {
             const err = await res.json().catch(() => ({}));
             playBeep(false);
@@ -1481,8 +1702,14 @@
           });
           if (res.ok) {
             playBeep(true);
+            clearDraftOnPublish();
             alert('Poll referendum published successfully to the database!');
-            window.location.href = localStorage.getItem('gir_user') && JSON.parse(localStorage.getItem('gir_user')).role === 'Admin' ? 'admin.html' : 'user.html';
+            let dest = 'user.html';
+            try {
+              const u = JSON.parse(localStorage.getItem('gir_user') || '{}');
+              if (u.role === 'Admin' || u.role === 'Super Admin' || u.isAdmin) dest = 'admin.html';
+            } catch (_) {}
+            window.location.href = dest;
           } else {
             const err = await res.json().catch(() => ({}));
             playBeep(false);
@@ -1510,20 +1737,34 @@
       selectType(selectedType);
       loadTemplates();
 
+      // Check and restore draft
+      const hadDraft = restoreSavedDraft();
+
       const titleEl = document.getElementById('wizard-title');
       const descEl = document.getElementById('wizard-desc');
+      const trackEl = document.getElementById('wizard-track');
+      const targetEl = document.getElementById('wizard-target');
+      const durationEl = document.getElementById('wizard-duration');
 
       if (titleEl) {
         titleEl.addEventListener('input', () => {
           validateStep1();
           updatePreview();
+          queueAutoSaveDraft();
         });
       }
       if (descEl) {
         descEl.addEventListener('input', () => {
           validateStep1();
+          queueAutoSaveDraft();
         });
       }
+      if (trackEl) trackEl.addEventListener('change', queueAutoSaveDraft);
+      if (targetEl) targetEl.addEventListener('input', queueAutoSaveDraft);
+      if (durationEl) durationEl.addEventListener('change', queueAutoSaveDraft);
+
+      // Auto-save on page exit
+      window.addEventListener('beforeunload', () => executeSaveDraft());
 
       validateStep1();
       validateStep2();

@@ -4,6 +4,7 @@ from backend.api.core.database import Base
 
 class PollModel(Base):
     __tablename__ = "Polls"
+    __table_args__ = {"extend_existing": True}
 
     Id = Column(String, primary_key=True, index=True)
     Title = Column(String, nullable=False)
@@ -22,6 +23,7 @@ class PollModel(Base):
 
 class PollOptionModel(Base):
     __tablename__ = "PollOptions"
+    __table_args__ = {"extend_existing": True}
 
     Id = Column(Integer, primary_key=True, autoincrement=True)
     PollId = Column(String, ForeignKey("Polls.Id"), nullable=False, index=True)
@@ -34,6 +36,7 @@ class PollOptionModel(Base):
 
 class VoteTransactionModel(Base):
     __tablename__ = "VoteTransactions"
+    __table_args__ = {"extend_existing": True}
 
     Id = Column(Integer, primary_key=True, autoincrement=True)
     PollId = Column(String, nullable=False, index=True)
@@ -51,5 +54,9 @@ class VoteTransactionModel(Base):
     GpsCoordinates = Column(String, nullable=True)
     Device = Column(String, nullable=True)
     IpAddress = Column(String, nullable=True)
+    VoterName = Column(String, nullable=True)
+    VoterIdNumber = Column(String, nullable=True)
+    DeviceName = Column(String, nullable=True)
+    DeviceOS = Column(String, nullable=True)
 
 

@@ -97,23 +97,38 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                         ),
                         const SizedBox(height: 28),
-                        const Text(
-                          'GetitRight',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2.0,
+                        RichText(
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Icaps',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              TextSpan(
+                                text: 'Q',
+                                style: TextStyle(
+                                  color: Color(0xFFB8BAC0),
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Transparent Polling & Surveys',
+                        const SizedBox(height: 8),
+                        const Text(
+                          'S U R V E Y   &   F E E D B A C K',
                           style: TextStyle(
-                            color: Colors.white.withAlpha(140),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.8,
+                            color: Color(0xFFB8BAC0),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 2.0,
                           ),
                         ),
                       ],
@@ -125,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
             Padding(
               padding: const EdgeInsets.only(bottom: 24.0),
               child: Text(
-                'v2.0',
+                'v2.1',
                 style: TextStyle(
                   color: Colors.white.withAlpha(80),
                   fontSize: 12,

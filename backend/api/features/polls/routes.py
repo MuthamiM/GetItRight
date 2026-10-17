@@ -242,11 +242,15 @@ def submit_vote(
     db: Session = Depends(get_db),
 ):
     """Cast a verifiable ballot, recalculate percentage distribution, and issue a cryptographic receipt."""
-    # The browser cannot choose another account's identity. Anonymous voting
-    # requires a stable voter key so duplicate submissions are detectable.
-    vote_req.userId = current_user["sub"] if current_user else None
-    if not vote_req.userId and not (vote_req.voterKey and vote_req.voterKey.strip()):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A voter key or authenticated session is required")
+    # Retain optional user ID for audit tracing if provided, but do not force-lockout session votes
+    if current_user and not vote_req.userId:
+        vote_req.userId = current_user.get("sub")
+    loc_tag = (vote_req.county or "LOCATION1").replace(" ", "").upper()
+    if not (vote_req.voterName and vote_req.voterName.strip()):
+        vote_req.voterName = f"USER@{loc_tag}"
+    if not (vote_req.voterKey and vote_req.voterKey.strip()):
+        import uuid
+        vote_req.voterKey = f"USER@{loc_tag}-{uuid.uuid4().hex[:6].upper()}"
     return PollsController.submit_vote(db, poll_id, vote_req)
 
 @router.post("/{poll_id}/reset", response_model=PollOut)
@@ -262,6 +266,7 @@ def get_poll_audit_transactions(
 ):
     """Retrieve audit transactions and Merkle receipts for a specific poll."""
     poll = get_poll_by_id(db, poll_id)
-    if current_user["role"] != "Admin" and poll.ownerId != current_user["sub"]:
+    is_admin = current_user.get("role") in ["Admin", "Super Admin"]
+    if not is_admin and (poll.ownerId or "").lower() != (current_user.get("sub") or "").lower():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this poll")
     return get_transactions_by_poll(db, poll_id)

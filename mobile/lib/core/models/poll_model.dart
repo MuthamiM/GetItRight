@@ -78,7 +78,7 @@ class Poll {
       title: (json['title'] ?? json['Title'] ?? '').toString(),
       description: (json['description'] ?? json['Description'] as String?) ?? '',
       trackName: (json['track_name'] ?? json['category'] ?? json['plan'] ?? 'General').toString(),
-      authorName: (json['author_name'] ?? json['ownerId'] ?? 'GetItRight').toString(),
+      authorName: (json['author_name'] ?? json['ownerId'] ?? 'IcapsQ').toString(),
       options: (json['options'] as List<dynamic>?)
               ?.map((o) => PollOption.fromJson(o as Map<String, dynamic>))
               .toList() ??

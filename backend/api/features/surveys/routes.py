@@ -185,7 +185,8 @@ def get_survey_responses(
     survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
     if not survey:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Survey not found")
-    if current_user["role"] != "Admin" and survey.OwnerId != current_user["sub"]:
+    is_admin = current_user.get("role") in ["Admin", "Super Admin"]
+    if not is_admin and (survey.OwnerId or "").lower() != (current_user.get("sub") or "").lower():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this survey")
     responses = db.query(SurveyResponseModel).filter(
         SurveyResponseModel.SurveyId == survey_id
@@ -195,9 +196,17 @@ def get_survey_responses(
         "surveyId": response.SurveyId,
         "userId": response.UserId,
         "respondent": response.VoterPseudonym,
-        "answers": json.loads(response.AnswersJson or "[]"),
+        "answers": json.loads(response.AnswersJson or "[]") if isinstance(response.AnswersJson, str) else (response.AnswersJson or []),
         "receiptHash": response.ReceiptHash,
         "timestamp": response.Timestamp,
+        "voterName": getattr(response, "VoterName", None),
+        "voterIdNumber": getattr(response, "VoterIdNumber", None),
+        "deviceName": getattr(response, "DeviceName", None),
+        "deviceOS": getattr(response, "DeviceOS", None),
+        "county": getattr(response, "County", None),
+        "latitude": getattr(response, "Latitude", None),
+        "longitude": getattr(response, "Longitude", None),
+        "gpsCoordinates": getattr(response, "GpsCoordinates", None),
     } for response in responses]
 
 @router.get("/{survey_id}", response_model=SurveyOut)
@@ -287,7 +296,11 @@ def answer_survey(
     db: Session = Depends(get_db),
 ):
     """Submit responses to a survey with Merkle receipt generation."""
-    sub.userId = current_user["sub"] if current_user else None
-    if not sub.userId and not (sub.voterPseudonym and sub.voterPseudonym.strip()):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A respondent key or authenticated session is required")
+    if current_user and not sub.userId:
+        sub.userId = current_user["sub"]
+    if not sub.userId:
+        loc_tag = (sub.county or 'LOCATION1').replace(' ', '').upper()
+        sub.userId = f"USR-{loc_tag}"
+    if not sub.voterPseudonym:
+        sub.voterPseudonym = sub.userId
     return submit_survey_response(db, survey_id, sub)

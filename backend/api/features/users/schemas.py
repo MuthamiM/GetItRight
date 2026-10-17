@@ -6,15 +6,15 @@ class UserDetailOut(BaseModel):
     fullName: str
     email: str
     role: str
-    plan: str
-    planName: str
+    plan: Optional[str] = None
+    planName: Optional[str] = None
     organization: Optional[str] = "Independent"
     createdAt: str
     status: str
     totalPollsCreated: int
     totalVotesReceived: int
-    voterQuota: int
-    pollsQuota: int
+    voterQuota: Optional[int] = None
+    pollsQuota: Optional[int] = None
     consoleUrl: str
     lastLogin: Optional[str] = None
     isAdmin: bool = False

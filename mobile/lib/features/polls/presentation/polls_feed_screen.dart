@@ -204,7 +204,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
   Future<void> _sharePoll(Poll poll) async {
     final shareUrl = _apiClient.generateShareLink(type: 'poll', id: poll.id);
     final shareMessage =
-        'Cast your vote on GetitRight!\n\n${poll.title}\n\nVote now: $shareUrl';
+        'Cast your vote on IcapsQ!\n\n${poll.title}\n\nVote now: $shareUrl';
 
     // Copy to clipboard
     Clipboard.setData(ClipboardData(text: shareUrl));

@@ -174,32 +174,12 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
     if len(submitted_question_ids) != len(set(submitted_question_ids)) or any(qid not in valid_question_ids for qid in submitted_question_ids):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Survey answers contain invalid questions")
 
+    import random
     user_id = sub.userId.strip() if sub.userId and str(sub.userId).strip() else None
-    voter = (sub.voterPseudonym or (f"User-{user_id}" if user_id else f"Respondent-{uuid.uuid4().hex[:6]}")).strip()
-
-    # NO RETAKING SURVEY: If user already completed survey, reject duplicate submission
-    if user_id:
-        existing_by_user = db.query(SurveyResponseModel).filter(
-            SurveyResponseModel.SurveyId == survey_id,
-            SurveyResponseModel.UserId == user_id
-        ).first()
-        if existing_by_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="You have already completed this survey."
-            )
-
-    # NO RETAKING SURVEY: If voter pseudonym/session already submitted, reject duplicate
-    if voter:
-        existing_by_voter = db.query(SurveyResponseModel).filter(
-            SurveyResponseModel.SurveyId == survey_id,
-            SurveyResponseModel.VoterPseudonym == voter
-        ).first()
-        if existing_by_voter:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="You have already completed this survey."
-            )
+    loc_tag = (sub.county or "LOCATION1").replace(" ", "").upper()
+    voter_name = (sub.voterName or "").strip() or f"USER@{loc_tag}"
+    voter_id_num = (sub.voterIdNumber or "").strip() or f"ID-{random.randint(10000000, 99999999)}"
+    voter = (sub.voterPseudonym or f"USER@{loc_tag}-{uuid.uuid4().hex[:6].upper()}").strip()
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     receipt = "0x" + hashlib.sha256(f"{survey_id}:{voter}:{timestamp}".encode("utf-8")).hexdigest()
@@ -219,6 +199,10 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
             resp_map[ans_str] = resp_map.get(ans_str, 0) + 1
             q.ResponsesJson = json.dumps(resp_map)
 
+    gps_coords = None
+    if sub.latitude is not None and sub.longitude is not None:
+        gps_coords = f"{sub.latitude},{sub.longitude}"
+
     # Save individual response with UserId in DB
     resp_record = SurveyResponseModel(
         SurveyId=survey_id,
@@ -227,7 +211,15 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         AnswersJson=json.dumps([{ "questionId": a.questionId, "answer": a.answer } for a in sub.answers]),
         ReceiptHash=receipt,
         MerkleLeafIndex=leaf_index,
-        Timestamp=timestamp
+        Timestamp=timestamp,
+        VoterName=voter_name,
+        VoterIdNumber=voter_id_num,
+        DeviceName=(sub.deviceName or "Web Browser").strip() or None,
+        DeviceOS=(sub.deviceOS or "").strip() or None,
+        County=(sub.county or "").strip() or None,
+        Latitude=sub.latitude,
+        Longitude=sub.longitude,
+        GpsCoordinates=gps_coords
     )
     db.add(resp_record)
     db.commit()

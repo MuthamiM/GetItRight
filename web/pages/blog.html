@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IcapsQ — Blog &amp; Civic Research Insights</title>
+  <meta name="description" content="Research publications, methodology briefs, and sovereign data intelligence from the IcapsQ survey and feedback network.">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
+  <meta name="theme-color" content="#2E3035">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../css/core/variables.css">
+  <link rel="stylesheet" href="../css/core/base.css">
+  <link rel="stylesheet" href="../css/components/navigation.css">
+  <link rel="stylesheet" href="../css/components/footer.css">
+
+  <style>
+    :root {
+      --graphite-900: #1F2023;
+      --graphite-700: #2E3035;
+      --graphite-500: #6B6E76;
+      --graphite-300: #B8BAC0;
+      --graphite-50:  #F2F2F3;
+      --white: #FFFFFF;
+
+      --charcoal: #1F2023;
+      --charcoal-elevated: #2E3035;
+      --muted-gray: #6B6E76;
+      --silver: #F2F2F3;
+      --silver-border: #B8BAC0;
+      --font-display: 'Outfit', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    .ln-nav-brand .brand-q { color: var(--muted-gray); }
+    .ln-footer-brand-name .brand-q { color: var(--silver-border); }
+
+    body {
+      background-color: var(--silver);
+      color: var(--charcoal);
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Banner */
+    .edge-container {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+      box-sizing: border-box;
+      flex: 1;
+    }
+
+    .blog-hero {
+      margin-bottom: 48px;
+    }
+
+    .blog-tagline {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted-gray);
+      margin-bottom: 8px;
+    }
+
+    .blog-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      color: var(--charcoal);
+      letter-spacing: -0.03em;
+      margin: 0 0 14px 0;
+      line-height: 1.15;
+    }
+
+    .blog-desc {
+      font-size: 16px;
+      color: var(--charcoal);
+      opacity: 0.8;
+      max-width: 780px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Grid of Blog Posts */
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin-top: 36px;
+    }
+
+    @media (max-width: 1024px) {
+      .blog-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .blog-grid {
+        grid-template-columns: 1fr;
+      }
+      .edge-container {
+        padding: 24px 16px 60px;
+      }
+    }
+
+    .blog-card {
+      background: #FFFFFF;
+      border: 1.5px solid rgba(31, 32, 35, 0.12);
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 16px rgba(31, 32, 35, 0.04);
+    }
+
+    .blog-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(31, 32, 35, 0.08);
+      border-color: rgba(31, 32, 35, 0.3);
+    }
+
+    .blog-badge {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--charcoal);
+      background: rgba(31, 32, 35, 0.08);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 16px;
+      align-self: flex-start;
+    }
+
+    .blog-card-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--charcoal);
+      margin: 0 0 10px 0;
+      line-height: 1.35;
+      letter-spacing: -0.015em;
+    }
+
+    .blog-card-excerpt {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--charcoal);
+      opacity: 0.75;
+      margin: 0 0 20px 0;
+      flex: 1;
+    }
+
+    .blog-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(31, 32, 35, 0.1);
+      padding-top: 14px;
+      font-size: 12px;
+      color: var(--muted-gray);
+      font-weight: 600;
+    }
+
+    .btn-read-more {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--charcoal);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap 0.2s ease;
+    }
+
+    .btn-read-more:hover {
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== PUBLIC NAVBAR ====== -->
+  <nav class="ln-nav" id="mainNav">
+    <div class="ln-nav-top-row">
+      <a href="../index.html" class="ln-nav-logo">
+        <div class="ln-nav-logo-icon">
+          <img src="../assets/images/logo.png" alt="IcapsQ Logo">
+        </div>
+        <span class="ln-nav-brand">Icaps<span class="brand-q">Q</span></span>
+      </a>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="nav-live-pill">
+          <span class="nav-live-dot"></span>
+          <span>Survey &amp; Feedback</span>
+        </div>
+        <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
+      </div>
+    </div>
+
+    <div class="ln-nav-links">
+      <a href="vote.html">Active Polls</a>
+      <a href="surveys.html">Active Surveys</a>
+      <a href="blog.html" class="active">Blog</a>
+    </div>
+  </nav>
+
+  <!-- ====== MAIN CONTAINER ====== -->
+  <main class="edge-container">
+    <header class="blog-hero">
+      <div class="blog-tagline">IcapsQ Research &amp; Intelligence</div>
+      <h1 class="blog-title">Insights, Research &amp; Sovereign Data</h1>
+      <p class="blog-desc">
+        Methodology briefs, data integrity standards, public health studies, and citizen participation trends published by verified institutions across the IcapsQ sovereign network.
+      </p>
+    </header>
+
+    <!-- Blog Grid -->
+    <div class="blog-grid">
+      <!-- Article 1 -->
+      <article class="blog-card">
+        <div>
+          <span class="blog-badge">Data Integrity</span>
+          <h2 class="blog-card-title">How Sovereign Device &amp; County Verification Eliminates Poll Manipulation</h2>
+          <p class="blog-card-excerpt">
+            An in-depth look at how regional 47-county GPS telemetry and deterministic hardware attribution verify authentic Kenyan voices while preserving respondent anonymity.
+          </p>
+        </div>
+        <div class="blog-meta">
+          <span>Oct 17, 2026 &bull; 6 min read</span>
+          <a href="#" class="btn-read-more">Read &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Article 2 -->
+      <article class="blog-card">
+        <div>
+          <span class="blog-badge">Public Health</span>
+          <h2 class="blog-card-title">Essential Medicines Availability: Level 2 &amp; 3 Clinic Survey Findings</h2>
+          <p class="blog-card-excerpt">
+            Preliminary responses from over 2,400 verified healthcare workers and patients evaluating dispensary stockouts, referral delays, and pharmaceutical supply chains.
+          </p>
+        </div>
+        <div class="blog-meta">
+          <span>Oct 14, 2026 &bull; 8 min read</span>
+          <a href="#" class="btn-read-more">Read &rarr;</a>
+        </div>
+      </article>
+
+      <!-- Article 3 -->
+      <article class="blog-card">
+        <div>
+          <span class="blog-badge">Platform Architecture</span>
+          <h2 class="blog-card-title">Cryptographic Merkle Cohort Proofs for Tamper-Proof Ballots</h2>
+          <p class="blog-card-excerpt">
+            Why cryptographic hash trees and immutable transaction receipts give civic assemblies and labor unions mathematically verifiable ballot auditability.
+          </p>
+        </div>
+        <div class="blog-meta">
+          <span>Oct 10, 2026 &bull; 5 min read</span>
+          <a href="#" class="btn-read-more">Read &rarr;</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- ====== ICAPSQ FOOTER ====== -->
+  <footer class="ln-footer">
+    <div class="ln-footer-inner">
+      <div class="ln-footer-grid">
+        <!-- Brand Column -->
+        <div>
+          <div class="ln-footer-brand-name">
+            <div class="ln-footer-brand-logo">
+              <img src="../assets/images/logo.png" alt="IcapsQ Logo">
+            </div>
+            Icaps<span class="brand-q">Q</span>
+          </div>
+          <p class="ln-footer-brand-desc">
+            Empowering organizations, civic assemblies, and researchers with sovereign survey &amp; feedback intelligence, verified demographics, and real-time aggregate analytics across Kenya.
+          </p>
+        </div>
+
+        <!-- Navigation -->
+        <div>
+          <h4 class="ln-footer-col-title">Navigation</h4>
+          <ul class="ln-footer-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="vote.html">Active Polls</a></li>
+            <li><a href="surveys.html">Active Surveys</a></li>
+            <li><a href="blog.html">Blog</a></li>
+          </ul>
+        </div>
+
+        <!-- Organizations -->
+        <div>
+          <h4 class="ln-footer-col-title">Organizations</h4>
+          <ul class="ln-footer-links">
+            <li><a href="../auth/login.html">Client Sign In</a></li>
+            <li><a href="../auth/signup.html">Create Campaign</a></li>
+            <li><a href="../index.html#pricing">Plan &amp; Quotas</a></li>
+          </ul>
+        </div>
+
+        <!-- Feedback & Privacy -->
+        <div>
+          <h4 class="ln-footer-col-title">Sovereignty</h4>
+          <ul class="ln-footer-links">
+            <li><a href="../verifier.html">Receipt Verifier</a></li>
+            <li><a href="../mobile-app.html">Mobile App</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ln-footer-bottom">
+        <div>Copyright &copy; 2026 IcapsQ. All rights reserved.</div>
+        <div>Survey &amp; Feedback Platform</div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/core/icons.js"></script>
+  <script src="../js/core/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.App && typeof window.App.injectIcons === 'function') {
+        window.App.injectIcons();
+      }
+    });
+  </script>
+</body>
+</html>

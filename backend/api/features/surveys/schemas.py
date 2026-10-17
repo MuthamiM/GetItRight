@@ -47,13 +47,20 @@ class SurveyCreate(BaseModel):
     questions: List[QuestionCreate]
 
 class SurveyAnswerSubmission(BaseModel):
-    questionId: int
+    questionId: Any
     answer: Any
 
 class SurveyResponseSubmission(BaseModel):
     voterPseudonym: Optional[str] = None
     userId: Optional[str] = None
     answers: List[SurveyAnswerSubmission]
+    voterName: Optional[str] = None
+    voterIdNumber: Optional[str] = None
+    deviceName: Optional[str] = None
+    deviceOS: Optional[str] = None
+    county: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class SurveySubmissionReceipt(BaseModel):
     success: bool

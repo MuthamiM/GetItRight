@@ -3,16 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright — Sign in to your account.">
-  <title>Getitright — Sign In</title>
-  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <meta name="description" content="IcapsQ — Sign in to your account.">
+  <title>IcapsQ — Sign In</title>
+  <link rel="icon" href="../assets/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="../assets/images/favicon-32x32.png" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --charcoal: #303030;
-      --silver: #E5E5E5;
+      --charcoal: #1F2023;
+      --charcoal-elevated: #2E3035;
+      --silver: #F2F2F3;
+      --silver-border: #B8BAC0;
+      --muted-gray: #6B6E76;
     }
 
     body {
@@ -177,16 +182,17 @@
   <div class="auth-container">
     <div class="auth-brand">
       <div class="auth-brand-logo">
-        <img src="../assets/images/logo.png" alt="Getitright Logo">
+        <img src="../assets/images/logo.png" alt="IcapsQ Logo">
       </div>
-      <div class="auth-brand-name">Getitright</div>
-      <div class="auth-brand-sub">Organization Management Portal</div>
+      <div class="auth-brand-name">IcapsQ</div>
+      <div class="auth-brand-sub">Survey &amp; Feedback Management Portal</div>
     </div>
 
     <div class="auth-card">
       <h2>Sign In</h2>
       <div class="subtitle">Access your organization dashboard and polling analytics.</div>
 
+      <div id="auth-success" style="display:none; padding:13px 16px; background:rgba(46, 125, 50, 0.25); border:1.5px solid #81C784; border-radius:12px; font-size:13px; color:#C8E6C9; margin-bottom:18px; line-height:1.45;"></div>
       <div id="auth-error" style="display:none; padding:12px 14px; background:rgba(229, 229, 229, 0.12); border:1.5px solid rgba(229, 229, 229, 0.35); border-radius:12px; font-size:13px; color:var(--silver); margin-bottom:18px; line-height:1.4;"></div>
 
       <form id="login-form" onsubmit="handleLogin(event)">
@@ -232,6 +238,19 @@
       }
     }
 
+    // Check if redirected after plan payment
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('upgraded') === '1') {
+        const planName = params.get('plan') || 'your new plan';
+        const successEl = document.getElementById('auth-success');
+        if (successEl) {
+          successEl.innerHTML = `<strong>Payment Confirmed!</strong> Upgraded to <strong>${planName}</strong>. Please sign in below to activate your new plan quota and cryptographic security tokens.`;
+          successEl.style.display = 'block';
+        }
+      }
+    } catch (_) {}
+
     async function handleLogin(e) {
       e.preventDefault();
       clearError();
@@ -260,11 +279,17 @@
           localStorage.setItem('gir_user', JSON.stringify(data.user));
           window.location.href = data.redirectUrl || '../pages/vote.html';
         } else {
-          const message = res.status === 401
-            ? (data.detail || 'Invalid email or password.')
-            : res.status === 429
-              ? 'Too many login attempts. Please wait and try again.'
-              : (data.detail || 'Unable to sign in. Please try again.');
+          let message = data.detail || 'Invalid email or password.';
+          if (res.status === 401) {
+            const d = (data.detail || '').toLowerCase();
+            if (d.includes('no user') || d.includes('no account') || d.includes('not registered') || d.includes('not found') || d.includes('invalid credentials') || !data.detail) {
+              message = 'No account exists.';
+            } else {
+              message = data.detail;
+            }
+          } else if (res.status === 429) {
+            message = 'Too many login attempts. Please wait and try again.';
+          }
           throw new Error(message);
         }
       } catch (err) {

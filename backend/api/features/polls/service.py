@@ -183,33 +183,18 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
-    # Store User ID if authenticated, prevent duplicate voting
+    import random
     user_id = vote_req.userId.strip() if vote_req.userId and str(vote_req.userId).strip() else None
-    if user_id:
-        existing_user_tx = db.query(VoteTransactionModel).filter(
-            VoteTransactionModel.PollId == poll.Id,
-            VoteTransactionModel.UserId == user_id
-        ).first()
-        if existing_user_tx:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Vote already recorded for this user. You cannot change your vote."
-            )
 
-    # REMEMBER: ONCE A VOTER VOTES, THEY CANNOT CHANGE THEIR VOTE
+    # Voter identity and telemetry resolution
+    loc_tag = (vote_req.county or "LOCATION1").replace(" ", "").upper()
+    voter_name = (vote_req.voterName or "").strip() or f"USER@{loc_tag}"
+    voter_id_num = (vote_req.voterIdNumber or "").strip() or f"ID-{random.randint(10000000, 99999999)}"
+
     if vote_req.voterKey and vote_req.voterKey.strip():
         voter_key = vote_req.voterKey.strip()
-        existing_tx = db.query(VoteTransactionModel).filter(
-            VoteTransactionModel.PollId == poll.Id,
-            VoteTransactionModel.VoterPseudonym == voter_key
-        ).first()
-        if existing_tx:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Vote already recorded. You cannot change your vote."
-            )
     else:
-        voter_key = f"Voter-{user_id}" if user_id else f"Voter-{uuid.uuid4().hex[:6]}"
+        voter_key = f"USER@{loc_tag}-{uuid.uuid4().hex[:6].upper()}"
 
     receipt_hash = generate_merkle_receipt(poll_id, target_option.Index, voter_key, timestamp)
 
@@ -226,9 +211,15 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     new_root = "0x" + hashlib.sha256(f"{poll.MerkleRoot}:{receipt_hash}".encode("utf-8")).hexdigest()[:16]
     poll.MerkleRoot = new_root
 
-    device_str = "Mobile App" if "mobile" in (vote_req.platform or "").lower() else "Web Browser"
+    device_str = vote_req.deviceName or ("Mobile App" if "mobile" in (vote_req.platform or "").lower() else "Web Browser")
+    os_str = vote_req.deviceOS or ""
+    county_str = (vote_req.county or "").strip() or None
+    gps_str = None
+    lat_val = vote_req.latitude
+    lng_val = vote_req.longitude
+    if lat_val is not None and lng_val is not None:
+        gps_str = f"{lat_val},{lng_val}"
 
-    # Do not retain date of birth, county, or precise location with a ballot.
     tx = VoteTransactionModel(
         PollId=poll.Id,
         UserId=user_id,
@@ -238,12 +229,16 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         MerkleLeafIndex=leaf_index,
         VoterPseudonym=voter_key,
         Timestamp=timestamp,
-        County=None,
+        County=county_str,
         Dob=None,
-        Latitude=None,
-        Longitude=None,
-        GpsCoordinates=None,
-        Device=device_str
+        Latitude=lat_val,
+        Longitude=lng_val,
+        GpsCoordinates=gps_str,
+        Device=device_str,
+        VoterName=voter_name,
+        VoterIdNumber=voter_id_num,
+        DeviceName=device_str,
+        DeviceOS=os_str or None
     )
     db.add(tx)
     db.commit()
@@ -276,7 +271,15 @@ def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionO
             receiptHash=t.ReceiptHash,
             merkleLeafIndex=t.MerkleLeafIndex,
             voterPseudonym=t.VoterPseudonym,
-            timestamp=t.Timestamp
+            timestamp=t.Timestamp,
+            voterName=getattr(t, 'VoterName', None),
+            voterIdNumber=getattr(t, 'VoterIdNumber', None),
+            deviceName=getattr(t, 'DeviceName', None),
+            deviceOS=getattr(t, 'DeviceOS', None),
+            county=getattr(t, 'County', None),
+            latitude=getattr(t, 'Latitude', None),
+            longitude=getattr(t, 'Longitude', None),
+            gpsCoordinates=getattr(t, 'GpsCoordinates', None)
         )
         for t in txs
     ]

@@ -1,25 +1,56 @@
 /* =============================================================
-   GETITRIGHT — Landing Page Design System
-   STRICT TWO-COLOR PALETTE ONLY:
-   1. #303030 (App Charcoal)
-   2. #E5E5E5 (App Metallic Silver)
-   NO OTHER COLORS (NO #1A1A1A, NO WHITE #FFFFFF, NO BLACK #000000)
+   ICAPSQ — Design System (Graphite Brand Spec)
+   Tokens:
+   --graphite-900: #1F2023 (Darkest surfaces)
+   --graphite-700: #2E3035 (Brand primary, logo bubble, favicon bg)
+   --graphite-500: #6B6E76 ("Q" on light, tagline on light)
+   --graphite-300: #B8BAC0 ("Q" on dark, tagline on dark)
+   --graphite-50:  #F2F2F3 (Light surfaces)
+   --white:        #FFFFFF (Checkmark, reversed bubble)
    ============================================================= */
 
-/* ── Google Fonts ── */
+@import url('tokens.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
-/* ── CSS Variables ── */
 :root {
-  --charcoal: #303030;
-  --silver: #E5E5E5;
+  --graphite-900: #1F2023;
+  --graphite-700: #2E3035; /* brand primary */
+  --graphite-500: #6B6E76;
+  --graphite-300: #B8BAC0;
+  --graphite-50:  #F2F2F3;
+  --white: #FFFFFF;
 
-  --font-display: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --charcoal: var(--graphite-700);
+  --charcoal-elevated: #2E3035;
+  --charcoal-dark: var(--graphite-900);
+  --silver: var(--graphite-50);
+  --silver-border: var(--graphite-300);
+  --muted-gray: var(--graphite-500);
+
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
   --section-padding: clamp(60px, 8vw, 110px) clamp(24px, 5vw, 80px);
   --max-width: 1240px;
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brand-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--graphite-700);
+}
+.brand-text .brand-q {
+  color: var(--graphite-500);
+}
+
+.brand-text-dark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--white);
+}
+.brand-text-dark .brand-q {
+  color: var(--graphite-300);
 }
 
 /* ── Reset & Base ── */
@@ -136,8 +167,12 @@ body.landing-new {
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 800;
-  color: var(--charcoal);
+  color: var(--graphite-700);
   letter-spacing: -0.03em;
+}
+
+.ln-nav-brand .brand-q {
+  color: var(--graphite-500);
 }
 
 .ln-nav-links {
@@ -1007,11 +1042,15 @@ body.landing-new {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 800;
-  color: var(--silver);
+  color: var(--white);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.ln-footer-brand-name .brand-q {
+  color: var(--graphite-300);
 }
 
 .ln-footer-brand-logo {

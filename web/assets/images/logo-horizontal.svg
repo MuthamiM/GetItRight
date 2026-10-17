@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90" width="380" height="90">
+  <!-- Bubble Icon -->
+  <g transform="matrix(0.58, 0, 0, 0.58, -85, -55)">
+    <path d="M 178.101562 196.800781 L 242.898438 196.800781 C 256.332031 196.800781 267.199219 185.933594 267.199219 172.5 L 267.199219 129.300781 C 267.199219 115.867188 256.332031 105 242.898438 105 L 178.101562 105 C 164.667969 105 153.800781 115.867188 153.800781 129.300781 L 153.800781 172.5 C 153.800781 185.933594 164.667969 196.800781 178.101562 196.800781 Z" fill="#1F2023"/>
+    <path d="M 180.800781 191.398438 L 180.800781 231.898438 L 218.601562 191.398438 Z" fill="#1F2023"/>
+    <path d="M 178.101562 153.601562 L 201.050781 175.199219 L 244.25 129.300781" fill="none" stroke="#FFFFFF" stroke-width="10.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="82" y="46" font-family="'Inter', 'Outfit', sans-serif" font-size="42" font-weight="800" fill="#1F2023" letter-spacing="-0.02em">IcapsQ</text>
+  <text x="84" y="68" font-family="'Inter', 'Outfit', sans-serif" font-size="11" font-weight="700" fill="#6B6E76" letter-spacing="0.28em">SURVEY &amp; FEEDBACK</text>
+</svg>

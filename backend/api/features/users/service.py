@@ -8,41 +8,57 @@ from backend.api.features.users.schemas import UserDetailOut, UserStatusUpdate, 
 from backend.api.core.security import get_password_hash
 
 PLAN_METADATA = {
-    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/community.html"},
-    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/pro.html"},
-    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/organization.html"},
-    "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/election.html"},
+    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
+    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
+    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/user.html"},
+    "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/user.html"},
 }
 
-# Map full plan names to canonical short keys
-_PLAN_NAME_TO_KEY = {v["name"].lower(): k for k, v in PLAN_METADATA.items()}
+PLAN_TIER_RANK = {"free": 0, "pro": 1, "org": 2, "election": 3}
+
+# Map full plan names and common variants to canonical short keys
+_PLAN_NAME_TO_KEY = {
+    "free": "free",
+    "civic starter": "free",
+    "civic_starter": "free",
+    "pro": "pro",
+    "civic pro": "pro",
+    "civic_pro": "pro",
+    "org": "org",
+    "institutional org": "org",
+    "institutional_org": "org",
+    "election": "election",
+    "sovereign election guard": "election",
+    "sovereign_election_guard": "election",
+}
 
 def resolve_plan_key(raw: str) -> str:
-    """Accept 'pro', 'Civic Pro', 'civic pro', etc. and return canonical key."""
+    """Accept 'pro', 'Civic Pro', 'civic_pro', etc. and return canonical key."""
     key = raw.strip().lower()
     if key in PLAN_METADATA:
         return key
-    return _PLAN_NAME_TO_KEY.get(key, "free")
+    return _PLAN_NAME_TO_KEY.get(key, key)
 
 def map_user(u: UserModel) -> UserDetailOut:
-    redirect_url = "/console/admin.html" if u.Role in ["Admin", "Super Admin"] else u.ConsoleUrl
+    is_admin = (u.Role in ["Admin", "Super Admin"])
+    redirect_url = "/console/admin.html" if is_admin else u.ConsoleUrl
     return UserDetailOut(
         id=u.Id,
         fullName=u.FullName,
         email=u.Email,
         role=u.Role,
-        plan=u.Plan,
-        planName=u.PlanName,
+        plan=None if is_admin else u.Plan,
+        planName=None if is_admin else u.PlanName,
         organization=u.Organization,
         createdAt=u.CreatedAt,
         status=u.Status,
         totalPollsCreated=u.TotalPollsCreated,
         totalVotesReceived=u.TotalVotesReceived,
-        voterQuota=u.VoterQuota,
-        pollsQuota=u.PollsQuota,
+        voterQuota=None if is_admin else u.VoterQuota,
+        pollsQuota=None if is_admin else u.PollsQuota,
         consoleUrl=redirect_url,
         lastLogin=u.LastLogin,
-        isAdmin=(u.Role in ["Admin", "Super Admin"])
+        isAdmin=is_admin
     )
 
 def list_users(db: Session, plan: Optional[str] = None) -> List[UserDetailOut]:
@@ -113,15 +129,28 @@ def update_user_status(db: Session, user_id: str, update_data: UserStatusUpdate)
     db.refresh(user)
     return map_user(user)
 
-def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest) -> UserDetailOut:
+def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest, is_admin: bool = False) -> UserDetailOut:
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
     plan_key = resolve_plan_key(req.plan)
+    if plan_key not in PLAN_METADATA:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid plan '{req.plan}'. Available plans: free, pro, org")
+
+    # If client is self-updating, enforce upgrade-only rule
+    if not is_admin:
+        current_rank = PLAN_TIER_RANK.get((user.Plan or "free").lower(), 0)
+        target_rank = PLAN_TIER_RANK.get(plan_key.lower(), 0)
+        if target_rank <= current_rank:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You can only switch plans by upgrading to a higher tier."
+            )
+
     meta = PLAN_METADATA[plan_key]
     user.Plan = plan_key
     user.PlanName = meta["name"]
-    user.ConsoleUrl = meta["url"]
+    user.ConsoleUrl = "/console/user.html" if user.Role == "Customer" else "/console/admin.html"
     user.VoterQuota = meta["voters"]
     user.PollsQuota = meta["polls"]
     user.TokenVersion = (user.TokenVersion or 0) + 1

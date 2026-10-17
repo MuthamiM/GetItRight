@@ -3,15 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Getitright - Active public voting feed. Vote in real-time polls, voice your opinion, and view instant live aggregate results.">
-  <title>Getitright — Active Live Polls</title>
+  <meta name="description" content="IcapsQ - Active public voting and feedback feed. Vote in real-time polls, voice your opinion, and view instant live aggregate results.">
+  <title>IcapsQ — Active Polls &amp; Civic Voting</title>
   <link rel="stylesheet" href="../css/landing-new.css">
-  <link rel="icon" href="../assets/images/logo.png" type="image/png">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
+  <meta name="theme-color" content="#2E3035">
   <style>
-    /* Strict Landing Page Two-Color Theme (#303030 & #E5E5E5) */
+    /* IcapsQ Graphite Brand Theme */
     :root {
-      --charcoal: #303030;
-      --silver: #E5E5E5;
+      --graphite-900: #1F2023;
+      --graphite-700: #2E3035; /* brand primary */
+      --graphite-500: #6B6E76;
+      --graphite-300: #B8BAC0;
+      --graphite-50:  #F2F2F3;
+      --white: #FFFFFF;
+
+      --charcoal: #2E3035;
+      --silver: #F2F2F3;
       --font-display: 'Outfit', sans-serif;
       --font-body: 'Inter', sans-serif;
     }
@@ -495,12 +506,16 @@
     <div class="ln-nav-top-row">
       <a href="../index.html" class="ln-nav-logo">
         <div class="ln-nav-logo-icon">
-          <img src="../assets/images/logo.png" alt="Getitright Logo">
+          <img src="../assets/images/logo.png" alt="IcapsQ Logo">
         </div>
-        <span class="ln-nav-brand">Getitright</span>
+        <span class="ln-nav-brand">Icaps<span class="brand-q">Q</span></span>
       </a>
 
       <div style="display:flex; align-items:center; gap:10px;">
+        <div class="nav-live-pill">
+          <span class="nav-live-dot"></span>
+          <span>Survey &amp; Feedback</span>
+        </div>
         <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
       </div>
     </div>
@@ -508,6 +523,7 @@
     <div class="ln-nav-links">
       <a href="vote.html" class="active">Active Polls</a>
       <a href="surveys.html">Active Surveys</a>
+      <a href="blog.html">Blog</a>
     </div>
   </nav>
 
@@ -526,6 +542,10 @@
         <p style="font-size:15px; color:var(--charcoal); opacity:0.8; margin:0; max-width:820px; line-height:1.6;">
           Browse published community referendums, organizational polls, and civic inquiries. Vote directly to express your perspective and view verified real-time aggregate totals.
         </p>
+        <div id="citizen-telemetry-chip" style="margin-top:14px; display:inline-flex; align-items:center; gap:8px; background:rgba(48,48,48,0.06); border:1px solid rgba(48,48,48,0.18); border-radius:100px; padding:6px 16px; font-size:12.5px; font-weight:700; color:var(--charcoal); flex-wrap:wrap;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--charcoal);"></span>
+          <span id="citizen-device-display">Detecting device &amp; sovereign ID...</span>
+        </div>
       </div>
 
       <div class="search-box" style="width:340px;">
@@ -577,7 +597,7 @@
           </span>
           <h3 style="font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--silver); margin:0 0 8px 0; letter-spacing:-0.01em;">Participate on Mobile</h3>
           <p style="font-size:13px; color:var(--silver); opacity:0.75; line-height:1.55; margin:0 0 18px 0;">
-            Download the Getitright Mobile App for Android to cast votes and complete surveys anywhere on the go.
+            Download the IcapsQ Mobile App for Android to cast votes and complete surveys anywhere on the go.
           </p>
           <a href="../mobile-app.html" class="sidebar-btn-primary">
             Get Android Mobile App &rarr;
@@ -600,15 +620,69 @@
 
       </div>
 
-    </div>
   </main>
+
+  <!-- ====== ICAPSQ FOOTER ====== -->
+  <footer class="ln-footer">
+    <div class="ln-footer-inner">
+      <div class="ln-footer-grid">
+        <!-- Brand Column -->
+        <div>
+          <div class="ln-footer-brand-name">
+            <div class="ln-footer-brand-logo">
+              <img src="../assets/images/logo.png" alt="IcapsQ Logo">
+            </div>
+            Icaps<span class="brand-q">Q</span>
+          </div>
+          <p class="ln-footer-brand-desc">
+            Empowering organizations with verified sovereign poll and feedback management, real-time analytics, and mobile research engagement across Kenya.
+          </p>
+        </div>
+
+        <!-- Navigation -->
+        <div>
+          <h4 class="ln-footer-col-title">Navigation</h4>
+          <ul class="ln-footer-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="vote.html">Active Polls</a></li>
+            <li><a href="surveys.html">Active Surveys</a></li>
+            <li><a href="blog.html">Blog</a></li>
+          </ul>
+        </div>
+
+        <!-- Organizations -->
+        <div>
+          <h4 class="ln-footer-col-title">Organizations</h4>
+          <ul class="ln-footer-links">
+            <li><a href="../auth/login.html">Organization Sign In</a></li>
+            <li><a href="../auth/signup.html">Create Account</a></li>
+            <li><a href="../index.html#compare">Plan &amp; Quotas</a></li>
+          </ul>
+        </div>
+
+        <!-- Sovereignty -->
+        <div>
+          <h4 class="ln-footer-col-title">Sovereignty</h4>
+          <ul class="ln-footer-links">
+            <li><a href="../verifier.html">Privacy Verifier</a></li>
+            <li><a href="../mobile-app.html">Download Mobile App</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ln-footer-bottom">
+        <div>Copyright &copy; 2026 IcapsQ. All rights reserved.</div>
+        <div>Survey &amp; Feedback Platform</div>
+      </div>
+    </div>
+  </footer>
 
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
-  <script src="../js/core/demographics.js"></script>
+  <script src="../js/core/demographics.js?v=20261017_telemetry_v2"></script>
   <script>
     const API_BASE = window.location.origin + '/api';
     let allPolls = [];
@@ -616,6 +690,18 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       App.injectIcons();
+
+      // Display live detected device details & assigned sovereign citizen ID
+      if (window.Demographics) {
+        const info = window.Demographics.getDeviceInfo();
+        const uid = window.Demographics.getOrAssignUserId();
+        const county = window.Demographics.getCounty() || localStorage.getItem('gir_county') || 'Kenya';
+        const chip = document.getElementById('citizen-device-display');
+        if (chip) {
+          chip.innerHTML = `<strong>Citizen ID:</strong> ${uid} &bull; <strong>Device:</strong> ${info.deviceName} (${info.deviceOS}) &bull; <strong>Region:</strong> ${county}`;
+        }
+      }
+
       loadActivePolls();
       setupFilters();
       setupSearch();
@@ -695,7 +781,7 @@
 
     let currentFilteredPolls = [];
     let pollsCurrentPage = 1;
-    const POLLS_PAGE_SIZE = 5;
+    const POLLS_PAGE_SIZE = 8;
 
     function renderPollsFeed(polls, page = 1) {
       if (polls) currentFilteredPolls = polls;
@@ -834,12 +920,7 @@
     }
 
     async function submitPollVote(pollId, optionIndex, btnEl) {
-      if (localStorage.getItem('gir_voted_poll_' + pollId) !== null) {
-        App.showToast('You have already voted on this poll.', 'warning');
-        return;
-      }
-
-      // BEFORE TAKING A POLL: Always ask for County in a survey when asking for DOB & precise location!
+      // BEFORE TAKING A POLL: Verify identity, county, DOB & precise location
       if (window.Demographics && typeof window.Demographics.ensureVoterSurveyBeforePoll === 'function') {
         window.Demographics.ensureVoterSurveyBeforePoll(async (verified) => {
           await executeVoteSubmission(pollId, optionIndex, btnEl, verified);
@@ -851,24 +932,42 @@
 
     async function executeVoteSubmission(pollId, optionIndex, btnEl, verified = {}) {
       try {
-        let voterKey = localStorage.getItem('gir_voter_key');
-        if (!voterKey) {
-          voterKey = `Voter-${crypto.randomUUID()}`;
-          localStorage.setItem('gir_voter_key', voterKey);
-        }
-        const token = localStorage.getItem('gir_token');
+        const assignedUserId = verified.userId || (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function' ? window.Demographics.getOrAssignUserId() : (localStorage.getItem('gir_assigned_user_id') || 'USR-DEV-LOC1'));
+        const county = verified.county || localStorage.getItem('gir_county') || 'Nairobi';
+        const locTag = county.replace(/\s*County/i, '').replace(/\s+/g, '').toUpperCase() || 'LOCATION1';
+        const voterName = verified.voterName || localStorage.getItem('gir_voter_name') || `USER@${locTag}`;
+        const voterIdNumber = verified.voterIdNumber || localStorage.getItem('gir_voter_id_number') || 'ID-28491038';
+
+        // Collect device info
+        const deviceInfo = (window.Demographics && typeof window.Demographics.getDeviceInfo === 'function')
+          ? window.Demographics.getDeviceInfo()
+          : { deviceName: 'Web Browser', deviceOS: navigator.platform || 'Unknown' };
+
+        const latRaw = verified.lat ?? localStorage.getItem('gir_precise_lat');
+        const lngRaw = verified.lng ?? localStorage.getItem('gir_precise_lng');
+        const lat = latRaw ? parseFloat(latRaw) : null;
+        const lng = lngRaw ? parseFloat(lngRaw) : null;
+
+        const votePayload = {
+          optionIndex: optionIndex,
+          userId: assignedUserId,
+          voterKey: assignedUserId,
+          platform: 'web',
+          voterName: voterName,
+          voterIdNumber: voterIdNumber,
+          county: county,
+          latitude: (lat !== null && !isNaN(lat)) ? lat : null,
+          longitude: (lng !== null && !isNaN(lng)) ? lng : null,
+          deviceName: verified.deviceName || deviceInfo.deviceName,
+          deviceOS: verified.deviceOS || deviceInfo.deviceOS
+        };
 
         const res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            optionIndex: optionIndex,
-            voterKey: voterKey,
-            platform: 'web'
-          })
+          body: JSON.stringify(votePayload)
         });
 
         if (res.ok) {

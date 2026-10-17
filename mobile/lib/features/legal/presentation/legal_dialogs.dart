@@ -44,11 +44,11 @@ class LegalDialogs {
                 const SizedBox(height: 12),
                 _buildSection(
                   '1. Acceptance of Terms',
-                  'By accessing or using the GetitRight mobile application and web platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the services.',
+                  'By accessing or using the IcapsQ mobile application and web platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the services.',
                 ),
                 _buildSection(
                   '2. Civic Polling & Democratic Participation',
-                  'GetitRight provides public and institutional polling services. Users agree to participate in good faith. Automated vote casting, sybil ballot creation, and bot activities are strictly prohibited and actively screened via biometric and device attestation.',
+                  'IcapsQ provides public and institutional polling and feedback services. Users agree to participate in good faith. Automated vote casting, sybil ballot creation, and bot activities are strictly prohibited and actively screened via biometric and device attestation.',
                 ),
                 _buildSection(
                   '3. Vote Immutability & Permanence',
@@ -60,11 +60,11 @@ class LegalDialogs {
                 ),
                 _buildSection(
                   '5. Organizational Surveys',
-                  'Organizations publishing surveys on GetitRight must comply with ethical research guidelines and applicable election laws. GetitRight reserves the right to suspend surveys that incite violence, defamation, or fraudulent behavior.',
+                  'Organizations publishing surveys on IcapsQ must comply with ethical research guidelines and applicable election laws. IcapsQ reserves the right to suspend surveys that incite violence, defamation, or fraudulent behavior.',
                 ),
                 _buildSection(
                   '6. Limitation of Liability',
-                  'The service is provided "as is" with cryptographic auditability. In no event shall GetitRight be liable for indirect, incidental, or consequential damages resulting from public polling outcomes.',
+                  'The service is provided "as is" with cryptographic auditability. In no event shall IcapsQ be liable for indirect, incidental, or consequential damages resulting from public polling outcomes.',
                 ),
               ],
             ),
@@ -149,7 +149,7 @@ class LegalDialogs {
                 ),
                 _buildSection(
                   '6. Contact Privacy Officer',
-                  'For inquiries regarding your personal data or privacy rights under the Data Protection Act, contact privacy@getitright.io.',
+                  'For inquiries regarding your personal data or privacy rights under the Data Protection Act, contact privacy@icapsq.com.',
                 ),
               ],
             ),

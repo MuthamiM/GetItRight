@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color bgPrimary = Color(0xFF303030);
-  static const Color bgCard = Color(0xFF424242);
-  static const Color bgElevated = Color(0xFF505050);
-  static const Color accent = Color(0xFFE5E5E5);
-  static const Color accentGlow = Color(0x33FFFFFF);
+  // Official IcapsQ Graphite Spec
+  static const Color graphite900 = Color(0xFF1F2023); // Darkest surfaces
+  static const Color graphite700 = Color(0xFF2E3035); // Brand primary
+  static const Color graphite500 = Color(0xFF6B6E76); // Q on light, tagline
+  static const Color graphite300 = Color(0xFFB8BAC0); // Q on dark, borders
+  static const Color graphite50  = Color(0xFFF2F2F3); // Light surfaces
+  static const Color white       = Color(0xFFFFFFFF);
+
+  static const Color bgPrimary = graphite900;
+  static const Color bgCard = graphite700;
+  static const Color bgElevated = Color(0xFF383A40);
+  static const Color accent = graphite50;
+  static const Color accentGlow = Color(0x33B8BAC0);
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFB8B8B8);
-  static const Color textMuted = Color(0xFF888888);
-  static const Color border = Color(0xFF555555);
+  static const Color textSecondary = graphite300;
+  static const Color textMuted = graphite500;
+  static const Color border = Color(0xFF42454C);
   static const Color error = Color(0xFFFF6B6B);
-  static const Color warning = Color(0xFFE5E5E5);
-  static const Color success = Color(0xFFE5E5E5);
+  static const Color warning = graphite300;
+  static const Color success = graphite50;
 }
 
 class AppRadius {

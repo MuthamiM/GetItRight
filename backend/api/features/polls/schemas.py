@@ -57,6 +57,10 @@ class VoteCastRequest(BaseModel):
     longitude: Optional[float] = None
     accuracy: Optional[float] = None
     gps: Optional[str] = None
+    voterName: Optional[str] = None
+    voterIdNumber: Optional[str] = None
+    deviceName: Optional[str] = None
+    deviceOS: Optional[str] = None
 
 class VoteCastResponse(BaseModel):
     success: bool
@@ -77,6 +81,14 @@ class VoteTransactionOut(BaseModel):
     merkleLeafIndex: int
     voterPseudonym: str
     timestamp: str
+    voterName: Optional[str] = None
+    voterIdNumber: Optional[str] = None
+    deviceName: Optional[str] = None
+    deviceOS: Optional[str] = None
+    county: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    gpsCoordinates: Optional[str] = None
 
 class VoteStatusOut(BaseModel):
     hasVoted: bool

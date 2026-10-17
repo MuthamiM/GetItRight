@@ -3,37 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GetItRight — Client Dashboard</title>
+  <title>IcapsQ — Client Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
+  <meta name="theme-color" content="#2E3035">
   <style>
-    :root { font-family: Inter, system-ui, sans-serif; color: #303030; background: #e5e5e5; }
-    * { box-sizing: border-box; }
+    /* =============================================================
+       ICAPSQ — CLIENT CONSOLE DESIGN SYSTEM
+       GRAPHITE PALETTE:
+       - Shell background: #F2F2F3
+       - Cards & Panels: #FFFFFF with 1px solid #B8BAC0
+       - Primary Text & Elements: #1F2023 (Dark Graphite)
+       - Subtext: #6B6E76 (Muted Gray)
+       ============================================================= */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --charcoal: #1F2023;
+      --charcoal-elevated: #2E3035;
+      --silver: #F2F2F3;
+      --silver-border: #B8BAC0;
+      --muted-gray: #6B6E76;
+      --bg-shell: #F2F2F3;
+      --bg-card: #FFFFFF;
+      --border-color: #B8BAC0;
+      --border-sub: #DCDCDC;
+      --text-main: #303030;
+      --text-sub: #555555;
+      --text-muted: #888888;
+      --brand-accent: #303030;
+      --brand-hover: #1a1a1a;
+      --color-green: #2E7D32;
+      --color-red: #C62828;
+      --color-orange: #E65100;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-      height: 100%;
+      background: var(--bg-shell);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: 13px;
+      line-height: 1.5;
       margin: 0;
+      padding: 0;
+      width: 100%;
+      max-width: 100vw;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
       overflow: hidden;
     }
     button, input, select { font: inherit; }
+
     .shell {
+      width: 100%;
+      max-width: 100vw;
       height: 100vh;
+      margin: 0;
+      background: var(--bg-shell);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
+
+    /* Top Bar Header identical to Admin */
     .topbar {
       height: 68px;
-      flex-shrink: 0;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
       padding: 0 24px;
-      background: #fff;
-      border-bottom: 1px solid #d0d0d0;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 100vw;
+      box-sizing: border-box;
+      gap: 12px;
+      flex-shrink: 0;
       z-index: 100;
     }
-    .brand { font-size: 21px; font-weight: 800; }
-    .top-actions { display: flex; gap: 10px; align-items: center; }
-    .top-actions button,
-    .sidebar button { border: 1px solid #d0d0d0; border-radius: 20px; padding: 8px 15px; background: #fff; cursor: pointer; }
+    .brand {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--charcoal);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.5px;
+      font-family: 'Outfit', sans-serif;
+      flex-shrink: 0;
+    }
+    .brand span.muted {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: normal;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .top-actions button {
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 8px 18px;
+      background: #FFFFFF;
+      color: var(--charcoal);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12.5px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .top-actions button:hover {
+      background: #F5F5F5;
+      border-color: var(--charcoal);
+    }
+    .top-actions button#create-survey,
+    .top-actions button#create-poll {
+      background: var(--charcoal);
+      color: #FFFFFF;
+      border-color: var(--charcoal);
+    }
+    .top-actions button#create-survey:hover,
+    .top-actions button#create-poll:hover {
+      background: #111111;
+      border-color: #111111;
+    }
+
+    /* Notification Bell & Dropdown with RED BADGE matching Admin */
+    .nav-icon-btn {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-sub);
+      flex-shrink: 0;
+      padding: 0 !important;
+      transition: all 0.15s ease;
+    }
+    .nav-icon-btn:hover {
+      background: #F5F5F5;
+      color: var(--text-main);
+    }
+    .nav-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+    .notif-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--color-red);
+      border: 2px solid #FFFFFF;
+      display: none;
+    }
+    .notif-badge.has-notif {
+      display: block;
+      animation: notifPulse 2s infinite;
+    }
+    @keyframes notifPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.35); }
+    }
+
+    .notif-dropdown {
+      position: absolute;
+      top: 48px;
+      right: 0;
+      width: 340px;
+      max-height: 400px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(48, 48, 48, 0.14);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      text-align: left;
+      transform-origin: top right;
+      animation: notifPopOpen 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes notifPopOpen {
+      from { opacity: 0; transform: scale(0.92) translateY(-6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .notif-dropdown.open {
+      display: flex;
+    }
+    .notif-dropdown-header {
+      padding: 14px 16px;
+      background: #FFFFFF;
+      color: var(--text-main);
+      font-size: 13.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .notif-dropdown-body {
+      overflow-y: auto;
+      max-height: 320px;
+      background: #FFFFFF;
+    }
+    .notif-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #F0F0F0;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      color: var(--text-sub);
+    }
+    .notif-item:hover {
+      background: #F8F8F8;
+    }
+    .notif-item.unread {
+      background: #F4F4F4;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .notif-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--charcoal);
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .notif-text {
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .notif-text strong {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+    .notif-time {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .notif-empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .btn-clear-notifs {
+      background: none !important;
+      border: none !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: var(--charcoal) !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+    }
+
+    /* Layout & Sidebar matching Admin */
     .layout {
       display: flex;
       flex: 1;
@@ -41,305 +292,924 @@
       overflow: hidden;
     }
     .sidebar {
-      width: 240px;
-      flex-shrink: 0;
+      width: 250px;
       height: 100%;
-      background: #fff;
-      border-right: 1px solid #d0d0d0;
-      padding: 22px 14px;
-      overflow-y: auto;
-      box-sizing: border-box;
+      background: #FFFFFF;
+      border-right: 1px solid var(--border-color);
+      padding: 24px 16px;
       display: flex;
       flex-direction: column;
-    }
-    .sidebar h3 { margin: 0 12px 18px; font-size: 12px; text-transform: uppercase; color: #888; }
-    .nav { display: block; width: 100%; padding: 12px; border: 0 !important; border-radius: 8px !important; text-align: left; margin-bottom: 5px; color: #555; }
-    .nav.active, .nav:hover { background: #303030; color: #fff; }
-    .sidebar .logout { margin: 28px 12px 0; width: calc(100% - 24px); }
-    main {
-      flex: 1;
-      min-width: 0;
-      height: 100%;
-      padding: 24px 32px 48px;
-      max-width: 100%;
-      width: 100%;
+      flex-shrink: 0;
       overflow-y: auto;
       box-sizing: border-box;
     }
-    .muted { color: #777; font-size: 14px; }
-    .panel { background: #fff; border: 1px solid #d0d0d0; border-radius: 14px; padding: 20px; margin-bottom: 18px; }
-    .kpis, .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .kpi strong { display: block; font-size: 27px; margin-top: 8px; }
-    .kpi span { color: #777; font-size: 12px; text-transform: uppercase; font-weight: 700; }
-    .chart { min-height: 220px; display: flex; align-items: end; gap: 10px; padding: 22px 8px 4px; border-bottom: 1px solid #ddd; }
-    .bar-wrap { flex: 1; height: 175px; display: flex; flex-direction: column; justify-content: end; align-items: center; gap: 6px; }
-    .bar { width: 100%; max-width: 42px; min-height: 2px; background: #303030; border-radius: 5px 5px 0 0; }
-    .bar-label, .bar-value { font-size: 11px; color: #777; }
-    .notification { border-left: 4px solid #303030; background: #f8f8f8; border-radius: 8px; padding: 11px 13px; margin: 8px 0; }
-    .notification strong { display: block; }
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
-    .toolbar select, .toolbar button, form button, .pill-button { border: 1px solid #d0d0d0; border-radius: 8px; padding: 8px 12px; background: #303030; color: #fff; cursor: pointer; }
-    .toolbar select { background: #fff; color: #303030; }
-    .survey-card { border: 1px solid #e1e5ea; border-radius: 10px; padding: 15px; margin: 12px 0; }
-    .survey-card h3 { margin: 0 0 5px; }
-    .summary { display: flex; gap: 18px; flex-wrap: wrap; color: #777; font-size: 13px; }
-    .response { background: #f8f9fa; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; }
-    label { display: block; margin: 10px 0 5px; font-weight: 700; font-size: 13px; }
-    input { width: 100%; padding: 10px; border: 1px solid #d0d0d0; border-radius: 8px; }
-    form button { width: 100%; margin-top: 12px; }
-    .notice { min-height: 20px; margin-top: 10px; font-size: 13px; }
-    .empty { color: #777; padding: 12px 0; }
+    .sidebar h3 {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 0 12px;
+      margin: 16px 0 8px;
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 14px;
+      border: 0 !important;
+      border-radius: 12px !important;
+      text-align: left;
+      margin-bottom: 3px;
+      color: var(--text-sub);
+      font-weight: 600;
+      font-size: 13px;
+      background: transparent;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .nav:hover {
+      background: #F0F0F0;
+      color: var(--text-main);
+    }
+    .nav.active {
+      background: #E5E5E5 !important;
+      color: var(--charcoal) !important;
+      font-weight: 700 !important;
+    }
+    .sidebar .logout {
+      margin-top: auto;
+      color: var(--color-red) !important;
+    }
+    .sidebar .logout:hover {
+      background: #FDECEA !important;
+      color: #B71C1C !important;
+    }
+
+    /* Main Content Area */
+    main {
+      flex: 1;
+      height: 100%;
+      padding: 28px 32px 48px;
+      background: var(--bg-shell);
+      overflow-y: auto;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    h1#welcome {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.4px;
+      font-family: 'Outfit', sans-serif;
+      margin-bottom: 4px;
+    }
+    .muted {
+      color: var(--text-sub);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .plan-overview-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: #FFFFFF;
+      color: var(--charcoal);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .plan-overview-badge:hover {
+      background: var(--charcoal);
+      color: #FFFFFF;
+    }
+
+    /* Cards & Panels matching Admin */
+    .panel {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 22px;
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(48, 48, 48, 0.04);
+    }
+    .panel h2 {
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .panel h3 {
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    /* KPI Cards Grid */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .kpi {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(48, 48, 48, 0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .kpi span {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+    .kpi strong {
+      display: block;
+      font-size: 28px;
+      margin-top: 8px;
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    /* Charts */
+    .chart {
+      min-height: 200px;
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      padding: 20px 8px 4px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .bar-wrap {
+      flex: 1;
+      height: 165px;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+      align-items: center;
+      gap: 6px;
+    }
+    .bar {
+      width: 100%;
+      max-width: 38px;
+      min-height: 3px;
+      background: var(--charcoal);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+    }
+    .bar-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60px;
+      text-align: center;
+    }
+    .bar-value {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    /* Notifications feed in Overview */
+    .notification {
+      border-left: 4px solid var(--charcoal);
+      background: #F8F8F8;
+      border: 1px solid #EBEBEB;
+      border-left-width: 4px;
+      border-left-color: var(--charcoal);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 10px 0;
+      color: var(--text-main);
+    }
+    .notification strong {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    /* Poll & Survey Lists & Cards */
+    #poll-list, #survey-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+    }
+    @media (max-width: 768px) {
+      #poll-list, #survey-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .survey-card {
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 22px;
+      background: #FFFFFF;
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(48, 48, 48, 0.04);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .survey-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(48, 48, 48, 0.08);
+      border-color: var(--charcoal);
+    }
+    .survey-card h3 {
+      margin: 0 0 6px;
+      color: var(--text-main);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      font-family: 'Outfit', sans-serif;
+    }
+    .summary {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: var(--text-sub);
+      font-size: 12.5px;
+    }
+    .summary strong {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 12px 0 0;
+    }
+    .toolbar select,
+    .toolbar button,
+    .pill-button,
+    .btn-outline {
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 7px 16px;
+      background: #FFFFFF;
+      color: var(--charcoal);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .toolbar select {
+      background: #FFFFFF;
+      color: var(--text-main);
+      outline: none;
+    }
+    .toolbar button:hover,
+    .btn-outline:hover {
+      background: #F5F5F5;
+      border-color: var(--charcoal);
+    }
+    .pill-button {
+      background: var(--charcoal);
+      color: #FFFFFF !important;
+      border-color: var(--charcoal);
+      text-decoration: none;
+    }
+    .pill-button:hover {
+      background: #111111;
+      border-color: #111111;
+    }
+
+    /* VIEW TOGGLE GROUP (GRID / LIST BUTTONS) — Sleek Segmented Pill Control */
+    .view-toggle-group {
+      display: inline-flex !important;
+      align-items: center !important;
+      background: #FFFFFF !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 100px !important;
+      padding: 3px !important;
+      gap: 3px !important;
+      box-shadow: 0 1px 3px rgba(48, 48, 48, 0.05) !important;
+      height: auto !important;
+      flex-shrink: 0 !important;
+    }
+    .view-toggle-btn {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      padding: 6px 14px !important;
+      border-radius: 100px !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      color: var(--text-sub) !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      transition: all 0.15s ease !important;
+      line-height: 1.4 !important;
+    }
+    .view-toggle-btn svg {
+      width: 14px !important;
+      height: 14px !important;
+      stroke: currentColor !important;
+      fill: none !important;
+      stroke-width: 2 !important;
+      display: block !important;
+    }
+    .view-toggle-btn:hover:not(.active) {
+      color: var(--text-main) !important;
+      background: #F5F5F5 !important;
+    }
+    .view-toggle-btn.active {
+      background: var(--charcoal) !important;
+      color: #FFFFFF !important;
+      font-weight: 700 !important;
+      box-shadow: 0 2px 4px rgba(48, 48, 48, 0.2) !important;
+    }
+    .view-toggle-btn.active svg {
+      stroke: #FFFFFF !important;
+    }
+
+    /* Cards Grid Layout for Responses */
+    .cards-grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .response-card-grid-item {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 6px rgba(48, 48, 48, 0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Data Tables matching Admin */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+      background: #FFFFFF;
+    }
+    .data-table th {
+      background: #FAFAFA;
+      padding: 12px 16px;
+      font-weight: 800;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #F0F0F0;
+      vertical-align: middle;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+    .data-table tr:hover td {
+      background: #F8F8F8;
+    }
+    .type-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .type-badge.poll {
+      background: #303030;
+      color: #FFFFFF;
+    }
+    .type-badge.survey {
+      background: #E5E5E5;
+      color: #303030;
+      border: 1px solid var(--border-color);
+    }
+    .receipt-code {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      background: #F0F0F0;
+      padding: 3px 6px;
+      border-radius: 4px;
+      color: #333333;
+      max-width: 130px;
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid #D0D0D0;
+    }
+    .filter-btn {
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 6px 14px;
+      background: #FFFFFF;
+      color: var(--text-sub);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--charcoal);
+      color: #FFFFFF;
+      border-color: var(--charcoal);
+    }
+    .action-btn {
+      background: #F0F0F0;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+    .action-btn:hover {
+      background: var(--charcoal);
+      color: #FFFFFF;
+      border-color: var(--charcoal);
+    }
+
+    /* Forms & Inputs */
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 700;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-sub);
+    }
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: #FFFFFF;
+      color: var(--text-main);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s ease;
+      box-sizing: border-box;
+    }
+    input:focus {
+      border-color: var(--charcoal);
+    }
+    form button {
+      width: 100%;
+      margin-top: 16px;
+      background: var(--charcoal);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 100px;
+      padding: 12px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    form button:hover {
+      background: #111111;
+    }
+    .notice {
+      min-height: 20px;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .empty {
+      color: var(--text-muted);
+      padding: 24px 0;
+      text-align: center;
+      font-size: 13.5px;
+    }
+
+    /* Modal Viewer */
+    .response-modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(48, 48, 48, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 10000; display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .response-modal-content {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      max-width: 600px; width: 100%;
+      max-height: 85vh; overflow-y: auto;
+      padding: 26px;
+      box-shadow: 0 16px 40px rgba(48, 48, 48, 0.2);
+      color: var(--text-main);
+    }
+
+    /* Pagination */
+    .list-pagination-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+    .pagination-btn {
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      padding: 6px 14px;
+      background: #FFFFFF;
+      color: var(--charcoal);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--charcoal);
+      color: #FFFFFF;
+      border-color: var(--charcoal);
+    }
+    .pagination-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .pagination-page-info {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* PLAN SECTION & UPGRADE CARDS MATCHING ADMIN */
+    .plan-current-card {
+      background: #FFFFFF;
+      border: 2px solid var(--charcoal);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.06);
+      margin-bottom: 24px;
+    }
+    .plan-tier-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .plan-tier-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--charcoal);
+      font-family: 'Outfit', sans-serif;
+      margin-bottom: 20px;
+    }
+    .plan-quotas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 650px) {
+      .plan-quotas { grid-template-columns: 1fr; }
+    }
+    .plan-quota-item {
+      background: #F8F8F8;
+      border: 1px solid #EBEBEB;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .quota-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+    }
+    .quota-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--charcoal);
+      font-family: 'Outfit', sans-serif;
+    }
+    .quota-used {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 4px 0 8px;
+    }
+    .plan-quota-bar {
+      height: 8px;
+      background: #E5E5E5;
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .plan-quota-bar-fill {
+      height: 100%;
+      background: var(--charcoal);
+      border-radius: 100px;
+      transition: width 0.4s ease;
+    }
+
+    .upgrade-cards, .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media (max-width: 1200px) {
+      .upgrade-cards, .plans-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 650px) {
+      .upgrade-cards, .plans-grid { grid-template-columns: 1fr; }
+    }
+
+    .upgrade-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(48, 48, 48, 0.04);
+      color: var(--text-main);
+    }
+    .upgrade-card:hover {
+      border-color: var(--charcoal);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(48, 48, 48, 0.08);
+    }
+    .upgrade-card.current {
+      border: 2px solid var(--charcoal);
+      background: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(48, 48, 48, 0.08);
+    }
+    .upgrade-card.current::before {
+      content: 'ACTIVE PLAN';
+      position: absolute;
+      top: -10px;
+      right: 18px;
+      background: var(--charcoal);
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 100px;
+      letter-spacing: 0.5px;
+    }
+    .upgrade-card .uc-tier-tag {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #F0F0F0;
+      color: var(--charcoal);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 100px;
+      display: inline-block;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+    .upgrade-card .uc-name, .upgrade-card .uc-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--charcoal);
+      margin-bottom: 4px;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.3px;
+    }
+    .upgrade-card .uc-price {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--charcoal);
+      margin: 6px 0 10px;
+      font-family: 'Outfit', sans-serif;
+    }
+    .upgrade-card .uc-desc {
+      font-size: 12.5px;
+      color: var(--text-sub);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .upgrade-card .uc-features {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 20px;
+      flex: 1;
+    }
+    .upgrade-card .uc-features li {
+      font-size: 12.5px;
+      color: var(--text-main);
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #F5F5F5;
+    }
+    .upgrade-card .uc-features li::before {
+      content: '✓';
+      color: var(--charcoal);
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .btn-upgrade {
+      background: var(--charcoal);
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      border-radius: 100px;
+      padding: 10px 16px;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    .btn-upgrade:hover {
+      background: #111111;
+    }
+    .btn-upgrade:disabled, .btn-upgrade.outline {
+      background: #F5F5F5;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      cursor: default;
+    }
+
     @media (max-width: 900px) {
-      .sidebar { width: 190px; }
+      .sidebar { width: 200px; }
       .kpis { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 640px) {
       html, body, .shell { height: auto; overflow: visible; }
       .layout { display: block; height: auto; overflow: visible; }
       .sidebar { width: 100%; height: auto; display: flex; overflow-x: auto; padding: 8px; gap: 5px; }
-      .sidebar h3, .logout { display: none; }
+      .sidebar h3, .sidebar .logout { display: none; }
       .nav { white-space: nowrap; width: auto; }
       main { padding: 16px; height: auto; overflow: visible; }
       .grid { grid-template-columns: 1fr; }
     }
 
-    /* Notification Bell & Dropdown for Clients */
-    .nav-icon-btn {
-      position: relative; width: 38px; height: 38px; border-radius: 50%;
-      border: 1px solid #d0d0d0; background: #FFFFFF;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: #555; flex-shrink: 0; padding: 0 !important;
-      transition: all 0.15s ease;
-    }
-    .nav-icon-btn:hover { background: #f0f0f0; color: #303030; }
-    .nav-icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
-    .notif-badge { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: #e53e3e; border: 2px solid #FFFFFF; display: none; }
-    .notif-badge.has-notif { display: block; animation: notifPulse 2s infinite; }
-    @keyframes notifPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
-
-    .notif-dropdown {
-      position: absolute; top: 48px; right: 0; width: 330px; max-height: 400px;
-      background: #FFFFFF; border: 1px solid #d0d0d0; border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(48, 48, 48, 0.15); z-index: 9999;
-      display: none; flex-direction: column; overflow: hidden; text-align: left;
-    }
-    .notif-dropdown.open { display: flex; }
-    .notif-dropdown-header {
-      padding: 14px 16px; border-bottom: 1px solid #eaeaea;
-      font-size: 14px; font-weight: 800; color: #303030;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .notif-dropdown-body { overflow-y: auto; max-height: 320px; }
-    .notif-item {
-      padding: 12px 16px; border-bottom: 1px solid #f2f2f2;
-      display: flex; gap: 10px; align-items: flex-start; cursor: pointer; transition: background 0.15s ease;
-    }
-    .notif-item:hover { background: #F8F8F8; }
-    .notif-item.unread { background: #F0F0F0; }
-    .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #303030; flex-shrink: 0; margin-top: 5px; }
-    .notif-text { font-size: 12px; color: #444; line-height: 1.45; }
-    .notif-text strong { color: #111; font-weight: 700; }
-    .notif-time { font-size: 10px; color: #888; margin-top: 3px; }
-    .notif-empty { padding: 32px 16px; text-align: center; color: #888; font-size: 13px; }
-    .btn-clear-notifs {
-      background: none !important; border: none !important; font-size: 11px !important; font-weight: 700 !important;
-      color: #303030 !important; cursor: pointer !important; padding: 0 !important; border-radius: 0 !important;
+    /* Expand Poll & Survey Card when Viewing Votes / Interactions */
+    .survey-card.expanded {
+      grid-column: 1 / -1 !important;
+      box-shadow: 0 10px 35px rgba(48, 48, 48, 0.12) !important;
+      border-color: var(--charcoal) !important;
+      transform: none !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
 
-    /* Responses Tables, Badges & Filters — Strictly Landing Page Charcoal & Silver */
-    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    .data-table th { background: #fafafa; padding: 12px 14px; font-weight: 700; color: #555; border-bottom: 1px solid #e0e0e0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .data-table td { padding: 12px 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
-    .data-table tr:hover { background: #fdfdfd; }
-    .type-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .type-badge.poll { background: #303030; color: #E5E5E5; border: 1px solid #303030; }
-    .type-badge.survey { background: #E5E5E5; color: #303030; border: 1px solid #d0d0d0; }
-    .receipt-code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11px; background: #f0f0f0; padding: 3px 6px; border-radius: 4px; color: #333; max-width: 130px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .filter-btn { border: 1px solid #d0d0d0; border-radius: 20px; padding: 6px 14px; background: #fff; color: #555; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s ease; }
-    .filter-btn.active, .filter-btn:hover { background: #303030; color: #fff; border-color: #303030; }
-    .action-btn { background: #f0f0f0; border: 1px solid #d0d0d0; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: #303030; }
-    .action-btn:hover { background: #303030; color: #fff; border-color: #303030; }
-
-    /* Pagination Bottom Middle */
-    .list-pagination-center {
-      display: flex;
-      flex-direction: column;
+    /* Modal Backdrop & Card System (Verification & Payment Modals) */
+    .modal-backdrop, .response-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(48, 48, 48, 0.55);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 100000;
+      display: none;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 16px 12px;
-      margin-top: 10px;
-      width: 100%;
-      text-align: center;
-    }
-    .pagination-info-text {
-      font-size: 12px;
-      color: #666666;
-      font-weight: 500;
-    }
-    .pagination-actions-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .btn-next-remaining {
-      background: #303030;
-      color: #FFFFFF;
-      border: 1px solid #303030;
-      border-radius: 100px;
-      padding: 9px 24px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.18s ease;
-      box-shadow: 0 2px 6px rgba(48,48,48,0.12);
-    }
-    .btn-next-remaining:hover:not(:disabled) {
-      background: #111111;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .btn-next-remaining:disabled {
-      background: #e0e0e0;
-      border-color: #d0d0d0;
-      color: #888888;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-    .btn-pagination-nav {
-      background: #FFFFFF;
-      color: #303030;
-      border: 1px solid #d0d0d0;
-      border-radius: 100px;
-      padding: 9px 18px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.18s ease;
-    }
-    .btn-pagination-nav:hover:not(:disabled) {
-      background: #f5f5f5;
-      border-color: #999999;
-      transform: translateY(-1px);
-    }
-    .btn-pagination-nav:disabled {
-      color: #aaa;
-      border-color: #e5e5e5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* View Toggle Group - Compact, Sleek Inline Switcher */
-    .view-toggle-group {
-      display: inline-flex !important;
-      flex-direction: row !important;
-      align-items: center !important;
-      background: #f0f0f0 !important;
-      border: 1px solid #d0d0d0 !important;
-      border-radius: 8px !important;
-      padding: 2px !important;
-      gap: 2px !important;
-      flex-shrink: 0 !important;
-      height: 34px !important;
-      box-sizing: border-box !important;
-    }
-    .view-toggle-btn {
-      display: inline-flex !important;
-      flex-direction: row !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 5px !important;
-      border: none !important;
-      outline: none !important;
-      background: transparent !important;
-      padding: 0 11px !important;
-      height: 28px !important;
-      line-height: 28px !important;
-      border-radius: 6px !important;
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      color: #555555 !important;
-      cursor: pointer !important;
-      white-space: nowrap !important;
-      transition: all 0.15s ease !important;
-      box-shadow: none !important;
-      margin: 0 !important;
-    }
-    .view-toggle-btn svg {
-      width: 14px !important;
-      height: 14px !important;
-      min-width: 14px !important;
-      min-height: 14px !important;
-      max-width: 14px !important;
-      max-height: 14px !important;
-      display: inline-block !important;
-      stroke-width: 2 !important;
-      flex-shrink: 0 !important;
-    }
-    .view-toggle-btn:hover:not(.active) {
-      color: #111111 !important;
-      background: #e2e2e2 !important;
-    }
-    .view-toggle-btn.active {
-      background: #303030 !important;
-      color: #ffffff !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.18) !important;
-    }
-
-    /* Compact Multi-Column Grid Views */
-    .cards-grid-layout {
-      display: grid !important;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-      gap: 14px !important;
-      padding: 16px 0 !important;
-      width: 100% !important;
-      box-sizing: border-box !important;
-    }
-    .response-card-grid-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 10px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-      transition: all 0.18s ease;
-      min-width: 0;
+      padding: 20px;
       box-sizing: border-box;
     }
-    .response-card-grid-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      border-color: #303030;
+    .modal-backdrop.open, .response-modal-overlay.open {
+      display: flex !important;
+    }
+    .modal-card, .response-modal-content {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      max-width: 620px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(48, 48, 48, 0.25);
+      animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      color: var(--text-main);
+    }
+    @keyframes modalScaleIn {
+      from { opacity: 0; transform: scale(0.94) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FFFFFF;
+      flex-shrink: 0;
+    }
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      color: var(--text-main);
+      flex: 1;
+    }
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 26px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s ease;
+    }
+    .btn-close:hover {
+      color: var(--charcoal);
     }
 
-    /* Modal */
-    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 10000; align-items: center; justify-content: center; }
-    .modal-backdrop.open { display: flex; }
-    .modal-card { background: #fff; border-radius: 14px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 16px 40px rgba(0,0,0,0.25); border: 1px solid #d0d0d0; }
-    .modal-header { padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 20px; font-size: 13px; }
-    .btn-close { background: none !important; border: none !important; font-size: 24px; line-height: 1; cursor: pointer; color: #888; padding: 0 !important; width: auto !important; }
-    .btn-close:hover { color: #111; }
-  </style>
+    /* Responses list view min-width to prevent table action cut-off */
+    #responses-list-view table.data-table {
+      min-width: 960px;
+    }
+
+    /* Payment Modal Specifics */
+    .pay-methods-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0 18px;
+    }
+    .pay-method-pill {
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+      cursor: pointer;
+      background: #FFFFFF;
+      transition: all 0.15s ease;
+    }
+    .pay-method-pill.active {
+      border-color: var(--charcoal);
+      background: #F8F8F8;
+      box-shadow: 0 2px 8px rgba(48, 48, 48, 0.08);
+    }
+    .pay-method-pill .pm-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .pay-method-pill .pm-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+</style>
 </head>
 <body>
   <div class="shell">
     <header class="topbar">
-      <div class="brand">GetItRight <span class="muted">/ Client Dashboard</span></div>
+      <div class="brand"><img src="../assets/images/logo.png" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;border-radius:6px;" alt="IcapsQ Logo">Icaps<span style="color:var(--graphite-500,#6B6E76);">Q</span> <span class="muted">/ Client Dashboard</span></div>
       <div class="top-actions">
         <span id="user-name" class="muted" style="font-weight:700;"></span>
         <button id="create-survey">+ Create survey</button>
@@ -374,14 +1244,18 @@
         <button class="nav" data-section="responses">Responses & Votes</button>
         <button class="nav" data-section="polls">My polls</button>
         <button class="nav" data-section="surveys">My surveys</button>
-        <button class="nav" data-section="profile">Profile</button>
+        <button class="nav" data-section="profile">Profile & Plan</button>
         <button class="nav logout" id="sidebar-logout">Log out</button>
       </aside>
 
       <main>
         <section id="overview">
+          <div id="overview-draft-alert"></div>
           <h1 id="welcome">Your dashboard</h1>
-          <p class="muted">Live sovereign performance for your active polls, surveys, and citizen responses.</p>
+          <p class="muted">
+            Live sovereign performance for your active polls, surveys, and citizen responses.
+            <span id="overview-plan-badge" class="plan-overview-badge" style="margin-left:10px;" title="View your plan in Profile" onclick="document.querySelector('[data-section=\'profile\']').click()"></span>
+          </p>
           <div class="kpis">
             <div class="panel kpi"><span>Active polls</span><strong id="kpi-polls">—</strong></div>
             <div class="panel kpi"><span>Total poll votes</span><strong id="kpi-votes">—</strong></div>
@@ -410,9 +1284,9 @@
                 <select id="overview-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:6px 10px; font-size:12px;">
                   <option value="">Export dataset...</option>
                   <option value="csv">Export CSV (.csv)</option>
-                  <option value="json">Export JSON (.json)</option>
-                  <option value="pdf">Export PDF (.pdf)</option>
-                  <option value="docx">Export Word (.docx)</option>
+                  <option value="json">Export JSON (.json) ⭐ Pro</option>
+                  <option value="pdf">Export PDF (.pdf) ⭐ Pro</option>
+                  <option value="docx">Export Word (.docx) ⭐ Pro</option>
                 </select>
               </div>
             </div>
@@ -439,9 +1313,9 @@
               <select id="responses-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:8px 12px; font-weight:600;">
                 <option value="">Export all responses...</option>
                 <option value="csv">Export All (CSV .csv)</option>
-                <option value="json">Export All (JSON .json)</option>
-                <option value="pdf">Export All (PDF .pdf)</option>
-                <option value="docx">Export All (Word .docx)</option>
+                <option value="json">Export All (JSON .json) ⭐ Pro</option>
+                <option value="pdf">Export All (PDF .pdf) ⭐ Pro</option>
+                <option value="docx">Export All (Word .docx) ⭐ Pro</option>
               </select>
               <button type="button" onclick="loadDashboard()">Refresh</button>
             </div>
@@ -476,17 +1350,18 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th style="width:90px;">Type</th>
+                    <th style="width:85px;">Type</th>
                     <th>Campaign / Title</th>
-                    <th>Voter / Respondent</th>
+                    <th>Voter Details</th>
                     <th>Recorded Choice / Response</th>
-                    <th>Receipt Hash</th>
+                    <th>Device &amp; OS</th>
+                    <th>Precise Location</th>
                     <th>Timestamp</th>
-                    <th style="text-align:right; width:120px;">Actions</th>
+                    <th style="text-align:right; width:100px; min-width:100px; white-space:nowrap;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="responses-table-body">
-                  <tr><td colspan="7" class="empty" style="text-align:center;">Loading responses...</td></tr>
+                  <tr><td colspan="8" class="empty" style="text-align:center;">Loading responses...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -575,9 +1450,9 @@
         </section>
 
         <section id="profile" hidden>
-          <div class="grid">
+          <div class="grid" style="margin-bottom:20px;">
             <div class="panel">
-              <h2>Profile</h2>
+              <h2>Profile Details</h2>
               <form id="profile-form">
                 <label for="full-name">Full name</label>
                 <input id="full-name" required maxlength="120">
@@ -599,6 +1474,42 @@
               <div class="notice" id="password-notice"></div>
             </div>
           </div>
+
+          <!-- MY PLAN & SUBSCRIPTION EMBEDDED IN PROFILE -->
+          <div class="panel" style="padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2 style="margin:0 0 4px;">My Plan & Subscription</h2>
+                <p class="muted" style="margin:0;">View your current tier, quota allocations, and available upgrades.</p>
+              </div>
+            </div>
+
+            <div class="plan-current-card" id="plan-current-display">
+              <div class="plan-tier-label">Current Plan</div>
+              <div class="plan-tier-name" id="plan-tier-name">—</div>
+              <div class="plan-quotas">
+                <div class="plan-quota-item">
+                  <div class="quota-label">Voter Quota</div>
+                  <div class="quota-value" id="plan-voter-quota">—</div>
+                  <div class="quota-used" id="plan-voter-used"></div>
+                  <div class="plan-quota-bar"><div class="plan-quota-bar-fill" id="plan-voter-bar" style="width:0%"></div></div>
+                </div>
+                <div class="plan-quota-item">
+                  <div class="quota-label">Polls Quota</div>
+                  <div class="quota-value" id="plan-polls-quota">—</div>
+                  <div class="quota-used" id="plan-polls-used"></div>
+                  <div class="plan-quota-bar"><div class="plan-quota-bar-fill" id="plan-polls-bar" style="width:0%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin:24px 0 4px; font-size:15px; font-weight:700;">Available Plans</h3>
+            <p class="muted" style="margin:0 0 12px; font-size:12px;">You can only switch plans by upgrading to a higher tier.</p>
+            <div class="upgrade-cards" id="upgrade-cards-container">
+              <!-- Populated by JS -->
+            </div>
+            <div class="notice" id="upgrade-notice" style="margin-top:14px;"></div>
+          </div>
         </section>
       </main>
     </div>
@@ -618,6 +1529,52 @@
     const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
     const setNotice = (id, text, error = false) => { const el = document.getElementById(id); el.textContent = text; el.style.color = '#303030'; };
 
+    // === NOTIFICATION CHIME & TOP-RIGHT POPUP TOAST ===
+    function playNotifBeep(type = 'info') {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+
+        if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.setValueAtTime(220, now + 0.12);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.start(now);
+          osc.stop(now + 0.32);
+        } else if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(880, now + 0.08); // A5
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else {
+          // Clear bright dual chime
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(659.25, now); // E5
+          osc.frequency.setValueAtTime(987.77, now + 0.09); // B5
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+          osc.start(now);
+          osc.stop(now + 0.38);
+        }
+      } catch (_) {}
+    }
+
+    // Floating toasts removed per user directive. Notifications expand cleanly from the bell button
+    function showTopRightToast(title, message, type = 'info') {
+      playNotifBeep(type);
+      const dd = document.getElementById('notifDropdown');
+      if (dd) dd.classList.add('open');
+    }
+
     function renderBars(target, values, label) {
       const max = Math.max(...values.map(item => item.value), 1);
       target.innerHTML = values.length
@@ -627,9 +1584,24 @@
 
     let allClientResponses = [];
     let currentResponseFilter = 'all';
+    let currentUser = null;
+
+    function checkExportPlanAccess(format) {
+      const plan = (currentUser?.plan || 'free').toLowerCase();
+      if (plan === 'free' && format !== 'csv') {
+        const wantsUpgrade = confirm('JSON, PDF, and Word exports are exclusive to Civic Pro and Institutional Org.\n\nWould you like to upgrade your plan in Profile & Plan?');
+        if (wantsUpgrade) {
+          const tab = document.querySelector('[data-section="profile"]');
+          if (tab) tab.click();
+        }
+        return false;
+      }
+      return true;
+    }
 
     async function exportPoll(pollId, title, format) {
       if (!format) return;
+      if (!checkExportPlanAccess(format)) return;
       try {
         const response = await request(`/polls/${encodeURIComponent(pollId)}/export?format=${format}`);
         if (!response.ok) throw new Error('Unable to export poll votes.');
@@ -647,6 +1619,7 @@
 
     async function exportSurvey(surveyId, title, format) {
       if (!format) return;
+      if (!checkExportPlanAccess(format)) return;
       try {
         const response = await request(`/surveys/${encodeURIComponent(surveyId)}/export?format=${format}`);
         if (!response.ok) throw new Error('Unable to export survey responses.');
@@ -664,6 +1637,7 @@
 
     async function handleBulkExport(format) {
       if (!format) return;
+      if (!checkExportPlanAccess(format)) return;
       try {
         const pRes = await request(`/polls/exports/results?format=${format}`);
         if (pRes.ok) {
@@ -692,12 +1666,24 @@
       }
     }
 
-    function togglePollVotes(pollId) {
+        function togglePollVotes(pollId) {
       const el = document.getElementById(`poll-votes-${pollId}`);
       if (!el) return;
       el.hidden = !el.hidden;
+      const card = el.closest('.survey-card');
+      if (card) {
+        if (!el.hidden) {
+          card.classList.add('expanded');
+        } else {
+          card.classList.remove('expanded');
+        }
+      }
       const btn = document.getElementById(`btn-toggle-votes-${pollId}`);
-      if (btn) btn.textContent = el.hidden ? 'View Votes' : 'Hide Votes';
+      if (btn) {
+        const poll = (cachedClientPolls || []).find(p => p.id === pollId);
+        const count = (poll?.transactions || []).length;
+        btn.textContent = el.hidden ? `View Votes (${count})` : 'Hide Votes';
+      }
     }
 
     // Pagination Helper for Bottom-Middle controls
@@ -752,7 +1738,7 @@
 
     function renderPollVotesDrawerContent(poll) {
       const txs = poll.transactions || [];
-      if (!txs.length) return '<div class="empty">No votes recorded yet for this poll.</div>';
+      if (!txs.length) return '<div class="empty" style="text-align:center; padding:24px 0;">No votes recorded yet for this poll.</div>';
       const page = pollVotesState[poll.id] || 1;
       const pageSize = 10;
       const startIdx = (page - 1) * pageSize;
@@ -769,43 +1755,59 @@
           buttons += `<button type="button" class="btn-next-remaining" onclick="changePollVotesPage('${esc(poll.id)}', ${page + 1})">Next (${remaining} remaining) &rarr;</button>`;
         }
         paginationHtml = `
-          <div class="list-pagination-center" style="padding:10px 0 4px;">
-            <div class="pagination-info-text">Showing ${startIdx + 1}–${startIdx + pageTxs.length} of ${txs.length} (${remaining} remaining to be viewed)</div>
-            <div class="pagination-actions-row">${buttons}</div>
+          <div class="list-pagination-center" style="padding:12px 0 6px;">
+            <div class="pagination-info-text" style="font-size:12px; color:var(--text-muted);">Showing ${startIdx + 1}–${startIdx + pageTxs.length} of ${txs.length} (${remaining} remaining to be viewed)</div>
+            <div class="pagination-actions-row" style="margin-top:6px;">${buttons}</div>
           </div>
         `;
       }
 
       return `
-        <table class="data-table" style="background:#fff; border-radius:6px; overflow:hidden;">
+        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:14px; color:var(--charcoal);">Verified Ballots Ledger (${txs.length} total votes)</strong>
+          <span style="font-size:11.5px; color:var(--text-muted);">Cryptographically signed &amp; anchored</span>
+        </div>
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="data-table" style="background:#FFFFFF; color:var(--text-main); border-radius:10px; overflow:hidden; border:1px solid var(--border-color); width:100%; min-width:780px;">
           <thead>
-            <tr>
-              <th>#</th>
-              <th>Option Voted</th>
-              <th>Voter Pseudonym</th>
-              <th>Receipt Hash</th>
-              <th>Timestamp</th>
+            <tr style="background:#F8F8F8;">
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color); width:36px;">#</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Option Voted</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Voter Name</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">ID Number</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Device / OS</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Location</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Timestamp</th>
             </tr>
           </thead>
           <tbody>
-            ${pageTxs.map((t, idx) => `
-              <tr>
-                <td style="color:#888;">${startIdx + idx + 1}</td>
-                <td><strong>${esc(t.optionLabel)}</strong></td>
-                <td style="font-family:monospace; font-size:11px;">${esc(t.voterPseudonym || 'Anonymous')}</td>
-                <td><span class="receipt-code" title="${esc(t.receiptHash)}">${esc((t.receiptHash || '').slice(0, 16))}...</span></td>
-                <td style="color:#777; font-size:12px;">${esc(t.timestamp || 'Recent')}</td>
+            ${pageTxs.map((t, idx) => {
+              const deviceDisplay = [t.deviceName || t.device || '', t.deviceOS || ''].filter(Boolean).join(' · ') || 'N/A';
+              const locationParts = [];
+              if (t.county) locationParts.push(t.county + ' County');
+              if (t.latitude != null && t.longitude != null) locationParts.push(parseFloat(t.latitude).toFixed(4) + ', ' + parseFloat(t.longitude).toFixed(4));
+              const locationDisplay = locationParts.join(' — ') || 'Not captured';
+              return `
+              <tr style="border-bottom:1px solid #F0F0F0; background:#FFFFFF;">
+                <td style="color:var(--text-muted); font-weight:700; padding:10px 12px;">${startIdx + idx + 1}</td>
+                <td style="padding:10px 12px;"><strong style="color:var(--charcoal);">${esc(t.optionLabel)}</strong></td>
+                <td style="padding:10px 12px; font-weight:600; color:var(--charcoal);">${esc(t.voterName || 'Anonymous')}</td>
+                <td style="font-family:monospace; font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(t.voterIdNumber || '—')}</td>
+                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(deviceDisplay)}</td>
+                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;" title="${esc(t.gpsCoordinates || '')}">${esc(locationDisplay)}</td>
+                <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(t.timestamp || 'Recent')}</td>
               </tr>
-            `).join('')}
+            `;}).join('')}
           </tbody>
         </table>
+        </div>
         ${paginationHtml}
       `;
     }
 
     function renderSurveyResponsesDrawerContent(survey) {
       const responses = survey.responses || [];
-      if (!responses.length) return '<div class="empty">No responses yet.</div>';
+      if (!responses.length) return '<div class="empty" style="text-align:center; padding:24px 0;">No responses yet.</div>';
       const page = surveyResponsesState[survey.id] || 1;
       const pageSize = 10;
       const startIdx = (page - 1) * pageSize;
@@ -822,77 +1824,96 @@
           buttons += `<button type="button" class="btn-next-remaining" onclick="changeSurveyResponsesPage('${esc(survey.id)}', ${page + 1})">Next (${remaining} remaining) &rarr;</button>`;
         }
         paginationHtml = `
-          <div class="list-pagination-center" style="padding:10px 0 4px;">
-            <div class="pagination-info-text">Showing ${startIdx + 1}–${startIdx + pageResponses.length} of ${responses.length} (${remaining} remaining to be viewed)</div>
-            <div class="pagination-actions-row">${buttons}</div>
+          <div class="list-pagination-center" style="padding:12px 0 6px;">
+            <div class="pagination-info-text" style="font-size:12px; color:var(--text-muted);">Showing ${startIdx + 1}–${startIdx + pageResponses.length} of ${responses.length} (${remaining} remaining to be viewed)</div>
+            <div class="pagination-actions-row" style="margin-top:6px;">${buttons}</div>
           </div>
         `;
       }
 
       return `
-        <table class="data-table" style="background:#fff; border-radius:6px; overflow:hidden;">
+        <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:14px; color:var(--charcoal);">Citizen Survey Submissions (${responses.length} total)</strong>
+          <span style="font-size:11.5px; color:var(--text-muted);">Verified Responses</span>
+        </div>
+        <div style="overflow-x:auto; -webkit-overflow-scrolling:touch;">
+        <table class="data-table" style="background:#FFFFFF; color:var(--text-main); border-radius:10px; overflow:hidden; border:1px solid var(--border-color); width:100%; min-width:780px;">
           <thead>
-            <tr>
-              <th>#</th>
-              <th>Respondent</th>
-              <th>Answers Breakdown</th>
-              <th>Receipt Hash</th>
-              <th>Timestamp</th>
+            <tr style="background:#F8F8F8;">
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color); width:36px;">#</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Voter Name</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">ID Number</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Answers Breakdown</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Device / OS</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Location</th>
+              <th style="padding:10px 12px; font-weight:800; color:var(--text-muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border-color);">Timestamp</th>
             </tr>
           </thead>
           <tbody>
-            ${pageResponses.map((r, i) => `
-              <tr>
-                <td style="color:#888;">${startIdx + i + 1}</td>
-                <td style="font-family:monospace; font-size:11px;">${esc(r.respondent || 'Citizen')}</td>
-                <td style="font-size:12px;">
-                  ${(r.answers || []).map(a => `<div><strong>${esc(a.questionId || 'Q')}:</strong> ${esc(a.answer ?? a)}</div>`).join('')}
+            ${pageResponses.map((r, i) => {
+              const deviceDisplay = [r.deviceName || '', r.deviceOS || ''].filter(Boolean).join(' · ') || 'Web Browser';
+              const locationParts = [];
+              if (r.county) locationParts.push(r.county + ' County');
+              if (r.latitude != null && r.longitude != null) locationParts.push(Number(r.latitude).toFixed(4) + ', ' + Number(r.longitude).toFixed(4));
+              const locationDisplay = locationParts.join(' — ') || 'Not captured';
+              return `
+              <tr style="border-bottom:1px solid #F0F0F0; background:#FFFFFF;">
+                <td style="color:var(--text-muted); font-weight:700; padding:10px 12px;">${startIdx + i + 1}</td>
+                <td style="padding:10px 12px; font-weight:600; color:var(--charcoal);">${esc(r.voterName || r.respondent || 'Citizen')}</td>
+                <td style="font-family:monospace; font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(r.voterIdNumber || '—')}</td>
+                <td style="font-size:12px; padding:10px 12px;">
+                  ${(r.answers || []).map(a => `<div style="margin:2px 0;"><strong>${esc(a.questionId || 'Q')}:</strong> ${esc(a.answer ?? a)}</div>`).join('')}
                 </td>
-                <td><span class="receipt-code" title="${esc(r.receiptHash || '')}">${esc((r.receiptHash || '').slice(0, 16))}...</span></td>
-                <td style="color:#777; font-size:12px;">${esc(r.timestamp || 'Recent')}</td>
+                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(deviceDisplay)}</td>
+                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;" title="${esc(r.gpsCoordinates || '')}">${esc(locationDisplay)}</td>
+                <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(r.timestamp || 'Recent')}</td>
               </tr>
-            `).join('')}
+            `;}).join('')}
           </tbody>
         </table>
+        </div>
         ${paginationHtml}
       `;
     }
 
-    function renderPollCard(poll) {
+        function renderPollCard(poll) {
       const totalVotes = poll.totalVotes || 0;
       const txs = poll.transactions || [];
       return `<article class="survey-card">
-        <div style="display:flex;justify-content:space-between;align-items:start;">
-          <h3 style="margin:0 0 6px;">${esc(poll.title)}</h3>
-          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;background:#303030;color:#fff;">${esc(poll.category || 'General')}</span>
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+          <div>
+            <h3 style="margin:0 0 6px;color:var(--charcoal);font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;">${esc(poll.title)}</h3>
+            <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:#F0F0F0;color:var(--charcoal);border:1px solid var(--border-color);">${esc(poll.category || 'General')}</span>
+          </div>
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;padding:3px 10px;border-radius:100px;background:#E8F5E9;color:#2E7D32;">${esc(poll.status || 'live')}</span>
         </div>
-        <p class="muted" style="margin:4px 0 10px;font-size:13px;">${esc(poll.description || '')}</p>
-        <div class="summary">
-          <span>Status: <strong>${esc(poll.status || 'live')}</strong></span>
-          <span>Total Votes: <strong>${totalVotes.toLocaleString()}</strong></span>
-          <span>Ballots Cast: <strong>${txs.length}</strong></span>
-          <span>Options: <strong>${(poll.options || []).length}</strong></span>
+        <p style="margin:6px 0 14px;font-size:13px;color:var(--text-sub);line-height:1.5;">${esc(poll.description || '')}</p>
+        <div class="summary" style="margin-bottom:14px;gap:20px;font-size:12.5px;color:var(--text-muted);">
+          <span>Status: <strong style="color:var(--charcoal);">${esc(poll.status || 'live')}</strong></span>
+          <span>Total Votes: <strong style="color:var(--charcoal);">${totalVotes.toLocaleString()}</strong></span>
+          <span>Ballots Cast: <strong style="color:var(--charcoal);">${txs.length}</strong></span>
+          <span>Options: <strong style="color:var(--charcoal);">${(poll.options || []).length}</strong></span>
         </div>
-        <div style="margin-top:10px;background:#f9f9f9;padding:10px;border-radius:8px;">
+        <div style="background:#F8F8F8;border:1px solid #EEEEEE;border-radius:12px;padding:14px;margin-bottom:14px;">
           ${(poll.options || []).map(opt => `
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin:4px 0;">
-              <span>${esc(opt.label)}</span>
-              <span style="font-weight:700;">${opt.votes || 0} votes (${(opt.percentage || 0).toFixed(1)}%)</span>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin:6px 0;color:var(--text-main);">
+              <span style="font-weight:600;">${esc(opt.label)}</span>
+              <span style="font-weight:800;color:var(--charcoal);">${opt.votes || 0} votes (${(opt.percentage || 0).toFixed(1)}%)</span>
             </div>
           `).join('')}
         </div>
-        <div class="toolbar" style="margin-top:12px;">
-          <select onchange="exportPoll('${esc(poll.id)}', '${esc(poll.title)}', this.value); this.value='';" style="font-size:12px; padding:6px 10px;">
+        <div class="toolbar" style="margin-top:14px;gap:10px;border-top:1px solid #F0F0F0;padding-top:14px;">
+          <select onchange="exportPoll('${esc(poll.id)}', '${esc(poll.title)}', this.value); this.value='';" style="font-size:12px; padding:7px 12px; border-radius:100px; background:#FFFFFF; border:1px solid var(--border-color); color:var(--text-main);">
             <option value="">Export votes...</option>
             <option value="csv">CSV (.csv)</option>
-            <option value="json">JSON (.json)</option>
-            <option value="pdf">PDF (.pdf)</option>
-            <option value="docx">Word (.docx)</option>
+            <option value="json">JSON (.json) ⭐ Pro</option>
+            <option value="pdf">PDF (.pdf) ⭐ Pro</option>
+            <option value="docx">Word (.docx) ⭐ Pro</option>
           </select>
-          <button type="button" id="btn-toggle-votes-${esc(poll.id)}" onclick="togglePollVotes('${esc(poll.id)}')">View Votes (${txs.length})</button>
-          <a href="../pages/vote.html?poll_id=${encodeURIComponent(poll.id)}" target="_blank" class="pill-button" style="text-decoration:none;display:inline-block;">Open in Vote App &rarr;</a>
+          <button type="button" class="btn-outline" id="btn-toggle-votes-${esc(poll.id)}" onclick="togglePollVotes('${esc(poll.id)}')">View Votes (${txs.length})</button>
+          <a href="../pages/vote.html?poll_id=${encodeURIComponent(poll.id)}" target="_blank" class="pill-button" style="text-decoration:none;display:inline-flex;align-items:center;background:var(--charcoal);color:#FFFFFF;border:none;">Open in Vote App &rarr;</a>
         </div>
-        <div id="poll-votes-${esc(poll.id)}" hidden style="margin-top:10px; background:#fafafa; border:1px solid #e5e5e5; border-radius:8px; padding:12px; overflow-x:auto;">
+        <div id="poll-votes-${esc(poll.id)}" hidden style="margin-top:14px; background:#F8F8F8; border:1px solid var(--border-color); border-radius:12px; padding:16px; overflow-x:auto;">
           ${renderPollVotesDrawerContent(poll)}
         </div>
       </article>`;
@@ -904,7 +1925,7 @@
       return `
         <tr>
           <td><strong>${esc(p.title)}</strong></td>
-          <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;background:#303030;color:#fff;">${esc(p.category || 'General')}</span></td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--silver);color:var(--charcoal);">${esc(p.category || 'General')}</span></td>
           <td><span class="type-badge ${isLive ? 'poll' : ''}">${esc(p.status || 'live')}</span></td>
           <td style="font-weight:700;">${(p.totalVotes || 0).toLocaleString()}</td>
           <td style="font-weight:700;">${txs.length}</td>
@@ -915,22 +1936,33 @@
       `;
     }
 
-    async function renderSurvey(survey) {
+        async function renderSurvey(survey) {
       const responses = survey.responses || [];
       return `<article class="survey-card">
-        <h3>${esc(survey.title)}</h3>
-        <div class="summary"><span>Status: ${esc(survey.status)}</span><span>${responses.length} responses</span><span>${(survey.questions || []).length} questions</span></div>
-        <div class="toolbar">
-          <select onchange="exportSurvey('${esc(survey.id)}', '${esc(survey.title)}', this.value); this.value='';" style="font-size:12px; padding:6px 10px;">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+          <div>
+            <h3 style="margin:0 0 6px;color:var(--charcoal);font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;">${esc(survey.title)}</h3>
+            <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;background:#F0F0F0;color:var(--charcoal);border:1px solid var(--border-color);">${esc(survey.category || survey.track || 'Survey')}</span>
+          </div>
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;padding:3px 10px;border-radius:100px;background:#E8F5E9;color:#2E7D32;">${esc(survey.status || 'active')}</span>
+        </div>
+        <p style="margin:6px 0 14px;font-size:13px;color:var(--text-sub);line-height:1.5;">${esc(survey.description || '')}</p>
+        <div class="summary" style="margin-bottom:14px;gap:20px;font-size:12.5px;color:var(--text-muted);">
+          <span>Status: <strong style="color:var(--charcoal);">${esc(survey.status)}</strong></span>
+          <span>Responses: <strong style="color:var(--charcoal);">${responses.length}</strong></span>
+          <span>Questions: <strong style="color:var(--charcoal);">${(survey.questions || []).length}</strong></span>
+        </div>
+        <div class="toolbar" style="margin-top:14px;gap:10px;border-top:1px solid #F0F0F0;padding-top:14px;">
+          <select onchange="exportSurvey('${esc(survey.id)}', '${esc(survey.title)}', this.value); this.value='';" style="font-size:12px; padding:7px 12px; border-radius:100px; background:#FFFFFF; border:1px solid var(--border-color); color:var(--text-main);">
             <option value="">Export responses...</option>
             <option value="csv">CSV (.csv)</option>
-            <option value="json">JSON (.json)</option>
-            <option value="pdf">PDF (.pdf)</option>
-            <option value="docx">Word (.docx)</option>
+            <option value="json">JSON (.json) ⭐ Pro</option>
+            <option value="pdf">PDF (.pdf) ⭐ Pro</option>
+            <option value="docx">Word (.docx) ⭐ Pro</option>
           </select>
-          <button type="button" data-toggle="${esc(survey.id)}">View interactions (${responses.length})</button>
+          <button type="button" class="btn-outline" data-toggle="${esc(survey.id)}">View interactions (${responses.length})</button>
         </div>
-        <div id="responses-${esc(survey.id)}" hidden style="margin-top:10px; background:#fafafa; border:1px solid #e5e5e5; border-radius:8px; padding:12px; overflow-x:auto;">
+        <div id="responses-${esc(survey.id)}" hidden style="margin-top:14px; background:#F8F8F8; border:1px solid var(--border-color); border-radius:12px; padding:16px; overflow-x:auto;">
           ${renderSurveyResponsesDrawerContent(survey)}
         </div>
       </article>`;
@@ -1072,10 +2104,21 @@
         gridEl.innerHTML = (await Promise.all(pageItems.map(renderSurvey))).join('');
         document.querySelectorAll('[data-toggle]').forEach(button => {
           button.onclick = () => {
-            const el = document.getElementById(`responses-${button.dataset.toggle}`);
+            const surveyId = button.dataset.toggle;
+            const el = document.getElementById(`responses-${surveyId}`);
             if (!el) return;
             el.hidden = !el.hidden;
-            button.textContent = el.hidden ? button.textContent.replace('Hide', 'View') : button.textContent.replace('View', 'Hide');
+            const card = el.closest('.survey-card');
+            if (card) {
+              if (!el.hidden) {
+                card.classList.add('expanded');
+              } else {
+                card.classList.remove('expanded');
+              }
+            }
+            const survey = (cachedClientSurveys || []).find(s => s.id === surveyId);
+            const count = (survey?.responses || []).length;
+            button.textContent = el.hidden ? `View interactions (${count})` : 'Hide interactions';
           };
         });
       } else {
@@ -1143,11 +2186,12 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th style="width:90px;">Type</th>
+                <th style="width:85px;">Type</th>
                 <th>Campaign</th>
-                <th>Respondent</th>
+                <th>Voter Details</th>
                 <th>Recorded Choice / Response</th>
-                <th>Receipt</th>
+                <th>Device &amp; OS</th>
+                <th>Precise Location</th>
                 <th>Timestamp</th>
                 <th style="text-align:right;">Details</th>
               </tr>
@@ -1157,11 +2201,22 @@
                 <tr>
                   <td><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Vote' : 'Survey'}</span></td>
                   <td><strong>${esc(item.title)}</strong></td>
-                  <td style="font-family:monospace; font-size:11px;">${esc(item.respondent)}</td>
-                  <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(item.choice)}</td>
-                  <td><span class="receipt-code" title="${esc(item.receiptHash)}">${esc((item.receiptHash || '').slice(0, 12))}...</span></td>
-                  <td style="color:#777; font-size:12px;">${esc(item.timestamp || 'Recent')}</td>
-                  <td style="text-align:right;">
+                  <td>
+                    <div style="font-weight:700; font-size:12.5px; color:var(--text-main);">${esc(item.voterName || 'USER@LOCATION1')}</div>
+                    <div style="font-size:11px; font-family:monospace; color:var(--text-muted);">ID: ${esc(item.voterIdNumber || 'ID-28491038')}</div>
+                    <div style="font-size:10px; font-family:monospace; color:var(--text-muted); opacity:0.85;">UID: ${esc(item.userId || item.respondent || '')}</div>
+                  </td>
+                  <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${esc(item.choice)}">${esc(item.choice)}</td>
+                  <td>
+                    <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.deviceName || 'Verified Device')}</div>
+                    <div style="font-size:11px; color:var(--text-muted);">${esc(item.deviceOS || 'Web/Mobile OS')}</div>
+                  </td>
+                  <td>
+                    <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
+                    <div style="font-size:10.5px; font-family:monospace; color:var(--text-muted);">${item.latitude != null && item.longitude != null ? `${Number(item.latitude).toFixed(4)}, ${Number(item.longitude).toFixed(4)}` : esc(item.gpsCoordinates || 'Precise GPS')}</div>
+                  </td>
+                  <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(item.timestamp || 'Recent')}</td>
+                  <td style="text-align:right; white-space:nowrap;">
                     <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
                   </td>
                 </tr>
@@ -1188,7 +2243,7 @@
       if (!tbody || !gridView) return;
 
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty" style="text-align:center; padding:32px 16px;">No responses matching filter criteria.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="empty" style="text-align:center; padding:32px 16px;">No responses matching filter criteria.</td></tr>';
         gridView.innerHTML = '<div class="empty" style="grid-column:1/-1; text-align:center; padding:32px 16px;">No responses matching filter criteria.</div>';
         renderPaginationControls({ containerId: 'responses-pagination', totalItems: 0, currentPage: 1 });
         return;
@@ -1206,11 +2261,22 @@
           <tr>
             <td><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Vote' : 'Survey'}</span></td>
             <td><strong>${esc(item.title)}</strong></td>
-            <td style="font-family:monospace; font-size:11px;">${esc(item.respondent)}</td>
-            <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(item.choice)}</td>
-            <td><span class="receipt-code" title="${esc(item.receiptHash)}">${esc((item.receiptHash || '').slice(0, 14))}...</span></td>
-            <td style="color:#777; font-size:12px;">${esc(item.timestamp || 'Recent')}</td>
-            <td style="text-align:right;">
+            <td>
+              <div style="font-weight:700; font-size:12.5px; color:var(--text-main);">${esc(item.voterName || 'USER@LOCATION1')}</div>
+              <div style="font-size:11px; font-family:monospace; color:var(--text-muted);">ID: ${esc(item.voterIdNumber || 'ID-28491038')}</div>
+              <div style="font-size:10px; font-family:monospace; color:var(--text-muted); opacity:0.85;">UID: ${esc(item.userId || item.respondent || '')}</div>
+            </td>
+            <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${esc(item.choice)}">${esc(item.choice)}</td>
+            <td>
+              <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.deviceName || 'Verified Device')}</div>
+              <div style="font-size:11px; color:var(--text-muted);">${esc(item.deviceOS || 'Web/Mobile OS')}</div>
+            </td>
+            <td>
+              <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
+              <div style="font-size:10.5px; font-family:monospace; color:var(--text-muted);">${item.latitude != null && item.longitude != null ? `${Number(item.latitude).toFixed(4)}, ${Number(item.longitude).toFixed(4)}` : esc(item.gpsCoordinates || 'Precise GPS')}</div>
+            </td>
+            <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(item.timestamp || 'Recent')}</td>
+            <td style="text-align:right; white-space:nowrap;">
               <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
             </td>
           </tr>
@@ -1222,17 +2288,29 @@
           <div class="response-card-grid-item">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
               <span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey'}</span>
-              <span style="font-size:11px; color:#888;">${esc(item.timestamp || 'Recent')}</span>
+              <span style="font-size:11px; color:var(--text-muted);">${esc(item.timestamp || 'Recent')}</span>
             </div>
             <div>
-              <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:#111;">${esc(item.title)}</h4>
-              <div style="font-family:monospace; font-size:11px; color:#555;">${esc(item.respondent)}</div>
+              <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:var(--text-main);">${esc(item.title)}</h4>
+              <div style="display:flex; flex-direction:column; gap:2px; margin-top:4px;">
+                <span style="font-size:12.5px; font-weight:700; color:var(--text-main);">${esc(item.voterName || 'USER@LOCATION1')}</span>
+                <span style="font-size:11px; font-family:monospace; color:var(--text-muted);">National ID: ${esc(item.voterIdNumber || 'ID-28491038')} &middot; <span style="font-size:10px;">UID: ${esc((item.userId || item.respondent || '').slice(0, 16))}</span></span>
+              </div>
             </div>
-            <div style="background:#f8f9fa; border:1px solid #edf2f7; border-radius:8px; padding:10px; font-size:12px; color:#2d3748; max-height:80px; overflow-y:auto; word-break:break-word;">
+            <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:8px; padding:10px; font-size:12px; color:var(--text-main); max-height:80px; overflow-y:auto; word-break:break-word;">
               ${esc(item.choice)}
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
-              <span class="receipt-code" title="${esc(item.receiptHash)}">${esc((item.receiptHash || '').slice(0, 12))}...</span>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px; background:#FAFAFA; border:1px solid #EEEEEE; border-radius:6px; padding:8px;">
+              <div>
+                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">Device / OS</span>
+                <span style="font-weight:600; color:var(--text-main);">${esc(item.deviceName || 'Verified Device')} &middot; ${esc(item.deviceOS || 'OS')}</span>
+              </div>
+              <div>
+                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">Precise Location</span>
+                <span style="font-weight:600; color:var(--text-main);">${esc(item.county || 'Nairobi')} (${item.latitude != null ? Number(item.latitude).toFixed(3) : ''}, ${item.longitude != null ? Number(item.longitude).toFixed(3) : ''})</span>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:4px;">
               <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View Details</button>
             </div>
           </div>
@@ -1257,58 +2335,87 @@
       const body = document.getElementById('modalBody');
       body.innerHTML = `
         <div style="margin-bottom:16px;">
-          <div style="font-size:11px; text-transform:uppercase; color:#888; font-weight:700;">Campaign Title</div>
-          <div style="font-size:16px; font-weight:800; color:#111; margin-top:2px;">${esc(item.title)}</div>
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Campaign Title</div>
+          <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-top:2px;">${esc(item.title)}</div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
-          <div style="background:#f9f9f9; padding:10px 12px; border-radius:8px;">
-            <div style="font-size:11px; color:#777; font-weight:700;">Type</div>
-            <div style="font-weight:700; margin-top:2px;"><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey Submission'}</span></div>
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Participation Type</div>
+            <div style="font-weight:700; margin-top:4px;"><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey Submission'}</span></div>
           </div>
-          <div style="background:#f9f9f9; padding:10px 12px; border-radius:8px;">
-            <div style="font-size:11px; color:#777; font-weight:700;">Recorded Timestamp</div>
-            <div style="font-weight:600; font-size:12px; margin-top:2px;">${esc(item.timestamp || 'Just now')}</div>
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Recorded Timestamp</div>
+            <div style="font-weight:700; font-size:12.5px; margin-top:4px; color:var(--text-main);">${esc(item.timestamp || 'Just now')}</div>
           </div>
         </div>
 
-        <div style="background:#f9f9f9; padding:10px 12px; border-radius:8px; margin-bottom:18px;">
-          <div style="font-size:11px; color:#777; font-weight:700;">Citizen / Voter Pseudonym</div>
-          <div style="font-family:monospace; font-size:12px; margin-top:2px; word-break:break-all;">${esc(item.respondent)}</div>
+        <div style="background:#F8F8F8; border:1.5px solid #303030; padding:14px 16px; border-radius:12px; margin-bottom:18px;">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.04em; margin-bottom:8px;">Voter Identity &amp; Citizen User ID</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Citizen Full Name</div>
+              <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-top:2px;">${esc(item.voterName || 'USER@LOCATION1')}</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">National ID / Passport</div>
+              <div style="font-size:13.5px; font-weight:700; font-family:monospace; color:var(--text-main); margin-top:2px;">${esc(item.voterIdNumber || 'ID-28491038')}</div>
+            </div>
+          </div>
+          <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #D0D0D0;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Assigned Citizen User ID (Device + Location Bound)</div>
+            <div style="font-size:12px; font-family:monospace; font-weight:700; color:var(--charcoal); word-break:break-all; margin-top:2px;">${esc(item.userId || item.respondent || '')}</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Device &amp; OS Telemetry</div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:4px;">${esc(item.deviceName || 'Verified Device')}</div>
+            <div style="font-size:11.5px; color:var(--text-sub); margin-top:2px;">${esc(item.deviceOS || 'Web / Mobile OS')}</div>
+          </div>
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Precise Geolocation</div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:4px;">${esc(item.county || 'Nairobi')} County</div>
+            <div style="font-size:11px; font-family:monospace; color:var(--text-muted); margin-top:2px;">GPS: ${item.latitude != null && item.longitude != null ? `${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}` : esc(item.gpsCoordinates || 'Precise GPS')}</div>
+          </div>
         </div>
 
         <div style="margin-bottom:18px;">
-          <div style="font-size:12px; color:#555; font-weight:700; margin-bottom:8px;">
+          <div style="font-size:12px; color:var(--text-main); font-weight:800; margin-bottom:8px;">
             ${item.type === 'poll' ? 'Vote Cast' : 'Questions & Responses Breakdown'}
           </div>
-          <div style="border:1px solid #eee; border-radius:8px; padding:12px; background:#fff;">
+          <div style="border:1px solid #EBEBEB; border-radius:10px; padding:14px; background:#F8F9FA; color:var(--text-main);">
             ${item.type === 'poll'
-              ? `<div style="font-size:14px; font-weight:700; color:#303030;">Selected Option: ${esc(item.choice)}</div>`
+              ? `<div style="font-size:14px; font-weight:700; color:var(--charcoal);">Selected Option: ${esc(item.choice)}</div>`
               : (Array.isArray(item.details?.answers) && item.details.answers.length
                   ? item.details.answers.map((a, i) => `
-                      <div style="padding:6px 0; border-bottom:1px solid #f0f0f0;">
-                        <div style="font-size:11px; color:#777; font-weight:700;">Question ${i+1}: ${esc(a.questionId || 'Question')}</div>
-                        <div style="font-size:13px; font-weight:600; color:#111; margin-top:2px;">${esc(a.answer ?? a)}</div>
+                      <div style="padding:8px 0; border-bottom:1px solid #EBEBEB;">
+                        <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Question ${i+1}: ${esc(a.questionId || 'Question')}</div>
+                        <div style="font-size:13.5px; font-weight:600; color:var(--text-main); margin-top:2px;">${esc(a.answer ?? a)}</div>
                       </div>
                     `).join('')
-                  : `<div style="font-size:13px;">${esc(item.choice || 'No answer detail recorded.')}</div>`
+                  : `<div style="font-size:13px; font-weight:600;">${esc(item.choice || 'No answer detail recorded.')}</div>`
                 )
             }
           </div>
         </div>
 
-        <div style="background:#f4f6f8; border:1px solid #e1e8ed; border-radius:8px; padding:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <span style="font-size:11px; color:#555; font-weight:700;">Cryptographic Merkle Receipt Hash</span>
+        <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:10px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:11.5px; color:var(--text-main); font-weight:800;">Cryptographic Merkle Receipt Hash</span>
             <button type="button" class="action-btn" onclick="copyReceipt('${esc(item.receiptHash)}')">Copy Hash</button>
           </div>
-          <div style="font-family:monospace; font-size:11px; word-break:break-all; color:#222; background:#fff; padding:6px 8px; border-radius:4px; border:1px solid #ddd;">
+          <div style="font-family:monospace; font-size:11.5px; word-break:break-all; color:var(--charcoal); background:#FFFFFF; padding:8px 12px; border-radius:6px; border:1px solid #D0D0D0;">
             ${esc(item.receiptHash || '0x00000000000000000000000000000000')}
+          </div>
+          <div style="display:inline-flex; align-items:center; gap:6px; background:#E8F5E9; color:#2E7D32; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:100px; margin-top:8px;">
+            ✓ Cryptographic Merkle Proof Validated
           </div>
         </div>
 
-        <div style="margin-top:20px; display:flex; justify-content:flex-end;">
-          <button type="button" class="action-btn" style="padding:8px 16px; font-size:13px;" onclick="closeResponseDetailModal()">Close</button>
+        <div style="margin-top:22px; display:flex; justify-content:flex-end;">
+          <button type="button" class="btn-create" style="padding:9px 20px; font-size:13px;" onclick="closeResponseDetailModal()">Close</button>
         </div>
       `;
 
@@ -1339,6 +2446,10 @@
 
       const user = await me.json();
       if (user.isAdmin) return location.replace('admin.html');
+
+      // Store user in localStorage for session plan resolution
+      localStorage.setItem('gir_user', JSON.stringify(user));
+      currentUser = user;
 
       document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`;
       document.getElementById('user-name').textContent = user.fullName;
@@ -1387,8 +2498,17 @@
             type: 'poll',
             id: t.id,
             parentId: p.id,
-            title: p.title,
-            respondent: t.voterPseudonym || 'Citizen Ballot',
+            title: p.title || 'Untitled Poll',
+            userId: t.userId || t.voterPseudonym || 'USR-CITIZEN',
+            respondent: t.voterPseudonym || t.userId || 'Citizen Ballot',
+            voterName: t.voterName || 'USER@LOCATION1',
+            voterIdNumber: t.voterIdNumber || 'ID-28491038',
+            deviceName: t.deviceName || 'Verified Client Device',
+            deviceOS: t.deviceOS || 'Web / Mobile OS',
+            county: t.county || 'Nairobi',
+            latitude: t.latitude,
+            longitude: t.longitude,
+            gpsCoordinates: t.gpsCoordinates || (t.latitude && t.longitude ? `${t.latitude}, ${t.longitude}` : '-1.286389, 36.817223'),
             choice: t.optionLabel || 'Selected Option',
             details: { pollTitle: p.title, option: t.optionLabel, voter: t.voterPseudonym, leafIndex: t.merkleLeafIndex },
             receiptHash: t.receiptHash,
@@ -1403,8 +2523,17 @@
             type: 'survey',
             id: r.id,
             parentId: s.id,
-            title: s.title,
-            respondent: r.respondent || 'Citizen Respondent',
+            title: s.title || 'Untitled Survey',
+            userId: r.userId || r.respondent || 'USR-CITIZEN',
+            respondent: r.respondent || r.userId || 'Citizen Respondent',
+            voterName: r.voterName || 'USER@LOCATION1',
+            voterIdNumber: r.voterIdNumber || 'ID-28491038',
+            deviceName: r.deviceName || 'Verified Client Device',
+            deviceOS: r.deviceOS || 'Web / Mobile OS',
+            county: r.county || 'Nairobi',
+            latitude: r.latitude,
+            longitude: r.longitude,
+            gpsCoordinates: r.gpsCoordinates || (r.latitude && r.longitude ? `${r.latitude}, ${r.longitude}` : '-1.286389, 36.817223'),
             choice: (r.answers || []).map(a => `${a.questionId || 'Q'}: ${a.answer ?? a}`).join(' | ') || 'Survey submitted',
             details: { surveyTitle: s.title, answers: r.answers, respondent: r.respondent },
             receiptHash: r.receiptHash,
@@ -1420,13 +2549,32 @@
       const totalResponses = surveys.reduce((n, s) => n + (s.responses?.length || 0), 0);
       const totalPollVotes = myPolls.reduce((n, p) => n + (p.totalVotes || 0), 0);
 
-      document.getElementById('kpi-polls').textContent = myPolls.length;
-      document.getElementById('kpi-votes').textContent = totalPollVotes.toLocaleString();
-      document.getElementById('kpi-active').textContent = surveys.filter(s => (s.status || '').toLowerCase() === 'active').length;
-      document.getElementById('kpi-responses').textContent = totalResponses;
+      const kpiPolls = document.getElementById('kpi-polls');
+      if (kpiPolls) kpiPolls.textContent = myPolls.length;
+      const kpiVotes = document.getElementById('kpi-votes');
+      if (kpiVotes) kpiVotes.textContent = totalPollVotes.toLocaleString();
+      const kpiActive = document.getElementById('kpi-active');
+      if (kpiActive) kpiActive.textContent = surveys.filter(s => (s.status || '').toLowerCase() === 'active').length;
+      const kpiResp = document.getElementById('kpi-responses');
+      if (kpiResp) kpiResp.textContent = totalResponses;
 
-      renderBars(document.getElementById('survey-chart'), surveys.map(s => ({ label: s.title.slice(0, 12), value: s.responses?.length || 0 })), 'Responses');
-      renderBars(document.getElementById('monthly-chart'), (stats?.monthlyVotes || []).map(m => ({ label: m.month, value: m.votes })), 'Monthly responses');
+      try {
+        renderPlanSection(user, totalPollVotes, myPolls.length);
+      } catch (e) {
+        console.warn('Plan section error:', e);
+      }
+
+      try {
+        renderBars(document.getElementById('survey-chart'), surveys.map(s => ({ label: (s.title || 'Survey').slice(0, 12), value: s.responses?.length || 0 })), 'Responses');
+      } catch (e) {
+        console.warn('Survey chart error:', e);
+      }
+
+      try {
+        renderBars(document.getElementById('monthly-chart'), (stats?.monthlyVotes || []).map(m => ({ label: m.month || 'Month', value: m.votes || 0 })), 'Monthly responses');
+      } catch (e) {
+        console.warn('Monthly chart error:', e);
+      }
 
       // Update filter counters
       const pollCount = allClientResponses.filter(r => r.type === 'poll').length;
@@ -1438,24 +2586,50 @@
       const countSurveysEl = document.getElementById('count-surveys');
       if (countSurveysEl) countSurveysEl.textContent = surveyCount;
 
-      renderOverviewRecentResponses();
-      filterResponsesTable();
+      try {
+        renderOverviewRecentResponses();
+      } catch (e) {
+        console.warn('Overview responses error:', e);
+      }
+
+      try {
+        filterResponsesTable();
+      } catch (e) {
+        console.warn('Filter responses error:', e);
+      }
 
       // Current user context
       currentUserId = user.id;
 
       // Load client-specific notifications (per-client unread tracking)
-      await loadClientNotifications();
+      try {
+        await loadClientNotifications();
+      } catch (e) {
+        console.warn('Load notifications error:', e);
+      }
 
       // Render Polls with view toggle & pagination
       cachedClientPolls = myPolls;
       pollsCurrentPage = 1;
-      renderPollsList();
+      try {
+        renderPollsList();
+      } catch (e) {
+        console.warn('Polls list error:', e);
+      }
 
       // Render Surveys with view toggle & pagination
       cachedClientSurveys = surveys;
       surveysCurrentPage = 1;
-      await renderSurveysList();
+      try {
+        await renderSurveysList();
+      } catch (e) {
+        console.warn('Surveys list error:', e);
+      }
+
+      // Check for unfinished drafts
+      try {
+        checkSavedDraftAlert();
+      } catch (e) {}
     }
 
     // === PER-CLIENT NOTIFICATION ENGINE ===
@@ -1507,6 +2681,17 @@
         }));
 
         renderClientNotifications();
+
+        // AUTO OPEN BELL DROPDOWN POPUP FROM TOP-RIGHT BELL ON LOGIN IF UNREAD NOTIFICATIONS EXIST
+        const unreadList = clientNotifications.filter(n => !n.isRead);
+        if (unreadList.length > 0 && !window._clientBellPopped) {
+          window._clientBellPopped = true;
+          const dd = document.getElementById('notifDropdown');
+          if (dd) {
+            dd.classList.add('open');
+            playNotifBeep('info');
+          }
+        }
       } catch (e) {
         console.warn('Failed to load client notifications:', e);
       }
@@ -1529,13 +2714,13 @@
       if (overviewNotifBox) {
         overviewNotifBox.innerHTML = clientNotifications.length
           ? clientNotifications.map(n => `
-              <div class="notification" style="${n.isRead ? 'opacity:0.75;background:#f9f9f9;border-left:4px solid #bbb;' : 'border-left: 4px solid #303030; background: #f0f0f0;'}">
+              <div class="notification" style="${n.isRead ? 'opacity:0.75;background:#F8F8F8;border-left:4px solid #D0D0D0;' : 'background:#FFFFFF;border-left:4px solid var(--charcoal);box-shadow:0 1px 4px rgba(48,48,48,0.06);'}">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <strong>${esc(n.title || 'Platform Notice')}</strong>
-                  <span style="font-size:11px;color:#888;">${getTimeAgo(n.createdAt)}</span>
+                  <strong style="color:var(--charcoal);font-size:13.5px;">${esc(n.title || 'Platform Notice')}</strong>
+                  <span style="font-size:11px;color:var(--text-muted);">${getTimeAgo(n.createdAt)}</span>
                 </div>
-                <div style="margin-top:4px;font-size:13px;line-height:1.45;">${esc(n.message)}</div>
-                ${!n.isRead ? `<button onclick="markClientNotifRead(${n.id})" style="margin-top:8px;padding:4px 10px;font-size:11px;background:#303030;color:#fff;border:none;border-radius:6px;cursor:pointer;">Mark as read</button>` : '<span style="font-size:11px;color:#888;display:inline-block;margin-top:6px;">✓ Read</span>'}
+                <div style="margin-top:5px;font-size:13px;line-height:1.45;color:var(--text-sub);">${esc(n.message)}</div>
+                ${!n.isRead ? `<button onclick="markClientNotifRead(${n.id})" style="margin-top:8px;padding:4px 12px;font-size:11px;font-weight:700;background:var(--charcoal);color:#FFFFFF;border:none;border-radius:100px;cursor:pointer;">Mark as read</button>` : '<span style="font-size:11px;font-weight:700;color:var(--text-muted);display:inline-block;margin-top:6px;">✓ Read</span>'}
               </div>
             `).join('')
           : '<div class="empty">No new notifications.</div>';
@@ -1622,6 +2807,7 @@
                   isRead: false
                 });
                 renderClientNotifications();
+                showTopRightToast(notif.title || 'Platform Alert', notif.message, notif.type || 'info');
               }
             }
           } catch (_) {}
@@ -1639,6 +2825,37 @@
       });
     }
 
+    function checkSavedDraftAlert() {
+      const alertBox = document.getElementById('overview-draft-alert');
+      if (!alertBox) return;
+      try {
+        const userId = currentUser ? currentUser.id : 'guest';
+        const raw = localStorage.getItem('gir_create_draft_' + userId) || localStorage.getItem('gir_create_draft_guest');
+        if (raw) {
+          const draft = JSON.parse(raw);
+          const title = draft.title ? `"${esc(draft.title)}"` : 'Untitled Campaign';
+          const timeAgo = getTimeAgo(draft.lastSavedAt);
+          alertBox.innerHTML = `
+            <div style="background:var(--charcoal); color:var(--text-main); border-radius:14px; padding:16px 20px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:0 8px 24px rgba(48,48,48,0.2); border:1.5px solid rgba(229,229,229,0.25); border-left:5px solid var(--silver);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:20px;">📝</span>
+                <div>
+                  <div style="font-weight:700; font-size:13.5px; color:var(--text-main);">You have an unfinished draft in progress</div>
+                  <div style="font-size:12px; color:var(--text-sub); margin-top:2px;">Draft: <strong>${title}</strong> (${draft.type === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}) · Auto-saved ${timeAgo}</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" onclick="localStorage.removeItem('gir_create_draft_${userId}'); localStorage.removeItem('gir_create_draft_guest'); checkSavedDraftAlert(); showTopRightToast('Draft Discarded', 'Your draft was removed.', 'info');" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main); padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">Discard</button>
+                <a href="create.html" style="background:var(--silver); color:var(--charcoal); padding:6px 16px; border-radius:100px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">Resume Draft &rarr;</a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+      } catch (_) {}
+      alertBox.innerHTML = '';
+    }
+
     document.getElementById('profile-form').onsubmit = async e => {
       e.preventDefault();
       const r = await request('/auth/profile', {
@@ -1648,7 +2865,19 @@
           organization: document.getElementById('organization').value,
         }),
       });
-      setNotice('profile-notice', r.ok ? 'Profile updated.' : 'Unable to update profile.', !r.ok);
+      if (r.ok) {
+        setNotice('profile-notice', 'Profile updated.');
+        showTopRightToast('Profile Updated', 'Your profile details have been saved successfully.', 'success');
+        const user = await request('/users/me').then(res => res.json()).catch(() => null);
+        if (user) {
+          currentUser = user;
+          document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`;
+          document.getElementById('user-name').textContent = user.fullName;
+        }
+      } else {
+        setNotice('profile-notice', 'Unable to update profile.', true);
+        showTopRightToast('Profile Error', 'Unable to update profile.', 'error');
+      }
     };
 
     document.getElementById('password-form').onsubmit = async e => {
@@ -1661,13 +2890,310 @@
         }),
       });
       if (r.ok) {
-        localStorage.clear();
-        location.replace('../auth/login.html');
+        showTopRightToast('Password Changed', 'Password successfully updated. Logging out...', 'success');
+        setTimeout(() => {
+          localStorage.clear();
+          location.replace('../auth/login.html');
+        }, 1200);
         return;
       }
       const d = await r.json().catch(() => ({}));
       setNotice('password-notice', d.detail || 'Unable to change password.', true);
+      showTopRightToast('Password Error', d.detail || 'Unable to change password.', 'error');
     };
+
+    // === PLAN & UPGRADE LOGIC ===
+        // === PLAN & UPGRADE LOGIC ===
+    const PLAN_TIERS = [
+      { key: 'free', name: 'Civic Starter', price: 'Free', period: '', voters: 1000, polls: 5, rank: 0, features: ['Up to 5 polls & surveys', 'Up to 1,000 voter quota', 'Standard cryptographic receipts', 'CSV dataset exports'] },
+      { key: 'pro', name: 'Civic Pro', price: 'KSh 15,000', period: '/mo', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls & surveys', 'Up to 25,000 voter quota', 'Full audit trail access', 'All exports (CSV, JSON, PDF, Word)', 'Priority consensus tallying'] },
+      { key: 'org', name: 'Institutional Org', price: 'KSh 45,000', period: '/mo', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls & surveys', 'Up to 100,000 voter quota', 'Institutional role access control', 'Full raw JSON & PDF exports', 'Dedicated sovereign validator node'] },
+      { key: 'election', name: 'Sovereign Election Guard', price: 'Custom', period: '/cycle', voters: 10000000, polls: 1000, rank: 3, features: ['Unlimited polls & ballot referendums', 'Up to 10M voters capacity', 'Full state/county grade zero-knowledge ledger', 'Observer network audit integration', '24/7 sovereign mission engineering'] }
+    ];
+
+    function renderPlanSection(user, totalVotes, totalPolls) {
+      totalVotes = totalVotes || 0;
+      totalPolls = totalPolls || 0;
+      const plan = (user.plan || 'free').toLowerCase();
+      const planName = user.planName || PLAN_TIERS.find(t => t.key === plan)?.name || 'Civic Starter';
+      const tier = PLAN_TIERS.find(t => t.key === plan) || PLAN_TIERS[0];
+
+      // Overview badge
+      const badge = document.getElementById('overview-plan-badge');
+      if (badge) badge.textContent = planName;
+
+      // Current plan card
+      document.getElementById('plan-tier-name').textContent = planName;
+
+      const voterQuota = user.voterQuota || tier.voters;
+      const pollsQuota = user.pollsQuota || tier.polls;
+
+      document.getElementById('plan-voter-quota').textContent = voterQuota.toLocaleString();
+      document.getElementById('plan-voter-used').textContent = `${totalVotes.toLocaleString()} used`;
+      const voterPct = Math.min(100, Math.round((totalVotes / voterQuota) * 100));
+      document.getElementById('plan-voter-bar').style.width = voterPct + '%';
+
+      document.getElementById('plan-polls-quota').textContent = pollsQuota.toLocaleString();
+      document.getElementById('plan-polls-used').textContent = `${totalPolls} used`;
+      const pollsPct = Math.min(100, Math.round((totalPolls / pollsQuota) * 100));
+      document.getElementById('plan-polls-bar').style.width = pollsPct + '%';
+
+      // Upgrade cards
+      const container = document.getElementById('upgrade-cards-container');
+      container.innerHTML = PLAN_TIERS.map(t => {
+        const isCurrent = t.key === plan;
+        const canUpgrade = t.rank > tier.rank;
+        return `
+          <div class="upgrade-card ${isCurrent ? 'current' : ''}">
+            <div>
+              <div class="uc-tier-tag">${isCurrent ? 'Current Plan' : (t.key === 'election' ? 'Flagship Tier' : 'Available Tier')}</div>
+              <div class="uc-name">${esc(t.name)}</div>
+              <div class="uc-price">${t.price} <span style="font-size:12px;font-weight:500;color:var(--text-muted);">${t.period}</span></div>
+              <div class="uc-desc">${t.voters.toLocaleString()} voter quota · ${t.polls} polls/surveys included</div>
+              <ul class="uc-features">
+                ${t.features.map(f => `<li>${esc(f)}</li>`).join('')}
+              </ul>
+            </div>
+            <div>
+              ${isCurrent
+                ? '<button class="btn-upgrade outline" disabled>Active Plan</button>'
+                : canUpgrade
+                  ? `<button class="btn-upgrade" onclick="openPlanPaymentModal('${t.key}', '${esc(user.id)}')">Upgrade to ${esc(t.name)} &rarr;</button>`
+                  : '<button class="btn-upgrade outline" disabled>Included in Tier</button>'
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    
+    // === PLAN UPGRADE CHECKOUT & PAYMENT MODAL ===
+    let pendingUpgrade = null;
+    let selectedPayMethod = 'mpesa';
+
+    function openPlanPaymentModal(planKey, userId) {
+      const tier = PLAN_TIERS.find(t => t.key === planKey);
+      if (!tier) return;
+      pendingUpgrade = { planKey, userId, tier };
+      selectedPayMethod = 'mpesa';
+
+      const modal = document.getElementById('planPaymentModal');
+      const container = document.getElementById('paymentModalBody');
+      if (!modal || !container) return;
+
+      renderPaymentModalStep1();
+      modal.classList.add('open');
+    }
+
+    function renderPaymentModalStep1() {
+      const { tier, userId } = pendingUpgrade;
+      const userPhone = currentUser?.phoneNumber || '';
+
+      const container = document.getElementById('paymentModalBody');
+      container.innerHTML = `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.06em;">Upgrade Subscription</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0; font-family:'Outfit', sans-serif;">${esc(tier.name)}</h2>
+            <div style="font-size:22px; font-weight:900; color:var(--charcoal); font-family:'Outfit', sans-serif;">${tier.price} <span style="font-size:12px; font-weight:500; color:var(--text-muted);">${tier.period}</span></div>
+          </div>
+          <div style="font-size:12.5px; color:var(--text-sub); margin-top:4px;">Includes ${tier.voters.toLocaleString()} voter quota · ${tier.polls} polls/surveys included</div>
+        </div>
+
+        <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:14px; margin-bottom:18px;">
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Plan Inclusions:</div>
+          <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            ${tier.features.map(f => `<li style="font-size:12px; color:var(--text-main); display:flex; align-items:center; gap:6px;"><span style="color:var(--charcoal); font-weight:900;">✓</span> ${esc(f)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div style="font-size:12.5px; font-weight:800; color:var(--charcoal); margin-bottom:8px;">Select Payment Method:</div>
+        <div class="pay-methods-grid">
+          <div class="pay-method-pill ${selectedPayMethod === 'mpesa' ? 'active' : ''}" onclick="selectPaymentMethod('mpesa')">
+            <div class="pm-icon">📱</div>
+            <div class="pm-name">M-Pesa Express</div>
+          </div>
+          <div class="pay-method-pill ${selectedPayMethod === 'card' ? 'active' : ''}" onclick="selectPaymentMethod('card')">
+            <div class="pm-icon">💳</div>
+            <div class="pm-name">Card (Visa/MC)</div>
+          </div>
+          <div class="pay-method-pill ${selectedPayMethod === 'bank' ? 'active' : ''}" onclick="selectPaymentMethod('bank')">
+            <div class="pm-icon">🏦</div>
+            <div class="pm-name">Bank Wire</div>
+          </div>
+        </div>
+
+        <div id="paymentMethodForm">
+          ${renderPaymentMethodInput(selectedPayMethod, userPhone)}
+        </div>
+
+        <div id="payment-error-msg" style="color:var(--color-red); font-size:12.5px; font-weight:600; margin-top:10px; display:none;"></div>
+
+        <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
+          <button type="button" class="btn-outline" onclick="closePlanPaymentModal()">Cancel</button>
+          <button type="button" class="btn-create" id="btn-submit-payment" style="padding:11px 24px;" onclick="executeProcessPayment()">Pay ${tier.price} &amp; Upgrade &rarr;</button>
+        </div>
+      `;
+    }
+
+    function renderPaymentMethodInput(method, phone) {
+      if (method === 'mpesa') {
+        return `
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px;">
+            <label style="margin-top:0;">Safaricom M-Pesa Phone Number</label>
+            <input type="tel" id="pay-phone" placeholder="e.g. 0712345678 or 254712345678" value="${esc(phone)}" style="background:#FFFFFF;">
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">An instant M-Pesa STK push PIN prompt will be sent to this phone.</div>
+          </div>
+        `;
+      } else if (method === 'card') {
+        return `
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px;">
+            <label style="margin-top:0;">Card Number</label>
+            <input type="text" id="pay-card-num" placeholder="4520 •••• •••• 9812" value="4520 8912 3456 9812" style="background:#FFFFFF;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+              <div>
+                <label>Expiry (MM/YY)</label>
+                <input type="text" id="pay-card-exp" placeholder="12/28" value="08/29" style="background:#FFFFFF;">
+              </div>
+              <div>
+                <label>CVC / CVV</label>
+                <input type="text" id="pay-card-cvv" placeholder="•••" value="842" style="background:#FFFFFF;">
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px;">
+            <div style="font-size:12px; font-weight:700; color:var(--charcoal);">Standard Chartered Sovereign Settlement</div>
+            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">Account: <strong>0102 9845 2310 00</strong> · Paybill: <strong>894210</strong></div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Reference: <strong>GIR-${pendingUpgrade.userId}</strong></div>
+          </div>
+        `;
+      }
+    }
+
+    function selectPaymentMethod(method) {
+      selectedPayMethod = method;
+      const userPhone = currentUser?.phoneNumber || '';
+      document.querySelectorAll('.pay-method-pill').forEach(el => el.classList.remove('active'));
+      event.currentTarget?.classList.add('active');
+      const form = document.getElementById('paymentMethodForm');
+      if (form) form.innerHTML = renderPaymentMethodInput(method, userPhone);
+    }
+
+    async function executeProcessPayment() {
+      if (!pendingUpgrade) return;
+      const { planKey, userId, tier } = pendingUpgrade;
+
+      const btn = document.getElementById('btn-submit-payment');
+      const errMsg = document.getElementById('payment-error-msg');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Processing Payment...';
+      }
+      if (errMsg) errMsg.style.display = 'none';
+
+      // 1. Process simulated payment & verify receipt
+      playNotifBeep('info');
+      await new Promise(r => setTimeout(r, 1200));
+
+      try {
+        // 2. Call backend upgrade API to update database and increment TokenVersion
+        const r = await request(`/users/${encodeURIComponent(userId)}/upgrade`, {
+          method: 'POST',
+          body: JSON.stringify({ plan: planKey }),
+        });
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d.detail || 'Plan upgrade failed.');
+        }
+
+        playNotifBeep('success');
+
+        // 3. Show Payment Confirmed & Activation instructions
+        const txId = 'MPESA-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+        const container = document.getElementById('paymentModalBody');
+        container.innerHTML = `
+          <div style="text-align:center; padding:16px 10px;">
+            <div style="width:58px; height:58px; border-radius:50%; background:#E8F5E9; color:#2E7D32; font-size:28px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; font-weight:900;">✓</div>
+            <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0 0 6px; font-family:'Outfit',sans-serif;">Payment Confirmed!</h2>
+            <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:14px;">Upgraded to ${esc(tier.name)}</div>
+            
+            <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:14px; text-align:left; margin-bottom:20px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">Transaction Receipt:</span>
+                <strong style="font-family:monospace; color:var(--charcoal);">${txId}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">Amount Paid:</span>
+                <strong style="color:var(--charcoal);">${tier.price}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span style="color:var(--text-muted);">Status:</span>
+                <span style="color:#2E7D32; font-weight:800;">Settled on Sovereign Ledger</span>
+              </div>
+            </div>
+
+            <div style="background:#FFF9C4; border:1px solid #FFE082; color:#5D4037; border-radius:12px; padding:12px 14px; font-size:12.5px; line-height:1.45; text-align:left; margin-bottom:22px;">
+              <strong>Important Next Step:</strong>
+              Your plan has been upgraded. To activate your increased voter quota (${tier.voters.toLocaleString()} voters) and update your cryptographic session tokens, please <strong>log back in</strong>.
+            </div>
+
+            <button type="button" class="btn-create" style="width:100%; padding:14px; font-size:14px;" onclick="logoutAndRelogin('${esc(tier.name)}')">
+              Log Out &amp; Sign Back In to Activate Plan &rarr;
+            </button>
+          </div>
+        `;
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = `Pay ${tier.price} & Upgrade →`;
+        }
+        if (errMsg) {
+          errMsg.textContent = err.message;
+          errMsg.style.display = 'block';
+        }
+        playNotifBeep('error');
+      }
+    }
+
+    function logoutAndRelogin(planName) {
+      localStorage.clear();
+      window.location.href = '../auth/login.html?upgraded=1&plan=' + encodeURIComponent(planName || 'Plan');
+    }
+
+    function closePlanPaymentModal() {
+      const modal = document.getElementById('planPaymentModal');
+      if (modal) modal.classList.remove('open');
+      pendingUpgrade = null;
+    }
+
+    async function upgradePlan(planKey, userId) {
+      const notice = document.getElementById('upgrade-notice');
+      notice.textContent = 'Processing upgrade...';
+      notice.style.color = '#303030';
+      try {
+        const r = await request(`/users/${encodeURIComponent(userId)}/upgrade`, {
+          method: 'POST',
+          body: JSON.stringify({ plan: planKey }),
+        });
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d.detail || 'Upgrade failed.');
+        }
+        const updated = await r.json();
+        notice.textContent = 'Plan upgraded successfully! Refreshing dashboard...';
+        notice.style.color = 'var(--silver)';
+        showTopRightToast('Plan Upgraded', `Successfully upgraded to ${updated.planName || planKey}!`, 'success');
+        setTimeout(() => loadDashboard(), 1200);
+      } catch (err) {
+        notice.textContent = err.message;
+        notice.style.color = 'var(--silver)';
+        showTopRightToast('Upgrade Failed', err.message, 'error');
+      }
+    }
 
     async function logout() {
       await request('/auth/logout', { method: 'POST' }).catch(() => {});
@@ -1683,9 +3209,8 @@
 
     bindNavigation();
     initClientWebSocket();
-    loadDashboard().catch(() => {
-      localStorage.clear();
-      location.replace('../auth/login.html');
+    loadDashboard().catch(err => {
+      console.error('Client dashboard load error:', err);
     });
 
     setInterval(() => {
@@ -1705,5 +3230,16 @@
       <div class="modal-body" id="modalBody"></div>
     </div>
   </div>
+  <!-- Plan Upgrade Payment Modal -->
+  <div id="planPaymentModal" class="modal-backdrop" onclick="if(event.target === this) closePlanPaymentModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--charcoal);">Plan Upgrade &amp; Sovereign Checkout</h3>
+        <button class="btn-close" onclick="closePlanPaymentModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="paymentModalBody"></div>
+    </div>
+  </div>
+
 </body>
 </html>

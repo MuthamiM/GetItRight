@@ -49,9 +49,19 @@ def update_status(user_id: str, payload: UserStatusUpdate, _: dict = Depends(req
     return update_user_status(db, user_id, payload)
 
 @router.post("/{user_id}/plan", response_model=UserDetailOut)
-def update_plan(user_id: str, payload: UpdateUserPlanRequest, _: dict = Depends(require_admin), db: Session = Depends(get_db)):
-    """Update user plan tier and quota allocations."""
-    return update_user_plan(db, user_id, payload)
+@router.post("/{user_id}/upgrade", response_model=UserDetailOut)
+def update_or_upgrade_plan(
+    user_id: str,
+    payload: UpdateUserPlanRequest,
+    current_user: dict = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """Update or upgrade user plan tier and quota allocations."""
+    is_admin = current_user.get("role") in ["Admin", "Super Admin"]
+    if not is_admin and current_user.get("sub") != user_id:
+        from fastapi import HTTPException, status
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You may only upgrade your own plan")
+    return update_user_plan(db, user_id, payload, is_admin=is_admin)
 
 @router.post("/{user_id}/role", response_model=UserDetailOut)
 def update_role(user_id: str, payload: UpdateUserRoleRequest, _: dict = Depends(require_admin), db: Session = Depends(get_db)):

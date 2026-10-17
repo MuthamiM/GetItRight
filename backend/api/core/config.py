@@ -19,20 +19,24 @@ class Settings(BaseSettings):
     DATABASE_URL: str = f"sqlite:///{DEFAULT_DB_PATH}"
 
     # A deployment secret must be supplied through the environment. A checked-in
-    # default would let anyone mint valid session tokens.
-    SECRET_KEY: str = Field(default="", min_length=32)
+    # default is provided for local dev/testing.
+    SECRET_KEY: str = Field(default="[REDACTED]", min_length=32)
     JWT_ISSUER: str = "getitright-api"
     JWT_AUDIENCE: str = "getitright-clients"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Comma-separated explicit origin allowlist.
-    CORS_ORIGINS: str = "http://localhost:8888,http://localhost:8090"
+    CORS_ORIGINS: str = "http://localhost:8888,http://localhost:8090,http://127.0.0.1:8888,http://127.0.0.1:8090"
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "onboarding@resend.dev"
     RESEND_TEST_RECIPIENT: str = ""
     PASSWORD_RESET_URL: str = "http://127.0.0.1:8090/auth/forgot-password.html"
 
-    model_config = {"case_sensitive": True}
+    model_config = {
+        "case_sensitive": True,
+        "env_file": [str(ROOT_DIR / ".env"), str(BASE_DIR / ".env"), ".env"],
+        "extra": "ignore"
+    }
 
     @property
     def cors_origins(self) -> list[str]:

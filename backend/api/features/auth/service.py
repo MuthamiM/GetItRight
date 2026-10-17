@@ -14,10 +14,9 @@ from backend.api.features.auth.schemas import LoginRequest, RegisterRequest, Aut
 from backend.api.core.security import verify_password, get_password_hash, create_access_token
 
 PLAN_META = {
-    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/admin.html"},
-    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/admin.html"},
-    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/admin.html"},
-    "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/admin.html"},
+    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
+    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
+    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/user.html"},
 }
 
 
@@ -34,7 +33,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials. No user registered with this email."
+            detail="No account exists."
         )
 
     if user.Status != "Active":
@@ -60,19 +59,20 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         "tokenVersion": user.TokenVersion or 0,
     })
 
+    is_admin = (user.Role in ["Admin", "Super Admin"])
     user_out = UserOut(
         id=user.Id,
         fullName=user.FullName,
         email=user.Email,
         role=user.Role,
-        plan=user.Plan,
-        planName=user.PlanName,
+        plan=None if is_admin else user.Plan,
+        planName=None if is_admin else user.PlanName,
         organization=user.Organization,
         status=user.Status,
-        voterQuota=user.VoterQuota,
-        pollsQuota=user.PollsQuota,
+        voterQuota=None if is_admin else user.VoterQuota,
+        pollsQuota=None if is_admin else user.PollsQuota,
         consoleUrl=redirect_url,
-        isAdmin=(user.Role in ["Admin", "Super Admin"])
+        isAdmin=is_admin
     )
 
     return AuthResponse(
@@ -80,7 +80,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         token=token,
         user=user_out,
         redirectUrl=redirect_url,
-        isAdmin=(user.Role in ["Admin", "Super Admin"])
+        isAdmin=is_admin
     )
 
 def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
