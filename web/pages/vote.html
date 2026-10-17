@@ -413,6 +413,79 @@
         flex-shrink: 0 !important;
       }
     }
+
+    /* Strict Landing Page Duo-tone Pagination */
+    .list-pagination-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px 12px 10px;
+      width: 100%;
+      text-align: center;
+    }
+    .pagination-info-text {
+      font-size: 13px;
+      color: var(--charcoal);
+      opacity: 0.85;
+      font-weight: 600;
+    }
+    .pagination-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-next-remaining {
+      background: var(--charcoal) !important;
+      color: var(--silver) !important;
+      border: 1.5px solid var(--charcoal) !important;
+      border-radius: 100px !important;
+      padding: 10px 24px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 4px 12px rgba(48,48,48,0.15) !important;
+    }
+    .btn-next-remaining:hover:not(:disabled) {
+      opacity: 0.9 !important;
+      transform: translateY(-1px) !important;
+    }
+    .btn-next-remaining:disabled {
+      opacity: 0.4 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .btn-pagination-nav {
+      background: transparent !important;
+      color: var(--charcoal) !important;
+      border: 1.5px solid var(--charcoal) !important;
+      border-radius: 100px !important;
+      padding: 10px 20px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-pagination-nav:hover:not(:disabled) {
+      background: rgba(48,48,48,0.08) !important;
+    }
+    .btn-pagination-nav:disabled {
+      opacity: 0.3 !important;
+      cursor: not-allowed !important;
+    }
   </style>
 </head>
 <body>
@@ -474,21 +547,24 @@
     <div class="polls-grid-layout">
 
       <!-- Left Column: Interactive Polls Feed -->
-      <div style="display:flex; flex-direction:column; gap:26px;" id="polls-feed-container">
-        <!-- Shimmer loading placeholder -->
-        <div class="poll-shimmer-card" style="background:var(--charcoal); border:1.5px solid rgba(229,229,229,0.18); border-radius:18px; padding:24px; box-shadow:0 8px 24px rgba(48,48,48,0.15);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <div class="skeleton-box" style="height:20px; width:120px; border-radius:100px;"></div>
-            <div class="skeleton-box" style="height:18px; width:80px; border-radius:6px;"></div>
-          </div>
-          <div class="skeleton-box" style="height:22px; width:75%; margin-bottom:10px; border-radius:6px;"></div>
-          <div class="skeleton-box" style="height:14px; width:90%; margin-bottom:8px; border-radius:4px;"></div>
-          <div class="skeleton-box" style="height:14px; width:55%; margin-bottom:20px; border-radius:4px;"></div>
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div class="skeleton-box" style="height:44px; width:100%; border-radius:12px;"></div>
-            <div class="skeleton-box" style="height:44px; width:100%; border-radius:12px;"></div>
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; flex-direction:column; gap:26px;" id="polls-feed-container">
+          <!-- Shimmer loading placeholder -->
+          <div class="poll-shimmer-card" style="background:var(--charcoal); border:1.5px solid rgba(229,229,229,0.18); border-radius:18px; padding:24px; box-shadow:0 8px 24px rgba(48,48,48,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div class="skeleton-box" style="height:20px; width:120px; border-radius:100px;"></div>
+              <div class="skeleton-box" style="height:18px; width:80px; border-radius:6px;"></div>
+            </div>
+            <div class="skeleton-box" style="height:22px; width:75%; margin-bottom:10px; border-radius:6px;"></div>
+            <div class="skeleton-box" style="height:14px; width:90%; margin-bottom:8px; border-radius:4px;"></div>
+            <div class="skeleton-box" style="height:14px; width:55%; margin-bottom:20px; border-radius:4px;"></div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div class="skeleton-box" style="height:44px; width:100%; border-radius:12px;"></div>
+              <div class="skeleton-box" style="height:44px; width:100%; border-radius:12px;"></div>
+            </div>
           </div>
         </div>
+        <div id="polls-pagination" class="list-pagination-center"></div>
       </div>
 
       <!-- Right Column: Mobile App & Verifier Sidebar -->
@@ -617,20 +693,32 @@
 
     setInterval(updateAllCountdowns, 1000);
 
-    function renderPollsFeed(polls) {
+    let currentFilteredPolls = [];
+    let pollsCurrentPage = 1;
+    const POLLS_PAGE_SIZE = 5;
+
+    function renderPollsFeed(polls, page = 1) {
+      if (polls) currentFilteredPolls = polls;
+      pollsCurrentPage = page;
       const container = document.getElementById('polls-feed-container');
+      const pagContainer = document.getElementById('polls-pagination');
       if (!container) return;
 
-      if (!polls || polls.length === 0) {
+      if (!currentFilteredPolls || currentFilteredPolls.length === 0) {
         container.innerHTML = `
           <div style="padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
             No active polls found matching this filter.
           </div>
         `;
+        if (pagContainer) pagContainer.innerHTML = '';
         return;
       }
 
-      container.innerHTML = polls.map(p => {
+      const totalItems = currentFilteredPolls.length;
+      const startIdx = (pollsCurrentPage - 1) * POLLS_PAGE_SIZE;
+      const pageItems = currentFilteredPolls.slice(startIdx, startIdx + POLLS_PAGE_SIZE);
+
+      container.innerHTML = pageItems.map(p => {
         const savedVoteIdx = localStorage.getItem('gir_voted_poll_' + p.id);
         const hasVoted = savedVoteIdx !== null;
 
@@ -708,6 +796,41 @@
       }).join('');
 
       App.injectIcons();
+
+      // Render Pagination if totalItems > POLLS_PAGE_SIZE (5)
+      if (!pagContainer) return;
+      if (totalItems <= POLLS_PAGE_SIZE) {
+        pagContainer.innerHTML = '';
+        return;
+      }
+
+      const totalPages = Math.ceil(totalItems / POLLS_PAGE_SIZE);
+      const endIdx = Math.min(pollsCurrentPage * POLLS_PAGE_SIZE, totalItems);
+      const remaining = Math.max(0, totalItems - endIdx);
+      const hasPrev = pollsCurrentPage > 1;
+      const hasNext = pollsCurrentPage < totalPages;
+
+      pagContainer.innerHTML = `
+        <div class="pagination-info-text">
+          Showing ${startIdx + 1}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)
+        </div>
+        <div class="pagination-actions-row">
+          <button type="button" class="btn-pagination-nav" ${!hasPrev ? 'disabled' : ''} onclick="changePollsPage(${pollsCurrentPage - 1})">
+            &larr; Previous
+          </button>
+          <button type="button" class="btn-next-remaining" ${!hasNext ? 'disabled' : ''} onclick="changePollsPage(${pollsCurrentPage + 1})">
+            Next (${remaining} remaining) &rarr;
+          </button>
+        </div>
+      `;
+    }
+
+    function changePollsPage(newPage) {
+      renderPollsFeed(null, newPage);
+      const container = document.getElementById('polls-feed-container');
+      if (container) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     async function submitPollVote(pollId, optionIndex, btnEl) {

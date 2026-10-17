@@ -136,7 +136,7 @@
       display: flex; gap: 10px; align-items: flex-start; cursor: pointer; transition: background 0.15s ease;
     }
     .notif-item:hover { background: #F8F8F8; }
-    .notif-item.unread { background: #F0F4F8; }
+    .notif-item.unread { background: #F0F0F0; }
     .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #303030; flex-shrink: 0; margin-top: 5px; }
     .notif-text { font-size: 12px; color: #444; line-height: 1.45; }
     .notif-text strong { color: #111; font-weight: 700; }
@@ -147,14 +147,14 @@
       color: #303030 !important; cursor: pointer !important; padding: 0 !important; border-radius: 0 !important;
     }
 
-    /* Responses Tables, Badges & Filters */
+    /* Responses Tables, Badges & Filters — Strictly Landing Page Charcoal & Silver */
     .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     .data-table th { background: #fafafa; padding: 12px 14px; font-weight: 700; color: #555; border-bottom: 1px solid #e0e0e0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
     .data-table td { padding: 12px 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
     .data-table tr:hover { background: #fdfdfd; }
-    .type-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .type-badge.poll { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
-    .type-badge.survey { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .type-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .type-badge.poll { background: #303030; color: #E5E5E5; border: 1px solid #303030; }
+    .type-badge.survey { background: #E5E5E5; color: #303030; border: 1px solid #d0d0d0; }
     .receipt-code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11px; background: #f0f0f0; padding: 3px 6px; border-radius: 4px; color: #333; max-width: 130px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .filter-btn { border: 1px solid #d0d0d0; border-radius: 20px; padding: 6px 14px; background: #fff; color: #555; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s ease; }
     .filter-btn.active, .filter-btn:hover { background: #303030; color: #fff; border-color: #303030; }
@@ -616,7 +616,7 @@
       },
     });
     const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
-    const setNotice = (id, text, error = false) => { const el = document.getElementById(id); el.textContent = text; el.style.color = error ? '#b42318' : '#16794c'; };
+    const setNotice = (id, text, error = false) => { const el = document.getElementById(id); el.textContent = text; el.style.color = '#303030'; };
 
     function renderBars(target, values, label) {
       const max = Math.max(...values.map(item => item.value), 1);
@@ -1023,7 +1023,7 @@
         return;
       }
 
-      const pageSize = 10;
+      const pageSize = 5;
       const totalItems = cachedClientPolls.length;
       const startIdx = (pollsCurrentPage - 1) * pageSize;
       const pageItems = cachedClientPolls.slice(startIdx, startIdx + pageSize);
@@ -1061,7 +1061,7 @@
         return;
       }
 
-      const pageSize = 10;
+      const pageSize = 5;
       const totalItems = cachedClientSurveys.length;
       const startIdx = (surveysCurrentPage - 1) * pageSize;
       const pageItems = cachedClientSurveys.slice(startIdx, startIdx + pageSize);
@@ -1283,7 +1283,7 @@
           </div>
           <div style="border:1px solid #eee; border-radius:8px; padding:12px; background:#fff;">
             ${item.type === 'poll'
-              ? `<div style="font-size:14px; font-weight:700; color:#1565c0;">Selected Option: ${esc(item.choice)}</div>`
+              ? `<div style="font-size:14px; font-weight:700; color:#303030;">Selected Option: ${esc(item.choice)}</div>`
               : (Array.isArray(item.details?.answers) && item.details.answers.length
                   ? item.details.answers.map((a, i) => `
                       <div style="padding:6px 0; border-bottom:1px solid #f0f0f0;">
@@ -1527,7 +1527,7 @@
       if (overviewNotifBox) {
         overviewNotifBox.innerHTML = clientNotifications.length
           ? clientNotifications.map(n => `
-              <div class="notification" style="${n.isRead ? 'opacity:0.75;background:#f9f9f9;border-left:4px solid #bbb;' : 'border-left: 4px solid #303030; background: #f0f4f8;'}">
+              <div class="notification" style="${n.isRead ? 'opacity:0.75;background:#f9f9f9;border-left:4px solid #bbb;' : 'border-left: 4px solid #303030; background: #f0f0f0;'}">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                   <strong>${esc(n.title || 'Platform Notice')}</strong>
                   <span style="font-size:11px;color:#888;">${getTimeAgo(n.createdAt)}</span>

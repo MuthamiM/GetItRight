@@ -647,6 +647,79 @@
         max-height: 88vh !important;
       }
     }
+
+    /* Strict Landing Page Duo-tone Pagination */
+    .list-pagination-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 28px 12px 10px;
+      width: 100%;
+      text-align: center;
+    }
+    .pagination-info-text {
+      font-size: 13px;
+      color: var(--charcoal);
+      opacity: 0.85;
+      font-weight: 600;
+    }
+    .pagination-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-next-remaining {
+      background: var(--charcoal) !important;
+      color: var(--silver) !important;
+      border: 1.5px solid var(--charcoal) !important;
+      border-radius: 100px !important;
+      padding: 10px 24px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 4px 12px rgba(48,48,48,0.15) !important;
+    }
+    .btn-next-remaining:hover:not(:disabled) {
+      opacity: 0.9 !important;
+      transform: translateY(-1px) !important;
+    }
+    .btn-next-remaining:disabled {
+      opacity: 0.4 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .btn-pagination-nav {
+      background: transparent !important;
+      color: var(--charcoal) !important;
+      border: 1.5px solid var(--charcoal) !important;
+      border-radius: 100px !important;
+      padding: 10px 20px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      transition: all 0.2s ease !important;
+    }
+    .btn-pagination-nav:hover:not(:disabled) {
+      background: rgba(48,48,48,0.08) !important;
+    }
+    .btn-pagination-nav:disabled {
+      opacity: 0.3 !important;
+      cursor: not-allowed !important;
+    }
   </style>
 </head>
 <body>
@@ -725,6 +798,9 @@
         <div style="font-size:14px; font-weight:700; color:var(--charcoal); opacity:0.8;">Loading active surveys...</div>
       </div>
     </div>
+
+    <!-- Pagination Controls (Max 5, Next & Previous with Remaining) -->
+    <div id="surveys-pagination" class="list-pagination-center"></div>
 
   </main>
 
@@ -964,20 +1040,32 @@
       }
     }
 
-    function renderSurveys(surveys) {
+    let currentFilteredSurveys = [];
+    let surveysCurrentPage = 1;
+    const SURVEYS_PAGE_SIZE = 5;
+
+    function renderSurveys(surveys, page = 1) {
+      if (surveys) currentFilteredSurveys = surveys;
+      surveysCurrentPage = page;
       const grid = document.getElementById('surveys-grid');
+      const pagContainer = document.getElementById('surveys-pagination');
       if (!grid) return;
 
-      if (!surveys || surveys.length === 0) {
+      if (!currentFilteredSurveys || currentFilteredSurveys.length === 0) {
         grid.innerHTML = `
           <div style="grid-column:1/-1; padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
             No active surveys match this audience filter.
           </div>
         `;
+        if (pagContainer) pagContainer.innerHTML = '';
         return;
       }
 
-      grid.innerHTML = surveys.map(s => {
+      const totalItems = currentFilteredSurveys.length;
+      const startIdx = (surveysCurrentPage - 1) * SURVEYS_PAGE_SIZE;
+      const pageItems = currentFilteredSurveys.slice(startIdx, startIdx + SURVEYS_PAGE_SIZE);
+
+      grid.innerHTML = pageItems.map(s => {
         const target = s.targetResponses || 1000;
         const total = s.totalResponses || 0;
         const pct = Math.min(100, Math.round((total / target) * 100));
@@ -1062,6 +1150,41 @@
       }).join('');
 
       App.injectIcons();
+
+      // Render Pagination if totalItems > SURVEYS_PAGE_SIZE (5)
+      if (!pagContainer) return;
+      if (totalItems <= SURVEYS_PAGE_SIZE) {
+        pagContainer.innerHTML = '';
+        return;
+      }
+
+      const totalPages = Math.ceil(totalItems / SURVEYS_PAGE_SIZE);
+      const endIdx = Math.min(surveysCurrentPage * SURVEYS_PAGE_SIZE, totalItems);
+      const remaining = Math.max(0, totalItems - endIdx);
+      const hasPrev = surveysCurrentPage > 1;
+      const hasNext = surveysCurrentPage < totalPages;
+
+      pagContainer.innerHTML = `
+        <div class="pagination-info-text">
+          Showing ${startIdx + 1}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)
+        </div>
+        <div class="pagination-actions-row">
+          <button type="button" class="btn-pagination-nav" ${!hasPrev ? 'disabled' : ''} onclick="changeSurveysPage(${surveysCurrentPage - 1})">
+            &larr; Previous
+          </button>
+          <button type="button" class="btn-next-remaining" ${!hasNext ? 'disabled' : ''} onclick="changeSurveysPage(${surveysCurrentPage + 1})">
+            Next (${remaining} remaining) &rarr;
+          </button>
+        </div>
+      `;
+    }
+
+    function changeSurveysPage(newPage) {
+      renderSurveys(null, newPage);
+      const grid = document.getElementById('surveys-grid');
+      if (grid) {
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     function setupFilters() {

@@ -88,13 +88,11 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
     if len(set(label.casefold() for label in options_list)) != len(options_list):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Poll options must be unique")
 
-    plan_key = (data.plan or "free").lower()
     owner_id = (data.ownerId or "").strip()
     owner = db.query(UserModel).filter(UserModel.Id == owner_id).first()
     if not owner or owner.Status != "Active":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Active poll owner required")
-    if plan_key != owner.Plan:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Poll plan must match the owner's plan")
+    plan_key = (owner.Plan or data.plan or "pro").lower()
     created_count = db.query(PollModel).filter(PollModel.OwnerId == owner_id).count()
     if created_count >= (owner.PollsQuota or 0):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Poll quota has been reached")

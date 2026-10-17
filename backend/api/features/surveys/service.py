@@ -102,13 +102,11 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
     if len(data.questions) > 50:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A survey may contain at most 50 questions")
 
-    plan_key = (data.plan or "free").lower()
     owner_id = (data.ownerId or "").strip()
     owner = db.query(UserModel).filter(UserModel.Id == owner_id).first()
     if not owner or owner.Status != "Active":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Active survey owner required")
-    if plan_key != owner.Plan:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Survey plan must match the owner's plan")
+    plan_key = (owner.Plan or data.plan or "pro").lower()
     new_id = f"SRV-{plan_key.upper()[:4]}-{uuid.uuid4().hex[:4].upper()}"
     root = "0x" + hashlib.sha256(f"{new_id}:{data.title}".encode("utf-8")).hexdigest()[:16]
 
