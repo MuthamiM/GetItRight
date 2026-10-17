@@ -565,12 +565,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return Container(
       height: 50,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: const Color(0xFF4A4D54),
-          width: 1.0,
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xFF4A4D54),
+            width: 1.2,
+          ),
         ),
       ),
       alignment: Alignment.center,
