@@ -2836,17 +2836,27 @@
           const title = draft.title ? `"${esc(draft.title)}"` : 'Untitled Campaign';
           const timeAgo = getTimeAgo(draft.lastSavedAt);
           alertBox.innerHTML = `
-            <div style="background:var(--charcoal); color:var(--text-main); border-radius:14px; padding:16px 20px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:0 8px 24px rgba(48,48,48,0.2); border:1.5px solid rgba(229,229,229,0.25); border-left:5px solid var(--silver);">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <span style="font-size:20px;">📝</span>
+            <div style="background:#FFFFFF; color:#1F2023; border-radius:16px; padding:14px 20px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; box-shadow:0 2px 10px rgba(31,32,35,0.06); border:1px solid var(--border-color); border-left:4px solid var(--charcoal);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <div style="width:38px; height:38px; border-radius:10px; background:#F2F2F3; border:1px solid #D8D9DD; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2023" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </div>
                 <div>
-                  <div style="font-weight:700; font-size:13.5px; color:var(--text-main);">You have an unfinished draft in progress</div>
-                  <div style="font-size:12px; color:var(--text-sub); margin-top:2px;">Draft: <strong>${title}</strong> (${draft.type === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}) · Auto-saved ${timeAgo}</div>
+                  <div style="font-weight:700; font-size:13.5px; color:#1F2023; font-family:'Outfit', sans-serif; display:flex; align-items:center; gap:8px;">
+                    <span>You have an unfinished draft in progress</span>
+                    <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background:#E5E5E5; color:#1F2023; padding:2px 7px; border-radius:100px;">Auto-saved</span>
+                  </div>
+                  <div style="font-size:12px; color:#555555; margin-top:3px;">
+                    Draft: <strong style="color:#1F2023;">${title}</strong> (${draft.type === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}) · <span style="color:#888888;">Saved ${timeAgo}</span>
+                  </div>
                 </div>
               </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" onclick="localStorage.removeItem('gir_create_draft_${userId}'); localStorage.removeItem('gir_create_draft_guest'); checkSavedDraftAlert(); showTopRightToast('Draft Discarded', 'Your draft was removed.', 'info');" style="background:transparent; border:1px solid var(--border-color); color:var(--text-main); padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">Discard</button>
-                <a href="create.html" style="background:var(--silver); color:var(--charcoal); padding:6px 16px; border-radius:100px; font-size:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">Resume Draft &rarr;</a>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" onclick="localStorage.removeItem('gir_create_draft_${userId}'); localStorage.removeItem('gir_create_draft_guest'); checkSavedDraftAlert(); showTopRightToast('Draft Discarded', 'Your draft was removed.', 'info');" style="background:transparent; border:1px solid #B8BAC0; color:#555555; padding:7px 16px; border-radius:100px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#FDECEA'; this.style.color='#C62828'; this.style.borderColor='#EF9A9A';" onmouseout="this.style.background='transparent'; this.style.color='#555555'; this.style.borderColor='#B8BAC0';">Discard</button>
+                <a href="create.html" style="background:#1F2023; color:#FFFFFF; border:1px solid #1F2023; padding:7px 18px; border-radius:100px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(31,32,35,0.18); transition:all 0.15s ease;" onmouseover="this.style.background='#000000'; this.style.borderColor='#000000'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#1F2023'; this.style.borderColor='#1F2023'; this.style.transform='none';">Resume Draft &rarr;</a>
               </div>
             </div>
           `;

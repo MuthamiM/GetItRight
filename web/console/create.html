@@ -650,17 +650,25 @@
   <div class="wizard-container">
 
     <!-- DRAFT RECOVERY NOTIFICATION BANNER (STRICT LANDING PALETTE) -->
-    <div id="draft-recovery-banner" style="display:none;background:var(--charcoal);color:var(--silver);border-radius:14px;padding:16px 20px;margin-bottom:24px;border:1.5px solid rgba(229,229,229,0.25);border-left:5px solid var(--silver);box-shadow:0 4px 18px rgba(48,48,48,0.2);justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:20px;">📝</span>
+    <div id="draft-recovery-banner" style="display:none;background:#FFFFFF;color:#1F2023;border-radius:16px;padding:14px 20px;margin-bottom:24px;border:1px solid #B8BAC0;border-left:4px solid #1F2023;box-shadow:0 4px 16px rgba(31,32,35,0.05);justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#F2F2F3;border:1px solid #D8D9DD;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2023" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
         <div>
-          <div style="font-weight:700;font-size:13.5px;color:var(--silver);">Unfinished Draft Restored</div>
-          <div style="font-size:12px;color:rgba(229,229,229,0.75);" id="draft-recovery-time">Your previous campaign progress was automatically recovered.</div>
+          <div style="font-weight:700;font-size:13.5px;color:#1F2023;font-family:'Outfit', sans-serif;display:flex;align-items:center;gap:8px;">
+            <span>Unfinished Draft Restored</span>
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;background:#E5E5E5;color:#1F2023;padding:2px 7px;border-radius:100px;">Auto-saved</span>
+          </div>
+          <div style="font-size:12px;color:#555555;margin-top:3px;" id="draft-recovery-time">Your previous campaign progress was automatically recovered.</div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button type="button" onclick="discardSavedDraft()" style="background:transparent;border:1.5px solid rgba(229,229,229,0.3);color:var(--silver);padding:6px 14px;border-radius:100px;font-size:12px;cursor:pointer;font-weight:600;">Discard Draft</button>
-        <button type="button" onclick="document.getElementById('draft-recovery-banner').style.display='none'" style="background:var(--silver);color:var(--charcoal);border:none;padding:6px 16px;border-radius:100px;font-size:12px;cursor:pointer;font-weight:700;">Continue Editing</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" onclick="discardSavedDraft()" style="background:transparent;border:1px solid #B8BAC0;color:#555555;padding:7px 16px;border-radius:100px;font-size:12px;cursor:pointer;font-weight:600;transition:all 0.15s ease;" onmouseover="this.style.background='#FDECEA';this.style.color='#C62828';this.style.borderColor='#EF9A9A';" onmouseout="this.style.background='transparent';this.style.color='#555555';this.style.borderColor='#B8BAC0';">Discard Draft</button>
+        <button type="button" onclick="document.getElementById('draft-recovery-banner').style.display='none'" style="background:#1F2023;color:#FFFFFF;border:1px solid #1F2023;padding:7px 18px;border-radius:100px;font-size:12px;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(31,32,35,0.18);transition:all 0.15s ease;" onmouseover="this.style.background='#000000';this.style.borderColor='#000000';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#1F2023';this.style.borderColor='#1F2023';this.style.transform='none';">Continue Editing &rarr;</button>
       </div>
     </div>
 
