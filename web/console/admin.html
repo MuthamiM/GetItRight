@@ -479,34 +479,61 @@
       transform: none;
     }
 
-    /* View Toggle Group */
+    /* View Toggle Group - Compact, Sleek Inline Switcher */
     .view-toggle-group {
-      display: inline-flex;
-      background: #f0f0f0;
-      border: 1px solid var(--border-color, #dcdcdc);
-      border-radius: 100px;
-      padding: 2px;
-      gap: 2px;
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      background: #f0f0f0 !important;
+      border: 1px solid var(--border-color, #d0d0d0) !important;
+      border-radius: 8px !important;
+      padding: 2px !important;
+      gap: 2px !important;
+      flex-shrink: 0 !important;
+      height: 34px !important;
+      box-sizing: border-box !important;
     }
     .view-toggle-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: none;
-      background: transparent;
-      padding: 6px 14px;
-      border-radius: 100px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-sub, #555555);
-      cursor: pointer;
-      transition: all 0.15s ease;
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      padding: 0 11px !important;
+      height: 28px !important;
+      line-height: 28px !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: var(--text-sub, #555555) !important;
+      cursor: pointer !important;
+      white-space: nowrap !important;
+      transition: all 0.15s ease !important;
+      box-shadow: none !important;
+      margin: 0 !important;
     }
-    .view-toggle-btn svg { width: 14px; height: 14px; }
+    .view-toggle-btn svg {
+      width: 14px !important;
+      height: 14px !important;
+      min-width: 14px !important;
+      min-height: 14px !important;
+      max-width: 14px !important;
+      max-height: 14px !important;
+      display: inline-block !important;
+      stroke-width: 2 !important;
+      flex-shrink: 0 !important;
+    }
+    .view-toggle-btn:hover:not(.active) {
+      color: var(--text-main, #111111) !important;
+      background: #e2e2e2 !important;
+    }
     .view-toggle-btn.active {
-      background: var(--charcoal, #303030);
-      color: #ffffff;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      background: var(--charcoal, #303030) !important;
+      color: #ffffff !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18) !important;
     }
 
     /* Grid layouts for Polls & Surveys in Admin */
