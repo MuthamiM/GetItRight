@@ -23,17 +23,168 @@ class _LoginScreenState extends State<LoginScreen> {
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _nationalIdController = TextEditingController();
+  final _countyController = TextEditingController();
   final _orgController = TextEditingController();
   final _roleController = TextEditingController();
+
+  static const List<String> _kenyanCounties = [
+    'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa',
+    'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi',
+    'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu',
+    'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa',
+    'Murang\'a', 'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua',
+    'Nyeri', 'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi',
+    'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
+  ];
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _dobController.dispose();
+    _nationalIdController.dispose();
+    _countyController.dispose();
     _orgController.dispose();
     _roleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDob() async {
+    final now = DateTime.now();
+    final initial = DateTime(now.year - 20, now.month, now.day);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1920),
+      lastDate: now,
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: 'SELECT DATE OF BIRTH',
+      fieldLabelText: 'DOB (YYYY-MM-DD)',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFF2F2F3),
+              onPrimary: Color(0xFF1F2023),
+              surface: Color(0xFF2E3035),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF1F2023),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final formatted =
+          "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      setState(() {
+        _dobController.text = formatted;
+        _errorMessage = null;
+      });
+    }
+  }
+
+  Future<void> _pickCounty() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF1F2023),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        String filter = '';
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = _kenyanCounties
+                .where((c) => c.toLowerCase().contains(filter.toLowerCase()))
+                .toList();
+            return Container(
+              height: 480,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6B6E76),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Select County',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    onChanged: (val) => setModalState(() => filter = val),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'Search county...',
+                      hintStyle: const TextStyle(color: Color(0xFF8E929B)),
+                      prefixIcon: const Icon(Icons.search, color: Color(0xFF8E929B)),
+                      filled: true,
+                      fillColor: const Color(0xFF2E3035),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(color: Color(0x22FFFFFF), height: 1),
+                      itemBuilder: (context, index) {
+                        final county = filtered[index];
+                        final isSelected = _countyController.text == county;
+                        return ListTile(
+                          title: Text(
+                            county,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : const Color(0xFFD0D0D0),
+                              fontWeight:
+                                  isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(Icons.check, color: Colors.white, size: 20)
+                              : null,
+                          onTap: () => Navigator.of(context).pop(county),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (selected != null) {
+      setState(() {
+        _countyController.text = selected;
+        _errorMessage = null;
+      });
+    }
   }
 
   Future<void> _handleSubmit() async {
@@ -45,9 +196,28 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (_isSignUp && _fullNameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'Full name required');
-      return;
+    if (_isSignUp) {
+      if (_fullNameController.text.trim().isEmpty) {
+        setState(() => _errorMessage = 'Full name required');
+        return;
+      }
+      final dob = _dobController.text.trim();
+      if (dob.isEmpty) {
+        setState(() => _errorMessage = 'Date of birth required');
+        return;
+      }
+      if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(dob)) {
+        setState(() => _errorMessage = 'Date of birth must be YYYY-MM-DD');
+        return;
+      }
+      if (_nationalIdController.text.trim().isEmpty) {
+        setState(() => _errorMessage = 'National ID required');
+        return;
+      }
+      if (_countyController.text.trim().isEmpty) {
+        setState(() => _errorMessage = 'County required');
+        return;
+      }
     }
 
     setState(() {
@@ -63,6 +233,9 @@ class _LoginScreenState extends State<LoginScreen> {
           fullName: _fullNameController.text.trim(),
           email: email,
           password: password,
+          dob: _dobController.text.trim(),
+          nationalId: _nationalIdController.text.trim(),
+          county: _countyController.text.trim(),
           organization: _orgController.text.trim().isNotEmpty
               ? _orgController.text.trim()
               : 'Independent',
@@ -112,6 +285,11 @@ class _LoginScreenState extends State<LoginScreen> {
       final phone = userData['phone']?.toString() ?? userData['phoneNumber']?.toString() ?? '';
       if (phone.isNotEmpty) {
         await prefs.setString('gir_user_phone', phone);
+      }
+      if (_isSignUp) {
+        await prefs.setString('gir_user_dob', _dobController.text.trim());
+        await prefs.setString('gir_user_national_id', _nationalIdController.text.trim());
+        await prefs.setString('gir_user_county', _countyController.text.trim());
       }
 
       final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
@@ -437,6 +615,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 if (_isSignUp) ...[
                   const SizedBox(height: 14),
+                  // Date of Birth Field with forced format & calendar picker
+                  _buildPillInput(
+                    controller: _dobController,
+                    hint: 'Date of Birth (YYYY-MM-DD)',
+                    readOnly: true,
+                    onTap: _pickDob,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_month, color: Color(0xFFB8BAC0), size: 20),
+                      onPressed: _pickDob,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // National ID Field
+                  _buildPillInput(
+                    controller: _nationalIdController,
+                    hint: 'National ID Number',
+                    keyboardType: TextInputType.number,
+                    suffixIcon: const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(Icons.badge_outlined, color: Color(0xFFB8BAC0), size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // County Field with Searchable Bottom Sheet
+                  _buildPillInput(
+                    controller: _countyController,
+                    hint: 'Select County',
+                    readOnly: true,
+                    onTap: _pickCounty,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFB8BAC0), size: 24),
+                      onPressed: _pickCounty,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   _buildPillInput(
                     controller: _orgController,
                     hint: 'Organization Name (Optional)',
@@ -562,6 +775,9 @@ class _LoginScreenState extends State<LoginScreen> {
     required String hint,
     bool obscureText = false,
     TextInputType? keyboardType,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    Widget? suffixIcon,
   }) {
     return Container(
       height: 50,
@@ -574,13 +790,15 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.only(left: 24, right: suffixIcon != null ? 8 : 24),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
+        readOnly: readOnly,
+        onTap: onTap,
         textAlign: TextAlign.center,
-        enableInteractiveSelection: true,
+        enableInteractiveSelection: !readOnly,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 15,
@@ -604,7 +822,7 @@ class _LoginScreenState extends State<LoginScreen> {
           focusedErrorBorder: InputBorder.none,
           contentPadding: EdgeInsets.zero,
           isDense: true,
-          suffixIcon: null,
+          suffixIcon: suffixIcon,
           prefixIcon: null,
         ),
       ),

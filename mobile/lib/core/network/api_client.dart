@@ -209,6 +209,9 @@ class ApiClient {
     required String fullName,
     required String email,
     required String password,
+    String? dob,
+    String? nationalId,
+    String? county,
     String plan = 'free',
     String organization = 'Independent',
   }) async {
@@ -221,6 +224,9 @@ class ApiClient {
             'fullName': fullName.trim(),
             'email': email.trim(),
             'password': password,
+            'dob': dob,
+            'nationalId': nationalId,
+            'county': county,
             'plan': plan,
             'organization': organization,
             'role': 'Customer',
@@ -456,7 +462,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.4';
+    const currentAppVersion = '2.1.5';
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http

@@ -35,6 +35,9 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     phoneNumber: Optional[str] = None
+    dob: Optional[str] = None
+    nationalId: Optional[str] = None
+    county: Optional[str] = None
     organization: Optional[str] = "Independent"
     plan: Optional[str] = "free"
     ipAddress: Optional[str] = None
