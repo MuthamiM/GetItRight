@@ -37,21 +37,21 @@
       padding: 0;
       width: 100%;
       max-width: 100vw;
-      min-height: 100vh;
+      height: 100vh;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     .dashboard-frame {
       width: 100%;
       max-width: 100vw;
-      min-height: 100vh;
+      height: 100vh;
       margin: 0;
       background: var(--bg-shell);
       border-radius: 0;
       border: none;
       box-shadow: none;
-      overflow-x: hidden;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
     }
@@ -185,13 +185,13 @@
     .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--charcoal); color: var(--silver); font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
 
     /* Shell Main Layout */
-    .shell-body { display: flex; flex: 1; }
+    .shell-body { display: flex; flex: 1; height: calc(100vh - 68px); overflow: hidden; }
 
     /* Sidebar Navigation */
     .sidebar {
-      width: 250px; background: #FFFFFF; border-right: 1px solid var(--border-color);
+      width: 250px; height: 100%; background: #FFFFFF; border-right: 1px solid var(--border-color);
       padding: 24px 16px; display: flex; flex-direction: column; flex-shrink: 0;
-      transition: transform 0.3s ease;
+      overflow-y: auto; transition: transform 0.3s ease; box-sizing: border-box;
     }
     .sidebar-backdrop {
       display: none; position: fixed; inset: 0; background: rgba(48, 48, 48, 0.4);
@@ -212,7 +212,7 @@
     .sidebar-spacer { flex: 1; }
 
     /* Main Content Area */
-    .main-content { flex: 1; padding: 28px 32px 48px; background: var(--bg-shell); overflow-y: auto; min-width: 0; }
+    .main-content { flex: 1; height: 100%; padding: 28px 32px 48px; background: var(--bg-shell); overflow-y: auto; min-width: 0; box-sizing: border-box; }
 
     .page-title-bar { margin-bottom: 24px; }
     .page-title { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.4px; font-family: 'Outfit', sans-serif; }
@@ -397,6 +397,141 @@
       .settings-grid {
         grid-template-columns: 1fr !important;
       }
+    }
+
+    /* Bottom-Middle Pagination Controls */
+    .list-pagination-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 12px;
+      margin-top: 10px;
+      width: 100%;
+      text-align: center;
+    }
+    .pagination-info-text {
+      font-size: 12px;
+      color: var(--text-muted, #71717A);
+      font-weight: 500;
+    }
+    .pagination-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-next-remaining {
+      background: var(--charcoal, #303030);
+      color: #FFFFFF;
+      border: 1px solid var(--charcoal, #303030);
+      border-radius: 100px;
+      padding: 9px 24px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(48,48,48,0.12);
+    }
+    .btn-next-remaining:hover:not(:disabled) {
+      background: #111111;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn-next-remaining:disabled {
+      background: #e0e0e0;
+      border-color: #d0d0d0;
+      color: #888888;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .btn-pagination-nav {
+      background: #FFFFFF;
+      color: var(--charcoal, #303030);
+      border: 1px solid var(--border-color, #E4E4E7);
+      border-radius: 100px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+    .btn-pagination-nav:hover:not(:disabled) {
+      background: #f5f5f5;
+      border-color: #999999;
+      transform: translateY(-1px);
+    }
+    .btn-pagination-nav:disabled {
+      color: #aaa;
+      border-color: #e5e5e5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* View Toggle Group */
+    .view-toggle-group {
+      display: inline-flex;
+      background: #f0f0f0;
+      border: 1px solid var(--border-color, #dcdcdc);
+      border-radius: 100px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .view-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub, #555555);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .view-toggle-btn svg { width: 14px; height: 14px; }
+    .view-toggle-btn.active {
+      background: var(--charcoal, #303030);
+      color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    /* Grid layouts for Polls & Surveys in Admin */
+    .admin-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+      margin-top: 14px;
+    }
+    .admin-item-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color, #E4E4E7);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .admin-item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.07);
+      border-color: var(--charcoal, #303030);
     }
   </style>
 </head>
@@ -711,6 +846,7 @@
           <div class="bottom-card" style="margin-bottom:20px;">
             <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:14px;">Polls and Surveys</h3>
             <div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>ID</th><th>Title</th><th>Plan/Track</th><th>Count</th><th>Status</th></tr></thead><tbody id="database-content-tbody"></tbody></table></div>
+            <div class="list-pagination-center" id="database-content-pagination"></div>
           </div>
           <div class="bottom-card">
             <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin-bottom:14px;">Audit Checkpoints and Observers</h3>
@@ -720,10 +856,23 @@
 
         <!-- TAB: POLLS -->
         <div class="panel-tab" id="tab-polls">
-          <div class="page-title-bar">
-            <h1 class="page-title">Manage All Polls</h1>
+          <div class="page-title-bar" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h1 class="page-title">Manage All Polls</h1>
+              <div class="page-desc">Inspect sovereign polls, vote tallies, category allocation, and cryptographic status.</div>
+            </div>
+            <div class="view-toggle-group">
+              <button type="button" class="view-toggle-btn active" id="btn-admin-polls-list" onclick="setAdminPollsViewMode('list')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                List
+              </button>
+              <button type="button" class="view-toggle-btn" id="btn-admin-polls-grid" onclick="setAdminPollsViewMode('grid')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Grid
+              </button>
+            </div>
           </div>
-          <div class="bottom-card">
+          <div class="bottom-card" id="admin-polls-list-view">
             <div class="table-responsive">
               <table class="data-table">
                 <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Plan</th><th>Votes</th><th>Status</th></tr></thead>
@@ -731,6 +880,8 @@
               </table>
             </div>
           </div>
+          <div id="admin-polls-grid-view" hidden class="admin-cards-grid"></div>
+          <div class="list-pagination-center" id="polls-pagination"></div>
         </div>
 
         <!-- TAB: SURVEYS -->
@@ -740,7 +891,19 @@
               <h1 class="page-title">Manage All Surveys</h1>
               <div class="page-desc">Author surveys with choice options or open free-text input fields.</div>
             </div>
-            <button class="btn-create" onclick="openCreateModal('survey')">+ Create Survey</button>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <div class="view-toggle-group">
+                <button type="button" class="view-toggle-btn active" id="btn-admin-surveys-list" onclick="setAdminSurveysViewMode('list')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                  List
+                </button>
+                <button type="button" class="view-toggle-btn" id="btn-admin-surveys-grid" onclick="setAdminSurveysViewMode('grid')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  Grid
+                </button>
+              </div>
+              <button class="btn-create" onclick="openCreateModal('survey')">+ Create Survey</button>
+            </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0;">
             <select id="admin-export-client" class="select-dropdown"><option value="">All clients</option></select>
@@ -748,7 +911,7 @@
             <button class="btn-create" onclick="exportAdminSurveyReport()">Export survey responses</button>
             <button class="btn-create" onclick="exportAdminPollReport()">Export poll results</button>
           </div>
-          <div class="bottom-card">
+          <div class="bottom-card" id="admin-surveys-list-view">
             <div class="table-responsive">
               <table class="data-table">
                 <thead><tr><th>ID</th><th>Title</th><th>Track</th><th>Responses</th><th>Target</th><th>Questions Type</th><th>Status</th></tr></thead>
@@ -756,6 +919,8 @@
               </table>
             </div>
           </div>
+          <div id="admin-surveys-grid-view" hidden class="admin-cards-grid"></div>
+          <div class="list-pagination-center" id="surveys-pagination"></div>
         </div>
 
         <!-- TAB: ROLES -->
@@ -780,6 +945,7 @@
                 <tbody id="roles-users-tbody"><tr><td colspan="6">Loading user roles...</td></tr></tbody>
               </table>
             </div>
+            <div class="list-pagination-center" id="roles-users-pagination"></div>
           </div>
         </div>
 
@@ -793,6 +959,7 @@
                 <tbody id="users-table-tbody"><tr><td colspan="7">Loading users...</td></tr></tbody>
               </table>
             </div>
+            <div class="list-pagination-center" id="users-pagination"></div>
           </div>
         </div>
 
@@ -806,6 +973,7 @@
                 <tbody id="checkpoints-table-tbody"><tr><td colspan="5">Loading checkpoints...</td></tr></tbody>
               </table>
             </div>
+            <div class="list-pagination-center" id="checkpoints-pagination"></div>
           </div>
         </div>
 
@@ -839,6 +1007,7 @@
                 <tbody id="observers-table-tbody"><tr><td colspan="8">Loading observers...</td></tr></tbody>
               </table>
             </div>
+            <div class="list-pagination-center" id="observers-pagination"></div>
           </div>
         </div>
 
@@ -1488,7 +1657,8 @@
     function initWebSocketNotifications() {
       try {
         const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${proto}//${window.location.host}/ws/votes`;
+        const wsPort = window.location.port === '8090' ? '5000' : (window.location.port || (window.location.protocol === 'https:' ? '443' : '80'));
+        const wsUrl = `${proto}//${window.location.hostname}:${wsPort}/ws/votes`;
         const ws = new WebSocket(wsUrl);
         ws.onmessage = function(e) {
           try {
@@ -1553,8 +1723,8 @@
     async function loadAllData() {
       try {
         const [pRes, sRes, uRes, cRes, rRes, dsRes, oRes] = await Promise.all([
-          fetch(`${API}/polls`),
-          fetch(`${API}/surveys`),
+          fetch(`${API}/polls?include_all=true`),
+          fetch(`${API}/surveys?include_all=true`),
           fetch(`${API}/users`),
           fetch(`${API}/checkpoints`),
           fetch(`${API}/users/roles`).catch(() => null),
@@ -2400,15 +2570,294 @@
         </div>
       `).join('');
 
-      const rTbody = document.getElementById('roles-users-tbody');
-      if (rTbody && users.length) {
-        rTbody.innerHTML = users.map(u => `
+      renderAdminRolesUsers();
+    }
+
+    // === ADMIN PAGINATION & VIEW SWITCHER ENGINE ===
+    function renderAdminPaginationControls({ containerId, totalItems, currentPage, pageSize = 10, onPageChange }) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (!totalItems || totalItems <= pageSize) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'flex';
+      const totalPages = Math.ceil(totalItems / pageSize);
+      const startIdx = (currentPage - 1) * pageSize + 1;
+      const endIdx = Math.min(currentPage * pageSize, totalItems);
+      const remaining = Math.max(0, totalItems - endIdx);
+
+      let buttons = '';
+      if (currentPage > 1) {
+        buttons += `<button type="button" class="btn-pagination-nav" onclick="${onPageChange}(${currentPage - 1})">&larr; Previous</button>`;
+      }
+      if (remaining > 0) {
+        buttons += `<button type="button" class="btn-next-remaining" onclick="${onPageChange}(${currentPage + 1})">Next (${remaining} remaining) &rarr;</button>`;
+      } else if (totalPages > 1) {
+        buttons += `<button type="button" class="btn-next-remaining" disabled>All items viewed (${totalItems})</button>`;
+      }
+
+      container.innerHTML = `
+        <div class="pagination-info-text">Showing ${startIdx}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)</div>
+        <div class="pagination-actions-row">${buttons}</div>
+      `;
+    }
+
+    function isVoterAccount(u) {
+      if (!u) return false;
+      const role = (u.role || '').toLowerCase();
+      const plan = (u.plan || '').toLowerCase();
+      return role === 'voter' || role === 'citizen' || plan === 'voter' || Boolean(u.isTemp);
+    }
+
+    let adminPollsViewMode = 'list';
+    let adminPollsCurrentPage = 1;
+
+    let adminSurveysViewMode = 'list';
+    let adminSurveysCurrentPage = 1;
+
+    let adminUsersCurrentPage = 1;
+    let adminRolesUsersCurrentPage = 1;
+    let adminCheckpointsCurrentPage = 1;
+    let adminObserversCurrentPage = 1;
+    let adminDbContentCurrentPage = 1;
+
+    window.setAdminPollsViewMode = function(mode) {
+      adminPollsViewMode = mode;
+      document.getElementById('btn-admin-polls-list')?.classList.toggle('active', mode === 'list');
+      document.getElementById('btn-admin-polls-grid')?.classList.toggle('active', mode === 'grid');
+      renderAdminPolls();
+    };
+
+    window.changeAdminPollsPage = function(page) {
+      adminPollsCurrentPage = page;
+      renderAdminPolls();
+      document.getElementById('tab-polls')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.setAdminSurveysViewMode = function(mode) {
+      adminSurveysViewMode = mode;
+      document.getElementById('btn-admin-surveys-list')?.classList.toggle('active', mode === 'list');
+      document.getElementById('btn-admin-surveys-grid')?.classList.toggle('active', mode === 'grid');
+      renderAdminSurveys();
+    };
+
+    window.changeAdminSurveysPage = function(page) {
+      adminSurveysCurrentPage = page;
+      renderAdminSurveys();
+      document.getElementById('tab-surveys')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.changeAdminUsersPage = function(page) {
+      adminUsersCurrentPage = page;
+      renderAdminUsers();
+    };
+
+    window.changeAdminRolesUsersPage = function(page) {
+      adminRolesUsersCurrentPage = page;
+      renderAdminRolesUsers();
+    };
+
+    window.changeAdminCheckpointsPage = function(page) {
+      adminCheckpointsCurrentPage = page;
+      renderAdminCheckpoints();
+    };
+
+    window.changeAdminObserversPage = function(page) {
+      adminObserversCurrentPage = page;
+      renderAdminObservers();
+    };
+
+    window.changeAdminDbContentPage = function(page) {
+      adminDbContentCurrentPage = page;
+      renderDatabaseRecords();
+    };
+
+    function renderAdminPollCard(p) {
+      const isLive = (p.status || '').toLowerCase() === 'live';
+      const badgeStyle = isLive ? '' : 'background:#dedede;color:#666;border:1px solid #ccc;';
+      const badgeLabel = isLive ? 'Active' : (p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1) : 'Archived');
+      return `
+        <div class="admin-item-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <span style="font-family:monospace; font-size:11px; font-weight:700; color:var(--text-sub);">${p.id}</span>
+            <span class="badge-pill" style="${badgeStyle}">${badgeLabel}</span>
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px; font-size:15px; font-weight:800; color:var(--charcoal);">${escapeHtml(p.title)}</h4>
+            <div style="font-size:12px; color:var(--text-sub);">Category: <strong>${escapeHtml(p.category || 'General')}</strong> &bull; Plan: <strong>${escapeHtml(p.plan || 'Default')}</strong></div>
+          </div>
+          <div style="background:#f9f9f9; border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; color:var(--text-sub); font-weight:600;">Total Ballots Cast</span>
+            <strong style="font-size:16px; color:var(--charcoal);">${(p.totalVotes || 0).toLocaleString()}</strong>
+          </div>
+          <div style="display:flex; justify-content:flex-end;">
+            <a href="../pages/vote.html?poll_id=${encodeURIComponent(p.id)}" target="_blank" class="action-btn" style="text-decoration:none; padding:6px 14px; font-size:12px; border-radius:100px;">Open Vote Page &rarr;</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdminSurveyCard(s) {
+      const hasInput = (s.questions || []).some(q => !q.options || q.options.length === 0 || q.questionType === 'text');
+      const qTypeLabel = hasInput ? 'Choice + Input Field' : 'Typed Choices';
+      const isActive = (s.status || '').toLowerCase() === 'active';
+      const badgeStyle = isActive ? '' : 'background:#dedede;color:#666;border:1px solid #ccc;';
+      const badgeLabel = isActive ? 'Active' : (s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Closed');
+      return `
+        <div class="admin-item-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <span style="font-family:monospace; font-size:11px; font-weight:700; color:var(--text-sub);">${s.id}</span>
+            <span class="badge-pill" style="${badgeStyle}">${badgeLabel}</span>
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px; font-size:15px; font-weight:800; color:var(--charcoal);">${escapeHtml(s.title)}</h4>
+            <div style="font-size:12px; color:var(--text-sub);">Track: <strong>${escapeHtml(s.track || 'General')}</strong> &bull; Target: <strong>${s.targetResponses || 100}</strong></div>
+          </div>
+          <div style="background:#f9f9f9; border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-size:11px; color:var(--text-sub);">Responses</span>
+              <div style="font-size:16px; font-weight:800; color:var(--charcoal);">${(s.totalResponses || 0).toLocaleString()}</div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:var(--charcoal);background:var(--silver);padding:3px 10px;border-radius:100px;">${qTypeLabel}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdminPolls() {
+      const listView = document.getElementById('admin-polls-list-view');
+      const gridView = document.getElementById('admin-polls-grid-view');
+      const pTbody = document.getElementById('polls-table-tbody');
+      if (!pTbody || !gridView) return;
+
+      if (!polls.length) {
+        pTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;">No polls found.</td></tr>';
+        gridView.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;">No polls found.</div>';
+        renderAdminPaginationControls({ containerId: 'polls-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = polls.length;
+      const startIdx = (adminPollsCurrentPage - 1) * pageSize;
+      const pageItems = polls.slice(startIdx, startIdx + pageSize);
+
+      if (adminPollsViewMode === 'list') {
+        if (listView) listView.hidden = false;
+        gridView.hidden = true;
+        pTbody.innerHTML = pageItems.map(p => {
+          const isLive = (p.status || '').toLowerCase() === 'live';
+          const badgeStyle = isLive ? '' : 'background:#dedede;color:#666;border:1px solid #ccc;';
+          const badgeLabel = isLive ? 'Active' : (p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1) : 'Archived');
+          return `
+            <tr>
+              <td style="font-family:monospace;font-weight:700;">${p.id}</td>
+              <td style="font-weight:700;">${escapeHtml(p.title)}</td>
+              <td>${escapeHtml(p.category || 'General')}</td>
+              <td>${escapeHtml(p.plan || 'Default')}</td>
+              <td style="font-weight:700;">${(p.totalVotes || 0).toLocaleString()}</td>
+              <td><span class="badge-pill" style="${badgeStyle}">${badgeLabel}</span></td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        if (listView) listView.hidden = true;
+        gridView.hidden = false;
+        gridView.innerHTML = pageItems.map(renderAdminPollCard).join('');
+      }
+
+      renderAdminPaginationControls({
+        containerId: 'polls-pagination',
+        totalItems: totalItems,
+        currentPage: adminPollsCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeAdminPollsPage'
+      });
+    }
+
+    function renderAdminSurveys() {
+      const listView = document.getElementById('admin-surveys-list-view');
+      const gridView = document.getElementById('admin-surveys-grid-view');
+      const sTbody = document.getElementById('surveys-table-tbody');
+      if (!sTbody || !gridView) return;
+
+      if (!surveys.length) {
+        sTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">No surveys found.</td></tr>';
+        gridView.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;">No surveys found.</div>';
+        renderAdminPaginationControls({ containerId: 'surveys-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = surveys.length;
+      const startIdx = (adminSurveysCurrentPage - 1) * pageSize;
+      const pageItems = surveys.slice(startIdx, startIdx + pageSize);
+
+      if (adminSurveysViewMode === 'list') {
+        if (listView) listView.hidden = false;
+        gridView.hidden = true;
+        sTbody.innerHTML = pageItems.map(s => {
+          const hasInput = (s.questions || []).some(q => !q.options || q.options.length === 0 || q.questionType === 'text');
+          const qTypeLabel = hasInput ? 'Choice + Input Field' : 'Typed Choices';
+          const isActive = (s.status || '').toLowerCase() === 'active';
+          const badgeStyle = isActive ? '' : 'background:#dedede;color:#666;border:1px solid #ccc;';
+          const badgeLabel = isActive ? 'Active' : (s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1) : 'Closed');
+          return `
+            <tr>
+              <td style="font-family:monospace;font-weight:700;">${s.id}</td>
+              <td style="font-weight:700;">${escapeHtml(s.title)}</td>
+              <td>${escapeHtml(s.track || 'General')}</td>
+              <td style="font-weight:700;">${(s.totalResponses || 0).toLocaleString()}</td>
+              <td>${s.targetResponses || 100}</td>
+              <td><span style="font-size:11px;font-weight:700;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">${qTypeLabel}</span></td>
+              <td><span class="badge-pill" style="${badgeStyle}">${badgeLabel}</span></td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        if (listView) listView.hidden = true;
+        gridView.hidden = false;
+        gridView.innerHTML = pageItems.map(renderAdminSurveyCard).join('');
+      }
+
+      renderAdminPaginationControls({
+        containerId: 'surveys-pagination',
+        totalItems: totalItems,
+        currentPage: adminSurveysCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeAdminSurveysPage'
+      });
+    }
+
+    function renderAdminUsers() {
+      const uTbody = document.getElementById('users-table-tbody');
+      if (!uTbody) return;
+      const activeUsers = users.filter(u => !isVoterAccount(u));
+      if (!activeUsers.length) {
+        uTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">No user accounts found.</td></tr>';
+        renderAdminPaginationControls({ containerId: 'users-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = activeUsers.length;
+      const startIdx = (adminUsersCurrentPage - 1) * pageSize;
+      const pageItems = activeUsers.slice(startIdx, startIdx + pageSize);
+
+      uTbody.innerHTML = pageItems.map(u => {
+        const isActive = (u.status || '').toLowerCase() === 'active';
+        const statusBadge = isActive
+          ? '<span class="badge-pill">Active</span>'
+          : '<span class="badge-pill" style="background:#dedede;color:#666;border:1px solid #ccc;">Disabled</span>';
+        return `
           <tr>
             <td style="font-family:monospace;font-weight:700;">${u.id}</td>
-            <td style="font-weight:700;">${u.fullName}</td>
-            <td>${u.email}</td>
+            <td style="font-weight:700;">${escapeHtml(u.fullName)}</td>
+            <td>${escapeHtml(u.email)}</td>
             <td>
-              <select style="padding:4px 10px;border-radius:8px;border:1px solid var(--border-color);font-size:12px;font-weight:700;color:var(--text-main);" onchange="updateUserRole('${u.id}', this.value)">
+              <select style="padding:4px 8px;border-radius:8px;border:1px solid var(--border-color);font-size:12px;font-weight:700;color:var(--text-main);" onchange="updateUserRole('${u.id}', this.value)">
                 <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>
                 <option value="Analyst" ${u.role==='Analyst'?'selected':''}>Analyst</option>
                 <option value="Auditor" ${u.role==='Auditor'?'selected':''}>Auditor</option>
@@ -2417,11 +2866,133 @@
                 <option value="Customer" ${u.role==='Customer'?'selected':''}>Customer</option>
               </select>
             </td>
-            <td><span style="font-weight:700;font-size:11px;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">${u.plan}</span></td>
-            <td><span class="badge-pill">Active</span></td>
+            <td>${statusBadge}</td>
+            <td>${escapeHtml(u.plan || '')}</td>
+            <td style="font-family:monospace;color:var(--text-main);font-weight:700;">${u.ipAddress || '—'}</td>
           </tr>
-        `).join('');
+        `;
+      }).join('');
+
+      renderAdminPaginationControls({
+        containerId: 'users-pagination',
+        totalItems: totalItems,
+        currentPage: adminUsersCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeAdminUsersPage'
+      });
+    }
+
+    function renderAdminRolesUsers() {
+      const rTbody = document.getElementById('roles-users-tbody');
+      if (!rTbody) return;
+      const activeUsers = users.filter(u => !isVoterAccount(u));
+      if (!activeUsers.length) {
+        rTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;">No role assignments found.</td></tr>';
+        renderAdminPaginationControls({ containerId: 'roles-users-pagination', totalItems: 0, currentPage: 1 });
+        return;
       }
+
+      const pageSize = 10;
+      const totalItems = activeUsers.length;
+      const startIdx = (adminRolesUsersCurrentPage - 1) * pageSize;
+      const pageItems = activeUsers.slice(startIdx, startIdx + pageSize);
+
+      rTbody.innerHTML = pageItems.map(u => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;">${u.id}</td>
+          <td style="font-weight:700;">${escapeHtml(u.fullName)}</td>
+          <td>${escapeHtml(u.email)}</td>
+          <td>
+            <select style="padding:4px 10px;border-radius:8px;border:1px solid var(--border-color);font-size:12px;font-weight:700;color:var(--text-main);" onchange="updateUserRole('${u.id}', this.value)">
+              <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>
+              <option value="Analyst" ${u.role==='Analyst'?'selected':''}>Analyst</option>
+              <option value="Auditor" ${u.role==='Auditor'?'selected':''}>Auditor</option>
+              <option value="Enterprise Publisher" ${u.role==='Enterprise Publisher'?'selected':''}>Enterprise Publisher</option>
+              <option value="Civic Pro" ${u.role==='Civic Pro'?'selected':''}>Civic Pro</option>
+              <option value="Customer" ${u.role==='Customer'?'selected':''}>Customer</option>
+            </select>
+          </td>
+          <td><span style="font-weight:700;font-size:11px;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">${escapeHtml(u.plan || '')}</span></td>
+          <td><span class="badge-pill">Active</span></td>
+        </tr>
+      `).join('');
+
+      renderAdminPaginationControls({
+        containerId: 'roles-users-pagination',
+        totalItems: totalItems,
+        currentPage: adminRolesUsersCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeAdminRolesUsersPage'
+      });
+    }
+
+    function renderAdminCheckpoints() {
+      const cTbody = document.getElementById('checkpoints-table-tbody');
+      if (!cTbody) return;
+      if (!checkpoints.length) {
+        cTbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;">No audit checkpoints recorded yet.</td></tr>';
+        renderAdminPaginationControls({ containerId: 'checkpoints-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = checkpoints.length;
+      const startIdx = (adminCheckpointsCurrentPage - 1) * pageSize;
+      const pageItems = checkpoints.slice(startIdx, startIdx + pageSize);
+
+      cTbody.innerHTML = pageItems.map(c => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;">${c.checkpointId}</td>
+          <td style="font-family:monospace;font-size:10px;">${c.merkleRootHash}</td>
+          <td>${c.submissionsCount}</td>
+          <td>${c.bitcoinBlockHeight}</td>
+          <td><span class="badge-pill">${c.status}</span></td>
+        </tr>
+      `).join('');
+
+      renderAdminPaginationControls({
+        containerId: 'checkpoints-pagination',
+        totalItems: totalItems,
+        currentPage: adminCheckpointsCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeAdminCheckpointsPage'
+      });
+    }
+
+    function renderAdminObservers() {
+      const oTbody = document.getElementById('observers-table-tbody');
+      if (!oTbody) return;
+      if (!observers.length) {
+        oTbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;">No observers recorded yet.</td></tr>';
+        renderAdminPaginationControls({ containerId: 'observers-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = observers.length;
+      const startIdx = (adminObserversCurrentPage - 1) * pageSize;
+      const pageItems = observers.slice(startIdx, startIdx + pageSize);
+
+      oTbody.innerHTML = pageItems.map(o => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;">${o.observerId}</td>
+          <td style="font-weight:700;">${escapeHtml(o.name || 'Observer')}</td>
+          <td>${escapeHtml(o.stationCode || o.station || 'Station')}</td>
+          <td>${escapeHtml(o.hardware || 'TPM 2.0')}</td>
+          <td>${escapeHtml(o.keystore || 'Ed25519')}</td>
+          <td style="font-family:monospace;font-size:10px;">${escapeHtml(o.publicKeyFingerprint || '—')}</td>
+          <td>${o.batteryLevel ? `${o.batteryLevel}%` : '100%'}</td>
+          <td><span class="badge-pill">${o.status || 'Active'}</span></td>
+        </tr>
+      `).join('');
+
+      renderAdminPaginationControls({
+        containerId: 'observers-pagination',
+        totalItems: totalItems,
+        currentPage: adminObserversCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeAdminObserversPage'
+      });
     }
 
     async function exportAdminSurveyReport() {
@@ -2458,77 +3029,13 @@
       const clientSelect = document.getElementById('admin-export-client');
       if (clientSelect) {
         clientSelect.innerHTML = '<option value="">All clients</option>' +
-          users.filter(u => u.role !== 'Admin').map(u => `<option value="${u.id}">${escapeHtml(u.fullName)} (${escapeHtml(u.email)})</option>`).join('');
+          users.filter(u => u.role !== 'Admin' && !isVoterAccount(u)).map(u => `<option value="${u.id}">${escapeHtml(u.fullName)} (${escapeHtml(u.email)})</option>`).join('');
       }
-      const pTbody = document.getElementById('polls-table-tbody');
-      if (pTbody && polls.length) {
-        pTbody.innerHTML = polls.map(p => `
-          <tr>
-            <td style="font-family:monospace;font-weight:700;">${p.id}</td>
-            <td style="font-weight:700;">${p.title}</td>
-            <td>${p.category||'General'}</td>
-            <td>${p.plan}</td>
-            <td style="font-weight:700;">${(p.totalVotes||0).toLocaleString()}</td>
-            <td><span class="badge-pill">Active</span></td>
-          </tr>
-        `).join('');
-      }
-
-      const sTbody = document.getElementById('surveys-table-tbody');
-      if (sTbody && surveys.length) {
-        sTbody.innerHTML = surveys.map(s => {
-          const hasInput = (s.questions || []).some(q => !q.options || q.options.length === 0 || q.questionType === 'text');
-          const qTypeLabel = hasInput ? 'Choice + Input Field' : 'Typed Choices';
-          return `
-            <tr>
-              <td style="font-family:monospace;font-weight:700;">${s.id}</td>
-              <td style="font-weight:700;">${s.title}</td>
-              <td>${s.track||'General'}</td>
-              <td style="font-weight:700;">${(s.totalResponses||0).toLocaleString()}</td>
-              <td>${s.targetResponses||100}</td>
-              <td><span style="font-size:11px;font-weight:700;color:var(--charcoal);background:var(--silver);padding:2px 8px;border-radius:100px;">${qTypeLabel}</span></td>
-              <td><span class="badge-pill">Active</span></td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      const uTbody = document.getElementById('users-table-tbody');
-      if (uTbody && users.length) {
-        uTbody.innerHTML = users.map(u => `
-          <tr>
-            <td style="font-family:monospace;font-weight:700;">${u.id}</td>
-            <td style="font-weight:700;">${u.fullName}</td>
-            <td>${u.email}</td>
-            <td>
-              <select style="padding:4px 8px;border-radius:8px;border:1px solid var(--border-color);font-size:12px;font-weight:700;color:var(--text-main);" onchange="updateUserRole('${u.id}', this.value)">
-                <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>
-                <option value="Analyst" ${u.role==='Analyst'?'selected':''}>Analyst</option>
-                <option value="Auditor" ${u.role==='Auditor'?'selected':''}>Auditor</option>
-                <option value="Enterprise Publisher" ${u.role==='Enterprise Publisher'?'selected':''}>Enterprise Publisher</option>
-                <option value="Civic Pro" ${u.role==='Civic Pro'?'selected':''}>Civic Pro</option>
-                <option value="Customer" ${u.role==='Customer'?'selected':''}>Customer</option>
-              </select>
-            </td>
-            <td>${u.plan}</td>
-            <td style="font-family:monospace;color:var(--text-main);font-weight:700;">${u.ipAddress||'—'}</td>
-            <td>${(u.latitude && u.longitude)? `${u.latitude}, ${u.longitude}` : '—'}</td>
-          </tr>
-        `).join('');
-      }
-
-      const cTbody = document.getElementById('checkpoints-table-tbody');
-      if (cTbody && checkpoints.length) {
-        cTbody.innerHTML = checkpoints.map(c => `
-          <tr>
-            <td style="font-family:monospace;font-weight:700;">${c.checkpointId}</td>
-            <td style="font-family:monospace;font-size:10px;">${c.merkleRootHash}</td>
-            <td>${c.submissionsCount}</td>
-            <td>${c.bitcoinBlockHeight}</td>
-            <td><span class="badge-pill">${c.status}</span></td>
-          </tr>
-        `).join('');
-      }
+      renderAdminPolls();
+      renderAdminSurveys();
+      renderAdminUsers();
+      renderAdminCheckpoints();
+      renderAdminObservers();
     }
 
     function renderDatabaseRecords() {
@@ -2536,27 +3043,41 @@
         const el = document.getElementById(id);
         if (el) el.textContent = value.toLocaleString();
       };
-      count('db-count-users', users.length);
+      const activeUsers = users.filter(u => !isVoterAccount(u));
+      count('db-count-users', activeUsers.length);
       count('db-count-polls', polls.length);
       count('db-count-surveys', surveys.length);
       count('db-count-checkpoints', checkpoints.length);
 
       const usersBody = document.getElementById('database-users-tbody');
       if (usersBody) {
-        usersBody.innerHTML = users.length ? users.map(u => `
-          <tr><td style="font-family:monospace;font-weight:700;">${u.id}</td><td>${u.fullName}</td><td>${u.email}</td><td>${u.role}</td><td>${u.plan}</td><td><span class="badge-pill">${u.status || 'Active'}</span></td></tr>
+        usersBody.innerHTML = activeUsers.length ? activeUsers.map(u => `
+          <tr><td style="font-family:monospace;font-weight:700;">${u.id}</td><td>${escapeHtml(u.fullName)}</td><td>${escapeHtml(u.email)}</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(u.plan)}</td><td><span class="badge-pill">${u.status || 'Active'}</span></td></tr>
         `).join('') : '<tr><td colspan="6">No user records found.</td></tr>';
       }
 
       const contentBody = document.getElementById('database-content-tbody');
       if (contentBody) {
         const pollRows = polls.map(p => `
-          <tr><td>Poll</td><td style="font-family:monospace;font-weight:700;">${p.id}</td><td>${p.title}</td><td>${p.plan || 'General'}</td><td>${(p.totalVotes || 0).toLocaleString()} votes</td><td><span class="badge-pill">Active</span></td></tr>
+          <tr><td>Poll</td><td style="font-family:monospace;font-weight:700;">${p.id}</td><td>${escapeHtml(p.title)}</td><td>${escapeHtml(p.plan || 'General')}</td><td>${(p.totalVotes || 0).toLocaleString()} votes</td><td><span class="badge-pill">Active</span></td></tr>
         `);
         const surveyRows = surveys.map(s => `
-          <tr><td>Survey</td><td style="font-family:monospace;font-weight:700;">${s.id}</td><td>${s.title}</td><td>${s.track || 'General'}</td><td>${(s.totalResponses || 0).toLocaleString()} responses</td><td><span class="badge-pill">Active</span></td></tr>
+          <tr><td>Survey</td><td style="font-family:monospace;font-weight:700;">${s.id}</td><td>${escapeHtml(s.title)}</td><td>${escapeHtml(s.track || 'General')}</td><td>${(s.totalResponses || 0).toLocaleString()} responses</td><td><span class="badge-pill">Active</span></td></tr>
         `);
-        contentBody.innerHTML = pollRows.concat(surveyRows).join('') || '<tr><td colspan="6">No poll or survey records found.</td></tr>';
+        const allContent = pollRows.concat(surveyRows);
+        const pageSize = 10;
+        const totalItems = allContent.length;
+        const startIdx = (adminDbContentCurrentPage - 1) * pageSize;
+        const pageItems = allContent.slice(startIdx, startIdx + pageSize);
+
+        contentBody.innerHTML = pageItems.join('') || '<tr><td colspan="6">No poll or survey records found.</td></tr>';
+        renderAdminPaginationControls({
+          containerId: 'database-content-pagination',
+          totalItems: totalItems,
+          currentPage: adminDbContentCurrentPage,
+          pageSize: pageSize,
+          onPageChange: 'changeAdminDbContentPage'
+        });
       }
 
       const auditBody = document.getElementById('database-audit-tbody');
@@ -2565,7 +3086,7 @@
           <tr><td>Checkpoint</td><td style="font-family:monospace;font-weight:700;">${c.checkpointId}</td><td style="font-family:monospace;font-size:10px;">${c.merkleRootHash}</td><td>${c.submissionsCount}</td><td><span class="badge-pill">${c.status}</span></td></tr>
         `);
         const observerRows = observers.map(o => `
-          <tr><td>Observer</td><td style="font-family:monospace;font-weight:700;">${o.observerId}</td><td>${o.name || '—'}</td><td>${o.stationCode || o.station || '—'}</td><td><span class="badge-pill">${o.status || 'Unknown'}</span></td></tr>
+          <tr><td>Observer</td><td style="font-family:monospace;font-weight:700;">${o.observerId}</td><td>${escapeHtml(o.name || '—')}</td><td>${escapeHtml(o.stationCode || o.station || '—')}</td><td><span class="badge-pill">${o.status || 'Unknown'}</span></td></tr>
         `);
         auditBody.innerHTML = checkpointRows.concat(observerRows).join('') || '<tr><td colspan="5">No audit records found.</td></tr>';
       }

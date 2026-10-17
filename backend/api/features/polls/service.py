@@ -55,13 +55,19 @@ def map_poll_to_out(p: PollModel) -> PollOut:
         is_multiple_choice=False
     )
 
-def list_polls(db: Session, plan: Optional[str] = None) -> List[PollOut]:
+def list_polls(db: Session, plan: Optional[str] = None, status: Optional[str] = None, include_all: bool = False) -> List[PollOut]:
     query = db.query(PollModel)
+    if not include_all:
+        if status:
+            query = query.filter(PollModel.Status == status.lower())
+        else:
+            query = query.filter(PollModel.Status == "live")
+    elif status and status.lower() != "all":
+        query = query.filter(PollModel.Status == status.lower())
     if plan:
         query = query.filter(PollModel.Plan == plan.lower())
     polls = query.all()
-    # Prioritize Kitui East / Zak Syengo poll at the top of the feed
-    polls_sorted = sorted(polls, key=lambda p: 0 if p.Id == "PL-KITUI-EAST-2027" else 1)
+    polls_sorted = sorted(polls, key=lambda p: (0 if p.Status == "live" else 1, p.CreatedAt or ""), reverse=False)
     return [map_poll_to_out(p) for p in polls_sorted]
 
 def get_poll_by_id(db: Session, poll_id: str) -> PollOut:

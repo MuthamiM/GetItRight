@@ -58,6 +58,204 @@
       main { padding: 16px; }
       .grid { grid-template-columns: 1fr; }
     }
+
+    /* Notification Bell & Dropdown for Clients */
+    .nav-icon-btn {
+      position: relative; width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid #d0d0d0; background: #FFFFFF;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #555; flex-shrink: 0; padding: 0 !important;
+      transition: all 0.15s ease;
+    }
+    .nav-icon-btn:hover { background: #f0f0f0; color: #303030; }
+    .nav-icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .notif-badge { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: #e53e3e; border: 2px solid #FFFFFF; display: none; }
+    .notif-badge.has-notif { display: block; animation: notifPulse 2s infinite; }
+    @keyframes notifPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+
+    .notif-dropdown {
+      position: absolute; top: 48px; right: 0; width: 330px; max-height: 400px;
+      background: #FFFFFF; border: 1px solid #d0d0d0; border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(48, 48, 48, 0.15); z-index: 9999;
+      display: none; flex-direction: column; overflow: hidden; text-align: left;
+    }
+    .notif-dropdown.open { display: flex; }
+    .notif-dropdown-header {
+      padding: 14px 16px; border-bottom: 1px solid #eaeaea;
+      font-size: 14px; font-weight: 800; color: #303030;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .notif-dropdown-body { overflow-y: auto; max-height: 320px; }
+    .notif-item {
+      padding: 12px 16px; border-bottom: 1px solid #f2f2f2;
+      display: flex; gap: 10px; align-items: flex-start; cursor: pointer; transition: background 0.15s ease;
+    }
+    .notif-item:hover { background: #F8F8F8; }
+    .notif-item.unread { background: #F0F4F8; }
+    .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #303030; flex-shrink: 0; margin-top: 5px; }
+    .notif-text { font-size: 12px; color: #444; line-height: 1.45; }
+    .notif-text strong { color: #111; font-weight: 700; }
+    .notif-time { font-size: 10px; color: #888; margin-top: 3px; }
+    .notif-empty { padding: 32px 16px; text-align: center; color: #888; font-size: 13px; }
+    .btn-clear-notifs {
+      background: none !important; border: none !important; font-size: 11px !important; font-weight: 700 !important;
+      color: #303030 !important; cursor: pointer !important; padding: 0 !important; border-radius: 0 !important;
+    }
+
+    /* Responses Tables, Badges & Filters */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    .data-table th { background: #fafafa; padding: 12px 14px; font-weight: 700; color: #555; border-bottom: 1px solid #e0e0e0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table td { padding: 12px 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    .data-table tr:hover { background: #fdfdfd; }
+    .type-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .type-badge.poll { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+    .type-badge.survey { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .receipt-code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 11px; background: #f0f0f0; padding: 3px 6px; border-radius: 4px; color: #333; max-width: 130px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .filter-btn { border: 1px solid #d0d0d0; border-radius: 20px; padding: 6px 14px; background: #fff; color: #555; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s ease; }
+    .filter-btn.active, .filter-btn:hover { background: #303030; color: #fff; border-color: #303030; }
+    .action-btn { background: #f0f0f0; border: 1px solid #d0d0d0; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: #303030; }
+    .action-btn:hover { background: #303030; color: #fff; border-color: #303030; }
+
+    /* Pagination Bottom Middle */
+    .list-pagination-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 12px;
+      margin-top: 10px;
+      width: 100%;
+      text-align: center;
+    }
+    .pagination-info-text {
+      font-size: 12px;
+      color: #666666;
+      font-weight: 500;
+    }
+    .pagination-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-next-remaining {
+      background: #303030;
+      color: #FFFFFF;
+      border: 1px solid #303030;
+      border-radius: 100px;
+      padding: 9px 24px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(48,48,48,0.12);
+    }
+    .btn-next-remaining:hover:not(:disabled) {
+      background: #111111;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn-next-remaining:disabled {
+      background: #e0e0e0;
+      border-color: #d0d0d0;
+      color: #888888;
+      cursor: not-allowed;
+      box-shadow: none;
+    .btn-pagination-nav {
+      background: #FFFFFF;
+      color: #303030;
+      border: 1px solid #d0d0d0;
+      border-radius: 100px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+    .btn-pagination-nav:hover:not(:disabled) {
+      background: #f5f5f5;
+      border-color: #999999;
+      transform: translateY(-1px);
+    }
+    .btn-pagination-nav:disabled {
+      color: #aaa;
+      border-color: #e5e5e5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    /* View Toggle Group */
+    .view-toggle-group {
+      display: inline-flex;
+      background: #f0f0f0;
+      border: 1px solid #dcdcdc;
+      border-radius: 100px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .view-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      background: transparent;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #555555;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .view-toggle-btn svg { width: 14px; height: 14px; }
+    .view-toggle-btn.active {
+      background: #303030;
+      color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    /* Grid Views */
+    .cards-grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+    .response-card-grid-item {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      transition: all 0.18s ease;
+    }
+    .response-card-grid-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      border-color: #303030;
+    }
+
+    /* Modal */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 10000; align-items: center; justify-content: center; }
+    .modal-backdrop.open { display: flex; }
+    .modal-card { background: #fff; border-radius: 14px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 16px 40px rgba(0,0,0,0.25); border: 1px solid #d0d0d0; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 20px; font-size: 13px; }
+    .btn-close { background: none !important; border: none !important; font-size: 24px; line-height: 1; cursor: pointer; color: #888; padding: 0 !important; width: auto !important; }
+    .btn-close:hover { color: #111; }
   </style>
 </head>
 <body>
@@ -65,9 +263,27 @@
     <header class="topbar">
       <div class="brand">GetItRight <span class="muted">/ Client Dashboard</span></div>
       <div class="top-actions">
-        <span id="user-name" class="muted"></span>
+        <span id="user-name" class="muted" style="font-weight:700;"></span>
         <button id="create-survey">+ Create survey</button>
         <button id="create-poll">+ Create poll</button>
+
+        <!-- CLIENT NOTIFICATION BELL -->
+        <div style="position:relative;flex-shrink:0;">
+          <button class="nav-icon-btn" id="notifBellBtn" title="Platform Notifications" onclick="toggleClientNotifDropdown()">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div class="notif-badge" id="notifBadge"></div>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <span>Platform Notifications</span>
+              <button class="btn-clear-notifs" onclick="clearAllClientNotifs()">Mark all read</button>
+            </div>
+            <div class="notif-dropdown-body" id="notifBody">
+              <div class="notif-empty">No notifications yet</div>
+            </div>
+          </div>
+        </div>
+
         <button id="refresh">Refresh</button>
         <button id="logout">Log out</button>
       </div>
@@ -77,6 +293,8 @@
       <aside class="sidebar">
         <h3>Workspace</h3>
         <button class="nav active" data-section="overview">Overview</button>
+        <button class="nav" data-section="responses">Responses & Votes</button>
+        <button class="nav" data-section="polls">My polls</button>
         <button class="nav" data-section="surveys">My surveys</button>
         <button class="nav" data-section="profile">Profile</button>
         <button class="nav logout" id="sidebar-logout">Log out</button>
@@ -85,12 +303,12 @@
       <main>
         <section id="overview">
           <h1 id="welcome">Your dashboard</h1>
-          <p class="muted">Live performance for your posted surveys and responses.</p>
+          <p class="muted">Live sovereign performance for your active polls, surveys, and citizen responses.</p>
           <div class="kpis">
-            <div class="panel kpi"><span>Posted surveys</span><strong id="kpi-surveys">—</strong></div>
-            <div class="panel kpi"><span>Total responses</span><strong id="kpi-responses">—</strong></div>
+            <div class="panel kpi"><span>Active polls</span><strong id="kpi-polls">—</strong></div>
+            <div class="panel kpi"><span>Total poll votes</span><strong id="kpi-votes">—</strong></div>
             <div class="panel kpi"><span>Active surveys</span><strong id="kpi-active">—</strong></div>
-            <div class="panel kpi"><span>Response target</span><strong id="kpi-target">—</strong></div>
+            <div class="panel kpi"><span>Survey responses</span><strong id="kpi-responses">—</strong></div>
           </div>
           <div class="grid">
             <section class="panel">
@@ -102,15 +320,180 @@
               <div id="monthly-chart" class="chart"><div class="empty">Loading live data...</div></div>
             </section>
           </div>
+
+          <section class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2 style="margin:0 0 4px;">Recent Citizen Responses & Ballots</h2>
+                <div class="muted">Live feed of verified votes and survey submissions across your campaigns.</div>
+              </div>
+              <div class="toolbar" style="margin:0;">
+                <button type="button" onclick="document.querySelector('[data-section=\'responses\']').click()">View all responses &rarr;</button>
+                <select id="overview-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:6px 10px; font-size:12px;">
+                  <option value="">Export dataset...</option>
+                  <option value="csv">Export CSV (.csv)</option>
+                  <option value="json">Export JSON (.json)</option>
+                  <option value="pdf">Export PDF (.pdf)</option>
+                  <option value="docx">Export Word (.docx)</option>
+                </select>
+              </div>
+            </div>
+            <div id="overview-responses-container">
+              <div class="empty">Loading recent responses...</div>
+            </div>
+            <div class="list-pagination-center" id="overview-responses-pagination"></div>
+          </section>
+
           <section class="panel">
             <h2>Notifications</h2>
             <div id="notifications"><div class="empty">Loading...</div></div>
           </section>
         </section>
 
+        <!-- DEDICATED RESPONSES & VOTES SECTION -->
+        <section id="responses" hidden>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:14px;">
+            <div>
+              <h2 style="margin:0 0 6px;">Responses & Verifiable Ballots</h2>
+              <p class="muted" style="margin:0;">Audit individual citizen responses, inspect cryptographic receipts, and export comprehensive datasets.</p>
+            </div>
+            <div class="toolbar" style="margin:0;">
+              <select id="responses-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:8px 12px; font-weight:600;">
+                <option value="">Export all responses...</option>
+                <option value="csv">Export All (CSV .csv)</option>
+                <option value="json">Export All (JSON .json)</option>
+                <option value="pdf">Export All (PDF .pdf)</option>
+                <option value="docx">Export All (Word .docx)</option>
+              </select>
+              <button type="button" onclick="loadDashboard()">Refresh</button>
+            </div>
+          </div>
+
+          <div class="panel" style="padding:14px 18px; margin-bottom:18px;">
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;" id="filter-tabs">
+                <button type="button" class="filter-btn active" data-filter="all" onclick="setResponseFilter('all')">All (<span id="count-all">0</span>)</button>
+                <button type="button" class="filter-btn" data-filter="poll" onclick="setResponseFilter('poll')">Poll Ballots (<span id="count-polls">0</span>)</button>
+                <button type="button" class="filter-btn" data-filter="survey" onclick="setResponseFilter('survey')">Surveys (<span id="count-surveys">0</span>)</button>
+              </div>
+              <div style="flex:1; min-width:240px; display:flex; gap:10px; align-items:center;">
+                <input type="text" id="response-search-input" placeholder="Search by campaign, pseudonym, choice, or answer..." oninput="filterResponsesTable()" style="margin:0; padding:8px 12px; font-size:13px; flex:1;">
+                <div class="view-toggle-group">
+                  <button type="button" class="view-toggle-btn active" id="btn-view-responses-list" onclick="setResponsesViewMode('list')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    List
+                  </button>
+                  <button type="button" class="view-toggle-btn" id="btn-view-responses-grid" onclick="setResponsesViewMode('grid')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Grid
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="padding:0; overflow:hidden;">
+            <!-- Table / List view -->
+            <div id="responses-list-view" style="overflow-x:auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width:90px;">Type</th>
+                    <th>Campaign / Title</th>
+                    <th>Voter / Respondent</th>
+                    <th>Recorded Choice / Response</th>
+                    <th>Receipt Hash</th>
+                    <th>Timestamp</th>
+                    <th style="text-align:right; width:120px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="responses-table-body">
+                  <tr><td colspan="7" class="empty" style="text-align:center;">Loading responses...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Grid / Card view -->
+            <div id="responses-grid-view" hidden class="cards-grid-layout">
+              <div class="empty">Loading responses grid...</div>
+            </div>
+
+            <!-- Bottom-Middle Pagination -->
+            <div class="list-pagination-center" id="responses-pagination"></div>
+          </div>
+        </section>
+
+        <!-- POLLS SECTION -->
+        <section id="polls" hidden>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <h2 style="margin:0;">My sovereign polls</h2>
+            <div class="view-toggle-group">
+              <button type="button" class="view-toggle-btn active" id="btn-view-polls-grid" onclick="setPollsViewMode('grid')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Grid
+              </button>
+              <button type="button" class="view-toggle-btn" id="btn-view-polls-list" onclick="setPollsViewMode('list')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                List
+              </button>
+            </div>
+          </div>
+
+          <div id="poll-list"><div class="empty">Loading polls...</div></div>
+          <div id="poll-table-view" hidden class="panel" style="padding:0; overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Total Votes</th>
+                  <th>Ballots</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="poll-table-body">
+                <tr><td colspan="6" class="empty">Loading polls...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="list-pagination-center" id="polls-pagination"></div>
+        </section>
+
+        <!-- SURVEYS SECTION -->
         <section id="surveys" hidden>
-          <h2>My surveys and interactions</h2>
-          <div id="survey-list"><div class="empty">Loading...</div></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <h2 style="margin:0;">My surveys and interactions</h2>
+            <div class="view-toggle-group">
+              <button type="button" class="view-toggle-btn active" id="btn-view-surveys-grid" onclick="setSurveysViewMode('grid')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Grid
+              </button>
+              <button type="button" class="view-toggle-btn" id="btn-view-surveys-list" onclick="setSurveysViewMode('list')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                List
+              </button>
+            </div>
+          </div>
+
+          <div id="survey-list"><div class="empty">Loading surveys...</div></div>
+          <div id="survey-table-view" hidden class="panel" style="padding:0; overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Responses</th>
+                  <th>Questions</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="survey-table-body">
+                <tr><td colspan="5" class="empty">Loading surveys...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="list-pagination-center" id="surveys-pagination"></div>
         </section>
 
         <section id="profile" hidden>
@@ -164,35 +547,708 @@
         : '<div class="empty">No response data yet.</div>';
     }
 
-    async function exportSurvey(survey, format) {
-      const response = await request(`/surveys/${encodeURIComponent(survey.id)}/export?format=${format === 'docx' ? 'docx' : 'pdf'}`);
-      if (!response.ok) throw new Error('Unable to export survey responses.');
-      const blob = await response.blob();
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${survey.title}.pdf`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+    let allClientResponses = [];
+    let currentResponseFilter = 'all';
+
+    async function exportPoll(pollId, title, format) {
+      if (!format) return;
+      try {
+        const response = await request(`/polls/${encodeURIComponent(pollId)}/export?format=${format}`);
+        if (!response.ok) throw new Error('Unable to export poll votes.');
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${title || 'poll'}-votes.${format}`;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (err) {
+        alert('Export failed: ' + err.message);
+      }
+    }
+
+    async function exportSurvey(surveyId, title, format) {
+      if (!format) return;
+      try {
+        const response = await request(`/surveys/${encodeURIComponent(surveyId)}/export?format=${format}`);
+        if (!response.ok) throw new Error('Unable to export survey responses.');
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${title || 'survey'}-responses.${format}`;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (err) {
+        alert('Export failed: ' + err.message);
+      }
+    }
+
+    async function handleBulkExport(format) {
+      if (!format) return;
+      try {
+        const pRes = await request(`/polls/exports/results?format=${format}`);
+        if (pRes.ok) {
+          const pBlob = await pRes.blob();
+          const pLink = document.createElement('a');
+          pLink.href = URL.createObjectURL(pBlob);
+          pLink.download = pRes.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `my-poll-results.${format}`;
+          pLink.click();
+          URL.revokeObjectURL(pLink.href);
+        }
+        setTimeout(async () => {
+          try {
+            const sRes = await request(`/surveys/exports/responses?format=${format}`);
+            if (sRes.ok) {
+              const sBlob = await sRes.blob();
+              const sLink = document.createElement('a');
+              sLink.href = URL.createObjectURL(sBlob);
+              sLink.download = sRes.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `my-survey-responses.${format}`;
+              sLink.click();
+              URL.revokeObjectURL(sLink.href);
+            }
+          } catch (_) {}
+        }, 600);
+      } catch (err) {
+        alert('Bulk export failed: ' + err.message);
+      }
+    }
+
+    function togglePollVotes(pollId) {
+      const el = document.getElementById(`poll-votes-${pollId}`);
+      if (!el) return;
+      el.hidden = !el.hidden;
+      const btn = document.getElementById(`btn-toggle-votes-${pollId}`);
+      if (btn) btn.textContent = el.hidden ? 'View Votes' : 'Hide Votes';
+    }
+
+    // Pagination Helper for Bottom-Middle controls
+    function renderPaginationControls({ containerId, totalItems, currentPage, pageSize = 10, onPageChange }) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (!totalItems || totalItems <= pageSize) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'flex';
+      const totalPages = Math.ceil(totalItems / pageSize);
+      const startIdx = (currentPage - 1) * pageSize + 1;
+      const endIdx = Math.min(currentPage * pageSize, totalItems);
+      const remaining = Math.max(0, totalItems - endIdx);
+
+      let buttons = '';
+      if (currentPage > 1) {
+        buttons += `<button type="button" class="btn-pagination-nav" onclick="${onPageChange}(${currentPage - 1})">&larr; Previous</button>`;
+      }
+      if (remaining > 0) {
+        buttons += `<button type="button" class="btn-next-remaining" onclick="${onPageChange}(${currentPage + 1})">Next (${remaining} remaining) &rarr;</button>`;
+      } else if (totalPages > 1) {
+        buttons += `<button type="button" class="btn-next-remaining" disabled>All items viewed (${totalItems})</button>`;
+      }
+
+      container.innerHTML = `
+        <div class="pagination-info-text">Showing ${startIdx}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)</div>
+        <div class="pagination-actions-row">${buttons}</div>
+      `;
+    }
+
+    const pollVotesState = {};
+    const surveyResponsesState = {};
+
+    window.changePollVotesPage = function(pollId, page) {
+      pollVotesState[pollId] = page;
+      const poll = (cachedClientPolls || []).find(p => p.id === pollId);
+      if (!poll) return;
+      const el = document.getElementById(`poll-votes-${pollId}`);
+      if (el) el.innerHTML = renderPollVotesDrawerContent(poll);
+    };
+
+    window.changeSurveyResponsesPage = function(surveyId, page) {
+      surveyResponsesState[surveyId] = page;
+      const survey = (cachedClientSurveys || []).find(s => s.id === surveyId);
+      if (!survey) return;
+      const el = document.getElementById(`responses-${surveyId}`);
+      if (el) el.innerHTML = renderSurveyResponsesDrawerContent(survey);
+    };
+
+    function renderPollVotesDrawerContent(poll) {
+      const txs = poll.transactions || [];
+      if (!txs.length) return '<div class="empty">No votes recorded yet for this poll.</div>';
+      const page = pollVotesState[poll.id] || 1;
+      const pageSize = 10;
+      const startIdx = (page - 1) * pageSize;
+      const pageTxs = txs.slice(startIdx, startIdx + pageSize);
+      const remaining = Math.max(0, txs.length - (startIdx + pageTxs.length));
+
+      let paginationHtml = '';
+      if (txs.length > pageSize) {
+        let buttons = '';
+        if (page > 1) {
+          buttons += `<button type="button" class="btn-pagination-nav" onclick="changePollVotesPage('${esc(poll.id)}', ${page - 1})">&larr; Previous</button>`;
+        }
+        if (remaining > 0) {
+          buttons += `<button type="button" class="btn-next-remaining" onclick="changePollVotesPage('${esc(poll.id)}', ${page + 1})">Next (${remaining} remaining) &rarr;</button>`;
+        }
+        paginationHtml = `
+          <div class="list-pagination-center" style="padding:10px 0 4px;">
+            <div class="pagination-info-text">Showing ${startIdx + 1}–${startIdx + pageTxs.length} of ${txs.length} (${remaining} remaining to be viewed)</div>
+            <div class="pagination-actions-row">${buttons}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <table class="data-table" style="background:#fff; border-radius:6px; overflow:hidden;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Option Voted</th>
+              <th>Voter Pseudonym</th>
+              <th>Receipt Hash</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageTxs.map((t, idx) => `
+              <tr>
+                <td style="color:#888;">${startIdx + idx + 1}</td>
+                <td><strong>${esc(t.optionLabel)}</strong></td>
+                <td style="font-family:monospace; font-size:11px;">${esc(t.voterPseudonym || 'Anonymous')}</td>
+                <td><span class="receipt-code" title="${esc(t.receiptHash)}">${esc((t.receiptHash || '').slice(0, 16))}...</span></td>
+                <td style="color:#777; font-size:12px;">${esc(t.timestamp || 'Recent')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ${paginationHtml}
+      `;
+    }
+
+    function renderSurveyResponsesDrawerContent(survey) {
+      const responses = survey.responses || [];
+      if (!responses.length) return '<div class="empty">No responses yet.</div>';
+      const page = surveyResponsesState[survey.id] || 1;
+      const pageSize = 10;
+      const startIdx = (page - 1) * pageSize;
+      const pageResponses = responses.slice(startIdx, startIdx + pageSize);
+      const remaining = Math.max(0, responses.length - (startIdx + pageResponses.length));
+
+      let paginationHtml = '';
+      if (responses.length > pageSize) {
+        let buttons = '';
+        if (page > 1) {
+          buttons += `<button type="button" class="btn-pagination-nav" onclick="changeSurveyResponsesPage('${esc(survey.id)}', ${page - 1})">&larr; Previous</button>`;
+        }
+        if (remaining > 0) {
+          buttons += `<button type="button" class="btn-next-remaining" onclick="changeSurveyResponsesPage('${esc(survey.id)}', ${page + 1})">Next (${remaining} remaining) &rarr;</button>`;
+        }
+        paginationHtml = `
+          <div class="list-pagination-center" style="padding:10px 0 4px;">
+            <div class="pagination-info-text">Showing ${startIdx + 1}–${startIdx + pageResponses.length} of ${responses.length} (${remaining} remaining to be viewed)</div>
+            <div class="pagination-actions-row">${buttons}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <table class="data-table" style="background:#fff; border-radius:6px; overflow:hidden;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Respondent</th>
+              <th>Answers Breakdown</th>
+              <th>Receipt Hash</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageResponses.map((r, i) => `
+              <tr>
+                <td style="color:#888;">${startIdx + i + 1}</td>
+                <td style="font-family:monospace; font-size:11px;">${esc(r.respondent || 'Citizen')}</td>
+                <td style="font-size:12px;">
+                  ${(r.answers || []).map(a => `<div><strong>${esc(a.questionId || 'Q')}:</strong> ${esc(a.answer ?? a)}</div>`).join('')}
+                </td>
+                <td><span class="receipt-code" title="${esc(r.receiptHash || '')}">${esc((r.receiptHash || '').slice(0, 16))}...</span></td>
+                <td style="color:#777; font-size:12px;">${esc(r.timestamp || 'Recent')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ${paginationHtml}
+      `;
+    }
+
+    function renderPollCard(poll) {
+      const totalVotes = poll.totalVotes || 0;
+      const txs = poll.transactions || [];
+      return `<article class="survey-card">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <h3 style="margin:0 0 6px;">${esc(poll.title)}</h3>
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;background:#303030;color:#fff;">${esc(poll.category || 'General')}</span>
+        </div>
+        <p class="muted" style="margin:4px 0 10px;font-size:13px;">${esc(poll.description || '')}</p>
+        <div class="summary">
+          <span>Status: <strong>${esc(poll.status || 'live')}</strong></span>
+          <span>Total Votes: <strong>${totalVotes.toLocaleString()}</strong></span>
+          <span>Ballots Cast: <strong>${txs.length}</strong></span>
+          <span>Options: <strong>${(poll.options || []).length}</strong></span>
+        </div>
+        <div style="margin-top:10px;background:#f9f9f9;padding:10px;border-radius:8px;">
+          ${(poll.options || []).map(opt => `
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin:4px 0;">
+              <span>${esc(opt.label)}</span>
+              <span style="font-weight:700;">${opt.votes || 0} votes (${(opt.percentage || 0).toFixed(1)}%)</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="toolbar" style="margin-top:12px;">
+          <select onchange="exportPoll('${esc(poll.id)}', '${esc(poll.title)}', this.value); this.value='';" style="font-size:12px; padding:6px 10px;">
+            <option value="">Export votes...</option>
+            <option value="csv">CSV (.csv)</option>
+            <option value="json">JSON (.json)</option>
+            <option value="pdf">PDF (.pdf)</option>
+            <option value="docx">Word (.docx)</option>
+          </select>
+          <button type="button" id="btn-toggle-votes-${esc(poll.id)}" onclick="togglePollVotes('${esc(poll.id)}')">View Votes (${txs.length})</button>
+          <a href="../pages/vote.html?poll_id=${encodeURIComponent(poll.id)}" target="_blank" class="pill-button" style="text-decoration:none;display:inline-block;">Open in Vote App &rarr;</a>
+        </div>
+        <div id="poll-votes-${esc(poll.id)}" hidden style="margin-top:10px; background:#fafafa; border:1px solid #e5e5e5; border-radius:8px; padding:12px; overflow-x:auto;">
+          ${renderPollVotesDrawerContent(poll)}
+        </div>
+      </article>`;
+    }
+
+    function renderPollTableRow(p) {
+      const isLive = (p.status || '').toLowerCase() === 'live';
+      const txs = p.transactions || [];
+      return `
+        <tr>
+          <td><strong>${esc(p.title)}</strong></td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;background:#303030;color:#fff;">${esc(p.category || 'General')}</span></td>
+          <td><span class="type-badge ${isLive ? 'poll' : ''}">${esc(p.status || 'live')}</span></td>
+          <td style="font-weight:700;">${(p.totalVotes || 0).toLocaleString()}</td>
+          <td style="font-weight:700;">${txs.length}</td>
+          <td style="text-align:right;">
+            <a href="../pages/vote.html?poll_id=${encodeURIComponent(p.id)}" target="_blank" class="action-btn" style="text-decoration:none;display:inline-block;">Open App</a>
+          </td>
+        </tr>
+      `;
     }
 
     async function renderSurvey(survey) {
-      const response = await request(`/surveys/${encodeURIComponent(survey.id)}/responses`);
-      const responses = response.ok ? await response.json() : [];
+      const responses = survey.responses || [];
       return `<article class="survey-card">
         <h3>${esc(survey.title)}</h3>
         <div class="summary"><span>Status: ${esc(survey.status)}</span><span>${responses.length} responses</span><span>${(survey.questions || []).length} questions</span></div>
         <div class="toolbar">
-          <select data-export="${esc(survey.id)}">
+          <select onchange="exportSurvey('${esc(survey.id)}', '${esc(survey.title)}', this.value); this.value='';" style="font-size:12px; padding:6px 10px;">
             <option value="">Export responses...</option>
-            <option value="pdf">PDF (print/save)</option>
-            <option value="docx">Word document (.docx)</option>
+            <option value="csv">CSV (.csv)</option>
+            <option value="json">JSON (.json)</option>
+            <option value="pdf">PDF (.pdf)</option>
+            <option value="docx">Word (.docx)</option>
           </select>
-          <button data-toggle="${esc(survey.id)}">View interactions</button>
+          <button type="button" data-toggle="${esc(survey.id)}">View interactions (${responses.length})</button>
         </div>
-        <div id="responses-${esc(survey.id)}" hidden>
-          ${responses.length ? responses.map((r, i) => `<div class="response"><strong>Response ${i + 1}</strong> · ${esc(r.timestamp)}<br>${(r.answers || []).map(a => `${esc(a.questionId)}: ${esc(a.answer ?? a)}`).join('<br>')}</div>`).join('') : '<div class="empty">No responses yet.</div>'}
+        <div id="responses-${esc(survey.id)}" hidden style="margin-top:10px; background:#fafafa; border:1px solid #e5e5e5; border-radius:8px; padding:12px; overflow-x:auto;">
+          ${renderSurveyResponsesDrawerContent(survey)}
         </div>
       </article>`;
+    }
+
+    function renderSurveyTableRow(s) {
+      const isActive = (s.status || '').toLowerCase() === 'active';
+      const responses = s.responses || [];
+      return `
+        <tr>
+          <td><strong>${esc(s.title)}</strong></td>
+          <td><span class="type-badge ${isActive ? 'survey' : ''}">${esc(s.status || 'active')}</span></td>
+          <td style="font-weight:700;">${responses.length}</td>
+          <td>${(s.questions || []).length}</td>
+          <td style="text-align:right;">
+            <button type="button" class="action-btn" onclick="exportSurvey('${esc(s.id)}', '${esc(s.title)}', 'csv')">Export CSV</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    // View Modes & Pagination States
+    let responsesViewMode = 'list';
+    let responsesCurrentPage = 1;
+    let currentFilteredResponses = [];
+
+    let overviewResponsesPage = 1;
+
+    let cachedClientPolls = [];
+    let pollsViewMode = 'grid';
+    let pollsCurrentPage = 1;
+
+    let cachedClientSurveys = [];
+    let surveysViewMode = 'grid';
+    let surveysCurrentPage = 1;
+
+    window.setResponsesViewMode = function(mode) {
+      responsesViewMode = mode;
+      document.getElementById('btn-view-responses-list')?.classList.toggle('active', mode === 'list');
+      document.getElementById('btn-view-responses-grid')?.classList.toggle('active', mode === 'grid');
+      renderResponsesView();
+    };
+
+    window.setPollsViewMode = function(mode) {
+      pollsViewMode = mode;
+      document.getElementById('btn-view-polls-grid')?.classList.toggle('active', mode === 'grid');
+      document.getElementById('btn-view-polls-list')?.classList.toggle('active', mode === 'list');
+      renderPollsList();
+    };
+
+    window.setSurveysViewMode = function(mode) {
+      surveysViewMode = mode;
+      document.getElementById('btn-view-surveys-grid')?.classList.toggle('active', mode === 'grid');
+      document.getElementById('btn-view-surveys-list')?.classList.toggle('active', mode === 'list');
+      renderSurveysList();
+    };
+
+    window.changeResponsesPage = function(page) {
+      responsesCurrentPage = page;
+      renderResponsesView();
+      document.getElementById('responses')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.changeOverviewResponsesPage = function(page) {
+      overviewResponsesPage = page;
+      renderOverviewRecentResponses();
+    };
+
+    window.changePollsPage = function(page) {
+      pollsCurrentPage = page;
+      renderPollsList();
+    };
+
+    window.changeSurveysPage = function(page) {
+      surveysCurrentPage = page;
+      renderSurveysList();
+    };
+
+    function renderPollsList() {
+      const gridEl = document.getElementById('poll-list');
+      const tableWrapEl = document.getElementById('poll-table-view');
+      const tableBody = document.getElementById('poll-table-body');
+      if (!gridEl || !tableWrapEl) return;
+
+      if (!cachedClientPolls.length) {
+        gridEl.innerHTML = '<div class="empty">No active polls found for your account.</div>';
+        gridEl.hidden = false;
+        tableWrapEl.hidden = true;
+        renderPaginationControls({ containerId: 'polls-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = cachedClientPolls.length;
+      const startIdx = (pollsCurrentPage - 1) * pageSize;
+      const pageItems = cachedClientPolls.slice(startIdx, startIdx + pageSize);
+
+      if (pollsViewMode === 'grid') {
+        gridEl.hidden = false;
+        tableWrapEl.hidden = true;
+        gridEl.innerHTML = pageItems.map(renderPollCard).join('');
+      } else {
+        gridEl.hidden = true;
+        tableWrapEl.hidden = false;
+        tableBody.innerHTML = pageItems.map(renderPollTableRow).join('');
+      }
+
+      renderPaginationControls({
+        containerId: 'polls-pagination',
+        totalItems: totalItems,
+        currentPage: pollsCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changePollsPage'
+      });
+    }
+
+    async function renderSurveysList() {
+      const gridEl = document.getElementById('survey-list');
+      const tableWrapEl = document.getElementById('survey-table-view');
+      const tableBody = document.getElementById('survey-table-body');
+      if (!gridEl || !tableWrapEl) return;
+
+      if (!cachedClientSurveys.length) {
+        gridEl.innerHTML = '<div class="empty">No posted surveys.</div>';
+        gridEl.hidden = false;
+        tableWrapEl.hidden = true;
+        renderPaginationControls({ containerId: 'surveys-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = cachedClientSurveys.length;
+      const startIdx = (surveysCurrentPage - 1) * pageSize;
+      const pageItems = cachedClientSurveys.slice(startIdx, startIdx + pageSize);
+
+      if (surveysViewMode === 'grid') {
+        gridEl.hidden = false;
+        tableWrapEl.hidden = true;
+        gridEl.innerHTML = (await Promise.all(pageItems.map(renderSurvey))).join('');
+        document.querySelectorAll('[data-toggle]').forEach(button => {
+          button.onclick = () => {
+            const el = document.getElementById(`responses-${button.dataset.toggle}`);
+            if (!el) return;
+            el.hidden = !el.hidden;
+            button.textContent = el.hidden ? button.textContent.replace('Hide', 'View') : button.textContent.replace('View', 'Hide');
+          };
+        });
+      } else {
+        gridEl.hidden = true;
+        tableWrapEl.hidden = false;
+        tableBody.innerHTML = pageItems.map(renderSurveyTableRow).join('');
+      }
+
+      renderPaginationControls({
+        containerId: 'surveys-pagination',
+        totalItems: totalItems,
+        currentPage: surveysCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeSurveysPage'
+      });
+    }
+
+    function setResponseFilter(filter) {
+      currentResponseFilter = filter;
+      document.querySelectorAll('#filter-tabs .filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      filterResponsesTable();
+    }
+
+    function filterResponsesTable() {
+      const q = (document.getElementById('response-search-input')?.value || '').toLowerCase().trim();
+      let list = allClientResponses;
+      if (currentResponseFilter === 'poll') {
+        list = list.filter(r => r.type === 'poll');
+      } else if (currentResponseFilter === 'survey') {
+        list = list.filter(r => r.type === 'survey');
+      }
+
+      if (q) {
+        list = list.filter(r =>
+          (r.title || '').toLowerCase().includes(q) ||
+          (r.respondent || '').toLowerCase().includes(q) ||
+          (r.choice || '').toLowerCase().includes(q) ||
+          (r.receiptHash || '').toLowerCase().includes(q)
+        );
+      }
+
+      currentFilteredResponses = list;
+      responsesCurrentPage = 1;
+      renderResponsesView();
+    }
+
+    function renderOverviewRecentResponses() {
+      const container = document.getElementById('overview-responses-container');
+      if (!container) return;
+      if (!allClientResponses.length) {
+        container.innerHTML = '<div class="empty">No citizen responses or ballots recorded yet across your campaigns.</div>';
+        renderPaginationControls({ containerId: 'overview-responses-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = allClientResponses.length;
+      const startIdx = (overviewResponsesPage - 1) * pageSize;
+      const pageItems = allClientResponses.slice(startIdx, startIdx + pageSize);
+
+      container.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:90px;">Type</th>
+                <th>Campaign</th>
+                <th>Respondent</th>
+                <th>Recorded Choice / Response</th>
+                <th>Receipt</th>
+                <th>Timestamp</th>
+                <th style="text-align:right;">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pageItems.map(item => `
+                <tr>
+                  <td><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Vote' : 'Survey'}</span></td>
+                  <td><strong>${esc(item.title)}</strong></td>
+                  <td style="font-family:monospace; font-size:11px;">${esc(item.respondent)}</td>
+                  <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(item.choice)}</td>
+                  <td><span class="receipt-code" title="${esc(item.receiptHash)}">${esc((item.receiptHash || '').slice(0, 12))}...</span></td>
+                  <td style="color:#777; font-size:12px;">${esc(item.timestamp || 'Recent')}</td>
+                  <td style="text-align:right;">
+                    <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      renderPaginationControls({
+        containerId: 'overview-responses-pagination',
+        totalItems: totalItems,
+        currentPage: overviewResponsesPage,
+        pageSize: pageSize,
+        onPageChange: 'changeOverviewResponsesPage'
+      });
+    }
+
+    function renderResponsesView() {
+      const list = currentFilteredResponses;
+      const listView = document.getElementById('responses-list-view');
+      const gridView = document.getElementById('responses-grid-view');
+      const tbody = document.getElementById('responses-table-body');
+      if (!tbody || !gridView) return;
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty" style="text-align:center; padding:32px 16px;">No responses matching filter criteria.</td></tr>';
+        gridView.innerHTML = '<div class="empty" style="grid-column:1/-1; text-align:center; padding:32px 16px;">No responses matching filter criteria.</div>';
+        renderPaginationControls({ containerId: 'responses-pagination', totalItems: 0, currentPage: 1 });
+        return;
+      }
+
+      const pageSize = 10;
+      const totalItems = list.length;
+      const startIdx = (responsesCurrentPage - 1) * pageSize;
+      const pageItems = list.slice(startIdx, startIdx + pageSize);
+
+      if (responsesViewMode === 'list') {
+        if (listView) listView.hidden = false;
+        gridView.hidden = true;
+        tbody.innerHTML = pageItems.map(item => `
+          <tr>
+            <td><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Vote' : 'Survey'}</span></td>
+            <td><strong>${esc(item.title)}</strong></td>
+            <td style="font-family:monospace; font-size:11px;">${esc(item.respondent)}</td>
+            <td style="max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${esc(item.choice)}</td>
+            <td><span class="receipt-code" title="${esc(item.receiptHash)}">${esc((item.receiptHash || '').slice(0, 14))}...</span></td>
+            <td style="color:#777; font-size:12px;">${esc(item.timestamp || 'Recent')}</td>
+            <td style="text-align:right;">
+              <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        if (listView) listView.hidden = true;
+        gridView.hidden = false;
+        gridView.innerHTML = pageItems.map(item => `
+          <div class="response-card-grid-item">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey'}</span>
+              <span style="font-size:11px; color:#888;">${esc(item.timestamp || 'Recent')}</span>
+            </div>
+            <div>
+              <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:#111;">${esc(item.title)}</h4>
+              <div style="font-family:monospace; font-size:11px; color:#555;">${esc(item.respondent)}</div>
+            </div>
+            <div style="background:#f8f9fa; border:1px solid #edf2f7; border-radius:8px; padding:10px; font-size:12px; color:#2d3748; max-height:80px; overflow-y:auto; word-break:break-word;">
+              ${esc(item.choice)}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:4px;">
+              <span class="receipt-code" title="${esc(item.receiptHash)}">${esc((item.receiptHash || '').slice(0, 12))}...</span>
+              <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View Details</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      renderPaginationControls({
+        containerId: 'responses-pagination',
+        totalItems: totalItems,
+        currentPage: responsesCurrentPage,
+        pageSize: pageSize,
+        onPageChange: 'changeResponsesPage'
+      });
+    }
+
+    function openResponseDetailModal(index) {
+      const item = allClientResponses[index];
+      if (!item) return;
+
+      document.getElementById('modalTitle').textContent = item.type === 'poll' ? 'Verified Ballot Detail' : 'Survey Response Detail';
+
+      const body = document.getElementById('modalBody');
+      body.innerHTML = `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px; text-transform:uppercase; color:#888; font-weight:700;">Campaign Title</div>
+          <div style="font-size:16px; font-weight:800; color:#111; margin-top:2px;">${esc(item.title)}</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
+          <div style="background:#f9f9f9; padding:10px 12px; border-radius:8px;">
+            <div style="font-size:11px; color:#777; font-weight:700;">Type</div>
+            <div style="font-weight:700; margin-top:2px;"><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey Submission'}</span></div>
+          </div>
+          <div style="background:#f9f9f9; padding:10px 12px; border-radius:8px;">
+            <div style="font-size:11px; color:#777; font-weight:700;">Recorded Timestamp</div>
+            <div style="font-weight:600; font-size:12px; margin-top:2px;">${esc(item.timestamp || 'Just now')}</div>
+          </div>
+        </div>
+
+        <div style="background:#f9f9f9; padding:10px 12px; border-radius:8px; margin-bottom:18px;">
+          <div style="font-size:11px; color:#777; font-weight:700;">Citizen / Voter Pseudonym</div>
+          <div style="font-family:monospace; font-size:12px; margin-top:2px; word-break:break-all;">${esc(item.respondent)}</div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-size:12px; color:#555; font-weight:700; margin-bottom:8px;">
+            ${item.type === 'poll' ? 'Vote Cast' : 'Questions & Responses Breakdown'}
+          </div>
+          <div style="border:1px solid #eee; border-radius:8px; padding:12px; background:#fff;">
+            ${item.type === 'poll'
+              ? `<div style="font-size:14px; font-weight:700; color:#1565c0;">Selected Option: ${esc(item.choice)}</div>`
+              : (Array.isArray(item.details?.answers) && item.details.answers.length
+                  ? item.details.answers.map((a, i) => `
+                      <div style="padding:6px 0; border-bottom:1px solid #f0f0f0;">
+                        <div style="font-size:11px; color:#777; font-weight:700;">Question ${i+1}: ${esc(a.questionId || 'Question')}</div>
+                        <div style="font-size:13px; font-weight:600; color:#111; margin-top:2px;">${esc(a.answer ?? a)}</div>
+                      </div>
+                    `).join('')
+                  : `<div style="font-size:13px;">${esc(item.choice || 'No answer detail recorded.')}</div>`
+                )
+            }
+          </div>
+        </div>
+
+        <div style="background:#f4f6f8; border:1px solid #e1e8ed; border-radius:8px; padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:11px; color:#555; font-weight:700;">Cryptographic Merkle Receipt Hash</span>
+            <button type="button" class="action-btn" onclick="copyReceipt('${esc(item.receiptHash)}')">Copy Hash</button>
+          </div>
+          <div style="font-family:monospace; font-size:11px; word-break:break-all; color:#222; background:#fff; padding:6px 8px; border-radius:4px; border:1px solid #ddd;">
+            ${esc(item.receiptHash || '0x00000000000000000000000000000000')}
+          </div>
+        </div>
+
+        <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+          <button type="button" class="action-btn" style="padding:8px 16px; font-size:13px;" onclick="closeResponseDetailModal()">Close</button>
+        </div>
+      `;
+
+      document.getElementById('responseDetailModal').classList.add('open');
+    }
+
+    function closeResponseDetailModal(e) {
+      if (e && e.target !== e.currentTarget && !e.target.classList.contains('btn-close')) return;
+      document.getElementById('responseDetailModal').classList.remove('open');
+    }
+
+    function copyReceipt(hash) {
+      if (!hash) return;
+      navigator.clipboard.writeText(hash).then(() => {
+        alert('Receipt hash copied to clipboard!');
+      }).catch(() => {
+        prompt('Receipt Hash:', hash);
+      });
     }
 
     async function loadDashboard() {
@@ -211,54 +1267,286 @@
       document.getElementById('full-name').value = user.fullName || '';
       document.getElementById('organization').value = user.organization || '';
 
-      const [surveysRes, notificationsRes, statsRes] = await Promise.all([
+      const [pollsRes, surveysRes, notificationsRes, statsRes] = await Promise.all([
+        request('/polls'),
         request('/surveys'),
         request('/notifications'),
         request(`/customer/dashboard-stats/${encodeURIComponent(user.id)}`),
       ]);
 
+      const allPolls = pollsRes.ok ? await pollsRes.json() : [];
+      const myPolls = allPolls.filter(p => p.ownerId === user.id);
+
       const allSurveys = surveysRes.ok ? await surveysRes.json() : [];
       const surveys = allSurveys.filter(s => s.ownerId === user.id);
       const stats = statsRes.ok ? await statsRes.json() : null;
-      const responseCounts = await Promise.all(surveys.map(async s => {
-        const r = await request(`/surveys/${encodeURIComponent(s.id)}/responses`);
-        return r.ok ? await r.json() : [];
+
+      // Fetch poll vote transactions
+      const pollTxs = await Promise.all(myPolls.map(async p => {
+        try {
+          const r = await request(`/polls/${encodeURIComponent(p.id)}/transactions`);
+          return r.ok ? await r.json() : [];
+        } catch (_) { return []; }
       }));
+      myPolls.forEach((p, i) => { p.transactions = pollTxs[i] || []; });
 
-      const totalResponses = responseCounts.reduce((n, r) => n + r.length, 0);
-      document.getElementById('kpi-surveys').textContent = surveys.length;
+      // Fetch survey responses
+      const surveyResponses = await Promise.all(surveys.map(async s => {
+        try {
+          const r = await request(`/surveys/${encodeURIComponent(s.id)}/responses`);
+          return r.ok ? await r.json() : [];
+        } catch (_) { return []; }
+      }));
+      surveys.forEach((s, i) => { s.responses = surveyResponses[i] || []; });
+
+      // Build aggregated responses list
+      allClientResponses = [];
+      myPolls.forEach(p => {
+        (p.transactions || []).forEach(t => {
+          allClientResponses.push({
+            type: 'poll',
+            id: t.id,
+            parentId: p.id,
+            title: p.title,
+            respondent: t.voterPseudonym || 'Citizen Ballot',
+            choice: t.optionLabel || 'Selected Option',
+            details: { pollTitle: p.title, option: t.optionLabel, voter: t.voterPseudonym, leafIndex: t.merkleLeafIndex },
+            receiptHash: t.receiptHash,
+            timestamp: t.timestamp
+          });
+        });
+      });
+
+      surveys.forEach(s => {
+        (s.responses || []).forEach(r => {
+          allClientResponses.push({
+            type: 'survey',
+            id: r.id,
+            parentId: s.id,
+            title: s.title,
+            respondent: r.respondent || 'Citizen Respondent',
+            choice: (r.answers || []).map(a => `${a.questionId || 'Q'}: ${a.answer ?? a}`).join(' | ') || 'Survey submitted',
+            details: { surveyTitle: s.title, answers: r.answers, respondent: r.respondent },
+            receiptHash: r.receiptHash,
+            timestamp: r.timestamp
+          });
+        });
+      });
+
+      // Sort newest first
+      allClientResponses.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+      allClientResponses.forEach((item, idx) => { item._index = idx; });
+
+      const totalResponses = surveys.reduce((n, s) => n + (s.responses?.length || 0), 0);
+      const totalPollVotes = myPolls.reduce((n, p) => n + (p.totalVotes || 0), 0);
+
+      document.getElementById('kpi-polls').textContent = myPolls.length;
+      document.getElementById('kpi-votes').textContent = totalPollVotes.toLocaleString();
+      document.getElementById('kpi-active').textContent = surveys.filter(s => (s.status || '').toLowerCase() === 'active').length;
       document.getElementById('kpi-responses').textContent = totalResponses;
-      document.getElementById('kpi-active').textContent = surveys.filter(s => s.status === 'Active').length;
-      document.getElementById('kpi-target').textContent = surveys.reduce((n, s) => n + (s.targetResponses || 0), 0);
 
-      renderBars(document.getElementById('survey-chart'), surveys.map((s, i) => ({ label: s.title.slice(0, 12), value: responseCounts[i].length })), 'Responses');
+      renderBars(document.getElementById('survey-chart'), surveys.map(s => ({ label: s.title.slice(0, 12), value: s.responses?.length || 0 })), 'Responses');
       renderBars(document.getElementById('monthly-chart'), (stats?.monthlyVotes || []).map(m => ({ label: m.month, value: m.votes })), 'Monthly responses');
 
-      const notices = notificationsRes.ok ? await notificationsRes.json() : [];
-      document.getElementById('notifications').innerHTML = notices.length
-        ? notices.map(n => `<div class="notification"><strong>${esc(n.title || 'Platform notice')}</strong>${esc(n.message)}</div>`).join('')
-        : '<div class="empty">No new notifications.</div>';
+      // Update filter counters
+      const pollCount = allClientResponses.filter(r => r.type === 'poll').length;
+      const surveyCount = allClientResponses.filter(r => r.type === 'survey').length;
+      const countAllEl = document.getElementById('count-all');
+      if (countAllEl) countAllEl.textContent = allClientResponses.length;
+      const countPollsEl = document.getElementById('count-polls');
+      if (countPollsEl) countPollsEl.textContent = pollCount;
+      const countSurveysEl = document.getElementById('count-surveys');
+      if (countSurveysEl) countSurveysEl.textContent = surveyCount;
 
-      document.getElementById('survey-list').innerHTML = surveys.length
-        ? (await Promise.all(surveys.map(renderSurvey))).join('')
-        : '<div class="empty">No posted surveys.</div>';
+      renderOverviewRecentResponses();
+      filterResponsesTable();
 
-      document.querySelectorAll('[data-toggle]').forEach(button => {
-        button.onclick = () => {
-          const el = document.getElementById(`responses-${button.dataset.toggle}`);
-          el.hidden = !el.hidden;
-          button.textContent = el.hidden ? 'View interactions' : 'Hide interactions';
-        };
+      // Current user context
+      currentUserId = user.id;
+
+      // Load client-specific notifications (per-client unread tracking)
+      await loadClientNotifications();
+
+      // Render Polls with view toggle & pagination
+      cachedClientPolls = myPolls;
+      pollsCurrentPage = 1;
+      renderPollsList();
+
+      // Render Surveys with view toggle & pagination
+      cachedClientSurveys = surveys;
+      surveysCurrentPage = 1;
+      await renderSurveysList();
+    }
+
+    // === PER-CLIENT NOTIFICATION ENGINE ===
+    let clientNotifications = [];
+    let currentUserId = null;
+
+    function getClientReadSet() {
+      if (!currentUserId) return new Set();
+      try {
+        const stored = localStorage.getItem('gir_read_notifs_' + currentUserId);
+        return new Set(stored ? JSON.parse(stored) : []);
+      } catch (e) {
+        return new Set();
+      }
+    }
+
+    function saveClientReadSet(readSet) {
+      if (!currentUserId) return;
+      try {
+        localStorage.setItem('gir_read_notifs_' + currentUserId, JSON.stringify(Array.from(readSet)));
+      } catch (e) {}
+    }
+
+    function toggleClientNotifDropdown() {
+      const dd = document.getElementById('notifDropdown');
+      if (dd) dd.classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      const bell = document.getElementById('notifBellBtn');
+      const dd = document.getElementById('notifDropdown');
+      if (bell && dd && !bell.contains(e.target) && !dd.contains(e.target)) {
+        dd.classList.remove('open');
+      }
+    });
+
+    async function loadClientNotifications() {
+      if (!currentUserId) return;
+      try {
+        const res = await request(`/notifications?user_id=${encodeURIComponent(currentUserId)}`);
+        if (!res.ok) return;
+        const notifs = await res.json();
+        const readSet = getClientReadSet();
+
+        // Strictly client-scoped: when Martin reads, Hezron's state is untouched
+        clientNotifications = notifs.map(n => ({
+          ...n,
+          isRead: Boolean(n.isRead || readSet.has(n.id))
+        }));
+
+        renderClientNotifications();
+      } catch (e) {
+        console.warn('Failed to load client notifications:', e);
+      }
+    }
+
+    function renderClientNotifications() {
+      const body = document.getElementById('notifBody');
+      const badge = document.getElementById('notifBadge');
+      if (!body || !badge) return;
+
+      const unreadCount = clientNotifications.filter(n => !n.isRead).length;
+      if (unreadCount > 0) {
+        badge.classList.add('has-notif');
+      } else {
+        badge.classList.remove('has-notif');
+      }
+
+      // Update notifications panel in Overview
+      const overviewNotifBox = document.getElementById('notifications');
+      if (overviewNotifBox) {
+        overviewNotifBox.innerHTML = clientNotifications.length
+          ? clientNotifications.map(n => `
+              <div class="notification" style="${n.isRead ? 'opacity:0.75;background:#f9f9f9;border-left:4px solid #bbb;' : 'border-left: 4px solid #303030; background: #f0f4f8;'}">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <strong>${esc(n.title || 'Platform Notice')}</strong>
+                  <span style="font-size:11px;color:#888;">${getTimeAgo(n.createdAt)}</span>
+                </div>
+                <div style="margin-top:4px;font-size:13px;line-height:1.45;">${esc(n.message)}</div>
+                ${!n.isRead ? `<button onclick="markClientNotifRead(${n.id})" style="margin-top:8px;padding:4px 10px;font-size:11px;background:#303030;color:#fff;border:none;border-radius:6px;cursor:pointer;">Mark as read</button>` : '<span style="font-size:11px;color:#888;display:inline-block;margin-top:6px;">✓ Read</span>'}
+              </div>
+            `).join('')
+          : '<div class="empty">No new notifications.</div>';
+      }
+
+      if (!clientNotifications.length) {
+        body.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+        return;
+      }
+
+      body.innerHTML = clientNotifications.map(n => {
+        const ago = getTimeAgo(n.createdAt);
+        return `
+          <div class="notif-item ${n.isRead ? '' : 'unread'}" onclick="markClientNotifRead(${n.id})">
+            ${n.isRead ? '' : '<div class="notif-dot"></div>'}
+            <div style="flex:1;">
+              <div class="notif-text"><strong>${esc(n.title || 'Notice')}:</strong> ${esc(n.message)}</div>
+              <div class="notif-time">${ago} ${n.isRead ? '· Read' : '· Unread'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function markClientNotifRead(id) {
+      if (!currentUserId) return;
+      const readSet = getClientReadSet();
+      readSet.add(id);
+      saveClientReadSet(readSet);
+
+      const item = clientNotifications.find(n => n.id === id);
+      if (item) item.isRead = true;
+
+      renderClientNotifications();
+
+      // Persist to backend per-client
+      try {
+        await request(`/notifications/${id}/read?user_id=${encodeURIComponent(currentUserId)}`, { method: 'POST' });
+      } catch (e) {}
+    }
+
+    async function clearAllClientNotifs() {
+      if (!currentUserId) return;
+      const readSet = getClientReadSet();
+      clientNotifications.forEach(n => {
+        n.isRead = true;
+        readSet.add(n.id);
       });
+      saveClientReadSet(readSet);
+      renderClientNotifications();
 
-      document.querySelectorAll('[data-export]').forEach(select => {
-        select.onchange = async () => {
-          if (!select.value) return;
-          const survey = surveys.find(s => s.id === select.dataset.export);
-          await exportSurvey(survey, select.value);
-          select.value = '';
+      // Persist to backend per-client
+      try {
+        await request(`/notifications/read-all?user_id=${encodeURIComponent(currentUserId)}`, { method: 'POST' });
+      } catch (e) {}
+    }
+
+    function getTimeAgo(dateStr) {
+      if (!dateStr) return 'Just now';
+      const secs = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+      if (isNaN(secs) || secs < 60) return 'Just now';
+      if (secs < 3600) return Math.floor(secs / 60) + 'm ago';
+      if (secs < 86400) return Math.floor(secs / 3600) + 'h ago';
+      return Math.floor(secs / 86400) + 'd ago';
+    }
+
+    function initClientWebSocket() {
+      try {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsPort = window.location.port === '8090' ? '5000' : (window.location.port || (window.location.protocol === 'https:' ? '443' : '80'));
+        const wsUrl = `${proto}//${window.location.hostname}:${wsPort}/ws/votes`;
+        const ws = new WebSocket(wsUrl);
+        ws.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'notification' && data.data) {
+              const notif = data.data;
+              if (notif.audience === 'all' || notif.audience === 'clients' || notif.audience === 'public') {
+                clientNotifications.unshift({
+                  id: notif.id || Date.now(),
+                  title: notif.title || 'Platform Alert',
+                  message: notif.message,
+                  createdAt: notif.createdAt || new Date().toISOString(),
+                  isRead: false
+                });
+                renderClientNotifications();
+              }
+            }
+          } catch (_) {}
         };
-      });
+      } catch (_) {}
     }
 
     function bindNavigation() {
@@ -314,6 +1602,7 @@
     document.getElementById('create-poll').onclick = () => location.href = 'create.html?type=poll';
 
     bindNavigation();
+    initClientWebSocket();
     loadDashboard().catch(() => {
       localStorage.clear();
       location.replace('../auth/login.html');
@@ -325,5 +1614,16 @@
       }
     }, 60000);
   </script>
+
+  <!-- Response Detail Modal -->
+  <div id="responseDetailModal" class="modal-backdrop" onclick="closeResponseDetailModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalTitle" style="margin:0; font-size:16px; font-weight:800;">Response Verification</h3>
+        <button class="btn-close" onclick="closeResponseDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
 </body>
 </html>

@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.analytics.schemas import (
@@ -8,7 +8,7 @@ from backend.api.features.analytics.schemas import (
     AdminDashboardStatsOut, CustomerDashboardStatsOut, SurveyTemplateOut,
     PlatformNotificationIn, PlatformNotificationOut
 )
-from backend.api.middleware.auth_middleware import get_current_user_token, require_admin
+from backend.api.middleware.auth_middleware import get_current_user_token, require_admin, get_optional_current_user_token
 
 
 def _plain_text(value: str, field: str, maximum: int) -> str:
@@ -175,10 +175,24 @@ def audit_logs(_: dict = Depends(require_admin), db: Session = Depends(get_db)):
     return list_audit(db)
 
 @router.get("/notifications", response_model=List[PlatformNotificationOut])
-def get_platform_notifications(db: Session = Depends(get_db)):
-    """Fetch active platform notifications created by admin."""
-    from backend.api.features.analytics.models import PlatformNotificationModel
+def get_platform_notifications(
+    user_id: Optional[str] = Query(None),
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """Fetch active platform notifications created by admin with per-client read tracking."""
+    from backend.api.features.analytics.models import PlatformNotificationModel, UserNotificationReadModel
+    target_user_id = (current_user.get("sub") if current_user else None) or user_id
+
     records = db.query(PlatformNotificationModel).filter(PlatformNotificationModel.IsActive == 1).order_by(PlatformNotificationModel.Id.desc()).limit(50).all()
+
+    read_notif_ids = set()
+    if target_user_id:
+        read_records = db.query(UserNotificationReadModel.NotificationId).filter(
+            UserNotificationReadModel.UserId == target_user_id
+        ).all()
+        read_notif_ids = {r[0] for r in read_records}
+
     return [
         PlatformNotificationOut(
             id=r.Id,
@@ -188,10 +202,60 @@ def get_platform_notifications(db: Session = Depends(get_db)):
             audience=r.Audience or "all",
             createdBy=r.CreatedBy or "Admin",
             createdAt=r.CreatedAt,
-            isActive=r.IsActive or 1
+            isActive=r.IsActive or 1,
+            isRead=(r.Id in read_notif_ids)
         )
         for r in records
     ]
+
+@router.post("/notifications/{notification_id}/read")
+def mark_notification_read(
+    notification_id: int,
+    user_id: Optional[str] = Query(None),
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """Mark a notification as read specifically for a given client/user."""
+    from datetime import datetime, timezone
+    from backend.api.features.analytics.models import UserNotificationReadModel
+    target_user_id = (current_user.get("sub") if current_user else None) or user_id
+    if not target_user_id:
+        return {"success": True, "message": "No user specified"}
+
+    existing = db.query(UserNotificationReadModel).filter(
+        UserNotificationReadModel.UserId == target_user_id,
+        UserNotificationReadModel.NotificationId == notification_id
+    ).first()
+    if not existing:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        db.add(UserNotificationReadModel(UserId=target_user_id, NotificationId=notification_id, ReadAt=now_iso))
+        db.commit()
+    return {"success": True, "notificationId": notification_id, "userId": target_user_id}
+
+@router.post("/notifications/read-all")
+def mark_all_notifications_read(
+    user_id: Optional[str] = Query(None),
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """Mark all active notifications as read for a given client/user."""
+    from datetime import datetime, timezone
+    from backend.api.features.analytics.models import PlatformNotificationModel, UserNotificationReadModel
+    target_user_id = (current_user.get("sub") if current_user else None) or user_id
+    if not target_user_id:
+        return {"success": True, "message": "No user specified"}
+
+    notifs = db.query(PlatformNotificationModel.Id).filter(PlatformNotificationModel.IsActive == 1).all()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    for (nid,) in notifs:
+        existing = db.query(UserNotificationReadModel).filter(
+            UserNotificationReadModel.UserId == target_user_id,
+            UserNotificationReadModel.NotificationId == nid
+        ).first()
+        if not existing:
+            db.add(UserNotificationReadModel(UserId=target_user_id, NotificationId=nid, ReadAt=now_iso))
+    db.commit()
+    return {"success": True, "userId": target_user_id}
 
 @router.post("/notifications", response_model=PlatformNotificationOut)
 async def create_platform_notification(
@@ -226,7 +290,8 @@ async def create_platform_notification(
         audience=record.Audience,
         createdBy=record.CreatedBy,
         createdAt=record.CreatedAt,
-        isActive=record.IsActive
+        isActive=record.IsActive,
+        isRead=False
     )
 
     try:
