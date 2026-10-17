@@ -90,23 +90,14 @@ class AppTheme {
           ),
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.bgElevated,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          borderSide: BorderSide.none,
-        ),
-        hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 15),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: false,
+        fillColor: Colors.transparent,
+        contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
       ),
     );
   }

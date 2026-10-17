@@ -456,7 +456,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.3';
+    const currentAppVersion = '2.1.4';
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http

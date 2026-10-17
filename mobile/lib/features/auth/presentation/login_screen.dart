@@ -565,13 +565,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return Container(
       height: 50,
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFF4A4D54),
-            width: 1.2,
-          ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2E3035),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: const Color(0xFF6B6E76).withOpacity(0.35),
+          width: 1.2,
         ),
       ),
       alignment: Alignment.center,
@@ -589,6 +588,8 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         cursorColor: Colors.white,
         decoration: InputDecoration(
+          filled: false,
+          fillColor: Colors.transparent,
           hintText: hint,
           hintStyle: const TextStyle(
             color: Color(0xFFB8BAC0),
