@@ -7,7 +7,6 @@ import 'features/polls/presentation/polls_feed_screen.dart';
 import 'features/surveys/presentation/surveys_feed_screen.dart';
 import 'features/dashboard/presentation/org_dashboard_screen.dart';
 import 'features/profile/presentation/profile_settings_screen.dart';
-import 'features/splash/presentation/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +22,7 @@ class IcapsQApp extends StatelessWidget {
       title: 'IcapsQ',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const SplashScreen(),
+      home: const RootNavigationCoordinator(),
     );
   }
 }

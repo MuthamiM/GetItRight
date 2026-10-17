@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
 import 'plan_selection_screen.dart';
@@ -386,17 +387,12 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Clean Brand Logo
-                Image.asset(
-                  'assets/images/logo.png',
-                  width: 95,
-                  height: 95,
+                // Clean Brand Logo without rectangle container
+                SvgPicture.asset(
+                  'assets/images/icapsq-mark-white.svg',
+                  width: 72,
+                  height: 80,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.how_to_vote_rounded,
-                    size: 65,
-                    color: Colors.white,
-                  ),
                 ),
 
                 const SizedBox(height: 36),
@@ -570,11 +566,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       height: 50,
       decoration: BoxDecoration(
-        color: const Color(0xFF2E3035),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(25),
         border: Border.all(
-          color: const Color(0xFF6B6E76).withOpacity(0.35),
-          width: 1.2,
+          color: const Color(0xFF4A4D54),
+          width: 1.0,
         ),
       ),
       alignment: Alignment.center,
