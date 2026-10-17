@@ -538,9 +538,7 @@
         display: none !important;
       }
       .nav-live-pill {
-        padding: 4px 10px !important;
-        font-size: 11.5px !important;
-        gap: 6px !important;
+        display: none !important;
       }
       .ln-nav-signin {
         padding: 4px 12px !important;
@@ -776,10 +774,6 @@
         <p class="page-banner-desc" style="font-size:14.5px; color:var(--charcoal); opacity:0.8; margin:0; line-height:1.6;">
           Direct participation surveys published by verified institutions, labor unions, healthcare boards, and civic assemblies. Filter by your target group, voice your experience, and share direct links with your community.
         </p>
-        <div id="citizen-telemetry-chip" style="margin-top:14px; display:inline-flex; align-items:center; gap:8px; background:rgba(48,48,48,0.06); border:1px solid rgba(48,48,48,0.18); border-radius:100px; padding:6px 16px; font-size:12.5px; font-weight:700; color:var(--charcoal); flex-wrap:wrap;">
-          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--charcoal);"></span>
-          <span id="citizen-device-display">Detecting device &amp; sovereign ID...</span>
-        </div>
       </div>
 
       <div class="search-box-wrap" style="display:flex; gap:12px; align-items:center;">
@@ -1021,17 +1015,6 @@
       setupFilters();
       setupSearch();
       setupModals();
-
-      // Display live detected device details & assigned sovereign citizen ID
-      if (window.Demographics) {
-        const info = window.Demographics.getDeviceInfo();
-        const uid = window.Demographics.getOrAssignUserId();
-        const county = window.Demographics.getCounty() || localStorage.getItem('gir_county') || 'Kenya';
-        const chip = document.getElementById('citizen-device-display');
-        if (chip) {
-          chip.innerHTML = `<strong>Citizen ID:</strong> ${uid} &bull; <strong>Device:</strong> ${info.deviceName} (${info.deviceOS}) &bull; <strong>Region:</strong> ${county}`;
-        }
-      }
 
       await loadActiveSurveys();
 

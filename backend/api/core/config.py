@@ -10,8 +10,8 @@ if not DEFAULT_DB_PATH.exists():
     DEFAULT_DB_PATH = BASE_DIR / "getitright.db"
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "GetItRight API"
-    VERSION: str = "2.0.0"
+    PROJECT_NAME: str = "IcapsQ API"
+    VERSION: str = "2.1.0"
     API_PREFIX: str = "/api"
     ENVIRONMENT: str = "production"
 

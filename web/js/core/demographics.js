@@ -530,29 +530,19 @@
             </div>
           </div>
 
-          <!-- Real Device Details Transparency Banner -->
-          <div style="background:rgba(48,48,48,0.08); border:1px solid rgba(48,48,48,0.2); border-radius:14px; padding:12px 14px; margin-bottom:14px; font-size:12px; line-height:1.5;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <span style="font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#303030;">📱 Real Device Detected:</span>
-              <span id="gir-modal-device-badge" style="background:#303030; color:#E5E5E5; font-size:11px; font-weight:800; padding:2px 8px; border-radius:100px;">Live Telemetry</span>
-            </div>
-            <div id="gir-modal-device-text" style="font-weight:700; color:#111111; font-size:13px;">${deviceInfo.deviceName} &bull; ${deviceInfo.deviceOS}</div>
-            <div id="gir-modal-id-text" style="color:#444444; font-size:11.5px; margin-top:3px; font-family:monospace; font-weight:700;">Sovereign Citizen ID: ${assignedId}</div>
-          </div>
-
-          <div class="gir-modal-desc" id="gir-modal-desc-text">
-            To prevent unfair manipulation and ensure genuine regional participation across Kenya's 47 counties, please verify your voter identity, County, and Date of Birth (DOB).
+          <div class="gir-modal-desc" id="gir-modal-desc-text" style="margin-top:12px;">
+            To ensure genuine regional representation and prevent ballot duplication, please confirm your verification details and County of residence.
           </div>
 
           <form id="gir-demographics-form" onsubmit="window.Demographics.handleSubmit(event)">
             <div class="gir-form-group">
               <label class="gir-form-label" for="gir-survey-voter-name">Full Name (as on ID / Passport)</label>
-              <input type="text" id="gir-survey-voter-name" class="gir-form-input" placeholder="e.g. USER@LOCATION1 or Legal Name" value="USER@LOCATION1" required minlength="3" maxlength="100" autocomplete="name">
+              <input type="text" id="gir-survey-voter-name" class="gir-form-input" placeholder="e.g. Legal Name" required minlength="3" maxlength="100" autocomplete="name">
             </div>
 
             <div class="gir-form-group">
               <label class="gir-form-label" for="gir-survey-voter-id">National ID / Passport Number</label>
-              <input type="text" id="gir-survey-voter-id" class="gir-form-input" placeholder="e.g. ID-28491038" value="ID-28491038" required minlength="5" maxlength="30" autocomplete="off">
+              <input type="text" id="gir-survey-voter-id" class="gir-form-input" placeholder="e.g. National ID or Passport" required minlength="5" maxlength="30" autocomplete="off">
             </div>
 
             <div class="gir-form-group">
@@ -587,15 +577,15 @@
       document.body.appendChild(overlay);
       this.updateLocationBadge();
 
-      // Pre-fill if already known, or default to sample USER@LOCATION1
-      const savedName = localStorage.getItem('gir_voter_name') || 'USER@LOCATION1';
-      const savedId = localStorage.getItem('gir_voter_id_number') || 'ID-28491038';
+      // Pre-fill if already verified by user
+      const savedName = localStorage.getItem('gir_voter_name') || '';
+      const savedId = localStorage.getItem('gir_voter_id_number') || '';
       const savedCounty = localStorage.getItem('gir_county') || 'Nairobi';
       const savedDob = localStorage.getItem('gir_dob') || '1995-05-15';
       const nEl = document.getElementById('gir-survey-voter-name');
-      if (nEl) nEl.value = savedName;
+      if (nEl && savedName) nEl.value = savedName;
       const iEl = document.getElementById('gir-survey-voter-id');
-      if (iEl) iEl.value = savedId;
+      if (iEl && savedId) iEl.value = savedId;
       const cEl = document.getElementById('gir-survey-county');
       if (cEl) {
         cEl.value = savedCounty;
@@ -641,14 +631,6 @@
       if (config.notice) {
         document.getElementById('gir-modal-desc-text').textContent = config.notice;
       }
-
-      // Update real device details in modal
-      const dev = this.getDeviceInfo();
-      const uid = this.getOrAssignUserId();
-      const devEl = document.getElementById('gir-modal-device-text');
-      if (devEl) devEl.innerHTML = `${dev.deviceName} &bull; ${dev.deviceOS}`;
-      const idEl = document.getElementById('gir-modal-id-text');
-      if (idEl) idEl.textContent = `Sovereign Citizen ID: ${uid}`;
 
       this.acquireLocation(true);
       modal.classList.add('active');

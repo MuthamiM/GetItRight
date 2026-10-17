@@ -10,7 +10,7 @@ class SystemController:
         stats = telemetry_tracker.get_stats()
         return {
             "status": "online",
-            "service": "GetItRight Python FastAPI High-Throughput Engine",
+            "service": "IcapsQ Python FastAPI High-Throughput Engine",
             "version": settings.VERSION,
             "database": settings.DATABASE_PATH,
             "timestamp": time.time(),
@@ -21,15 +21,16 @@ class SystemController:
 
     @staticmethod
     def app_version(version: str = None) -> dict:
-        is_older = (version is None or version.strip() not in ("2.0.0", "2.0", "v2.0", "v2"))
+        current_versions = ("2.1.0", "2.1", "v2.1.0", "v2.1", "2.0.0", "2.0", "v2.0", "v2")
+        is_older = (version is not None and version.strip() not in current_versions)
         return {
             "latest_version": settings.VERSION,
             "current_stable": settings.VERSION,
             "minimum_version": "1.0.0",
-            "update_available": is_older,
+            "update_available": False,
             "force_update": False,
-            "title": f"GetItRight v{settings.VERSION} Available",
-            "release_notes": "• Strict charcoal & silver design with live countdown timers\n• Verified voting & real-time Merkle consensus\n• Seamless poll feed pagination & zero-overlay layout\n• Performance optimizations and instant back-to-top navigation",
+            "title": f"IcapsQ v{settings.VERSION}",
+            "release_notes": "• Strict graphite design with live countdown timers\n• Verified voting & real-time Merkle consensus\n• Seamless poll feed pagination & zero-overlay layout\n• Performance optimizations and instant back-to-top navigation",
             "download_url": "https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk",
         }
 

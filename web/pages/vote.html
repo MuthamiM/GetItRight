@@ -360,7 +360,7 @@
       .ln-nav {
         height: auto !important;
         min-height: 56px !important;
-        padding: 10px 16px 8px !important;
+        padding: 10px 14px 8px !important;
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 8px !important;
@@ -378,6 +378,9 @@
       .ln-nav-logo-icon {
         width: 28px !important;
         height: 28px !important;
+      }
+      .nav-live-pill {
+        display: none !important;
       }
       .ln-nav-links {
         display: flex !important;
@@ -401,8 +404,23 @@
         display: none !important;
       }
       .ln-nav-signin {
-        padding: 4px 12px !important;
+        padding: 5px 14px !important;
         font-size: 12px !important;
+        flex-shrink: 0 !important;
+      }
+
+      .page-header-row {
+        flex-direction: column !important;
+        gap: 16px !important;
+        margin-bottom: 20px !important;
+      }
+      .page-header-title {
+        font-size: 24px !important;
+        line-height: 1.2 !important;
+      }
+      .page-header-desc {
+        font-size: 13.5px !important;
+        line-height: 1.5 !important;
       }
 
       #poll-filters-bar {
@@ -422,6 +440,9 @@
         font-size: 12px !important;
         padding: 6px 14px !important;
         flex-shrink: 0 !important;
+      }
+      .poll-feed-card {
+        padding: 20px !important;
       }
     }
 
@@ -531,21 +552,17 @@
   <main class="edge-container">
 
     <!-- Top search & category filter -->
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:36px;">
-      <div>
-        <div style="font-family:var(--font-display); font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); opacity:0.7; margin-bottom:6px;">
+    <div class="page-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px;">
+      <div style="flex:1; min-width:280px;">
+        <div style="font-family:var(--font-display); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); opacity:0.7; margin-bottom:6px;">
           Public &amp; Community Directory
         </div>
-        <h1 style="font-family:var(--font-display); font-size:clamp(2rem, 3.5vw, 2.7rem); font-weight:900; color:var(--charcoal); letter-spacing:-0.03em; margin:0 0 10px 0; line-height:1.1;">
+        <h1 class="page-header-title" style="font-family:var(--font-display); font-size:clamp(1.75rem, 3.5vw, 2.7rem); font-weight:900; color:var(--charcoal); letter-spacing:-0.03em; margin:0 0 10px 0; line-height:1.15;">
           Active Public Polls &amp; Referendums
         </h1>
-        <p style="font-size:15px; color:var(--charcoal); opacity:0.8; margin:0; max-width:820px; line-height:1.6;">
+        <p class="page-header-desc" style="font-size:14.5px; color:var(--charcoal); opacity:0.8; margin:0; max-width:820px; line-height:1.6;">
           Browse published community referendums, organizational polls, and civic inquiries. Vote directly to express your perspective and view verified real-time aggregate totals.
         </p>
-        <div id="citizen-telemetry-chip" style="margin-top:14px; display:inline-flex; align-items:center; gap:8px; background:rgba(48,48,48,0.06); border:1px solid rgba(48,48,48,0.18); border-radius:100px; padding:6px 16px; font-size:12.5px; font-weight:700; color:var(--charcoal); flex-wrap:wrap;">
-          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--charcoal);"></span>
-          <span id="citizen-device-display">Detecting device &amp; sovereign ID...</span>
-        </div>
       </div>
 
       <div class="search-box" style="width:340px;">
@@ -690,18 +707,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       App.injectIcons();
-
-      // Display live detected device details & assigned sovereign citizen ID
-      if (window.Demographics) {
-        const info = window.Demographics.getDeviceInfo();
-        const uid = window.Demographics.getOrAssignUserId();
-        const county = window.Demographics.getCounty() || localStorage.getItem('gir_county') || 'Kenya';
-        const chip = document.getElementById('citizen-device-display');
-        if (chip) {
-          chip.innerHTML = `<strong>Citizen ID:</strong> ${uid} &bull; <strong>Device:</strong> ${info.deviceName} (${info.deviceOS}) &bull; <strong>Region:</strong> ${county}`;
-        }
-      }
-
       loadActivePolls();
       setupFilters();
       setupSearch();

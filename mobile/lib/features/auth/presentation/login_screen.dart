@@ -378,7 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF303030),
+      backgroundColor: const Color(0xFF1F2023),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -461,7 +461,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text(
                       'Forgot password?',
                       style: TextStyle(
-                        color: Color(0xFFD0D0D0),
+                        color: Color(0xFFB8BAC0),
                         fontSize: 14,
                       ),
                     ),
@@ -476,8 +476,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleSubmit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE5E5E5),
-                      foregroundColor: const Color(0xFF2A2A2A),
+                      backgroundColor: const Color(0xFFF2F2F3),
+                      foregroundColor: const Color(0xFF1F2023),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -488,14 +488,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 22,
                             height: 22,
                             child: CircularProgressIndicator(
-                              color: Color(0xFF2A2A2A),
+                              color: Color(0xFF1F2023),
                               strokeWidth: 2.5,
                             ),
                           )
                         : Text(
                             _isSignUp ? 'Sign up' : 'Sign in',
                             style: const TextStyle(
-                              color: Color(0xFF2A2A2A),
+                              color: Color(0xFF1F2023),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -516,7 +516,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? 'Already have an account? Sign in'
                         : "Don't have an account? Sign up",
                     style: const TextStyle(
-                      color: Color(0xFFD0D0D0),
+                      color: Color(0xFFB8BAC0),
                       fontSize: 14,
                     ),
                   ),
@@ -570,8 +570,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       height: 50,
       decoration: BoxDecoration(
-        color: const Color(0xFF505050),
+        color: const Color(0xFF2E3035),
         borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: const Color(0xFF6B6E76).withOpacity(0.35),
+          width: 1.2,
+        ),
       ),
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -590,7 +594,7 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(
-            color: Color(0xFFB8B8B8),
+            color: Color(0xFFB8BAC0),
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
