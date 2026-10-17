@@ -59,15 +59,15 @@ def list_polls(db: Session, plan: Optional[str] = None, status: Optional[str] = 
     query = db.query(PollModel)
     if not include_all:
         if status:
-            query = query.filter(PollModel.Status == status.lower())
+            query = query.filter(PollModel.Status.ilike(status))
         else:
-            query = query.filter(PollModel.Status == "live")
+            query = query.filter(PollModel.Status.in_(["live", "Live", "active", "Active"]))
     elif status and status.lower() != "all":
-        query = query.filter(PollModel.Status == status.lower())
+        query = query.filter(PollModel.Status.ilike(status))
     if plan:
-        query = query.filter(PollModel.Plan == plan.lower())
+        query = query.filter(PollModel.Plan.ilike(plan))
     polls = query.all()
-    polls_sorted = sorted(polls, key=lambda p: (0 if p.Status == "live" else 1, p.CreatedAt or ""), reverse=False)
+    polls_sorted = sorted(polls, key=lambda p: (1 if str(p.Status).lower() in ["live", "active"] else 0, p.CreatedAt or ""), reverse=True)
     return [map_poll_to_out(p) for p in polls_sorted]
 
 def get_poll_by_id(db: Session, poll_id: str) -> PollOut:

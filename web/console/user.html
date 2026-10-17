@@ -1353,10 +1353,12 @@
       ]);
 
       const allPolls = pollsRes.ok ? await pollsRes.json() : [];
-      const myPolls = allPolls.filter(p => p.ownerId === user.id);
+      const myPolls = allPolls.filter(p => (p.ownerId || '').toLowerCase() === (user.id || '').toLowerCase())
+                              .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
       const allSurveys = surveysRes.ok ? await surveysRes.json() : [];
-      const surveys = allSurveys.filter(s => s.ownerId === user.id);
+      const surveys = allSurveys.filter(s => (s.ownerId || '').toLowerCase() === (user.id || '').toLowerCase())
+                                .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       const stats = statsRes.ok ? await statsRes.json() : null;
 
       // Fetch poll vote transactions
