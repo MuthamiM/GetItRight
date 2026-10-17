@@ -111,3 +111,11 @@ class PlatformNotificationModel(Base):
     CreatedBy = Column(String, default="Admin")
     CreatedAt = Column(String, nullable=False)
     IsActive = Column(Integer, default=1)
+
+class UserNotificationReadModel(Base):
+    __tablename__ = "UserNotificationReads"
+
+    Id = Column(Integer, primary_key=True, autoincrement=True)
+    UserId = Column(String, nullable=False, index=True)
+    NotificationId = Column(Integer, nullable=False, index=True)
+    ReadAt = Column(String, nullable=False)

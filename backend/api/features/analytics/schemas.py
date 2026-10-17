@@ -204,3 +204,4 @@ class PlatformNotificationOut(BaseModel):
     createdBy: str
     createdAt: str
     isActive: int
+    isRead: Optional[bool] = False

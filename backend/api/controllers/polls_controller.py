@@ -14,8 +14,8 @@ class PollsController:
     """Controller for polls and real-time sovereign voting operations."""
 
     @staticmethod
-    def get_polls(db: Session, plan: Optional[str] = None) -> List[PollOut]:
-        return polls_service.list_polls(db, plan=plan)
+    def get_polls(db: Session, plan: Optional[str] = None, status: Optional[str] = None, include_all: bool = False) -> List[PollOut]:
+        return polls_service.list_polls(db, plan=plan, status=status, include_all=include_all)
 
     @staticmethod
     def get_single_poll(db: Session, poll_id: str) -> PollOut:

@@ -70,12 +70,20 @@ def map_survey_to_out(s: SurveyModel) -> SurveyOut:
         questions=q_outs
     )
 
-def list_surveys(db: Session, plan: Optional[str] = None) -> List[SurveyOut]:
+def list_surveys(db: Session, plan: Optional[str] = None, status: Optional[str] = None, include_all: bool = False) -> List[SurveyOut]:
     query = db.query(SurveyModel)
+    if not include_all:
+        if status:
+            query = query.filter(SurveyModel.Status.ilike(status))
+        else:
+            query = query.filter(SurveyModel.Status.in_(["active", "Active"]))
+    elif status and status.lower() != "all":
+        query = query.filter(SurveyModel.Status.ilike(status))
     if plan:
         query = query.filter(SurveyModel.Plan == plan.lower())
     surveys = query.all()
-    return [map_survey_to_out(s) for s in surveys]
+    surveys_sorted = sorted(surveys, key=lambda s: (0 if s.Status.lower() == "active" else 1, s.CreatedAt or ""), reverse=False)
+    return [map_survey_to_out(s) for s in surveys_sorted]
 
 def get_survey_by_id(db: Session, survey_id: str) -> SurveyOut:
     survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()

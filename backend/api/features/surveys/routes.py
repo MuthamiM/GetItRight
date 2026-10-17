@@ -42,6 +42,47 @@ def _survey_export_records(db: Session, survey_ids: list[str], owner_id: str | N
 
 
 def _build_export(surveys, response_map, export_format: str):
+    if export_format == "csv":
+        import csv
+        from io import StringIO
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Survey ID", "Survey Title", "Response Timestamp", "Respondent", "Question", "Answer"])
+        for survey in surveys:
+            responses = response_map.get(survey.Id, [])
+            if not responses:
+                writer.writerow([survey.Id, survey.Title, "No responses recorded", "", "", ""])
+            else:
+                for resp in responses:
+                    ts = resp.get("timestamp", "")
+                    respondent = resp.get("respondent", "")
+                    answers = resp.get("answers", [])
+                    if not answers:
+                        writer.writerow([survey.Id, survey.Title, ts, respondent, "None", ""])
+                    else:
+                        for ans in answers:
+                            if isinstance(ans, dict):
+                                q = ans.get("questionId") or ans.get("question") or "Question"
+                                a = ans.get("answer", "")
+                                writer.writerow([survey.Id, survey.Title, ts, respondent, q, a])
+                            else:
+                                writer.writerow([survey.Id, survey.Title, ts, respondent, "Answer", str(ans)])
+        return output.getvalue().encode("utf-8"), "text/csv", "getitright-survey-responses.csv"
+
+    if export_format == "json":
+        import json
+        data = []
+        for survey in surveys:
+            responses = response_map.get(survey.Id, [])
+            data.append({
+                "surveyId": survey.Id,
+                "title": survey.Title,
+                "status": survey.Status,
+                "responseCount": len(responses),
+                "responses": responses
+            })
+        return json.dumps(data, indent=2).encode("utf-8"), "application/json", "getitright-survey-responses.json"
+
     if export_format == "pdf":
         from reportlab.lib.pagesizes import letter
         from reportlab.lib.styles import getSampleStyleSheet
@@ -81,9 +122,14 @@ def _build_export(surveys, response_map, export_format: str):
     return output.getvalue(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "getitright-survey-responses.docx"
 
 @router.get("", response_model=List[SurveyOut])
-def get_all_surveys(plan: Optional[str] = Query(None), db: Session = Depends(get_db)):
-    """Fetch surveys optionally filtered by plan."""
-    return list_surveys(db, plan)
+def get_all_surveys(
+    plan: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    include_all: Optional[bool] = Query(False),
+    db: Session = Depends(get_db)
+):
+    """Fetch surveys optionally filtered by plan and status."""
+    return list_surveys(db, plan=plan, status=status, include_all=include_all)
 
 @router.get("/templates")
 def survey_templates_from_surveys():
@@ -94,25 +140,26 @@ def survey_templates_from_surveys():
 
 @router.get("/exports/responses")
 def export_all_survey_responses(
-    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx)$"),
+    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|csv|json)$"),
     owner_id: Optional[str] = Query(None),
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
     if current_user["role"] != "Admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Administrator access required")
+        owner_id = current_user["sub"]
     query = db.query(SurveyModel)
     if owner_id:
         query = query.filter(SurveyModel.OwnerId == owner_id)
     surveys = query.all()
-    data, media_type, filename = _build_export(surveys, _survey_export_records(db, [survey.Id for survey in surveys])[1], export_format)
+    surveys, response_map = _survey_export_records(db, [survey.Id for survey in surveys], owner_id=owner_id)
+    data, media_type, filename = _build_export(surveys, response_map, export_format)
     return StreamingResponse(BytesIO(data), media_type=media_type, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
 @router.get("/{survey_id}/export")
 def export_survey_responses(
     survey_id: str,
-    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx)$"),
+    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|csv|json)$"),
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
