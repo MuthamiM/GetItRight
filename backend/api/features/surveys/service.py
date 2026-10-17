@@ -82,7 +82,7 @@ def list_surveys(db: Session, plan: Optional[str] = None, status: Optional[str] 
     if plan:
         query = query.filter(SurveyModel.Plan == plan.lower())
     surveys = query.all()
-    surveys_sorted = sorted(surveys, key=lambda s: (0 if s.Status.lower() == "active" else 1, s.CreatedAt or ""), reverse=False)
+    surveys_sorted = sorted(surveys, key=lambda s: (1 if str(s.Status).lower() in ["active", "live"] else 0, s.CreatedAt or ""), reverse=True)
     return [map_survey_to_out(s) for s in surveys_sorted]
 
 def get_survey_by_id(db: Session, survey_id: str) -> SurveyOut:
