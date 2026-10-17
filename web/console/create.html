@@ -670,7 +670,11 @@
 
         <div class="form-group">
           <label class="form-label">Title *</label>
-          <input type="text" class="form-input" id="wizard-title" placeholder="e.g. Sub-County Infrastructure & Ward Priorities 2026" required>
+          <input type="text" class="form-input" id="wizard-title" placeholder="e.g. Sub-County Infrastructure & Ward Priorities 2026" minlength="3" maxlength="200" required>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-size:11.5px;color:var(--text-sub);">
+            <span id="title-char-hint">Min 3 characters, max 200 characters</span>
+            <span id="title-char-count" style="font-family:var(--font-mono);font-weight:700;">0 / 200</span>
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -687,18 +691,24 @@
           </div>
           <div class="form-group">
             <label class="form-label">Consensus Plan Tier</label>
-            <select class="form-select" id="wizard-plan">
-              <option value="free">Civic Starter (Free)</option>
-              <option value="pro">Civic Pro</option>
-              <option value="org">Institutional Org</option>
-              <option value="election">Sovereign Election Guard</option>
-            </select>
+            <div style="padding:10px 14px;background:#F0F0F0;border:1px solid var(--border-color);border-radius:10px;font-size:13px;font-weight:700;color:var(--charcoal);display:flex;align-items:center;justify-content:space-between;height:42px;">
+              <span style="display:flex;align-items:center;gap:8px;">
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--charcoal);"></span>
+                <span id="wizard-plan-label">Civic Pro (Assigned via Session)</span>
+              </span>
+              <span style="font-size:11px;padding:2px 8px;border-radius:100px;background:var(--charcoal);color:#FFFFFF;font-family:var(--font-mono);letter-spacing:0.04em;">PRO</span>
+            </div>
+            <input type="hidden" id="wizard-plan" value="pro">
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Description / Purpose</label>
-          <textarea class="form-textarea" id="wizard-desc" rows="2" placeholder="Briefly state objectives, precinct scope, or civic context..."></textarea>
+          <label class="form-label">Description / Purpose *</label>
+          <textarea class="form-textarea" id="wizard-desc" rows="2" placeholder="Briefly state objectives, precinct scope, or civic context..." minlength="5" maxlength="2000" required></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-size:11.5px;color:var(--text-sub);">
+            <span id="desc-char-hint">Min 5 characters, max 2000 characters</span>
+            <span id="desc-char-count" style="font-family:var(--font-mono);font-weight:700;">0 / 2000</span>
+          </div>
         </div>
       </div>
 
@@ -725,9 +735,9 @@
         </div>
       </div>
 
-      <div class="btn-row">
-        <div></div>
-        <button class="btn-primary" onclick="goToStep(2)">
+      <div class="btn-row" style="display:flex;justify-content:space-between;align-items:center;">
+        <div id="step1-validation-msg" style="font-size:12px;font-weight:700;color:var(--text-sub);">Title (min 3 chars) and description (min 5 chars) required</div>
+        <button class="btn-primary" id="btn-step1-next" onclick="goToStep(2)" disabled style="opacity:0.45;cursor:not-allowed;">
           Continue to Questions
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
@@ -770,15 +780,18 @@
         </div>
       </div>
 
-      <div class="btn-row">
+      <div class="btn-row" style="display:flex;justify-content:space-between;align-items:center;">
         <button class="btn-secondary" onclick="goToStep(1)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           Back
         </button>
-        <button class="btn-primary" onclick="goToStep(3)">
-          Review &amp; Publish
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="step2-validation-msg" style="font-size:12px;font-weight:700;color:var(--text-sub);">Complete question prompt (min 3 chars)</div>
+          <button class="btn-primary" id="btn-step2-next" onclick="goToStep(3)" disabled style="opacity:0.45;cursor:not-allowed;">
+            Review &amp; Publish
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -867,12 +880,160 @@
       }
     }
 
+    // === SESSION PLAN RESOLUTION ===
+    function getUserAssignedPlan() {
+      try {
+        const raw = localStorage.getItem('gir_user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          if (u.plan) return u.plan.toLowerCase();
+        }
+      } catch (_) {}
+      return 'pro';
+    }
+
+    function initAssignedPlan() {
+      const plan = getUserAssignedPlan();
+      const planInput = document.getElementById('wizard-plan');
+      if (planInput) planInput.value = plan;
+      const label = document.getElementById('wizard-plan-label');
+      if (label) {
+        label.textContent = `${plan === 'pro' ? 'Civic Pro' : (plan === 'election' ? 'Sovereign Election Guard' : (plan === 'org' ? 'Institutional Org' : 'Civic Pro'))} (Assigned via Session)`;
+      }
+    }
+
+    // === STEP 1 VALIDATION (MIN/MAX CHARACTERS) ===
+    function isStep1Valid() {
+      const title = (document.getElementById('wizard-title')?.value || '').trim();
+      const desc = (document.getElementById('wizard-desc')?.value || '').trim();
+      if (!title) return { valid: false, msg: 'Title is required (min 3 chars)' };
+      if (title.length < 3) return { valid: false, msg: `Title requires at least 3 characters (${title.length}/3)` };
+      if (title.length > 200) return { valid: false, msg: `Title exceeds maximum 200 characters (${title.length}/200)` };
+      if (!desc) return { valid: false, msg: 'Description is required (min 5 chars)' };
+      if (desc.length < 5) return { valid: false, msg: `Description requires at least 5 characters (${desc.length}/5)` };
+      if (desc.length > 2000) return { valid: false, msg: `Description exceeds maximum 2000 characters (${desc.length}/2000)` };
+      return { valid: true, msg: 'Ready to continue' };
+    }
+
+    function validateStep1() {
+      const titleEl = document.getElementById('wizard-title');
+      const descEl = document.getElementById('wizard-desc');
+      const titleCountEl = document.getElementById('title-char-count');
+      const descCountEl = document.getElementById('desc-char-count');
+      const msgEl = document.getElementById('step1-validation-msg');
+      const btnNext = document.getElementById('btn-step1-next');
+
+      const titleLen = (titleEl?.value || '').trim().length;
+      const descLen = (descEl?.value || '').trim().length;
+
+      if (titleCountEl) titleCountEl.textContent = `${titleLen} / 200`;
+      if (descCountEl) descCountEl.textContent = `${descLen} / 2000`;
+
+      const check = isStep1Valid();
+      if (check.valid) {
+        if (btnNext) {
+          btnNext.disabled = false;
+          btnNext.style.opacity = '1';
+          btnNext.style.cursor = 'pointer';
+        }
+        if (msgEl) msgEl.innerHTML = '<span style="color:var(--charcoal);">✓ Details complete</span>';
+      } else {
+        if (btnNext) {
+          btnNext.disabled = true;
+          btnNext.style.opacity = '0.45';
+          btnNext.style.cursor = 'not-allowed';
+        }
+        if (msgEl) msgEl.textContent = check.msg;
+      }
+    }
+
+    // === STEP 2 VALIDATION (MIN/MAX CHARACTERS & CHOICES) ===
+    function isStep2Valid() {
+      if (!questions || !questions.length) {
+        return { valid: false, msg: 'Add at least 1 question' };
+      }
+      for (let i = 0; i < questions.length; i++) {
+        const q = questions[i];
+        const text = (q.text || '').trim();
+        if (!text) {
+          return { valid: false, msg: `Question ${i + 1} prompt is required` };
+        }
+        if (text.length < 3) {
+          return { valid: false, msg: `Question ${i + 1} prompt requires at least 3 characters` };
+        }
+        if (text.length > 200) {
+          return { valid: false, msg: `Question ${i + 1} prompt exceeds 200 characters` };
+        }
+
+        if (q.type === 'choice') {
+          const rawChoices = q.choices || [];
+          const cleanChoices = rawChoices.map(c => (c || '').trim()).filter(c => c.length > 0);
+          if (cleanChoices.length < 2) {
+            return { valid: false, msg: `Question ${i + 1} requires at least 2 non-empty choice options` };
+          }
+          for (let ci = 0; ci < cleanChoices.length; ci++) {
+            const c = cleanChoices[ci];
+            if (c.length > 200) {
+              return { valid: false, msg: `Option ${ci + 1} in Question ${i + 1} exceeds 200 characters` };
+            }
+          }
+          const lowerChoices = cleanChoices.map(c => c.toLowerCase());
+          const uniqueSet = new Set(lowerChoices);
+          if (uniqueSet.size !== cleanChoices.length) {
+            return { valid: false, msg: `Question ${i + 1} has duplicate choice options` };
+          }
+        }
+      }
+      return { valid: true, msg: 'All questions ready' };
+    }
+
+    function validateStep2() {
+      const msgEl = document.getElementById('step2-validation-msg');
+      const btnNext = document.getElementById('btn-step2-next');
+      const check = isStep2Valid();
+
+      if (check.valid) {
+        if (btnNext) {
+          btnNext.disabled = false;
+          btnNext.style.opacity = '1';
+          btnNext.style.cursor = 'pointer';
+        }
+        if (msgEl) msgEl.innerHTML = '<span style="color:var(--charcoal);">✓ Inquiries valid</span>';
+      } else {
+        if (btnNext) {
+          btnNext.disabled = true;
+          btnNext.style.opacity = '0.45';
+          btnNext.style.cursor = 'not-allowed';
+        }
+        if (msgEl) msgEl.textContent = check.msg;
+      }
+    }
+
     // === STEP NAVIGATION ===
     function goToStep(n) {
-      if (n === 2 && !document.getElementById('wizard-title').value.trim()) {
-        alert('Please enter a campaign title before continuing.');
-        return;
+      if (n === 2) {
+        const v1 = isStep1Valid();
+        if (!v1.valid) {
+          playBeep(false);
+          alert(v1.msg);
+          return;
+        }
       }
+      if (n === 3) {
+        const v1 = isStep1Valid();
+        if (!v1.valid) {
+          playBeep(false);
+          alert(v1.msg);
+          return;
+        }
+        const v2 = isStep2Valid();
+        if (!v2.valid) {
+          playBeep(false);
+          alert(v2.msg);
+          return;
+        }
+      }
+
       currentStep = n;
       document.querySelectorAll('.wizard-panel').forEach(p => p.classList.remove('active'));
       document.getElementById(`panel-${n}`).classList.add('active');
@@ -884,7 +1045,11 @@
         if (i === n) indicator.classList.add('active');
       }
 
-      if (n === 2) { renderQuestions(); updatePreview(); }
+      if (n === 2) {
+        renderQuestions();
+        updatePreview();
+        validateStep2();
+      }
       if (n === 3) renderReview();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -903,6 +1068,7 @@
         questions = [{ id: 1, text: '', type: 'choice', choices: ['Option A', 'Option B'], required: true }];
       }
       updatePreview();
+      validateStep2();
     }
 
     // === LOAD TEMPLATES DIRECTLY FROM BACKEND API ===
@@ -996,12 +1162,18 @@
         if (!document.getElementById('wizard-title').value.trim()) {
           document.getElementById('wizard-title').value = tmpl.name;
         }
+        if (!document.getElementById('wizard-desc').value.trim() && tmpl.description) {
+          document.getElementById('wizard-desc').value = tmpl.description;
+        }
         const trackSel = document.getElementById('wizard-track');
         for (let opt of trackSel.options) {
           if (opt.value === tmpl.category) { trackSel.value = tmpl.category; break; }
         }
       }
+      validateStep1();
+      renderQuestions();
       updatePreview();
+      validateStep2();
     }
 
     // === QUESTION BUILDER ===
@@ -1019,7 +1191,11 @@
           </div>
 
           <div class="form-group" style="margin-bottom:12px;">
-            <input type="text" class="form-input" placeholder="Type question prompt here..." value="${escapeHtml(q.text)}" oninput="updateQuestionText(${q.id}, this.value)">
+            <input type="text" class="form-input" placeholder="Type question prompt here (min 3, max 200 chars)..." value="${escapeHtml(q.text)}" minlength="3" maxlength="200" oninput="updateQuestionText(${q.id}, this.value)">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-sub);margin-top:4px;">
+              <span>Prompt min 3, max 200 chars</span>
+              <span style="font-family:var(--font-mono);font-weight:700;">${(q.text || '').trim().length} / 200</span>
+            </div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
@@ -1042,12 +1218,15 @@
 
           ${q.type === 'choice' ? `
             <div style="margin-top:14px;">
-              <label class="form-label">Choice Options</label>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">Choice Options (Min 2 required, 1–200 chars each)</label>
+                <span style="font-size:11px;color:var(--text-sub);font-family:var(--font-mono);">${(q.choices || []).length} choices</span>
+              </div>
               <div id="choices-container-${q.id}">
-                ${q.choices.map((c, ci) => `
-                  <div class="choice-row">
-                    <input type="text" class="choice-input" value="${escapeHtml(c)}" placeholder="Option ${ci + 1}" oninput="updateChoiceText(${q.id}, ${ci}, this.value)">
-                    ${q.choices.length > 2 ? `<button class="choice-remove" onclick="removeChoice(${q.id}, ${ci})" title="Remove option">&times;</button>` : ''}
+                ${(q.choices || []).map((c, ci) => `
+                  <div class="choice-row" style="margin-bottom:8px;">
+                    <input type="text" class="choice-input" value="${escapeHtml(c)}" placeholder="Option ${ci + 1} (min 1, max 200 chars)" minlength="1" maxlength="200" oninput="updateChoiceText(${q.id}, ${ci}, this.value)">
+                    ${(q.choices || []).length > 2 ? `<button class="choice-remove" onclick="removeChoice(${q.id}, ${ci})" title="Remove option">&times;</button>` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -1076,6 +1255,7 @@
       });
       renderQuestions();
       updatePreview();
+      validateStep2();
     }
 
     function removeQuestion(qid) {
@@ -1083,11 +1263,16 @@
       questions = questions.filter(q => q.id !== qid);
       renderQuestions();
       updatePreview();
+      validateStep2();
     }
 
     function updateQuestionText(qid, val) {
       const q = questions.find(q => q.id === qid);
-      if (q) { q.text = val; updatePreview(); }
+      if (q) {
+        q.text = val;
+        updatePreview();
+        validateStep2();
+      }
     }
 
     function updateQuestionType(qid, val) {
@@ -1099,12 +1284,17 @@
         }
         renderQuestions();
         updatePreview();
+        validateStep2();
       }
     }
 
     function updateQuestionRequired(qid, val) {
       const q = questions.find(q => q.id === qid);
-      if (q) { q.required = (val === 'true'); updatePreview(); }
+      if (q) {
+        q.required = (val === 'true');
+        updatePreview();
+        validateStep2();
+      }
     }
 
     function addChoice(qid) {
@@ -1113,6 +1303,7 @@
         q.choices.push(`Option ${String.fromCharCode(65 + q.choices.length)}`);
         renderQuestions();
         updatePreview();
+        validateStep2();
       }
     }
 
@@ -1122,6 +1313,7 @@
         q.choices.splice(ci, 1);
         renderQuestions();
         updatePreview();
+        validateStep2();
       }
     }
 
@@ -1130,6 +1322,7 @@
       if (q && q.choices && q.choices[ci] !== undefined) {
         q.choices[ci] = val;
         updatePreview();
+        validateStep2();
       }
     }
 
@@ -1177,7 +1370,7 @@
     function renderReview() {
       const title = document.getElementById('wizard-title').value || 'Untitled';
       const track = document.getElementById('wizard-track').value;
-      const plan = document.getElementById('wizard-plan').value;
+      const plan = getUserAssignedPlan();
       const desc = document.getElementById('wizard-desc').value || 'No description provided';
 
       const choiceCount = questions.filter(q => q.type === 'choice').length;
@@ -1188,7 +1381,7 @@
         <div class="summary-row"><span class="summary-label">Format Type</span><span class="summary-value">${selectedType === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}</span></div>
         <div class="summary-row"><span class="summary-label">Campaign Title</span><span class="summary-value">${title}</span></div>
         <div class="summary-row"><span class="summary-label">Track / Classification</span><span class="summary-value">${track}</span></div>
-        <div class="summary-row"><span class="summary-label">Consensus Tier</span><span class="summary-value">${plan.toUpperCase()}</span></div>
+        <div class="summary-row"><span class="summary-label">Consensus Tier</span><span class="summary-value">${plan.toUpperCase()} (ASSIGNED PRO VIA SESSION)</span></div>
         <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:440px;text-align:right;">${desc}</span></div>
         <div class="summary-row"><span class="summary-label">Total Inquiries</span><span class="summary-value">${questions.length}</span></div>
         <div class="summary-row"><span class="summary-label">Breakdown</span><span class="summary-value">${choiceCount} Choice · ${textCount} Text Field · ${ratingCount} Rating</span></div>
@@ -1214,18 +1407,20 @@
       const btn = document.getElementById('btn-publish');
       const title = document.getElementById('wizard-title').value.trim();
       const track = document.getElementById('wizard-track').value;
-      const plan = document.getElementById('wizard-plan').value;
+      const plan = getUserAssignedPlan();
       const desc = document.getElementById('wizard-desc').value.trim();
       const target = parseInt(document.getElementById('wizard-target').value) || 500;
       const durationHours = parseInt(document.getElementById('wizard-duration').value) || 168;
 
-      if (!title) {
+      const v1 = isStep1Valid();
+      if (!v1.valid) {
         playBeep(false);
-        return alert('Please enter a campaign title.');
+        return alert(v1.msg);
       }
-      if (!questions.length || !questions[0].text) {
+      const v2 = isStep2Valid();
+      if (!v2.valid) {
         playBeep(false);
-        return alert('Please enter question text before publishing.');
+        return alert(v2.msg);
       }
 
       btn.disabled = true;
@@ -1311,9 +1506,27 @@
 
     // === INITIALIZATION ===
     window.addEventListener('DOMContentLoaded', () => {
+      initAssignedPlan();
       selectType(selectedType);
       loadTemplates();
-      document.getElementById('wizard-title').addEventListener('input', updatePreview);
+
+      const titleEl = document.getElementById('wizard-title');
+      const descEl = document.getElementById('wizard-desc');
+
+      if (titleEl) {
+        titleEl.addEventListener('input', () => {
+          validateStep1();
+          updatePreview();
+        });
+      }
+      if (descEl) {
+        descEl.addEventListener('input', () => {
+          validateStep1();
+        });
+      }
+
+      validateStep1();
+      validateStep2();
     });
   </script>
 </body>

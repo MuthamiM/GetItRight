@@ -1233,8 +1233,11 @@
         </div>
 
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">Title</label>
-          <input type="text" id="create-title" required placeholder="e.g. Employee & Community Feedback Q4 2026" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border-color);font-size:13px;color:var(--text-main);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label style="font-size:12px;font-weight:700;color:var(--text-sub);">Title *</label>
+            <span style="font-size:11px;color:var(--text-sub);">Min 3, Max 200 chars</span>
+          </div>
+          <input type="text" id="create-title" required minlength="3" maxlength="200" placeholder="e.g. Employee & Community Feedback Q4 2026" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border-color);font-size:13px;color:var(--text-main);">
         </div>
 
         <div style="margin-bottom:16px;">
@@ -1248,8 +1251,11 @@
         </div>
 
         <div style="margin-bottom:20px;">
-          <label style="display:block;font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">Description / Context</label>
-          <textarea id="create-desc" rows="2" placeholder="Briefly state context or purpose..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border-color);font-size:13px;resize:vertical;color:var(--text-main);"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label style="font-size:12px;font-weight:700;color:var(--text-sub);">Description / Context *</label>
+            <span style="font-size:11px;color:var(--text-sub);">Min 5, Max 2000 chars</span>
+          </div>
+          <textarea id="create-desc" rows="2" required minlength="5" maxlength="2000" placeholder="Briefly state context or purpose..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border-color);font-size:13px;resize:vertical;color:var(--text-main);"></textarea>
         </div>
 
         <!-- Questions & Choices Builder -->
@@ -1758,8 +1764,8 @@
           fetch(`${API}/admin/dashboard-stats`),
           fetch(`${API}/observers`)
         ]);
-        if (pRes.ok) polls = await pRes.json();
-        if (sRes.ok) surveys = await sRes.json();
+        if (pRes.ok) polls = (await pRes.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        if (sRes.ok) surveys = (await sRes.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         if (uRes.ok) users = await uRes.json();
         if (cRes.ok) checkpoints = await cRes.json();
         if (rRes && rRes.ok) roles = await rRes.json();
@@ -2484,11 +2490,50 @@
       const track = document.getElementById('create-track').value;
       const desc = document.getElementById('create-desc').value.trim();
 
+      if (!title || title.length < 3 || title.length > 200) {
+        return alert(`Campaign title must be between 3 and 200 characters (current: ${title.length}).`);
+      }
+      if (!desc || desc.length < 5 || desc.length > 2000) {
+        return alert(`Description must be between 5 and 2000 characters (current: ${desc.length}).`);
+      }
+      if (!questionCards || !questionCards.length) {
+        return alert('Please configure at least 1 question.');
+      }
+
+      for (let i = 0; i < questionCards.length; i++) {
+        const q = questionCards[i];
+        const qText = (q.text || '').trim();
+        if (qText.length < 3 || qText.length > 200) {
+          return alert(`Question ${i + 1} prompt must be between 3 and 200 characters (current: ${qText.length}).`);
+        }
+        if (q.type === 'choice') {
+          const nonEmp = (q.choices || []).map(c => (c || '').trim()).filter(c => c.length > 0);
+          if (nonEmp.length < 2) {
+            return alert(`Question ${i + 1} requires at least 2 non-empty choice options.`);
+          }
+          for (let c of nonEmp) {
+            if (c.length > 200) return alert(`Choice option in Question ${i + 1} exceeds 200 characters.`);
+          }
+          const uniq = new Set(nonEmp.map(c => c.toLowerCase()));
+          if (uniq.size !== nonEmp.length) {
+            return alert(`Question ${i + 1} contains duplicate choice options.`);
+          }
+        }
+      }
+
+      const adminUser = JSON.parse(localStorage.getItem('gir_user') || '{}');
+      const plan = (adminUser.plan || 'pro').toLowerCase();
+      const token = localStorage.getItem('gir_token') || '';
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
       if (type === 'survey') {
         const questionsPayload = questionCards.map(q => {
-          const typedChoices = q.choices ? q.choices.filter(c => c && c.trim() !== '') : [];
+          const typedChoices = (q.choices || []).map(c => (c || '').trim()).filter(c => c.length > 0);
           return {
-            questionText: q.text || 'Untitled Question',
+            questionText: q.text.trim(),
             questionType: typedChoices.length > 0 ? 'choice' : 'text',
             options: typedChoices
           };
@@ -2497,9 +2542,9 @@
         try {
           const res = await fetch(`${API}/surveys`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
-              title, description: desc, track, plan: 'free', targetResponses: 500, questions: questionsPayload
+              title, description: desc, track, plan, targetResponses: 500, durationHours: 168, questions: questionsPayload
             })
           });
           if (res.ok) {
@@ -2507,18 +2552,18 @@
             closeCreateModal();
             loadAllData();
           } else {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
             alert('Error: ' + (err.detail || 'Could not create survey'));
           }
         } catch (err) { alert('Network error creating survey'); }
       } else {
-        const allChoices = questionCards.flatMap(q => q.choices || []).filter(c => c && c.trim());
+        const allChoices = questionCards.flatMap(q => q.choices || []).map(c => (c || '').trim()).filter(c => c.length > 0);
         try {
           const res = await fetch(`${API}/polls`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
-              title, description: desc, category: track, plan: 'free', options: allChoices.length ? allChoices : ['Open Response Input Field']
+              title, description: desc, category: track, plan, durationHours: 168, options: allChoices.length ? allChoices : ['Option A', 'Option B']
             })
           });
           if (res.ok) {
@@ -2526,7 +2571,7 @@
             closeCreateModal();
             loadAllData();
           } else {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({}));
             alert('Error: ' + (err.detail || 'Could not create poll'));
           }
         } catch (err) { alert('Network error creating poll'); }

@@ -982,7 +982,7 @@
       try {
         const res = await fetch(`${API_BASE}/surveys`);
         if (!res.ok) throw new Error("Failed to load surveys");
-        allSurveys = await res.json();
+        allSurveys = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         
         document.getElementById('active-surveys-pill').textContent = `${allSurveys.length} Live Surveys`;
         renderSurveys(allSurveys);

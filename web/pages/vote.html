@@ -626,7 +626,7 @@
       try {
         const res = await fetch(`${API_BASE}/polls`);
         if (!res.ok) throw new Error("Failed to load polls");
-        allPolls = await res.json();
+        allPolls = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
         renderPollsFeed(allPolls);
       } catch (err) {

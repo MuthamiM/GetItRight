@@ -74,7 +74,7 @@ def get_current_profile(token_data: dict = Depends(get_current_user_token), db: 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else user.ConsoleUrl
+    redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else user.ConsoleUrl
     return UserOut(
         id=user.Id,
         fullName=user.FullName,
@@ -87,7 +87,7 @@ def get_current_profile(token_data: dict = Depends(get_current_user_token), db: 
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,
         consoleUrl=redirect_url,
-        isAdmin=(user.Role == "Admin")
+        isAdmin=(user.Role in ["Admin", "Super Admin"])
     )
 
 @router.post("/logout")

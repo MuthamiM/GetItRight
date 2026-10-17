@@ -46,7 +46,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
             detail="Invalid password provided."
         )
 
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else "/console/user.html"
+    redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else "/console/user.html"
     if user.ConsoleUrl != redirect_url:
         user.ConsoleUrl = redirect_url
         db.commit()
@@ -72,7 +72,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,
         consoleUrl=redirect_url,
-        isAdmin=(user.Role == "Admin")
+        isAdmin=(user.Role in ["Admin", "Super Admin"])
     )
 
     return AuthResponse(
@@ -80,7 +80,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         token=token,
         user=user_out,
         redirectUrl=redirect_url,
-        isAdmin=(user.Role == "Admin")
+        isAdmin=(user.Role in ["Admin", "Super Admin"])
     )
 
 def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
@@ -267,7 +267,7 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
         user.Organization = _plain_text(org, "Organization", 200)
     db.commit()
     db.refresh(user)
-    redirect_url = "/console/admin.html" if user.Role == "Admin" else user.ConsoleUrl
+    redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else user.ConsoleUrl
     return UserOut(
         id=user.Id,
         fullName=user.FullName,
@@ -285,7 +285,7 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,
         consoleUrl=redirect_url,
-        isAdmin=(user.Role == "Admin")
+        isAdmin=(user.Role in ["Admin", "Super Admin"])
     )
 
 def verify_user_token(db: Session, token_str: str) -> dict:
@@ -297,7 +297,7 @@ def verify_user_token(db: Session, token_str: str) -> dict:
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user or user.Status != "Active" or payload.get("tokenVersion") != (user.TokenVersion or 0):
         return {"valid": False, "user": None}
-    redirect_url = "/console/admin.html"
+    redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else user.ConsoleUrl
     user_out = UserOut(
         id=user.Id,
         fullName=user.FullName,
@@ -315,6 +315,6 @@ def verify_user_token(db: Session, token_str: str) -> dict:
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,
         consoleUrl=redirect_url,
-        isAdmin=(user.Role == "Admin")
+        isAdmin=(user.Role in ["Admin", "Super Admin"])
     )
     return {"valid": True, "user": user_out}

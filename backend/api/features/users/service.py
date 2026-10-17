@@ -25,7 +25,7 @@ def resolve_plan_key(raw: str) -> str:
     return _PLAN_NAME_TO_KEY.get(key, "free")
 
 def map_user(u: UserModel) -> UserDetailOut:
-    redirect_url = "/console/dashboard.html" if u.Role == "Admin" else u.ConsoleUrl
+    redirect_url = "/console/admin.html" if u.Role in ["Admin", "Super Admin"] else u.ConsoleUrl
     return UserDetailOut(
         id=u.Id,
         fullName=u.FullName,
@@ -42,7 +42,7 @@ def map_user(u: UserModel) -> UserDetailOut:
         pollsQuota=u.PollsQuota,
         consoleUrl=redirect_url,
         lastLogin=u.LastLogin,
-        isAdmin=(u.Role == "Admin")
+        isAdmin=(u.Role in ["Admin", "Super Admin"])
     )
 
 def list_users(db: Session, plan: Optional[str] = None) -> List[UserDetailOut]:
@@ -103,7 +103,7 @@ def update_user_status(db: Session, user_id: str, update_data: UserStatusUpdate)
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {user_id} not found")
-    if user.Role == "Admin":
+    if user.Role in ["Admin", "Super Admin"]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot modify the primary Admin status.")
     if update_data.status not in {"Active", "Suspended"}:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Status must be Active or Suspended")

@@ -17,6 +17,10 @@ class InMemoryRateLimiter(BaseHTTPMiddleware):
             return await call_next(request)
 
         client_ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "127.0.0.1")
+        # Exempt local development and loopback requests to avoid developer lockout
+        if client_ip in ["127.0.0.1", "::1", "localhost", "testclient"]:
+            return await call_next(request)
+
         now = time.time()
 
         path = request.url.path

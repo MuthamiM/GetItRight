@@ -45,6 +45,6 @@ def get_optional_current_user_token(
 
 def require_admin(payload: dict = Depends(get_current_user_token)) -> dict:
     role = payload.get("role")
-    if role != "Admin":
+    if role not in ["Admin", "Super Admin"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Platform administrator authorization required")
     return payload
