@@ -54,7 +54,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _pickDob() async {
     final now = DateTime.now();
-    final initial = DateTime(now.year - 20, now.month, now.day);
+    DateTime initial = DateTime(now.year - 20, now.month, now.day);
+    if (_dobController.text.trim().isNotEmpty) {
+      try {
+        final parsed = DateTime.parse(_dobController.text.trim());
+        if (parsed.isBefore(now) && parsed.isAfter(DateTime(1920))) {
+          initial = parsed;
+        }
+      } catch (_) {}
+    }
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -593,6 +601,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _buildPillInput(
                     controller: _fullNameController,
                     hint: 'Full Name',
+                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
                 ],
@@ -602,6 +611,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   hint: 'Email / Username',
                   keyboardType: TextInputType.emailAddress,
+                  prefixIcon: const Icon(Icons.mail_outline, color: Color(0xFFB8BAC0), size: 20),
                 ),
 
                 const SizedBox(height: 14),
@@ -611,6 +621,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   hint: 'Password',
                   obscureText: true,
+                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFB8BAC0), size: 20),
                 ),
 
                 if (_isSignUp) ...[
@@ -621,10 +632,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: 'Date of Birth (YYYY-MM-DD)',
                     readOnly: true,
                     onTap: _pickDob,
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_month, color: Color(0xFFB8BAC0), size: 20),
-                      onPressed: _pickDob,
-                    ),
+                    prefixIcon: const Icon(Icons.calendar_today_outlined, color: Color(0xFFB8BAC0), size: 20),
+                    suffixIcon: const Icon(Icons.calendar_month, color: Color(0xFFF2F2F3), size: 24),
                   ),
                   const SizedBox(height: 14),
                   // National ID Field
@@ -632,10 +641,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _nationalIdController,
                     hint: 'National ID Number',
                     keyboardType: TextInputType.number,
-                    suffixIcon: const Padding(
-                      padding: EdgeInsets.only(right: 12),
-                      child: Icon(Icons.badge_outlined, color: Color(0xFFB8BAC0), size: 20),
-                    ),
+                    prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
                   // County Field with Searchable Bottom Sheet
@@ -644,20 +650,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: 'Select County',
                     readOnly: true,
                     onTap: _pickCounty,
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFB8BAC0), size: 24),
-                      onPressed: _pickCounty,
-                    ),
+                    prefixIcon: const Icon(Icons.location_on_outlined, color: Color(0xFFB8BAC0), size: 20),
+                    suffixIcon: const Icon(Icons.arrow_drop_down, color: Color(0xFFF2F2F3), size: 26),
                   ),
                   const SizedBox(height: 14),
                   _buildPillInput(
                     controller: _orgController,
                     hint: 'Organization Name (Optional)',
+                    prefixIcon: const Icon(Icons.business_outlined, color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
                   _buildPillInput(
                     controller: _roleController,
                     hint: 'Sector / Role (Optional)',
+                    prefixIcon: const Icon(Icons.work_outline, color: Color(0xFFB8BAC0), size: 20),
                   ),
                 ],
 
@@ -777,53 +783,74 @@ class _LoginScreenState extends State<LoginScreen> {
     TextInputType? keyboardType,
     bool readOnly = false,
     VoidCallback? onTap,
+    Widget? prefixIcon,
     Widget? suffixIcon,
   }) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: const Color(0xFF2E3035),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: const Color(0xFF6B6E76).withOpacity(0.35),
-          width: 1.2,
-        ),
-      ),
-      alignment: Alignment.center,
-      padding: EdgeInsets.only(left: 24, right: suffixIcon != null ? 8 : 24),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        readOnly: readOnly,
-        onTap: onTap,
-        textAlign: TextAlign.center,
-        enableInteractiveSelection: !readOnly,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-        cursorColor: Colors.white,
-        decoration: InputDecoration(
-          filled: false,
-          fillColor: Colors.transparent,
-          hintText: hint,
-          hintStyle: const TextStyle(
-            color: Color(0xFFB8BAC0),
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(25),
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2E3035),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: const Color(0xFF6B6E76).withOpacity(0.35),
+            width: 1.2,
           ),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          isDense: true,
-          suffixIcon: suffixIcon,
-          prefixIcon: null,
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            if (prefixIcon != null) ...[
+              prefixIcon,
+              const SizedBox(width: 8),
+            ] else
+              const SizedBox(width: 20),
+            Expanded(
+              child: IgnorePointer(
+                ignoring: readOnly,
+                child: TextField(
+                  controller: controller,
+                  obscureText: obscureText,
+                  keyboardType: keyboardType,
+                  readOnly: readOnly,
+                  onTap: onTap,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  cursorColor: Colors.white,
+                  decoration: InputDecoration(
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    hintText: hint,
+                    hintStyle: const TextStyle(
+                      color: Color(0xFFB8BAC0),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ),
+            if (suffixIcon != null) ...[
+              const SizedBox(width: 8),
+              suffixIcon,
+            ] else
+              const SizedBox(width: 20),
+          ],
         ),
       ),
     );

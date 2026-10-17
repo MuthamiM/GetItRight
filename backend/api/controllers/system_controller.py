@@ -21,7 +21,7 @@ class SystemController:
 
     @staticmethod
     def app_version(version: str = None) -> dict:
-        current_versions = ("2.1.5", "2.1.4", "2.1.3", "2.1.2", "2.1.1", "2.1", "v2.1.5", "v2.1.4", "v2.1.3", "v2.1.2", "v2.1.1", "2.1.0", "v2.1.0", "2.0.0", "2.0", "v2.0", "v2")
+        current_versions = ("2.1.6", "2.1.5", "2.1.4", "2.1.3", "2.1.2", "2.1.1", "2.1", "v2.1.6", "v2.1.5", "v2.1.4", "v2.1.3", "v2.1.2", "v2.1.1", "2.1.0", "v2.1.0", "2.0.0", "2.0", "v2.0", "v2")
         is_older = (version is not None and version.strip() not in current_versions)
         return {
             "latest_version": settings.VERSION,

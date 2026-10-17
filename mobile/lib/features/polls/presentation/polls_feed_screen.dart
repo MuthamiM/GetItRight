@@ -365,6 +365,53 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'
   ];
 
+  Future<void> _pickDobForPolls(
+      BuildContext context,
+      TextEditingController controller,
+      void Function(void Function()) setDialogState) async {
+    final now = DateTime.now();
+    DateTime initial = DateTime(now.year - 20, now.month, now.day);
+    if (controller.text.trim().isNotEmpty) {
+      try {
+        final parsed = DateTime.parse(controller.text.trim());
+        if (parsed.isBefore(now) && parsed.isAfter(DateTime(1920))) {
+          initial = parsed;
+        }
+      } catch (_) {}
+    }
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1920),
+      lastDate: now,
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: 'SELECT DATE OF BIRTH',
+      fieldLabelText: 'DOB (YYYY-MM-DD)',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFF2F2F3),
+              onPrimary: Color(0xFF1F2023),
+              surface: Color(0xFF2E3035),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF1F2023),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final formatted =
+          "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      setDialogState(() {
+        controller.text = formatted;
+      });
+    }
+  }
+
   Future<bool> _showVoterDemographicsDialog(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     if (!context.mounted) return false;
@@ -455,31 +502,49 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const Text('Date of Birth (DD/MM/YYYY)',
+                    const Text('Date of Birth (YYYY-MM-DD)',
                         style: TextStyle(
                             color: Color(0xFFE5E5E5),
                             fontSize: 12,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-                    TextField(
-                      controller: dobController,
-                      style: const TextStyle(
-                          color: Color(0xFFE5E5E5), fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: 'e.g. 15/08/1995',
-                        hintStyle: const TextStyle(color: Color(0xFF888888)),
-                        filled: true,
-                        fillColor: const Color(0xFF404040),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                const BorderSide(color: Color(0xFF606060))),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                                const BorderSide(color: Color(0xFF606060))),
+                    InkWell(
+                      onTap: () => _pickDobForPolls(
+                          dialogCtx, dobController, setDialogState),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF404040),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF606060)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today_outlined,
+                                color: Color(0xFFB8BAC0), size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                dobController.text.isEmpty
+                                    ? 'Select Date of Birth (YYYY-MM-DD)'
+                                    : dobController.text,
+                                style: TextStyle(
+                                  color: dobController.text.isEmpty
+                                      ? const Color(0xFF888888)
+                                      : const Color(0xFFE5E5E5),
+                                  fontSize: 13,
+                                  fontWeight: dobController.text.isEmpty
+                                      ? FontWeight.normal
+                                      : FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Icon(Icons.calendar_month,
+                                color: Color(0xFFE5E5E5), size: 22),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),

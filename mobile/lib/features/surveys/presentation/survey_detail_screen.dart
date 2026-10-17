@@ -86,6 +86,50 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     super.dispose();
   }
 
+  Future<void> _pickDob() async {
+    final now = DateTime.now();
+    DateTime initial = DateTime(now.year - 20, now.month, now.day);
+    if (_dobController.text.trim().isNotEmpty) {
+      try {
+        final parsed = DateTime.parse(_dobController.text.trim());
+        if (parsed.isBefore(now) && parsed.isAfter(DateTime(1920))) {
+          initial = parsed;
+        }
+      } catch (_) {}
+    }
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1920),
+      lastDate: now,
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: 'SELECT DATE OF BIRTH',
+      fieldLabelText: 'DOB (YYYY-MM-DD)',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFF2F2F3),
+              onPrimary: Color(0xFF1F2023),
+              surface: Color(0xFF2E3035),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF1F2023),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final formatted =
+          "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      setState(() {
+        _dobController.text = formatted;
+      });
+    }
+  }
+
   Future<void> _processPreVerification() async {
     final dob = _dobController.text.trim();
     final zip = _zipController.text.trim();
@@ -343,9 +387,16 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
 
           const SizedBox(height: 24),
 
-          const Text('Date of Birth (DD/MM/YYYY)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+          const Text('Date of Birth (YYYY-MM-DD)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
-          _buildPillInput(controller: _dobController, hint: 'e.g. 15/08/1992'),
+          _buildPillInput(
+            controller: _dobController,
+            hint: 'Date of Birth (YYYY-MM-DD)',
+            readOnly: true,
+            onTap: _pickDob,
+            prefixIcon: const Icon(Icons.calendar_today_outlined, color: Color(0xFFB8B8B8), size: 20),
+            suffixIcon: const Icon(Icons.calendar_month, color: Colors.white, size: 22),
+          ),
 
           const SizedBox(height: 16),
 
@@ -553,28 +604,55 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     required TextEditingController controller,
     required String hint,
     TextInputType? keyboardType,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
   }) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: const Color(0xFF505050),
-        borderRadius: BorderRadius.circular(25),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      alignment: Alignment.centerLeft,
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-        cursorColor: Colors.white,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 14),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          isDense: true,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(25),
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF505050),
+          borderRadius: BorderRadius.circular(25),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        alignment: Alignment.centerLeft,
+        child: Row(
+          children: [
+            if (prefixIcon != null) ...[
+              prefixIcon,
+              const SizedBox(width: 8),
+            ],
+            Expanded(
+              child: IgnorePointer(
+                ignoring: readOnly,
+                child: TextField(
+                  controller: controller,
+                  keyboardType: keyboardType,
+                  readOnly: readOnly,
+                  onTap: onTap,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  cursorColor: Colors.white,
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 14),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ),
+            if (suffixIcon != null) ...[
+              const SizedBox(width: 8),
+              suffixIcon,
+            ],
+          ],
         ),
       ),
     );
