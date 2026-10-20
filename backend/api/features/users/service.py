@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from backend.api.features.auth.models import UserModel
 from backend.api.features.users.schemas import UserDetailOut, UserStatusUpdate, CreateUserRequest, UpdateUserPlanRequest
 from backend.api.core.security import get_password_hash
-from backend.api.core.identity import normalize_email
+from backend.api.core.identity import normalize_email, normalize_phone
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
@@ -49,6 +49,7 @@ def map_user(u: UserModel) -> UserDetailOut:
         id=u.Id,
         fullName=u.FullName,
         email=u.Email,
+        phoneNumber=u.PhoneNumber,
         role=u.Role,
         plan=None if is_admin else u.Plan,
         planName=None if is_admin else u.PlanName,
@@ -152,11 +153,31 @@ def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest, is_a
     if not is_admin:
         current_rank = PLAN_TIER_RANK.get((user.Plan or "free").lower(), 0)
         target_rank = PLAN_TIER_RANK.get(plan_key.lower(), 0)
-        if target_rank <= current_rank:
+        if target_rank < current_rank:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="You can only switch plans by upgrading to a higher tier."
             )
+
+    if req.phoneNumber is not None and req.phoneNumber.strip():
+        phone = req.phoneNumber.strip()
+        phone_canonical = normalize_phone(phone)
+        if not phone_canonical:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Enter a valid phone number.",
+            )
+        duplicate_phone = db.query(UserModel.Id).filter(
+            UserModel.PhoneCanonical == phone_canonical,
+            UserModel.Id != user.Id,
+        ).first()
+        if duplicate_phone:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this phone number already exists.",
+            )
+        user.PhoneNumber = phone
+        user.PhoneCanonical = phone_canonical
 
     meta = PLAN_METADATA[plan_key]
     user.Plan = plan_key
@@ -164,8 +185,14 @@ def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest, is_a
     user.ConsoleUrl = "/console/user.html" if user.Role == "Customer" else "/console/admin.html"
     user.VoterQuota = meta["voters"]
     user.PollsQuota = meta["polls"]
-    user.TokenVersion = (user.TokenVersion or 0) + 1
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this phone number already exists.",
+        )
     db.refresh(user)
     return map_user(user)
 

@@ -102,10 +102,10 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
 
   Future<void> _loadExistingPhone() async {
     final prefs = await SharedPreferences.getInstance();
-    final existingPhone = prefs.getString('gir_user_phone')
-        ?? widget.userData['phone']?.toString()
-        ?? widget.userData['phoneNumber']?.toString()
-        ?? '';
+    final existingPhone = prefs.getString('gir_user_phone') ??
+        widget.userData['phone']?.toString() ??
+        widget.userData['phoneNumber']?.toString() ??
+        '';
     if (existingPhone.isNotEmpty && mounted) {
       setState(() {
         _phoneController.text = existingPhone;
@@ -126,14 +126,34 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
     final userId = widget.userData['id']?.toString() ?? 'USR-001';
     final phone = _phoneController.text.trim();
 
-    await _apiClient.updatePlan(userId, _selectedPlan);
+    final planUpdated = await _apiClient.updatePlan(
+      userId,
+      _selectedPlan,
+      phoneNumber: phone,
+    );
+    if (!planUpdated) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Could not update your plan. Check your connection and try again.'),
+            backgroundColor: Color(0xFFE5E5E5),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('gir_user_plan', _selectedPlan);
     await prefs.setString('gir_user_id', userId);
-    await prefs.setString('gir_user_phone', phone);
-    await prefs.setString('gir_user_name',
-        widget.userData['fullName']?.toString() ?? 'User');
+    if (phone.isNotEmpty) {
+      await prefs.setString('gir_user_phone', phone);
+    }
+    await prefs.setString(
+        'gir_user_name', widget.userData['fullName']?.toString() ?? 'User');
 
     if (mounted) {
       setState(() => _isSaving = false);
@@ -212,22 +232,30 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFF5A7A5A)),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
                       child: Row(
                         children: [
-                          const Icon(Icons.check_circle, color: Color(0xFF7BC47F), size: 20),
+                          const Icon(Icons.check_circle,
+                              color: Color(0xFF7BC47F), size: 20),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               'Phone linked: ${_phoneController.text}',
-                              style: const TextStyle(color: Color(0xFFD0E8D0), fontSize: 13, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                  color: Color(0xFFD0E8D0),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600),
                             ),
                           ),
                           GestureDetector(
                             onTap: () => setState(() => _phoneLinked = false),
                             child: const Text(
                               'Edit',
-                              style: TextStyle(color: Color(0xFF9AC09E), fontSize: 12, decoration: TextDecoration.underline),
+                              style: TextStyle(
+                                  color: Color(0xFF9AC09E),
+                                  fontSize: 12,
+                                  decoration: TextDecoration.underline),
                             ),
                           ),
                         ],
@@ -240,15 +268,19 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFF606060)),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 2),
                       child: TextField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 14),
                         decoration: const InputDecoration(
-                          icon: Icon(Icons.phone_android, color: Colors.white70, size: 20),
+                          icon: Icon(Icons.phone_android,
+                              color: Colors.white70, size: 20),
                           hintText: 'Phone Number (optional, +254...)',
-                          hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+                          hintStyle:
+                              TextStyle(color: Colors.white38, fontSize: 13),
                           border: InputBorder.none,
                         ),
                       ),
@@ -276,8 +308,8 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
 
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 12),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: isSelected
@@ -285,7 +317,8 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                           : const Color(0xFF404040),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: isSelected ? Colors.white : const Color(0xFF606060),
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF606060),
                         width: isSelected ? 2.0 : 1.0,
                       ),
                       boxShadow: isSelected

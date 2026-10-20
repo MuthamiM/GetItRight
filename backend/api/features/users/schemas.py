@@ -5,6 +5,7 @@ class UserDetailOut(BaseModel):
     id: str
     fullName: str
     email: str
+    phoneNumber: Optional[str] = None
     role: str
     plan: Optional[str] = None
     planName: Optional[str] = None
@@ -34,6 +35,7 @@ class UpdateUserStatusRequest(BaseModel):
 
 class UpdateUserPlanRequest(BaseModel):
     plan: str
+    phoneNumber: Optional[str] = None
 
 class UpdateUserRoleRequest(BaseModel):
     role: str

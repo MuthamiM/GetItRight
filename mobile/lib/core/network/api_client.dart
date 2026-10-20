@@ -162,19 +162,30 @@ class ApiClient {
       String pollId, String voterIdNumber,
       {String? voterKey}) async {
     final headers = await _jsonHeaders();
+    final hasIdentity =
+        voterIdNumber.isNotEmpty || (voterKey != null && voterKey.isNotEmpty);
+    if (!hasIdentity && !headers.containsKey('Authorization')) return null;
     for (final url in _orderedBaseUrls) {
       try {
-        final response = await http
-            .post(
-              Uri.parse('$url/polls/$pollId/vote-status'),
-              headers: headers,
-              body: json.encode({
-                if (voterIdNumber.isNotEmpty) 'voterIdNumber': voterIdNumber,
-                if (voterKey != null && voterKey.isNotEmpty)
-                  'voterKey': voterKey,
-              }),
-            )
-            .timeout(const Duration(seconds: 4));
+        final response = hasIdentity
+            ? await http
+                .post(
+                  Uri.parse('$url/polls/$pollId/vote-status'),
+                  headers: headers,
+                  body: json.encode({
+                    if (voterIdNumber.isNotEmpty)
+                      'voterIdNumber': voterIdNumber,
+                    if (voterKey != null && voterKey.isNotEmpty)
+                      'voterKey': voterKey,
+                  }),
+                )
+                .timeout(const Duration(seconds: 4))
+            : await http
+                .get(
+                  Uri.parse('$url/polls/$pollId/vote-status'),
+                  headers: headers,
+                )
+                .timeout(const Duration(seconds: 4));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
@@ -429,6 +440,83 @@ class ApiClient {
     return null;
   }
 
+  /// Revalidate a saved login against the database-backed auth endpoint.
+  /// Locally cached profile fields alone never count as an authenticated session.
+  Future<Map<String, dynamic>?> fetchCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('gir_token');
+    if (token == null || token.isEmpty) return null;
+
+    for (final url in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .get(
+              Uri.parse('$url/auth/me'),
+              headers: await _jsonHeaders(),
+            )
+            .timeout(const Duration(seconds: 5));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = url;
+          final decoded = json.decode(response.body);
+          return decoded is Map<String, dynamic> ? decoded : null;
+        }
+        if (response.statusCode == 401 || response.statusCode == 403) {
+          await prefs.remove('gir_token');
+          return null;
+        }
+        if (response.statusCode < 500) return null;
+      } catch (_) {
+        // Try the configured API replica if the primary is unavailable.
+      }
+    }
+    return null;
+  }
+
+  /// Persist editable profile fields on the authenticated account in the DB.
+  Future<Map<String, dynamic>> updateUserProfile({
+    String? phoneNumber,
+    String? organization,
+  }) async {
+    var lastError = 'Could not save your profile changes. Try again.';
+    final body = <String, dynamic>{
+      if (phoneNumber != null) 'phoneNumber': phoneNumber.trim(),
+      if (organization != null) 'organization': organization.trim(),
+    };
+
+    for (final url in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .put(
+              Uri.parse('$url/auth/profile'),
+              headers: await _jsonHeaders(),
+              body: json.encode(body),
+            )
+            .timeout(const Duration(seconds: 5));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = url;
+          final decoded = json.decode(response.body);
+          return {
+            'success': true,
+            'user':
+                decoded is Map<String, dynamic> ? decoded : <String, dynamic>{},
+          };
+        }
+
+        try {
+          final decoded = json.decode(response.body);
+          if (decoded is Map<String, dynamic>) {
+            lastError = decoded['detail']?.toString() ?? lastError;
+          }
+        } catch (_) {}
+        if (response.statusCode < 500) break;
+      } catch (_) {
+        lastError =
+            'Could not reach the account server. Check your connection and try again.';
+      }
+    }
+    return {'success': false, 'error': lastError};
+  }
+
   Future<Map<String, dynamic>?> login(String email, String password) async {
     String lastError =
         'Could not sign in. Check your connection and try again.';
@@ -576,14 +664,19 @@ class ApiClient {
     return fallback;
   }
 
-  Future<bool> updatePlan(String userId, String plan) async {
-    for (final url in baseUrls) {
+  Future<bool> updatePlan(String userId, String plan,
+      {String? phoneNumber}) async {
+    for (final url in _orderedBaseUrls) {
       try {
         final response = await http
             .post(
-              Uri.parse('$url/users/$userId/plan'),
-              headers: {'Content-Type': 'application/json'},
-              body: json.encode({'plan': plan}),
+              Uri.parse('$url/users/${Uri.encodeComponent(userId)}/plan'),
+              headers: await _jsonHeaders(),
+              body: json.encode({
+                'plan': plan,
+                if (phoneNumber != null && phoneNumber.trim().isNotEmpty)
+                  'phoneNumber': phoneNumber.trim(),
+              }),
             )
             .timeout(const Duration(seconds: 4));
         if (response.statusCode == 200) {
@@ -869,7 +962,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.21';
+    const currentAppVersion = '2.1.22';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');

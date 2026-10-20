@@ -7,6 +7,7 @@ import 'features/polls/presentation/polls_feed_screen.dart';
 import 'features/surveys/presentation/surveys_feed_screen.dart';
 import 'features/dashboard/presentation/org_dashboard_screen.dart';
 import 'features/profile/presentation/profile_settings_screen.dart';
+import 'core/network/api_client.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,7 @@ class RootNavigationCoordinator extends StatefulWidget {
 
 class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
   bool _isLoggedIn = false;
+  bool _isCheckingSession = true;
   String _userRole = 'user';
   int _currentIndex = 0;
   String _userName = 'User';
@@ -59,30 +61,56 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('gir_user_id');
     final sessionToken = prefs.getString('gir_token');
-    final role = prefs.getString('gir_user_role') ?? 'user';
-    final plan = prefs.getString('gir_user_plan') ?? 'free';
-    final name = prefs.getString('gir_user_name') ?? 'User';
-
-    // Older app builds could create local fallback users. Cached profile data
-    // without a server-issued token is not an authenticated session.
-    if (userId != null &&
-        userId.isNotEmpty &&
-        sessionToken != null &&
-        sessionToken.isNotEmpty) {
-      if (mounted) {
-        setState(() {
-          _isLoggedIn = true;
-          _userRole = role;
-          _currentPlan = plan;
-          _userName = name;
-          _currentIndex = (role == 'admin' || role == 'org') ? 2 : 0;
-        });
-        _requestNotificationPermissionIfNeeded();
-      }
-    } else {
+    if (userId == null ||
+        userId.isEmpty ||
+        sessionToken == null ||
+        sessionToken.isEmpty) {
       await prefs.remove('gir_user_id');
       await prefs.remove('gir_token');
+      if (mounted) setState(() => _isCheckingSession = false);
+      return;
     }
+
+    // A locally stored token is only a session hint. Confirm it with the
+    // database-backed API before opening the authenticated app.
+    final user = await ApiClient().fetchCurrentUser();
+    if (!mounted) return;
+    if (user == null) {
+      // If the token was revoked/expired the API helper removed it. Keep a
+      // still-present token when the service could not be reached so startup
+      // can be retried without silently discarding a valid session.
+      if (prefs.getString('gir_token') == null) {
+        await prefs.remove('gir_user_id');
+      }
+      setState(() => _isCheckingSession = false);
+      return;
+    }
+
+    final role = (user['role'] ?? 'user').toString().toLowerCase();
+    final plan = user['plan']?.toString().trim();
+    final name = user['fullName']?.toString().trim();
+    await prefs.setString('gir_user_id', user['id']?.toString() ?? userId);
+    await prefs.setString('gir_user_role', role);
+    if (plan != null && plan.isNotEmpty) {
+      await prefs.setString('gir_user_plan', plan);
+    }
+    if (name != null && name.isNotEmpty) {
+      await prefs.setString('gir_user_name', name);
+    }
+    final email = user['email']?.toString().trim();
+    if (email != null && email.isNotEmpty) {
+      await prefs.setString('gir_user_email', email);
+    }
+
+    setState(() {
+      _isLoggedIn = true;
+      _isCheckingSession = false;
+      _userRole = role;
+      _currentPlan = (plan != null && plan.isNotEmpty) ? plan : 'free';
+      _userName = (name != null && name.isNotEmpty) ? name : 'User';
+      _currentIndex = (role == 'admin' || role == 'org') ? 2 : 0;
+    });
+    _requestNotificationPermissionIfNeeded();
   }
 
   Future<void> _requestNotificationPermissionIfNeeded() async {
@@ -204,6 +232,14 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isCheckingSession) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF1F2023),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFFF2F2F3)),
+        ),
+      );
+    }
     if (!_isLoggedIn) {
       return LoginScreen(onLoginSuccess: _onLogin);
     }

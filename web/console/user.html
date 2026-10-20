@@ -338,14 +338,6 @@
       color: var(--charcoal) !important;
       font-weight: 700 !important;
     }
-    .sidebar .logout {
-      margin-top: auto;
-      color: var(--color-red) !important;
-    }
-    .sidebar .logout:hover {
-      background: #FDECEA !important;
-      color: #B71C1C !important;
-    }
 
     /* Main Content Area */
     main {
@@ -1188,7 +1180,7 @@
       html, body, .shell { height: auto; overflow: visible; }
       .layout { display: block; height: auto; overflow: visible; }
       .sidebar { width: 100%; height: auto; display: flex; overflow-x: auto; padding: 8px; gap: 5px; }
-      .sidebar h3, .sidebar .logout { display: none; }
+      .sidebar h3 { display: none; }
       .nav { white-space: nowrap; width: auto; }
       main { padding: 16px; height: auto; overflow: visible; }
       .grid { grid-template-columns: 1fr; }
@@ -1344,7 +1336,6 @@
         <button class="nav" data-section="polls">My polls</button>
         <button class="nav" data-section="surveys">My surveys</button>
         <button class="nav" data-section="profile">Profile & Plan</button>
-        <button class="nav logout" id="sidebar-logout">Log out</button>
       </aside>
 
       <main>
@@ -3901,7 +3892,6 @@
     }
 
     document.getElementById('logout').onclick = logout;
-    document.getElementById('sidebar-logout').onclick = logout;
     document.getElementById('refresh').onclick = () => loadDashboard();
     document.getElementById('create-survey').onclick = () => location.href = 'create.html?type=survey';
     document.getElementById('create-poll').onclick = () => location.href = 'create.html?type=poll';

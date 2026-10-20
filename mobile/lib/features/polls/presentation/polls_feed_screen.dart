@@ -136,10 +136,17 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         prefs.getString('gir_user_national_id') ??
         '';
     final savedVoterKey = prefs.getString('gir_voter_key');
-    final serverVoteStatuses = savedNationalId.isNotEmpty ||
-            savedVoterKey != null
-        ? await Future.wait(polls.map((poll) => _apiClient
-            .getVoteStatus(poll.id, savedNationalId, voterKey: savedVoterKey)))
+    final hasAccountSession = (prefs.getString('gir_token') ?? '').isNotEmpty;
+    final hasIdentity = savedNationalId.isNotEmpty ||
+        (savedVoterKey != null && savedVoterKey.isNotEmpty);
+    final serverVoteStatuses = hasAccountSession || hasIdentity
+        ? await Future.wait(polls.map((poll) => _apiClient.getVoteStatus(
+              poll.id,
+              // An authenticated session is checked by account ID. Do not
+              // carry a device-wide ID or voter key across signed-in accounts.
+              hasAccountSession ? '' : savedNationalId,
+              voterKey: hasAccountSession ? null : savedVoterKey,
+            )))
         : List<Map<String, dynamic>?>.filled(polls.length, null);
     final now = DateTime.now();
 
@@ -175,20 +182,10 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         p.selectedOptionId = null;
       }
 
-      // Never hide the Zak Syengo / Kitui East poll!
+      // Keep server-confirmed votes visible so users can always see their
+      // VOTED status after signing in again. Only expire old ended polls from
+      // the feed; their ballot status remains stored on the server.
       if (!isZak) {
-        // 1. Check if user voted on this poll over 5 hours ago
-        final votedTimeStr = serverStatus?['hasVoted'] == true
-            ? prefs.getString('gir_voted_time_${p.id}')
-            : null;
-        if (votedTimeStr != null) {
-          final votedTime = DateTime.tryParse(votedTimeStr);
-          if (votedTime != null && now.difference(votedTime).inHours >= 5) {
-            continue; // Hide 5 hours after vote
-          }
-        }
-
-        // 2. Only expire closed/ended polls where countdown expired over 5 hours ago
         if (p.status == 'closed' || p.status == 'ended') {
           final deadline = p.createdAt.add(const Duration(hours: 24));
           if (now.isAfter(deadline.add(const Duration(hours: 5)))) {
@@ -1293,21 +1290,47 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                     children: [
                                                       if (poll.selectedOptionId !=
                                                           null) ...[
-                                                        const Icon(Icons.check,
-                                                            size: 12,
-                                                            color: Color(
-                                                                0xFFE5E5E5)),
-                                                        const SizedBox(
-                                                            width: 3),
-                                                        const Text(
-                                                          'Voted',
-                                                          style: TextStyle(
-                                                            color: Color(
-                                                                0xFFE5E5E5),
-                                                            fontSize: 11,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            letterSpacing: 0.3,
+                                                        Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 9,
+                                                                  vertical: 5),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: const Color(
+                                                                0xFFF2F2F3),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        30),
+                                                          ),
+                                                          child: const Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Icon(Icons.check,
+                                                                  size: 12,
+                                                                  color: Color(
+                                                                      0xFF2E3035)),
+                                                              SizedBox(
+                                                                  width: 4),
+                                                              Text(
+                                                                'VOTED',
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: Color(
+                                                                      0xFF2E3035),
+                                                                  fontSize: 9,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w900,
+                                                                  letterSpacing:
+                                                                      0.6,
+                                                                ),
+                                                              ),
+                                                            ],
                                                           ),
                                                         ),
                                                         const SizedBox(

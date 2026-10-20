@@ -51,6 +51,7 @@ class UserOut(BaseModel):
     id: str
     fullName: str
     email: str
+    phoneNumber: Optional[str] = None
     role: str
     plan: Optional[str] = None
     planName: Optional[str] = None

@@ -67,6 +67,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         id=user.Id,
         fullName=user.FullName,
         email=user.Email,
+        phoneNumber=user.PhoneNumber,
         role=user.Role,
         plan=None if is_admin else user.Plan,
         planName=None if is_admin else user.PlanName,

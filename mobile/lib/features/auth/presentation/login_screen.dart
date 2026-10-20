@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final ApiClient _apiClient = ApiClient();
   bool _isSignUp = false;
   bool _isLoading = false;
+  bool _showPassword = false;
   String? _errorMessage;
 
   final _fullNameController = TextEditingController();
@@ -31,13 +32,53 @@ class _LoginScreenState extends State<LoginScreen> {
   final _roleController = TextEditingController();
 
   static const List<String> _kenyanCounties = [
-    'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa',
-    'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi',
-    'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu',
-    'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa',
-    'Murang\'a', 'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua',
-    'Nyeri', 'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi',
-    'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
+    'Baringo',
+    'Bomet',
+    'Bungoma',
+    'Busia',
+    'Elgeyo-Marakwet',
+    'Embu',
+    'Garissa',
+    'Homa Bay',
+    'Isiolo',
+    'Kajiado',
+    'Kakamega',
+    'Kericho',
+    'Kiambu',
+    'Kilifi',
+    'Kirinyaga',
+    'Kisii',
+    'Kisumu',
+    'Kitui',
+    'Kwale',
+    'Laikipia',
+    'Lamu',
+    'Machakos',
+    'Makueni',
+    'Mandera',
+    'Marsabit',
+    'Meru',
+    'Migori',
+    'Mombasa',
+    'Murang\'a',
+    'Nairobi',
+    'Nakuru',
+    'Nandi',
+    'Narok',
+    'Nyamira',
+    'Nyandarua',
+    'Nyeri',
+    'Samburu',
+    'Siaya',
+    'Taita-Taveta',
+    'Tana River',
+    'Tharaka-Nithi',
+    'Trans Nzoia',
+    'Turkana',
+    'Uasin Gishu',
+    'Vihiga',
+    'Wajir',
+    'West Pokot',
   ];
 
   @override
@@ -142,11 +183,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       hintText: 'Search county...',
                       hintStyle: const TextStyle(color: Color(0xFF8E929B)),
-                      prefixIcon: const Icon(Icons.search, color: Color(0xFF8E929B)),
+                      prefixIcon:
+                          const Icon(Icons.search, color: Color(0xFF8E929B)),
                       filled: true,
                       fillColor: const Color(0xFF2E3035),
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
@@ -166,13 +208,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           title: Text(
                             county,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFFD0D0D0),
-                              fontWeight:
-                                  isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFFD0D0D0),
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(Icons.check, color: Colors.white, size: 20)
+                              ? const Icon(Icons.check,
+                                  color: Colors.white, size: 20)
                               : null,
                           onTap: () => Navigator.of(context).pop(county),
                         );
@@ -219,11 +265,13 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       if (_nationalIdController.text.trim().isEmpty) {
-        setState(() => _errorMessage = 'Please provide correct details: National ID is required.');
+        setState(() => _errorMessage =
+            'Please provide correct details: National ID is required.');
         return;
       }
       if (!RegExp(r'^\d{5,12}$').hasMatch(_nationalIdController.text.trim())) {
-        setState(() => _errorMessage = 'Please provide correct details: National ID must contain 5–12 numbers only.');
+        setState(() => _errorMessage =
+            'Please provide correct details: National ID must contain 5–12 numbers only.');
         return;
       }
       if (_countyController.text.trim().isEmpty) {
@@ -266,12 +314,14 @@ class _LoginScreenState extends State<LoginScreen> {
           userData = loginRes['user'] as Map<String, dynamic>;
           sessionToken = loginRes['token']?.toString();
         } else {
-          throw Exception('Sign-in did not return an authenticated account. Please try again.');
+          throw Exception(
+              'Sign-in did not return an authenticated account. Please try again.');
         }
       }
 
       if (sessionToken == null || sessionToken.isEmpty) {
-        throw Exception('Sign-in failed to create a secure session. Please try again.');
+        throw Exception(
+            'Sign-in failed to create a secure session. Please try again.');
       }
 
       final role = (userData['role'] ?? 'Customer').toString().toLowerCase();
@@ -281,36 +331,44 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         await prefs.remove('gir_token');
       }
-      await prefs.setString('gir_user_id', userData['id']?.toString() ?? 'USR-101');
+      await prefs.setString(
+          'gir_user_id', userData['id']?.toString() ?? 'USR-101');
       await prefs.setString('gir_user_role', role);
-      await prefs.setString('gir_user_email', userData['email']?.toString() ?? email);
-      await prefs.setString('gir_user_name', userData['fullName']?.toString() ?? 'User');
+      await prefs.setString(
+          'gir_user_email', userData['email']?.toString() ?? email);
+      await prefs.setString(
+          'gir_user_name', userData['fullName']?.toString() ?? 'User');
 
-      final phone = userData['phone']?.toString() ?? userData['phoneNumber']?.toString() ?? '';
+      final phone = userData['phone']?.toString() ??
+          userData['phoneNumber']?.toString() ??
+          '';
       if (phone.isNotEmpty) {
         await prefs.setString('gir_user_phone', phone);
       }
       if (_isSignUp) {
         await prefs.setString('gir_user_dob', _dobController.text.trim());
-        await prefs.setString('gir_user_national_id', _nationalIdController.text.trim());
+        await prefs.setString(
+            'gir_user_national_id', _nationalIdController.text.trim());
         await prefs.setString('gir_user_county', _countyController.text.trim());
       }
 
       final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
       final serverPlan = userData['plan']?.toString().trim();
       final cachedPlan = prefs.getString('gir_user_plan');
-      final savedPlan = serverPlan != null && serverPlan.isNotEmpty
-          ? serverPlan
-          : cachedPlan;
+      final savedPlan =
+          serverPlan != null && serverPlan.isNotEmpty ? serverPlan : cachedPlan;
 
       if (mounted) {
         // If signing in (not newly signing up) or if plan is already present, proceed straight to app
-        if (!_isSignUp || planChosen || (savedPlan != null && savedPlan.isNotEmpty)) {
+        if (!_isSignUp ||
+            planChosen ||
+            (savedPlan != null && savedPlan.isNotEmpty)) {
           if (savedPlan != null && savedPlan.isNotEmpty) {
             await prefs.setString('gir_user_plan', savedPlan);
             await prefs.setBool('gir_plan_chosen', true);
           }
-          widget.onLoginSuccess(role == 'admin' || role == 'org' ? 'org' : 'user');
+          widget.onLoginSuccess(
+              role == 'admin' || role == 'org' ? 'org' : 'user');
         } else {
           if (!mounted) return;
           final navigator = Navigator.of(context);
@@ -322,7 +380,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   final p = await SharedPreferences.getInstance();
                   await p.setBool('gir_plan_chosen', true);
                   navigator.pop();
-                  widget.onLoginSuccess(role == 'admin' || role == 'org' ? 'org' : 'user');
+                  widget.onLoginSuccess(
+                      role == 'admin' || role == 'org' ? 'org' : 'user');
                 },
               ),
             ),
@@ -333,10 +392,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       var message = e.toString().replaceFirst('Exception: ', '').trim();
       final lower = message.toLowerCase();
-      if (lower.contains('socketexception') || lower.contains('failed host lookup') || lower.contains('timed out')) {
-        message = 'Could not connect to IcapsQ. Check your internet connection and try again.';
-      } else if (lower.contains('format_exception') || lower.contains('type \'') || lower.contains('null')) {
-        message = 'The server returned an unexpected response. Please try again shortly.';
+      if (lower.contains('socketexception') ||
+          lower.contains('failed host lookup') ||
+          lower.contains('timed out')) {
+        message =
+            'Could not connect to IcapsQ. Check your internet connection and try again.';
+      } else if (lower.contains('format_exception') ||
+          lower.contains('type \'') ||
+          lower.contains('null')) {
+        message =
+            'The server returned an unexpected response. Please try again shortly.';
       }
       setState(() => _errorMessage = message.isEmpty
           ? 'Could not complete your request. Check your details and try again.'
@@ -347,7 +412,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showForgotPasswordDialog() {
-    final resetEmailController = TextEditingController(text: _emailController.text.trim());
+    final resetEmailController =
+        TextEditingController(text: _emailController.text.trim());
     final otpController = TextEditingController();
     final newPasswordController = TextEditingController();
     bool otpSent = false;
@@ -362,14 +428,19 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF424242),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               title: const Row(
                 children: [
-                  Icon(Icons.mark_email_read_outlined, color: Colors.white, size: 24),
+                  Icon(Icons.mark_email_read_outlined,
+                      color: Colors.white, size: 24),
                   SizedBox(width: 10),
                   Text(
                     'Reset Password',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
                   ),
                 ],
               ),
@@ -382,18 +453,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       otpSent
                           ? 'A 6-digit OTP code and password reset link have been sent to your email. Enter the OTP code below to confirm your identity and set a new password.'
                           : 'Enter your registered account email below. We will send a 6-digit OTP code and reset link to confirm your email.',
-                      style: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 13),
+                      style: const TextStyle(
+                          color: Color(0xFFB8B8B8), fontSize: 13),
                     ),
                     const SizedBox(height: 14),
-
                     if (resetError != null) ...[
                       Text(
                         resetError!,
-                        style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Color(0xFFFF6B6B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 10),
                     ],
-
                     if (statusNotice != null) ...[
                       Container(
                         padding: const EdgeInsets.all(10),
@@ -404,23 +477,32 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: Text(
                           statusNotice!,
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
                         ),
                       ),
                       const SizedBox(height: 14),
                     ],
-
-                    const Text('Account Email', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    const Text('Account Email',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
                     _buildPillInput(
                       controller: resetEmailController,
                       hint: 'user@example.com',
                       keyboardType: TextInputType.emailAddress,
                     ),
-
                     if (otpSent) ...[
                       const SizedBox(height: 14),
-                      const Text('6-Digit OTP Code', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('6-Digit OTP Code',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       _buildPillInput(
                         controller: otpController,
@@ -428,7 +510,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 14),
-                      const Text('New Password', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('New Password',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(height: 6),
                       _buildPillInput(
                         controller: newPasswordController,
@@ -441,8 +527,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: isSubmitting ? null : () => Navigator.of(context).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Color(0xFFB8B8B8))),
+                  onPressed:
+                      isSubmitting ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: Color(0xFFB8B8B8))),
                 ),
                 ElevatedButton(
                   onPressed: isSubmitting
@@ -451,7 +539,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           final email = resetEmailController.text.trim();
 
                           if (email.isEmpty || !email.contains('@')) {
-                            setDialogState(() => resetError = 'Valid email address required');
+                            setDialogState(() =>
+                                resetError = 'Valid email address required');
                             return;
                           }
 
@@ -470,7 +559,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (res['otp'] != null) {
                                 otpController.text = res['otp'].toString();
                               }
-                              statusNotice = res['message'] ?? 'OTP code and reset link sent to $email';
+                              statusNotice = res['message'] ??
+                                  'OTP code and reset link sent to $email';
                             });
                           } else {
                             // Step 2: Verify OTP & Reset Password
@@ -478,11 +568,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             final newPass = newPasswordController.text;
 
                             if (otp.length < 4) {
-                              setDialogState(() => resetError = 'Please enter the 6-digit OTP code');
+                              setDialogState(() => resetError =
+                                  'Please enter the 6-digit OTP code');
                               return;
                             }
                             if (newPass.length < 4) {
-                              setDialogState(() => resetError = 'New password must be at least 4 characters');
+                              setDialogState(() => resetError =
+                                  'New password must be at least 4 characters');
                               return;
                             }
 
@@ -494,7 +586,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               resetError = null;
                             });
 
-                            final res = await _apiClient.verifyOTPAndResetPassword(
+                            final res =
+                                await _apiClient.verifyOTPAndResetPassword(
                               email: email,
                               otp: otp,
                               newPassword: newPass,
@@ -507,8 +600,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               messenger.showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    res['message'] ?? 'Email confirmed with OTP! Password reset successfully.',
-                                    style: const TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+                                    res['message'] ??
+                                        'Email confirmed with OTP! Password reset successfully.',
+                                    style: const TextStyle(
+                                        color: Color(0xFF2A2A2A),
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   backgroundColor: const Color(0xFFE5E5E5),
                                   duration: const Duration(seconds: 4),
@@ -520,13 +616,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE5E5E5),
                     foregroundColor: const Color(0xFF2A2A2A),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   child: isSubmitting
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2A2A2A)),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Color(0xFF2A2A2A)),
                         )
                       : Text(
                           otpSent ? 'Confirm OTP & Reset' : 'Send OTP to Email',
@@ -580,7 +678,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   _buildPillInput(
                     controller: _fullNameController,
                     hint: 'Full Name',
-                    prefixIcon: const Icon(Icons.person_outline, color: Color(0xFFB8BAC0), size: 20),
+                    prefixIcon: const Icon(Icons.person_outline,
+                        color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
                 ],
@@ -590,7 +689,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   hint: 'Email / Username',
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.mail_outline, color: Color(0xFFB8BAC0), size: 20),
+                  prefixIcon: const Icon(Icons.mail_outline,
+                      color: Color(0xFFB8BAC0), size: 20),
                 ),
 
                 const SizedBox(height: 14),
@@ -599,8 +699,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 _buildPillInput(
                   controller: _passwordController,
                   hint: 'Password',
-                  obscureText: true,
-                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFB8BAC0), size: 20),
+                  obscureText: !_showPassword,
+                  prefixIcon: const Icon(Icons.lock_outline,
+                      color: Color(0xFFB8BAC0), size: 20),
+                  suffixIcon: IconButton(
+                    onPressed: () =>
+                        setState(() => _showPassword = !_showPassword),
+                    icon: Icon(
+                      _showPassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: const Color(0xFFB8BAC0),
+                      size: 20,
+                    ),
+                    tooltip: _showPassword ? 'Hide password' : 'Show password',
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 40),
+                  ),
                 ),
 
                 if (_isSignUp) ...[
@@ -611,8 +727,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: '',
                     readOnly: true,
                     onTap: _pickDob,
-                    prefixIcon: const Icon(Icons.calendar_today_outlined, color: Color(0xFFB8BAC0), size: 20),
-                    suffixIcon: const Icon(Icons.calendar_month, color: Color(0xFFF2F2F3), size: 24),
+                    prefixIcon: const Icon(Icons.calendar_today_outlined,
+                        color: Color(0xFFB8BAC0), size: 20),
+                    suffixIcon: const Icon(Icons.calendar_month,
+                        color: Color(0xFFF2F2F3), size: 24),
                   ),
                   const SizedBox(height: 14),
                   // National ID Field
@@ -624,7 +742,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(12),
                     ],
-                    prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFB8BAC0), size: 20),
+                    prefixIcon: const Icon(Icons.badge_outlined,
+                        color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
                   // County Field with Searchable Bottom Sheet
@@ -633,20 +752,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: 'Select County',
                     readOnly: true,
                     onTap: _pickCounty,
-                    prefixIcon: const Icon(Icons.location_on_outlined, color: Color(0xFFB8BAC0), size: 20),
-                    suffixIcon: const Icon(Icons.arrow_drop_down, color: Color(0xFFF2F2F3), size: 26),
+                    prefixIcon: const Icon(Icons.location_on_outlined,
+                        color: Color(0xFFB8BAC0), size: 20),
+                    suffixIcon: const Icon(Icons.arrow_drop_down,
+                        color: Color(0xFFF2F2F3), size: 26),
                   ),
                   const SizedBox(height: 14),
                   _buildPillInput(
                     controller: _orgController,
                     hint: 'Organization Name (Optional)',
-                    prefixIcon: const Icon(Icons.business_outlined, color: Color(0xFFB8BAC0), size: 20),
+                    prefixIcon: const Icon(Icons.business_outlined,
+                        color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
                   _buildPillInput(
                     controller: _roleController,
                     hint: 'Sector / Role (Optional)',
-                    prefixIcon: const Icon(Icons.work_outline, color: Color(0xFFB8BAC0), size: 20),
+                    prefixIcon: const Icon(Icons.work_outline,
+                        color: Color(0xFFB8BAC0), size: 20),
                   ),
                 ],
 
@@ -737,7 +860,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const Text(' • ', style: TextStyle(color: Color(0xFF888888), fontSize: 12)),
+                    const Text(' • ',
+                        style:
+                            TextStyle(color: Color(0xFF888888), fontSize: 12)),
                     GestureDetector(
                       onTap: () => LegalDialogs.showPrivacyPolicy(context),
                       child: const Text(
@@ -751,7 +876,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                ],
+              ],
             ),
           ),
         ),

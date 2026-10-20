@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../legal/presentation/legal_dialogs.dart';
 import '../../../core/network/api_client.dart';
 
@@ -14,12 +15,12 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  static const _background = Color(0xFF191B20);
-  static const _surface = Color(0xFF24272E);
-  static const _surfaceBorder = Color(0xFF353943);
-  static const _primaryText = Color(0xFFF3F4F6);
-  static const _secondaryText = Color(0xFFAEB3BE);
-  static const _accent = Color(0xFF9DB2FF);
+  static const _background = AppColors.graphite900;
+  static const _surface = AppColors.graphite700;
+  static const _surfaceBorder = Color(0xFF565960);
+  static const _primaryText = AppColors.graphite50;
+  static const _secondaryText = AppColors.graphite300;
+  static const _accent = AppColors.graphite50;
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -28,6 +29,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   bool _notificationsEnabled = true;
   bool _isPlanLoading = true;
+  bool _planUnavailable = false;
   String _userPlan = '';
 
   @override
@@ -48,8 +50,9 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       _orgController.text = prefs.getString('gir_user_org') ?? 'Independent';
       _notificationsEnabled =
           prefs.getBool('gir_notifications_enabled') ?? true;
-      _userPlan = prefs.getString('gir_user_plan') ?? '';
+      _userPlan = '';
       _isPlanLoading = true;
+      _planUnavailable = false;
     });
 
     final userId = prefs.getString('gir_user_id');
@@ -61,8 +64,15 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       final remotePlan = remoteUser['plan']?.toString().trim();
       if (remotePlan != null && remotePlan.isNotEmpty) {
         _userPlan = remotePlan;
+        _planUnavailable = false;
         await prefs.setString('gir_user_plan', remotePlan);
         await prefs.setBool('gir_plan_chosen', true);
+      } else if (remoteUser['isAdmin'] == true ||
+          (remoteUser['role']?.toString().toLowerCase().contains('admin') ??
+              false)) {
+        _userPlan = 'admin';
+      } else {
+        _planUnavailable = true;
       }
 
       final remoteName = remoteUser['fullName']?.toString().trim();
@@ -86,6 +96,8 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         _orgController.text = remoteOrganization;
         await prefs.setString('gir_user_org', remoteOrganization);
       }
+    } else {
+      _planUnavailable = true;
     }
 
     setState(() => _isPlanLoading = false);
@@ -129,7 +141,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               const Text(
                 '© 2026 IcapsQ. All rights reserved.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF777D88), fontSize: 11),
+                style: TextStyle(color: AppColors.graphite500, fontSize: 11),
               ),
             ],
           ),
@@ -149,10 +161,10 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF30384C), Color(0xFF24272E)],
+          colors: [AppColors.graphite700, AppColors.graphite900],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF434B60)),
+        border: Border.all(color: _surfaceBorder),
       ),
       child: Row(
         children: [
@@ -160,15 +172,15 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             width: 62,
             height: 62,
             decoration: BoxDecoration(
-              color: const Color(0xFF46577D),
+              color: AppColors.graphite50,
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF7F94C3), width: 1.2),
+              border: Border.all(color: Colors.white, width: 1.2),
             ),
             alignment: Alignment.center,
             child: Text(
               initial,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.graphite900,
                 fontSize: 25,
                 fontWeight: FontWeight.w700,
               ),
@@ -219,7 +231,9 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           Border.all(color: planColor.withValues(alpha: 0.4)),
                     ),
                     child: Text(
-                      _planDisplayName(_userPlan),
+                      _planUnavailable
+                          ? 'PLAN UNAVAILABLE'
+                          : _planDisplayName(_userPlan),
                       style: TextStyle(
                         color: planColor,
                         fontSize: 11,
@@ -233,7 +247,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
           const SizedBox(width: 8),
           const Icon(Icons.verified_user_outlined,
-              color: Color(0xFF9AA8C5), size: 21),
+              color: AppColors.graphite50, size: 21),
         ],
       ),
     );
@@ -296,8 +310,8 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 value: _notificationsEnabled,
                 activeColor: Colors.white,
                 activeTrackColor: _accent,
-                inactiveThumbColor: const Color(0xFFB1B5BE),
-                inactiveTrackColor: const Color(0xFF444953),
+                inactiveThumbColor: AppColors.graphite300,
+                inactiveTrackColor: const Color(0xFF4B4D53),
                 onChanged: _setNotifications,
               ),
             ),
@@ -305,7 +319,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             _buildSettingsRow(
               icon: Icons.phone_android_rounded,
               title: 'IcapsQ app',
-              subtitle: 'Version 2.1.21  ·  Build 26',
+              subtitle: 'Version 2.1.22  ·  Build 27',
               trailing: const SizedBox(width: 8),
             ),
             _buildDivider(),
@@ -336,7 +350,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         child: Text(
           title,
           style: const TextStyle(
-            color: Color(0xFF969EAE),
+            color: AppColors.graphite300,
             fontSize: 10,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.15,
@@ -385,7 +399,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: controller.text.isEmpty
-                          ? const Color(0xFF848B99)
+                          ? AppColors.graphite300
                           : _primaryText,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -398,7 +412,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             Icon(
               editable ? Icons.edit_outlined : Icons.lock_outline_rounded,
               size: 17,
-              color: const Color(0xFF8F96A3),
+              color: AppColors.graphite300,
             ),
           ],
         ),
@@ -434,7 +448,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: const Color(0xFF303641),
+          color: const Color(0xFF414349),
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.center,
@@ -443,7 +457,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Widget _buildDivider() => const Padding(
         padding: EdgeInsets.only(left: 65, right: 16),
-        child: Divider(height: 1, color: Color(0xFF373B45)),
+        child: Divider(height: 1, color: Color(0xFF55575D)),
       );
 
   String _planDisplayName(String plan) {
@@ -464,17 +478,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }
 
   Color _planColor(String plan) {
-    switch (plan.trim().toLowerCase()) {
-      case 'pro':
-        return const Color(0xFFB8C7FF);
-      case 'org':
-      case 'organization':
-        return const Color(0xFFD2B7FF);
-      case 'election':
-        return const Color(0xFF9DE0C3);
-      default:
-        return const Color(0xFFC2C9D5);
-    }
+    return _accent;
   }
 
   Future<void> _editAccountField({
@@ -490,7 +494,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final updatedValue = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF252831),
+        backgroundColor: AppColors.graphite900,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Edit $label',
             style: const TextStyle(color: _primaryText, fontSize: 18)),
@@ -504,7 +508,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             hintText: hint,
             hintStyle: const TextStyle(color: _secondaryText),
             enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF555C69))),
+                borderSide: BorderSide(color: _surfaceBorder)),
             focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: _accent)),
           ),
@@ -526,9 +530,32 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     draftController.dispose();
     if (updatedValue == null || !mounted) return;
 
+    final response = await ApiClient().updateUserProfile(
+      phoneNumber: preferenceKey == 'gir_user_phone' ? updatedValue : null,
+      organization: preferenceKey == 'gir_user_org'
+          ? (updatedValue.isEmpty ? 'Independent' : updatedValue)
+          : null,
+    );
+    if (!mounted) return;
+    if (response['success'] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['error']?.toString() ??
+              'Could not save your profile changes. Try again.'),
+          backgroundColor: const Color(0xFFE5E5E5),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    final savedValue = preferenceKey == 'gir_user_org' && updatedValue.isEmpty
+        ? 'Independent'
+        : updatedValue;
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(preferenceKey, updatedValue);
-    setState(() => controller.text = updatedValue);
+    await prefs.setString(preferenceKey, savedValue);
+    setState(() => controller.text = savedValue);
     widget.onSettingsUpdated();
   }
 }
