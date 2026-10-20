@@ -402,6 +402,33 @@ class ApiClient {
     return '$webUrl/${type == "poll" ? "pages/vote.html?poll_id=" : "pages/surveys.html?survey_id="}$id$userToken';
   }
 
+  /// Fetch the current account record so cached profile details (especially
+  /// the plan) stay in sync with changes made in the web console.
+  Future<Map<String, dynamic>?> fetchUserProfile(String userId) async {
+    for (final url in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .get(
+              Uri.parse('$url/users/${Uri.encodeComponent(userId)}'),
+              headers: await _jsonHeaders(),
+            )
+            .timeout(const Duration(seconds: 4));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = url;
+          final decoded = json.decode(response.body);
+          if (decoded is! Map<String, dynamic>) return null;
+          final user = decoded['user'];
+          if (user is Map<String, dynamic>) return user;
+          return decoded;
+        }
+        if (response.statusCode < 500) return null;
+      } catch (_) {
+        // Try the next configured API endpoint.
+      }
+    }
+    return null;
+  }
+
   Future<Map<String, dynamic>?> login(String email, String password) async {
     String lastError =
         'Could not sign in. Check your connection and try again.';
@@ -842,7 +869,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.20';
+    const currentAppVersion = '2.1.21';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');

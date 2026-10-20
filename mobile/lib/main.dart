@@ -46,6 +46,8 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
       GlobalKey<PollsFeedScreenState>();
   final GlobalKey<SurveysFeedScreenState> _surveysKey =
       GlobalKey<SurveysFeedScreenState>();
+  final GlobalKey<ProfileSettingsScreenState> _profileKey =
+      GlobalKey<ProfileSettingsScreenState>();
 
   @override
   void initState() {
@@ -63,8 +65,10 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
 
     // Older app builds could create local fallback users. Cached profile data
     // without a server-issued token is not an authenticated session.
-    if (userId != null && userId.isNotEmpty &&
-        sessionToken != null && sessionToken.isNotEmpty) {
+    if (userId != null &&
+        userId.isNotEmpty &&
+        sessionToken != null &&
+        sessionToken.isNotEmpty) {
       if (mounted) {
         setState(() {
           _isLoggedIn = true;
@@ -211,12 +215,14 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
             PollsFeedScreen(key: _pollsKey),
             SurveysFeedScreen(key: _surveysKey),
             const OrgDashboardScreen(),
-            ProfileSettingsScreen(onSettingsUpdated: _refreshState),
+            ProfileSettingsScreen(
+                key: _profileKey, onSettingsUpdated: _refreshState),
           ]
         : [
             PollsFeedScreen(key: _pollsKey),
             SurveysFeedScreen(key: _surveysKey),
-            ProfileSettingsScreen(onSettingsUpdated: _refreshState),
+            ProfileSettingsScreen(
+                key: _profileKey, onSettingsUpdated: _refreshState),
           ];
 
     final int safeIndex = _currentIndex < screens.length ? _currentIndex : 0;
@@ -336,6 +342,10 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           type: BottomNavigationBarType.fixed,
           onTap: (index) {
+            final profileIndex = isOrgAdmin ? 3 : 2;
+            if (index == profileIndex) {
+              _profileKey.currentState?.refreshProfile();
+            }
             if (index == _currentIndex) {
               // Already on this tab — scroll to top
               if (index == 0) {

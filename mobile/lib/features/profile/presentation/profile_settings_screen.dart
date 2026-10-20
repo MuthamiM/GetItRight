@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../legal/presentation/legal_dialogs.dart';
+import '../../../core/network/api_client.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
   final VoidCallback onSettingsUpdated;
@@ -8,26 +10,36 @@ class ProfileSettingsScreen extends StatefulWidget {
   const ProfileSettingsScreen({super.key, required this.onSettingsUpdated});
 
   @override
-  State<ProfileSettingsScreen> createState() => _ProfileSettingsScreenState();
+  ProfileSettingsScreenState createState() => ProfileSettingsScreenState();
 }
 
-class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
+  static const _background = Color(0xFF191B20);
+  static const _surface = Color(0xFF24272E);
+  static const _surfaceBorder = Color(0xFF353943);
+  static const _primaryText = Color(0xFFF3F4F6);
+  static const _secondaryText = Color(0xFFAEB3BE);
+  static const _accent = Color(0xFF9DB2FF);
+
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _orgController = TextEditingController();
 
   bool _notificationsEnabled = true;
-  String _userPlan = 'free';
+  bool _isPlanLoading = true;
+  String _userPlan = '';
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    refreshProfile();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> refreshProfile() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+
     setState(() {
       _nameController.text = prefs.getString('gir_user_name') ?? 'User';
       _emailController.text =
@@ -36,8 +48,48 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       _orgController.text = prefs.getString('gir_user_org') ?? 'Independent';
       _notificationsEnabled =
           prefs.getBool('gir_notifications_enabled') ?? true;
-      _userPlan = prefs.getString('gir_user_plan') ?? 'free';
+      _userPlan = prefs.getString('gir_user_plan') ?? '';
+      _isPlanLoading = true;
     });
+
+    final userId = prefs.getString('gir_user_id');
+    final remoteUser =
+        userId == null ? null : await ApiClient().fetchUserProfile(userId);
+    if (!mounted) return;
+
+    if (remoteUser != null) {
+      final remotePlan = remoteUser['plan']?.toString().trim();
+      if (remotePlan != null && remotePlan.isNotEmpty) {
+        _userPlan = remotePlan;
+        await prefs.setString('gir_user_plan', remotePlan);
+        await prefs.setBool('gir_plan_chosen', true);
+      }
+
+      final remoteName = remoteUser['fullName']?.toString().trim();
+      if (remoteName != null && remoteName.isNotEmpty) {
+        _nameController.text = remoteName;
+        await prefs.setString('gir_user_name', remoteName);
+      }
+      final remoteEmail = remoteUser['email']?.toString().trim();
+      if (remoteEmail != null && remoteEmail.isNotEmpty) {
+        _emailController.text = remoteEmail;
+        await prefs.setString('gir_user_email', remoteEmail);
+      }
+      final remotePhone =
+          (remoteUser['phone'] ?? remoteUser['phoneNumber'])?.toString().trim();
+      if (remotePhone != null && remotePhone.isNotEmpty) {
+        _phoneController.text = remotePhone;
+        await prefs.setString('gir_user_phone', remotePhone);
+      }
+      final remoteOrganization = remoteUser['organization']?.toString().trim();
+      if (remoteOrganization != null && remoteOrganization.isNotEmpty) {
+        _orgController.text = remoteOrganization;
+        await prefs.setString('gir_user_org', remoteOrganization);
+      }
+    }
+
+    setState(() => _isPlanLoading = false);
+    widget.onSettingsUpdated();
   }
 
   Future<void> _setNotifications(bool value) async {
@@ -59,193 +111,241 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF303030),
+      color: _background,
       child: SafeArea(
         top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-          children: [
-            Row(children: [
-              Container(
-                width: 58,
-                height: 58,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF505050),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.person_outline_rounded,
-                    color: Colors.white, size: 32),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                  child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                      _nameController.text.isEmpty
-                          ? 'Your profile'
-                          : _nameController.text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  Text('Plan: ${_planDisplayName(_userPlan)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Color(0xFFB8B8B8), fontSize: 13)),
-                ],
-              )),
-            ]),
-            const SizedBox(height: 24),
-            _buildAccountInformationCard(),
-            const SizedBox(height: 18),
-            const Text('© 2026 IcapsQ. All rights reserved.',
+        child: RefreshIndicator(
+          onRefresh: refreshProfile,
+          color: _accent,
+          backgroundColor: _surface,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+            children: [
+              _buildProfileHeader(),
+              const SizedBox(height: 18),
+              _buildAccountAndSettingsCard(),
+              const SizedBox(height: 18),
+              const Text(
+                '© 2026 IcapsQ. All rights reserved.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF929292), fontSize: 11)),
+                style: TextStyle(color: Color(0xFF777D88), fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    final name = _nameController.text.trim();
+    final initial = name.isEmpty ? 'U' : name.characters.first.toUpperCase();
+    final planColor = _planColor(_userPlan);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF30384C), Color(0xFF24272E)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF434B60)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 62,
+            height: 62,
+            decoration: BoxDecoration(
+              color: const Color(0xFF46577D),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF7F94C3), width: 1.2),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              initial,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name.isEmpty ? 'Your profile' : name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _primaryText,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_isPlanLoading)
+                  Row(
+                    children: const [
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.7,
+                          color: _accent,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Checking current plan',
+                        style: TextStyle(color: _secondaryText, fontSize: 12),
+                      ),
+                    ],
+                  )
+                else
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: planColor.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(30),
+                      border:
+                          Border.all(color: planColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      _planDisplayName(_userPlan),
+                      style: TextStyle(
+                        color: planColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.verified_user_outlined,
+              color: Color(0xFF9AA8C5), size: 21),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountAndSettingsCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _surfaceBorder),
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x26000000), blurRadius: 18, offset: Offset(0, 8)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader('ACCOUNT DETAILS'),
+            _buildAccountRow(
+              icon: Icons.person_outline_rounded,
+              label: 'Username',
+              controller: _nameController,
+              hint: 'Name',
+            ),
+            _buildDivider(),
+            _buildAccountRow(
+              icon: Icons.alternate_email_rounded,
+              label: 'Email address',
+              controller: _emailController,
+              hint: 'Email',
+              keyboardType: TextInputType.emailAddress,
+            ),
+            _buildDivider(),
+            _buildAccountRow(
+              icon: Icons.phone_outlined,
+              label: 'Linked phone number',
+              controller: _phoneController,
+              preferenceKey: 'gir_user_phone',
+              hint: '+254 700 000 000',
+              keyboardType: TextInputType.phone,
+            ),
+            _buildDivider(),
+            _buildAccountRow(
+              icon: Icons.apartment_rounded,
+              label: 'Organization',
+              controller: _orgController,
+              preferenceKey: 'gir_user_org',
+              hint: 'Independent',
+            ),
+            _buildSectionHeader('PREFERENCES & ABOUT'),
+            _buildSettingsRow(
+              icon: Icons.notifications_active_outlined,
+              title: 'Push notifications',
+              subtitle: 'Poll updates and results',
+              trailing: Switch(
+                value: _notificationsEnabled,
+                activeColor: Colors.white,
+                activeTrackColor: _accent,
+                inactiveThumbColor: const Color(0xFFB1B5BE),
+                inactiveTrackColor: const Color(0xFF444953),
+                onChanged: _setNotifications,
+              ),
+            ),
+            _buildDivider(),
+            _buildSettingsRow(
+              icon: Icons.phone_android_rounded,
+              title: 'IcapsQ app',
+              subtitle: 'Version 2.1.21  ·  Build 26',
+              trailing: const SizedBox(width: 8),
+            ),
+            _buildDivider(),
+            _buildSettingsRow(
+              icon: Icons.description_outlined,
+              title: 'Terms of Service',
+              trailing: const Icon(Icons.chevron_right_rounded,
+                  color: _secondaryText, size: 23),
+              onTap: () => LegalDialogs.showTermsOfService(context),
+            ),
+            _buildDivider(),
+            _buildSettingsRow(
+              icon: Icons.shield_outlined,
+              title: 'Privacy Policy',
+              trailing: const Icon(Icons.chevron_right_rounded,
+                  color: _secondaryText, size: 23),
+              onTap: () => LegalDialogs.showPrivacyPolicy(context),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
   }
 
-  Widget _settingsActionRow(
-          {required IconData icon,
-          required String title,
-          String? subtitle,
-          required Widget trailing,
-          VoidCallback? onTap}) =>
-      ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
-        leading: Icon(icon, color: const Color(0xFFD0D0D0), size: 22),
-        title: Text(title,
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600)),
-        subtitle: subtitle == null
-            ? null
-            : Text(subtitle,
-                style: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 12)),
-        trailing: trailing,
-      );
-
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-          color: Color(0xFFB8B8B8),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.0),
-    );
-  }
-
-  String _planDisplayName(String plan) {
-    switch (plan.trim().toLowerCase()) {
-      case 'pro':
-        return 'Pro';
-      case 'org':
-      case 'organization':
-        return 'Organization';
-      case 'election':
-        return 'Election';
-      default:
-        return 'Free';
-    }
-  }
-
-  Widget _buildAccountInformationCard() {
-    return Material(
-      color: const Color(0xFF505050),
-      borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
-            child: _buildSectionHeader('ACCOUNT INFORMATION'),
+  Widget _buildSectionHeader(String title) => Padding(
+        padding: const EdgeInsets.fromLTRB(17, 18, 16, 8),
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFF969EAE),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.15,
           ),
-          _buildAccountRow(
-            label: 'Username',
-            controller: _nameController,
-            hint: 'Name',
-          ),
-          _buildAccountDivider(),
-          _buildAccountRow(
-            label: 'Email Address',
-            controller: _emailController,
-            hint: 'Email',
-            keyboardType: TextInputType.emailAddress,
-          ),
-          _buildAccountDivider(),
-          _buildAccountRow(
-            label: 'Linked Phone Number',
-            controller: _phoneController,
-            preferenceKey: 'gir_user_phone',
-            hint: '+254 700 000 000',
-            keyboardType: TextInputType.phone,
-          ),
-          _buildAccountDivider(),
-          _buildAccountRow(
-            label: 'Organization Name',
-            controller: _orgController,
-            preferenceKey: 'gir_user_org',
-            hint: 'Organization',
-          ),
-          const SizedBox(height: 5),
-          _buildAccountDivider(),
-          _settingsActionRow(
-            icon: Icons.notifications_none_rounded,
-            title: 'Push notifications',
-            subtitle: 'Receive live updates and poll results',
-            trailing: Switch(
-              value: _notificationsEnabled,
-              activeColor: const Color(0xFFE5E5E5),
-              activeTrackColor: const Color(0xFF777777),
-              inactiveTrackColor: const Color(0xFF404040),
-              onChanged: _setNotifications,
-            ),
-          ),
-          _buildAccountDivider(),
-          _settingsActionRow(
-            icon: Icons.phone_android_rounded,
-            title: 'IcapsQ Official App',
-            subtitle: 'Version 2.1.20 · Build 25',
-            trailing: const SizedBox(width: 4),
-          ),
-          _buildAccountDivider(),
-          _settingsActionRow(
-            icon: Icons.info_outline_rounded,
-            title: 'Terms of Service',
-            trailing: const Icon(Icons.chevron_right_rounded,
-                color: Color(0xFFB8B8B8), size: 22),
-            onTap: () => LegalDialogs.showTermsOfService(context),
-          ),
-          _buildAccountDivider(),
-          _settingsActionRow(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
-            trailing: const Icon(Icons.chevron_right_rounded,
-                color: Color(0xFFB8B8B8), size: 22),
-            onTap: () => LegalDialogs.showPrivacyPolicy(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAccountDivider() => const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14),
-        child: Divider(height: 1, color: Color(0xFF666666)),
+        ),
       );
 
   Widget _buildAccountRow({
+    required IconData icon,
     required String label,
     required TextEditingController controller,
     required String hint,
@@ -253,61 +353,128 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     TextInputType? keyboardType,
   }) {
     final editable = preferenceKey != null;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: editable
-            ? () => _editAccountField(
-                  label: label,
-                  controller: controller,
-                  preferenceKey: preferenceKey,
-                  hint: hint,
-                  keyboardType: keyboardType,
-                )
-            : null,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
+    return InkWell(
+      onTap: editable
+          ? () => _editAccountField(
+                label: label,
+                controller: controller,
+                preferenceKey: preferenceKey,
+                hint: hint,
+                keyboardType: keyboardType,
+              )
+          : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        child: Row(
+          children: [
+            _iconTile(icon),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
                       style: const TextStyle(
-                        color: Color(0xFFD0D0D0),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
+                          color: _secondaryText,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  Text(
+                    controller.text.isEmpty ? hint : controller.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: controller.text.isEmpty
+                          ? const Color(0xFF848B99)
+                          : _primaryText,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      controller.text.isEmpty ? hint : controller.text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: controller.text.isEmpty
-                            ? const Color(0xFFB8B8B8)
-                            : Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Icon(
-                editable ? Icons.edit_outlined : Icons.lock_outline_rounded,
-                size: 18,
-                color: const Color(0xFFE5E5E5),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              editable ? Icons.edit_outlined : Icons.lock_outline_rounded,
+              size: 17,
+              color: const Color(0xFF8F96A3),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildSettingsRow({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required Widget trailing,
+    VoidCallback? onTap,
+  }) =>
+      ListTile(
+        onTap: onTap,
+        minLeadingWidth: 36,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+        leading: _iconTile(icon),
+        title: Text(title,
+            style: const TextStyle(
+                color: _primaryText,
+                fontSize: 14,
+                fontWeight: FontWeight.w600)),
+        subtitle: subtitle == null
+            ? null
+            : Text(subtitle,
+                style: const TextStyle(color: _secondaryText, fontSize: 11)),
+        trailing: trailing,
+      );
+
+  Widget _iconTile(IconData icon) => Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: const Color(0xFF303641),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, color: _accent, size: 19),
+      );
+
+  Widget _buildDivider() => const Padding(
+        padding: EdgeInsets.only(left: 65, right: 16),
+        child: Divider(height: 1, color: Color(0xFF373B45)),
+      );
+
+  String _planDisplayName(String plan) {
+    switch (plan.trim().toLowerCase()) {
+      case 'pro':
+        return 'PRO';
+      case 'org':
+      case 'organization':
+        return 'ORGANIZATION';
+      case 'election':
+        return 'ELECTION';
+      case 'free':
+      case '':
+        return 'FREE';
+      default:
+        return plan.toUpperCase();
+    }
+  }
+
+  Color _planColor(String plan) {
+    switch (plan.trim().toLowerCase()) {
+      case 'pro':
+        return const Color(0xFFB8C7FF);
+      case 'org':
+      case 'organization':
+        return const Color(0xFFD2B7FF);
+      case 'election':
+        return const Color(0xFF9DE0C3);
+      default:
+        return const Color(0xFFC2C9D5);
+    }
   }
 
   Future<void> _editAccountField({
@@ -323,36 +490,35 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final updatedValue = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF424242),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: const Color(0xFF252831),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Edit $label',
-            style: const TextStyle(color: Colors.white, fontSize: 18)),
+            style: const TextStyle(color: _primaryText, fontSize: 18)),
         content: TextField(
           controller: draftController,
           autofocus: true,
           keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.white),
-          cursorColor: Colors.white,
+          style: const TextStyle(color: _primaryText),
+          cursorColor: _accent,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFFB8B8B8)),
+            hintStyle: const TextStyle(color: _secondaryText),
             enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF888888))),
+                borderSide: BorderSide(color: Color(0xFF555C69))),
             focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFFE5E5E5))),
+                borderSide: BorderSide(color: _accent)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFFB8B8B8))),
+            child:
+                const Text('Cancel', style: TextStyle(color: _secondaryText)),
           ),
           TextButton(
             onPressed: () =>
                 Navigator.of(dialogContext).pop(draftController.text.trim()),
-            child:
-                const Text('Save', style: TextStyle(color: Color(0xFFE5E5E5))),
+            child: const Text('Save', style: TextStyle(color: _accent)),
           ),
         ],
       ),
@@ -362,7 +528,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(preferenceKey, updatedValue);
-    if (!mounted) return;
     setState(() => controller.text = updatedValue);
     widget.onSettingsUpdated();
   }

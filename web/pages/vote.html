@@ -754,6 +754,10 @@
           serverVotedPolls.set(poll.id, status);
           if (status.hasVoted) {
             lockPollOptions(poll.id, status.optionIndex);
+          } else {
+            // Clear legacy device-wide markers. They were shared across accounts
+            // and could incorrectly make this poll appear already voted.
+            localStorage.removeItem('gir_voted_poll_' + poll.id);
           }
         } catch (_) {}
       }));
@@ -762,7 +766,6 @@
     function lockPollOptions(pollId, optionIndex) {
       const hasOptionIndex = optionIndex !== null && optionIndex !== undefined && optionIndex !== '' &&
         Number.isInteger(Number(optionIndex)) && Number(optionIndex) >= 0;
-      localStorage.setItem('gir_voted_poll_' + pollId, hasOptionIndex ? String(optionIndex) : 'locked');
       const card = document.getElementById(`poll-card-${pollId}`);
       if (!card) return;
       card.querySelectorAll('.poll-opt-btn').forEach((button, index) => {
@@ -860,12 +863,13 @@
       const pageItems = currentFilteredPolls.slice(startIdx, startIdx + POLLS_PAGE_SIZE);
 
       container.innerHTML = pageItems.map(p => {
-        const savedVoteIdx = localStorage.getItem('gir_voted_poll_' + p.id);
         const serverStatus = serverVotedPolls.get(p.id);
-        const hasVoted = serverStatus?.hasVoted === true || savedVoteIdx !== null;
+        // Only a server-confirmed ballot for the signed-in identity locks options.
+        // Old local markers were device-wide and blocked other accounts.
+        const hasVoted = serverStatus?.hasVoted === true;
 
         const optionsHtml = (p.options || []).map(opt => {
-          const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : savedVoteIdx;
+          const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : null;
           const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(opt.index) === String(selectedVote);
           const votedClass = isVotedChoice ? 'voted' : '';
           return `

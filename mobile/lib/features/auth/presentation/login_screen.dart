@@ -297,7 +297,11 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
-      final savedPlan = prefs.getString('gir_user_plan') ?? userData['plan']?.toString();
+      final serverPlan = userData['plan']?.toString().trim();
+      final cachedPlan = prefs.getString('gir_user_plan');
+      final savedPlan = serverPlan != null && serverPlan.isNotEmpty
+          ? serverPlan
+          : cachedPlan;
 
       if (mounted) {
         // If signing in (not newly signing up) or if plan is already present, proceed straight to app

@@ -170,17 +170,17 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         prefs.remove('gir_voted_time_${p.id}');
         p.selectedOptionId = null;
       } else {
-        // Restore saved vote selection so refreshing home DOES NOT reset votes
-        final savedOptionId = prefs.getString('gir_voted_option_${p.id}');
-        if (savedOptionId != null) {
-          p.selectedOptionId = savedOptionId;
-        }
+        // Unknown status is not proof that this account voted. The old local
+        // selection cache was shared across accounts and disabled valid options.
+        p.selectedOptionId = null;
       }
 
       // Never hide the Zak Syengo / Kitui East poll!
       if (!isZak) {
         // 1. Check if user voted on this poll over 5 hours ago
-        final votedTimeStr = prefs.getString('gir_voted_time_${p.id}');
+        final votedTimeStr = serverStatus?['hasVoted'] == true
+            ? prefs.getString('gir_voted_time_${p.id}')
+            : null;
         if (votedTimeStr != null) {
           final votedTime = DateTime.tryParse(votedTimeStr);
           if (votedTime != null && now.difference(votedTime).inHours >= 5) {
