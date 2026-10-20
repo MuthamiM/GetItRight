@@ -332,11 +332,11 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
             children: [
               Icon(Icons.check_circle, color: Colors.white, size: 24),
               SizedBox(width: 10),
-              Text('Survey Complete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              Text('Survey Submitted', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ],
           ),
           content: const Text(
-            'Your survey responses have been submitted successfully.',
+            'Your response has been submitted and recorded successfully.',
             style: TextStyle(color: Color(0xFFD0D0D0), fontSize: 14),
           ),
           actions: [
@@ -350,7 +350,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                 foregroundColor: const Color(0xFF2A2A2A),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Return to Survey Directory', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),

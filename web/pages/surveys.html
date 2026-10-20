@@ -1376,7 +1376,7 @@
     // ==========================================
     // PREVIOUS ACTION & RETAKE PREVENTION
     // ==========================================
-    function showPreviousActionModal(surveyId) {
+    function showPreviousActionModal(surveyId, justSubmitted = false) {
       const s = allSurveys.find(item => item.id === surveyId);
       if (!s) return;
 
@@ -1413,10 +1413,10 @@
           </div>
 
           <h3 style="font-family:var(--font-display); font-size:23px; font-weight:900; color:var(--silver); margin:0 0 8px 0; letter-spacing:-0.02em;">
-            ${completedData.alreadyRecorded ? 'A Response Is Already Recorded' : 'You Have Already Completed This Survey'}
+            ${completedData.alreadyRecorded ? 'A Response Is Already Recorded' : (justSubmitted ? 'Survey Submitted Successfully' : 'You Have Already Completed This Survey')}
           </h3>
           <p style="font-size:14px; color:var(--silver); opacity:0.8; max-width:460px; margin:0 auto 24px auto; line-height:1.55;">
-            ${completedData.alreadyRecorded ? 'A response is already recorded for this National ID. No new response was created.' : 'Your responses were previously recorded and confirmed. Retaking this survey is not permitted in order to safeguard research integrity.'}
+            ${completedData.alreadyRecorded ? 'A response is already recorded for this National ID. No new response was created.' : (justSubmitted ? 'Your response has been submitted and recorded successfully.' : 'Your responses were previously recorded and confirmed. Retaking this survey is not permitted in order to safeguard research integrity.')}
           </p>
 
           <!-- Cryptographic Receipt Box -->
@@ -1449,7 +1449,7 @@
           <!-- Return Actions -->
           <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
             <button type="button" class="btn-take-survey" style="padding:12px 32px; font-size:14.5px;" onclick="closeSurveyTakerModal()">
-              Return to Surveys Directory
+              Return to Survey Directory
             </button>
             <button type="button" class="btn-share-survey" onclick="closeSurveyTakerModal(); openShareModal('${s.id}');">
               <span data-icon="share"></span> Share Survey Link
@@ -1745,7 +1745,7 @@
           }
 
           // Force display previous action / submission receipt view
-          showPreviousActionModal(currentSurvey.id);
+          showPreviousActionModal(currentSurvey.id, true);
           App.showToast('Submitted!', 'success');
         } else {
           const errData = await res.json().catch(() => ({}));

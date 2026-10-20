@@ -137,7 +137,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               _settingsActionRow(
                 icon: Icons.phone_android_rounded,
                 title: 'IcapsQ Official App',
-                subtitle: 'Version 2.1.17 · Build 22',
+                subtitle: 'Version 2.1.18 · Build 23',
                 trailing: IconButton(
                   tooltip: 'Check for updates',
                   onPressed: _checkUpdateManually,
@@ -227,7 +227,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'You are using the latest version of IcapsQ (v2.1.17)',
+              'You are using the latest version of IcapsQ (v2.1.18)',
               style: TextStyle(
                   color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
             ),
@@ -291,7 +291,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v2.1.17)',
+                'Version $version is now available (Current: v2.1.18)',
                 style: const TextStyle(
                     color: Color(0xFFE5E5E5),
                     fontSize: 12,

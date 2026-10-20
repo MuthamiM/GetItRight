@@ -402,7 +402,7 @@ class ApiClient {
       return 'Choose a password with at least 12 characters, including uppercase, lowercase, and a number.';
     }
     if (message.contains('email') && (message.contains('valid') || message.contains('@-sign') || message.contains('value error'))) {
-      return 'Enter a valid email address, such as name@example.com.';
+      return 'Enter a valid email address.';
     }
     if (message.contains('password') && (message.contains('incorrect') || statusCode == 401)) {
       return 'That password does not match this account. Try again or reset your password.';
@@ -720,7 +720,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.16';
+    const currentAppVersion = '2.1.18';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');
