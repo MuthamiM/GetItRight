@@ -51,6 +51,7 @@ class VoteTransactionModel(Base):
     Dob = Column(String, nullable=True)
     Latitude = Column(Float, nullable=True)
     Longitude = Column(Float, nullable=True)
+    Accuracy = Column(Float, nullable=True)
     GpsCoordinates = Column(String, nullable=True)
     Device = Column(String, nullable=True)
     IpAddress = Column(String, nullable=True)

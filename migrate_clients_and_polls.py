@@ -12,8 +12,8 @@ import uuid
 import hashlib
 from datetime import datetime, timezone, timedelta
 
-# Add repo to sys.path
-sys.path.insert(0, "/home/cantroll/POLL")
+# Add the repository root in both local development and the production image.
+sys.path.insert(0, str(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.api.core.database import SessionLocal
 from backend.api.features.auth.models import UserModel
@@ -59,16 +59,13 @@ def run_migration():
             admin_user.Status = "Active"
             admin_user.ConsoleUrl = "/console/admin.html"
 
-        # Also update musamwange42@gmail.com if present
+        # The old database contained a second Musa account.  Keep the record for
+        # audit/history, but never leave it as a second active administrator.
         musa_personal = db.query(UserModel).filter(UserModel.Email == "musamwange42@gmail.com").first()
         if musa_personal:
-            musa_personal.FullName = "Musa Mwange"
-            musa_personal.Password = super_hash
-            musa_personal.Role = "Admin"
-            musa_personal.Plan = "election"
-            musa_personal.PlanName = "Sovereign Election Guard"
-            musa_personal.Status = "Active"
-            musa_personal.ConsoleUrl = "/console/admin.html"
+            musa_personal.Role = "Customer"
+            musa_personal.Status = "Disabled"
+            musa_personal.ConsoleUrl = "/console/user.html"
 
         print("[2/5] Creating / updating 3 New Clients...")
         clients_data = [
@@ -93,9 +90,6 @@ def run_migration():
         ]
 
         active_user_ids = {admin_user.Id}
-        if musa_personal:
-            active_user_ids.add(musa_personal.Id)
-
         for c in clients_data:
             existing = db.query(UserModel).filter(
                 (UserModel.Id == c["id"]) | (UserModel.Email == c["email"])
@@ -139,6 +133,8 @@ def run_migration():
         for u in all_users:
             if u.Id not in active_user_ids:
                 u.Status = "Disabled"
+                if u.Role in ["Admin", "Super Admin"]:
+                    u.Role = "Customer"
                 disabled_count += 1
         print(f"      Disabled {disabled_count} previous users.")
 
@@ -795,7 +791,7 @@ def run_migration():
 
         db.commit()
         print("\n[SUCCESS] Migration completed successfully!")
-        print(f"Super Admin: Musa Mwange (admin@getitright.io, musamwange42@gmail.com)")
+        print(f"Super Admin: Musa Mwange (admin@getitright.io)")
         print(f"Clients created: Hezron Masumba, Martin Mulwa, Festus Jonah")
         print(f"15 new active polls and 15 new active surveys seeded.")
     except Exception as e:

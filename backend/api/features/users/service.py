@@ -62,7 +62,10 @@ def map_user(u: UserModel) -> UserDetailOut:
     )
 
 def list_users(db: Session, plan: Optional[str] = None) -> List[UserDetailOut]:
-    query = db.query(UserModel)
+    # The administration console is an operational directory, not an archive.
+    # Hide disabled legacy/duplicate accounts so the visible directory contains
+    # only the current administrator and active clients.
+    query = db.query(UserModel).filter(UserModel.Status == "Active")
     if plan:
         query = query.filter(UserModel.Plan == plan.lower())
     users = query.all()

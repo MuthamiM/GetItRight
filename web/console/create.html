@@ -1648,7 +1648,7 @@
       }
 
       btn.disabled = true;
-      btn.textContent = 'Publishing to Database...';
+      btn.textContent = 'Publishing...';
 
       if (selectedType === 'survey') {
         const questionsPayload = questions.map(q => ({
@@ -1674,6 +1674,8 @@
           if (res.ok) {
             playBeep(true);
             clearDraftOnPublish();
+            btn.textContent = 'Published';
+            alert('Published');
             let dest = 'user.html';
             try {
               const u = JSON.parse(localStorage.getItem('gir_user') || '{}');
@@ -1711,7 +1713,8 @@
           if (res.ok) {
             playBeep(true);
             clearDraftOnPublish();
-            alert('Poll referendum published successfully to the database!');
+            btn.textContent = 'Published';
+            alert('Published');
             let dest = 'user.html';
             try {
               const u = JSON.parse(localStorage.getItem('gir_user') || '{}');
@@ -1778,5 +1781,6 @@
       validateStep2();
     });
   </script>
+  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
 </body>
 </html>

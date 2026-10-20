@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../auth/presentation/plan_selection_screen.dart';
 import '../../../core/network/api_client.dart';
 import '../../legal/presentation/legal_dialogs.dart';
 
@@ -20,9 +19,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final _phoneController = TextEditingController();
   final _orgController = TextEditingController();
 
-  String _currentPlan = 'free';
   bool _notificationsEnabled = true;
-  bool _isSaving = false;
 
   @override
   void initState() {
@@ -34,62 +31,20 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _nameController.text = prefs.getString('gir_user_name') ?? 'User';
-      _emailController.text = prefs.getString('gir_user_email') ?? 'user@getitright.io';
+      _emailController.text =
+          prefs.getString('gir_user_email') ?? 'user@getitright.io';
       _phoneController.text = prefs.getString('gir_user_phone') ?? '';
       _orgController.text = prefs.getString('gir_user_org') ?? 'Independent';
-      _currentPlan = prefs.getString('gir_user_plan') ?? 'free';
-      _notificationsEnabled = prefs.getBool('gir_notifications_enabled') ?? true;
+      _notificationsEnabled =
+          prefs.getBool('gir_notifications_enabled') ?? true;
     });
   }
 
-  Future<void> _saveSettings() async {
-    setState(() => _isSaving = true);
+  Future<void> _setNotifications(bool value) async {
+    setState(() => _notificationsEnabled = value);
     final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString('gir_user_name', _nameController.text.trim());
-    await prefs.setString('gir_user_email', _emailController.text.trim());
-    await prefs.setString('gir_user_phone', _phoneController.text.trim());
-    await prefs.setString('gir_user_org', _orgController.text.trim());
-    await prefs.setBool('gir_notifications_enabled', _notificationsEnabled);
-
-    if (mounted) {
-      setState(() => _isSaving = false);
-      widget.onSettingsUpdated();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Settings saved successfully',
-            style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Color(0xFFE5E5E5),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  void _openPlanSelection() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('gir_user_id') ?? 'USR-001';
-
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PlanSelectionScreen(
-          userData: {
-            'id': userId,
-            'fullName': _nameController.text,
-            'plan': _currentPlan,
-          },
-          onProceed: () async {
-            Navigator.of(context).pop();
-            final updatedPlan = (await SharedPreferences.getInstance()).getString('gir_user_plan') ?? _currentPlan;
-            setState(() => _currentPlan = updatedPlan);
-            widget.onSettingsUpdated();
-          },
-        ),
-      ),
-    );
+    await prefs.setBool('gir_notifications_enabled', value);
+    widget.onSettingsUpdated();
   }
 
   @override
@@ -103,275 +58,244 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF303030),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF303030),
-        elevation: 0,
-        title: const Text(
-          'Settings & Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // User Avatar
-              Center(
+    return Container(
+      color: const Color(0xFF303030),
+      child: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              child: ConstrainedBox(
+                constraints:
+                    BoxConstraints(minHeight: constraints.maxHeight - 16),
                 child: Container(
-                  width: 90,
-                  height: 90,
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF505050),
-                    border: Border.all(color: const Color(0xFF666666), width: 2),
+                    color: const Color(0xFF3B3B3B),
+                    borderRadius: BorderRadius.circular(22),
                   ),
-                  child: const Icon(Icons.person, size: 48, color: Color(0xFFD0D0D0)),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Section 1: Account Settings
-              _buildSectionHeader('ACCOUNT INFORMATION'),
-              const SizedBox(height: 10),
-
-              _buildFieldLabel('Display Name'),
-              const SizedBox(height: 6),
-              _buildPillInput(controller: _nameController, hint: 'Name'),
-
-              const SizedBox(height: 14),
-
-              _buildFieldLabel('Email Address'),
-              const SizedBox(height: 6),
-              _buildPillInput(controller: _emailController, hint: 'Email', keyboardType: TextInputType.emailAddress),
-
-              const SizedBox(height: 14),
-
-              _buildFieldLabel('Linked Phone Number'),
-              const SizedBox(height: 6),
-              _buildPillInput(controller: _phoneController, hint: '+254 700 000 000', keyboardType: TextInputType.phone),
-
-              const SizedBox(height: 14),
-
-              _buildFieldLabel('Organization Name'),
-              const SizedBox(height: 6),
-              _buildPillInput(controller: _orgController, hint: 'Organization'),
-
-              const SizedBox(height: 24),
-
-              // Section 2: Subscription Plan
-              _buildSectionHeader('SUBSCRIPTION PLAN'),
-              const SizedBox(height: 10),
-
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF505050),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.white, size: 22),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Current Plan: ${_currentPlan.toUpperCase()}',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Upgrade or change your plan tier',
-                            style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: _openPlanSelection,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE5E5E5),
-                        foregroundColor: const Color(0xFF2A2A2A),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('Change', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Section 3: Notification Preferences
-              _buildSectionHeader('PREFERENCES'),
-              const SizedBox(height: 10),
-
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF505050),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Push Notifications', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                        SizedBox(height: 2),
-                        Text('Receive live updates and poll results', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 12)),
-                      ],
-                    ),
-                    Switch(
-                      value: _notificationsEnabled,
-                      activeColor: const Color(0xFFE5E5E5),
-                      activeTrackColor: const Color(0xFF606060),
-                      inactiveTrackColor: const Color(0xFF404040),
-                      onChanged: (val) => setState(() => _notificationsEnabled = val),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Section 4: App Version & Updates
-              _buildSectionHeader('APP VERSION & UPDATES'),
-              const SizedBox(height: 10),
-
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF505050),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // User Avatar
+                      Center(
+                        child: Stack(
+                          clipBehavior: Clip.none,
                           children: [
-                            Text(
-                              'IcapsQ Official App',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF505050),
+                                border: Border.all(
+                                    color: const Color(0xFF666666), width: 2),
                               ),
+                              child: const Icon(Icons.person,
+                                  size: 38, color: Color(0xFFD0D0D0)),
                             ),
-                            SizedBox(height: 3),
-                            Text(
-                              'Version 2.1.6 (Build 10)',
-                              style: TextStyle(
-                                color: Color(0xFFB8B8B8),
-                                fontSize: 12,
+                            Positioned(
+                              right: -4,
+                              bottom: -2,
+                              child: GestureDetector(
+                                // Deliberately inert: profile photo upload is not enabled.
+                                onTap: () {},
+                                child: Container(
+                                  width: 26,
+                                  height: 26,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE5E5E5),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: const Color(0xFF303030),
+                                        width: 2),
+                                  ),
+                                  child: const Icon(Icons.camera_alt_outlined,
+                                      size: 14, color: Color(0xFF303030)),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _checkUpdateManually,
-                          icon: const Icon(Icons.sync, size: 16),
-                          label: const Text(
-                            'Check',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE5E5E5),
-                            foregroundColor: const Color(0xFF2A2A2A),
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'IcapsQ updates ensure you have the latest cryptographic verification rules, live voting feeds, and performance optimizations.',
-                      style: TextStyle(
-                        color: Color(0xFFD0D0D0),
-                        fontSize: 11.5,
-                        height: 1.35,
                       ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 24),
+                      const SizedBox(height: 12),
 
-              // Section 5: Legal & Policies
-              _buildSectionHeader('LEGAL & POLICIES'),
-              const SizedBox(height: 10),
+                      _buildAccountInformationCard(),
 
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF505050),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.gavel_rounded, color: Colors.white, size: 20),
-                      title: const Text('Terms of Service', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                      subtitle: const Text('Civic polling rules, account security & integrity', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 11.5)),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFB8B8B8), size: 14),
-                      onTap: () => LegalDialogs.showTermsOfService(context),
-                    ),
-                    const Divider(height: 1, color: Color(0xFF606060)),
-                    ListTile(
-                      leading: const Icon(Icons.shield_outlined, color: Colors.white, size: 20),
-                      title: const Text('Privacy Policy', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                      subtitle: const Text('Zero data selling & cryptographic secret ballot', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 11.5)),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFB8B8B8), size: 14),
-                      onTap: () => LegalDialogs.showPrivacyPolicy(context),
-                    ),
-                  ],
-                ),
-              ),
+                      const SizedBox(height: 12),
 
-              const SizedBox(height: 32),
+                      // Section 3: Notification Preferences
+                      _buildSectionHeader('PREFERENCES'),
+                      const SizedBox(height: 6),
 
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveSettings,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE5E5E5),
-                    foregroundColor: const Color(0xFF2A2A2A),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 2, vertical: 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Push Notifications',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14)),
+                                SizedBox(height: 2),
+                                Text('Receive live updates and poll results',
+                                    style: TextStyle(
+                                        color: Color(0xFFB8B8B8),
+                                        fontSize: 12)),
+                              ],
+                            ),
+                            Switch(
+                              value: _notificationsEnabled,
+                              activeColor: const Color(0xFFE5E5E5),
+                              activeTrackColor: const Color(0xFF606060),
+                              inactiveTrackColor: const Color(0xFF404040),
+                              onChanged: _setNotifications,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Section 4: App Version & Updates
+                      _buildSectionHeader('APP VERSION & UPDATES'),
+                      const SizedBox(height: 6),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 2, vertical: 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'IcapsQ Official App',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    SizedBox(height: 3),
+                                    Text(
+                                      'Version 2.1.14 (Build 19)',
+                                      style: TextStyle(
+                                        color: Color(0xFFB8B8B8),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                ElevatedButton.icon(
+                                  onPressed: _checkUpdateManually,
+                                  icon: const Icon(Icons.sync, size: 16),
+                                  label: const Text(
+                                    'Check',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE5E5E5),
+                                    foregroundColor: const Color(0xFF2A2A2A),
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Section 5: About and legal links
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
+                        child: Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'About IcapsQ',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: Color(0xFFB8B8B8),
+                                        fontSize: 11.5),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        LegalDialogs.showTermsOfService(
+                                            context),
+                                    child: const Text(
+                                      'Terms of Service',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Color(0xFFB8B8B8),
+                                          fontSize: 11.5),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        LegalDialogs.showPrivacyPolicy(context),
+                                    child: const Text(
+                                      'Privacy Policy',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Color(0xFFB8B8B8),
+                                          fontSize: 11.5),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            const Divider(height: 1, color: Color(0xFF606060)),
+                            const SizedBox(height: 8),
+                            const Text(
+                              '© 2026 IcapsQ. All rights reserved.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Color(0xFFB8B8B8), fontSize: 10.5),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+                    ],
                   ),
-                  child: _isSaving
-                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5))
-                      : const Text('Save Settings', style: TextStyle(color: Color(0xFF2A2A2A), fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -382,7 +306,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       const SnackBar(
         content: Text(
           'Checking for latest updates...',
-          style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+          style:
+              TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
         ),
         backgroundColor: Color(0xFFE5E5E5),
         duration: Duration(seconds: 1),
@@ -402,8 +327,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'You are using the latest version of IcapsQ (v2.1.6)',
-              style: TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+              'You are using the latest version of IcapsQ (v2.1.14)',
+              style: TextStyle(
+                  color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
             ),
             backgroundColor: Color(0xFFE5E5E5),
             duration: Duration(seconds: 2),
@@ -414,7 +340,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Could not reach update server. Please try again later.'),
+            content:
+                Text('Could not reach update server. Please try again later.'),
             backgroundColor: Color(0xFF424242),
           ),
         );
@@ -437,13 +364,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 color: const Color(0xFF555555),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.system_update_rounded, color: Color(0xFFE5E5E5), size: 24),
+              child: const Icon(Icons.system_update_rounded,
+                  color: Color(0xFFE5E5E5), size: 24),
             ),
             const SizedBox(width: 12),
             const Expanded(
               child: Text(
                 'Update Available',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18),
               ),
             ),
           ],
@@ -460,31 +391,40 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v2.0.0)',
-                style: const TextStyle(color: Color(0xFFE5E5E5), fontSize: 12, fontWeight: FontWeight.w600),
+                'Version $version is now available (Current: v2.1.14)',
+                style: const TextStyle(
+                    color: Color(0xFFE5E5E5),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(height: 14),
             const Text(
               'What\'s New in this release:',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13),
             ),
             const SizedBox(height: 6),
             Text(
               releaseNotes ??
                   '• Instant scroll-to-top navigation\n'
-                  '• Real-time poll vote tallying & animated charts\n'
-                  '• Cryptographic survey receipt verification\n'
-                  '• Offline vote persistence & auto-sync\n'
-                  '• Stability & performance improvements',
-              style: const TextStyle(color: Color(0xFFD0D0D0), fontSize: 12.5, height: 1.45),
+                      '• Real-time poll vote tallying & animated charts\n'
+                      '• Cryptographic survey receipt verification\n'
+                      '• Offline vote persistence & auto-sync\n'
+                      '• Stability & performance improvements',
+              style: const TextStyle(
+                  color: Color(0xFFD0D0D0), fontSize: 12.5, height: 1.45),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Later', style: TextStyle(color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
+            child: const Text('Later',
+                style: TextStyle(
+                    color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -493,14 +433,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 SnackBar(
                   content: Text(
                     'Downloading IcapsQ v$version...',
-                    style: const TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
                   ),
                   backgroundColor: const Color(0xFFE5E5E5),
                   duration: const Duration(seconds: 3),
                 ),
               );
               try {
-                final uri = Uri.parse('https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk');
+                final uri = Uri.parse(
+                    'https://icapsq.mftechnologies.org/app-release.apk');
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
@@ -509,9 +451,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE5E5E5),
               foregroundColor: const Color(0xFF2A2A2A),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
-            child: const Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Update Now',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -521,45 +465,184 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+      style: const TextStyle(
+          color: Color(0xFFB8B8B8),
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0),
     );
   }
 
-  Widget _buildFieldLabel(String label) {
-    return Text(
-      label,
-      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+  Widget _buildAccountInformationCard() {
+    return Material(
+      color: const Color(0xFF505050),
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
+            child: _buildSectionHeader('ACCOUNT INFORMATION'),
+          ),
+          _buildAccountRow(
+            label: 'Display Name',
+            controller: _nameController,
+            preferenceKey: 'gir_user_name',
+            hint: 'Name',
+          ),
+          _buildAccountDivider(),
+          _buildAccountRow(
+            label: 'Email Address',
+            controller: _emailController,
+            hint: 'Email',
+            keyboardType: TextInputType.emailAddress,
+          ),
+          _buildAccountDivider(),
+          _buildAccountRow(
+            label: 'Linked Phone Number',
+            controller: _phoneController,
+            preferenceKey: 'gir_user_phone',
+            hint: '+254 700 000 000',
+            keyboardType: TextInputType.phone,
+          ),
+          _buildAccountDivider(),
+          _buildAccountRow(
+            label: 'Organization Name',
+            controller: _orgController,
+            preferenceKey: 'gir_user_org',
+            hint: 'Organization',
+          ),
+          const SizedBox(height: 5),
+        ],
+      ),
     );
   }
 
-  Widget _buildPillInput({
+  Widget _buildAccountDivider() => const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14),
+        child: Divider(height: 1, color: Color(0xFF666666)),
+      );
+
+  Widget _buildAccountRow({
+    required String label,
     required TextEditingController controller,
     required String hint,
+    String? preferenceKey,
     TextInputType? keyboardType,
   }) {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: const Color(0xFF505050),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      alignment: Alignment.centerLeft,
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-        cursorColor: Colors.white,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 14),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          isDense: true,
+    final editable = preferenceKey != null;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: editable
+            ? () => _editAccountField(
+                  label: label,
+                  controller: controller,
+                  preferenceKey: preferenceKey,
+                  hint: hint,
+                  keyboardType: keyboardType,
+                )
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Color(0xFFD0D0D0),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      controller.text.isEmpty ? hint : controller.text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: controller.text.isEmpty
+                            ? const Color(0xFFB8B8B8)
+                            : Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(
+                editable ? Icons.edit_outlined : Icons.mail_outline_rounded,
+                size: 18,
+                color: const Color(0xFFE5E5E5),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _editAccountField({
+    required String label,
+    required TextEditingController controller,
+    required String? preferenceKey,
+    required String hint,
+    TextInputType? keyboardType,
+  }) async {
+    if (preferenceKey == null) return;
+
+    final draftController = TextEditingController(text: controller.text);
+    final updatedValue = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF424242),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text('Edit $label',
+            style: const TextStyle(color: Colors.white, fontSize: 18)),
+        content: TextField(
+          controller: draftController,
+          autofocus: true,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: Colors.white),
+          cursorColor: Colors.white,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Color(0xFFB8B8B8)),
+            enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF888888))),
+            focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFFE5E5E5))),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFFB8B8B8))),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(draftController.text.trim()),
+            child:
+                const Text('Save', style: TextStyle(color: Color(0xFFE5E5E5))),
+          ),
+        ],
+      ),
+    );
+    draftController.dispose();
+    if (updatedValue == null || !mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(preferenceKey, updatedValue);
+    if (!mounted) return;
+    setState(() => controller.text = updatedValue);
+    widget.onSettingsUpdated();
   }
 }

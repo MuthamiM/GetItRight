@@ -76,7 +76,7 @@
       lat: null,
       lng: null,
       accuracy: null,
-      status: 'pending' // 'pending', 'acquired', 'county_verified', 'denied', 'unavailable'
+      status: 'pending' // 'pending', 'acquired', 'denied', 'unavailable'
     },
 
     detectIPhoneModel() {
@@ -199,26 +199,18 @@
     getOrAssignUserId(forceRefresh = false) {
       if (!forceRefresh) {
         let existing = localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key');
-        if (existing && existing.startsWith('USR-') && !existing.includes('UNKNOWN')) {
+        if (existing && existing.startsWith('USR-') && !existing.includes('UNKNOWN') && existing.toUpperCase() !== 'USR-DEV-LOC1') {
           return existing;
         }
       }
 
       const device = this.getDeviceInfo();
-      const county = this.getCounty() || localStorage.getItem('gir_county') || 'NAIROBI';
-      const loc = this.getLocation();
-
       const cleanDevice = (device.deviceName || 'DEV').replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase() || 'DEVICE';
-      const cleanCounty = (county || 'NAIROBI').replace(/\s*County/i, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'LOC1';
-
-      let locSeed = '0000';
-      if (loc.lat && loc.lng) {
-        locSeed = Math.abs(Math.round(loc.lat * 1000) ^ Math.round(loc.lng * 1000)).toString(36).toUpperCase().padStart(4, '0').slice(-4);
-      } else {
-        locSeed = Math.random().toString(36).substring(2, 6).toUpperCase();
-      }
-
-      const assignedId = `USR-${cleanDevice}-${cleanCounty}-${locSeed}`;
+      const randomSeed = new Uint8Array(6);
+      if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(randomSeed);
+      else for (let i = 0; i < randomSeed.length; i += 1) randomSeed[i] = Math.floor(Math.random() * 256);
+      const seed = Array.from(randomSeed, byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+      const assignedId = `USR-${cleanDevice}-${seed}`;
       localStorage.setItem('gir_assigned_user_id', assignedId);
       localStorage.setItem('gir_voter_key', assignedId);
       localStorage.setItem('gir_survey_session_id', assignedId);
@@ -228,7 +220,6 @@
     init() {
       this.injectStyles();
       this.injectModal();
-      this.acquireLocation(false);
       this.getOrAssignUserId();
     },
 
@@ -251,43 +242,32 @@
       const lat = localStorage.getItem('gir_precise_lat');
       const lng = localStorage.getItem('gir_precise_lng');
       const acc = localStorage.getItem('gir_location_accuracy');
-      if (lat && lng) {
+      if (lat !== null && lng !== null) {
         return {
           lat: parseFloat(lat),
           lng: parseFloat(lng),
-          accuracy: acc ? parseFloat(acc) : 250
+          accuracy: acc ? parseFloat(acc) : null
         };
       }
-      // Fallback to county centroid if county is set
-      const c = this.getCounty();
-      if (c && COUNTY_COORDINATES[c]) {
-        return {
-          lat: COUNTY_COORDINATES[c].lat,
-          lng: COUNTY_COORDINATES[c].lng,
-          accuracy: 250
-        };
-      }
-      return {
-        lat: this.currentLocation.lat || -1.286389,
-        lng: this.currentLocation.lng || 36.817223,
-        accuracy: this.currentLocation.accuracy || 500
-      };
+      return { lat: null, lng: null, accuracy: null };
     },
 
-    acquireLocation(forcePrompt = false) {
+    acquireLocation() {
       if (!navigator.geolocation) {
-        this.fallbackCountyLocation();
-        return;
+        this.currentLocation.status = 'unavailable';
+        this.updateLocationBadge();
+        return Promise.resolve(null);
       }
 
       const options = {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 20000,
         maximumAge: 0
       };
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
+      return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
           const { latitude, longitude, accuracy } = position.coords;
           this.currentLocation = {
             lat: latitude,
@@ -302,58 +282,59 @@
           localStorage.setItem('gir_location_timestamp', new Date().toISOString());
 
           this.updateLocationBadge();
-        },
-        (error) => {
+            resolve(this.currentLocation);
+          },
+          (error) => {
           console.warn('[Demographics] Geolocation access notice:', error.message);
-          this.currentLocation.status = error.code === 1 ? 'denied' : 'unavailable';
-          this.fallbackCountyLocation();
-        },
-        options
-      );
-    },
-
-    fallbackCountyLocation() {
-      const c = this.getCounty() || 'Nairobi';
-      if (COUNTY_COORDINATES[c]) {
-        this.currentLocation.lat = COUNTY_COORDINATES[c].lat;
-        this.currentLocation.lng = COUNTY_COORDINATES[c].lng;
-        this.currentLocation.accuracy = 250;
-        this.currentLocation.status = 'county_verified';
-        localStorage.setItem('gir_precise_lat', COUNTY_COORDINATES[c].lat);
-        localStorage.setItem('gir_precise_lng', COUNTY_COORDINATES[c].lng);
-        localStorage.setItem('gir_location_accuracy', 250);
-      }
-      this.updateLocationBadge();
+          this.currentLocation.status = error.code === 1 ? 'denied' : (error.code === 3 ? 'timeout' : 'unavailable');
+          this.currentLocation.lat = null;
+          this.currentLocation.lng = null;
+          this.currentLocation.accuracy = null;
+          localStorage.removeItem('gir_precise_lat');
+          localStorage.removeItem('gir_precise_lng');
+          localStorage.removeItem('gir_location_accuracy');
+          localStorage.removeItem('gir_location_timestamp');
+          this.updateLocationBadge();
+            resolve(null);
+          },
+          options
+        );
+      });
     },
 
     updateLocationBadge() {
       const badge = document.getElementById('gir-geo-status-badge');
       if (!badge) return;
 
-      if (this.currentLocation.status === 'acquired' && this.currentLocation.lat) {
+      if (this.currentLocation.status === 'acquired' && Number.isFinite(this.currentLocation.lat)) {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#303030;margin-right:6px;"></span>
-          <strong>Precise Phone GPS Verified:</strong> ${this.currentLocation.lat.toFixed(5)}, ${this.currentLocation.lng.toFixed(5)} (&plusmn;${Math.round(this.currentLocation.accuracy)}m)
+          <strong>Device location verified (±${Math.round(this.currentLocation.accuracy)}m accuracy).</strong> County match is checked securely. Exact coordinates are hidden.
         `;
         badge.style.borderColor = '#303030';
         badge.style.color = '#303030';
-      } else if (this.currentLocation.status === 'county_verified' && this.currentLocation.lat) {
-        const c = this.getCounty() || 'Regional';
-        badge.innerHTML = `
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#303030;margin-right:6px;"></span>
-          <strong>${c} County Verified:</strong> ${this.currentLocation.lat.toFixed(4)}, ${this.currentLocation.lng.toFixed(4)}
-          <button type="button" onclick="window.Demographics.acquireLocation(true)" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Acquire GPS</button>
-        `;
       } else if (this.currentLocation.status === 'denied') {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-          <strong>GPS Permission Pending:</strong> County selection verified.
-          <button type="button" onclick="window.Demographics.acquireLocation(true)" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Enable GPS</button>
+          <strong>Location access is blocked.</strong> Allow location for this site in browser settings, then retry.
+          <button type="button" onclick="window.Demographics.acquireLocation()" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Retry location</button>
+        `;
+      } else if (this.currentLocation.status === 'unavailable') {
+        badge.innerHTML = `
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
+          <strong>Device location is off or unavailable.</strong> Turn on Location Services and allow this site to access location, then retry.
+          <button type="button" onclick="window.Demographics.acquireLocation()" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Retry location</button>
+        `;
+      } else if (this.currentLocation.status === 'timeout') {
+        badge.innerHTML = `
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
+          <strong>Location request timed out.</strong> Turn on device location and retry.
+          <button type="button" onclick="window.Demographics.acquireLocation()" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Retry location</button>
         `;
       } else {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-          County location verified &bull; ${this.currentLocation.lat ? this.currentLocation.lat.toFixed(4) + ', ' + this.currentLocation.lng.toFixed(4) : 'Ready'}
+          Waiting for device location. The selected county is checked securely; exact coordinates are hidden.
         `;
       }
     },
@@ -537,12 +518,12 @@
           <form id="gir-demographics-form" onsubmit="window.Demographics.handleSubmit(event)">
             <div class="gir-form-group">
               <label class="gir-form-label" for="gir-survey-voter-name">Full Name (as on ID / Passport)</label>
-              <input type="text" id="gir-survey-voter-name" class="gir-form-input" placeholder="e.g. Legal Name" required minlength="3" maxlength="100" autocomplete="name">
+              <input type="text" id="gir-survey-voter-name" class="gir-form-input" required minlength="3" maxlength="100" autocomplete="name">
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label" for="gir-survey-voter-id">National ID / Passport Number</label>
-              <input type="text" id="gir-survey-voter-id" class="gir-form-input" placeholder="e.g. National ID or Passport" required minlength="5" maxlength="30" autocomplete="off">
+              <label class="gir-form-label" for="gir-survey-voter-id">National ID Number · 5–12 digits</label>
+              <input type="text" id="gir-survey-voter-id" class="gir-form-input" placeholder="Enter 5–12 digits" required minlength="5" maxlength="12" inputmode="numeric" pattern="[0-9]{5,12}" autocomplete="off">
             </div>
 
             <div class="gir-form-group">
@@ -554,13 +535,15 @@
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label" for="gir-survey-dob">Date of Birth (DOB)</label>
-              <input type="date" id="gir-survey-dob" class="gir-form-input" value="1995-05-15" required max="2008-12-31">
+              <label class="gir-form-label" for="gir-survey-dob">Date of Birth (DOB) · YYYY-MM-DD</label>
+              <input type="date" id="gir-survey-dob" class="gir-form-input" required aria-describedby="gir-survey-dob-format">
+              <div id="gir-survey-dob-format" style="font-size:11px;color:#666;margin-top:4px;">Select your date using the date picker (year-month-day).</div>
               <div style="font-size:11px;color:#666;margin-top:4px;">Must be 18 years or older for official voting eligibility.</div>
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label">Precise Location Telemetry</label>
+              <label class="gir-form-label">Location verification · device access required</label>
+              <div style="font-size:11px;color:#666;margin-bottom:6px;">Allow location access and turn on device Location Services. The selected county is checked; exact coordinates are hidden.</div>
               <div class="gir-geo-badge" id="gir-geo-status-badge">
                 <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
                 Acquiring precise location...
@@ -580,12 +563,15 @@
       // Pre-fill if already verified by user
       const savedName = localStorage.getItem('gir_voter_name') || '';
       const savedId = localStorage.getItem('gir_voter_id_number') || '';
-      const savedCounty = localStorage.getItem('gir_county') || 'Nairobi';
-      const savedDob = localStorage.getItem('gir_dob') || '1995-05-15';
+      const savedCounty = localStorage.getItem('gir_county') || '';
+      const savedDob = localStorage.getItem('gir_dob') || '';
       const nEl = document.getElementById('gir-survey-voter-name');
       if (nEl && savedName) nEl.value = savedName;
       const iEl = document.getElementById('gir-survey-voter-id');
-      if (iEl && savedId) iEl.value = savedId;
+      if (iEl && savedId) iEl.value = savedId.replace(/\D/g, '').slice(0, 12);
+      if (iEl) iEl.addEventListener('input', () => {
+        iEl.value = iEl.value.replace(/\D/g, '').slice(0, 12);
+      });
       const cEl = document.getElementById('gir-survey-county');
       if (cEl) {
         cEl.value = savedCounty;
@@ -593,16 +579,6 @@
           const selected = e.target.value;
           if (selected && COUNTY_COORDINATES[selected]) {
             localStorage.setItem('gir_county', selected);
-            if (this.currentLocation.status !== 'acquired') {
-              this.currentLocation.lat = COUNTY_COORDINATES[selected].lat;
-              this.currentLocation.lng = COUNTY_COORDINATES[selected].lng;
-              this.currentLocation.accuracy = 250;
-              this.currentLocation.status = 'county_verified';
-              localStorage.setItem('gir_precise_lat', COUNTY_COORDINATES[selected].lat);
-              localStorage.setItem('gir_precise_lng', COUNTY_COORDINATES[selected].lng);
-              localStorage.setItem('gir_location_accuracy', 250);
-              this.updateLocationBadge();
-            }
             const newUid = this.getOrAssignUserId(true);
             const idEl = document.getElementById('gir-modal-id-text');
             if (idEl) idEl.textContent = `Sovereign Citizen ID: ${newUid}`;
@@ -632,7 +608,7 @@
         document.getElementById('gir-modal-desc-text').textContent = config.notice;
       }
 
-      this.acquireLocation(true);
+      this.acquireLocation();
       modal.classList.add('active');
     },
 
@@ -654,7 +630,11 @@
         return;
       }
       if (!voterIdNumber || voterIdNumber.length < 5) {
-        alert('Please enter a valid National ID or Passport number (at least 5 characters).');
+        alert('Please provide correct details: National ID must contain 5–12 numbers only.');
+        return;
+      }
+      if (!/^\d{5,12}$/.test(voterIdNumber)) {
+        alert('Please provide correct details: National ID must contain 5–12 numbers only.');
         return;
       }
       if (!county) {
@@ -680,7 +660,14 @@
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Verifying & Saving...';
+      submitBtn.textContent = 'Checking precise location...';
+      const loc = await this.acquireLocation();
+      if (!loc || !Number.isFinite(loc.lat) || !Number.isFinite(loc.lng) || !Number.isFinite(loc.accuracy) || loc.accuracy <= 0 || loc.accuracy > 500) {
+        alert('Please provide correct details: allow precise device location (within 500 metres) and try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirm & Proceed →';
+        return;
+      }
 
       // Save to localStorage
       localStorage.setItem('gir_voter_name', voterName);
@@ -690,15 +677,7 @@
       localStorage.setItem('gir_demographics_completed', 'true');
       localStorage.setItem('gir_voter_verified', 'true');
 
-      // Update location with county coords if not acquired
-      if (this.currentLocation.status !== 'acquired' && COUNTY_COORDINATES[county]) {
-        localStorage.setItem('gir_precise_lat', COUNTY_COORDINATES[county].lat);
-        localStorage.setItem('gir_precise_lng', COUNTY_COORDINATES[county].lng);
-        localStorage.setItem('gir_location_accuracy', 250);
-      }
-
       const assignedUserId = this.getOrAssignUserId(true);
-      const loc = this.getLocation();
       const device = this.getDeviceInfo();
 
       // Update on-page chip if present
@@ -707,12 +686,10 @@
         chipEl.innerHTML = `<strong>Citizen ID:</strong> ${assignedUserId} &bull; <strong>Device:</strong> ${device.deviceName} (${device.deviceOS}) &bull; <strong>Region:</strong> ${county}`;
       }
 
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirm & Proceed \u2192';
       this.closeSurveyModal();
 
       if (window.App && typeof window.App.showToast === 'function') {
-        window.App.showToast(`Verified: ${voterName} — ${county} County. Device & identity secured!`, 'success');
+        window.App.showToast('Details saved. Checking your ballot…', 'info');
       }
 
       if (typeof this.pendingVoteCallback === 'function') {
@@ -734,18 +711,27 @@
       }
     },
 
-    ensureVoterSurveyBeforePoll(onVerifiedCallback) {
+    async ensureVoterSurveyBeforePoll(onVerifiedCallback) {
       if (this.hasCompletedDemographics() && localStorage.getItem('gir_voter_name') && localStorage.getItem('gir_voter_id_number')) {
-        const loc = this.getLocation();
+        const loc = await this.acquireLocation();
+        if (!loc || !Number.isFinite(loc.accuracy) || loc.accuracy <= 0 || loc.accuracy > 500) {
+          this.pendingVoteCallback = onVerifiedCallback;
+          this.openSurveyModal({
+            title: 'Location Verification Required',
+            subtitle: 'Identity & Location Verification',
+            notice: 'Allow device location and turn on Location Services to continue. The selected county is checked securely; exact coordinates are hidden.'
+          });
+          return;
+        }
         const device = this.getDeviceInfo();
         const assignedUserId = this.getOrAssignUserId();
         onVerifiedCallback({
           userId: assignedUserId,
           voterKey: assignedUserId,
-          voterName: localStorage.getItem('gir_voter_name') || 'USER@LOCATION1',
-          voterIdNumber: localStorage.getItem('gir_voter_id_number') || 'ID-28491038',
-          county: this.getCounty() || 'Nairobi',
-          dob: this.getDob() || '1995-05-15',
+          voterName: localStorage.getItem('gir_voter_name'),
+          voterIdNumber: localStorage.getItem('gir_voter_id_number'),
+          county: this.getCounty(),
+          dob: this.getDob(),
           lat: loc.lat,
           lng: loc.lng,
           accuracy: loc.accuracy,

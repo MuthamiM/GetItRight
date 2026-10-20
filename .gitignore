@@ -17,6 +17,7 @@ __pycache__/
 .idea/
 .DS_Store
 mobile/build/
+/engine/target/
 .dart_tool/
 *.apk
 .env

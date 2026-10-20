@@ -21,17 +21,29 @@ class SystemController:
 
     @staticmethod
     def app_version(version: str = None) -> dict:
-        current_versions = ("2.1.6", "2.1.5", "2.1.4", "2.1.3", "2.1.2", "2.1.1", "2.1", "v2.1.6", "v2.1.5", "v2.1.4", "v2.1.3", "v2.1.2", "v2.1.1", "2.1.0", "v2.1.0", "2.0.0", "2.0", "v2.0", "v2")
-        is_older = (version is not None and version.strip() not in current_versions)
+        def parse_version(value: str):
+            normalized = value.strip().lower().removeprefix("v")
+            try:
+                return tuple(int(part) for part in normalized.split("."))
+            except ValueError:
+                return None
+
+        latest_version = parse_version(settings.VERSION)
+        installed_version = parse_version(version) if version else None
+        update_available = (
+            installed_version is not None
+            and latest_version is not None
+            and installed_version < latest_version
+        )
         return {
             "latest_version": settings.VERSION,
             "current_stable": settings.VERSION,
             "minimum_version": "1.0.0",
-            "update_available": False,
+            "update_available": update_available,
             "force_update": False,
             "title": f"IcapsQ v{settings.VERSION}",
-            "release_notes": "• Strict graphite design with live countdown timers\n• Verified voting & real-time Merkle consensus\n• Seamless poll feed pagination & zero-overlay layout\n• Performance optimizations and instant back-to-top navigation",
-            "download_url": "https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk",
+            "release_notes": "• Web and Android now use the same database-backed API\n• Redundant API servers fail over behind the public gateway\n• Survey submission, location checks and duplicate-vote protection improved",
+            "download_url": "https://icapsq.mftechnologies.org/app-release.apk",
         }
 
     @staticmethod

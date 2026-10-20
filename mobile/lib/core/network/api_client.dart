@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,16 +7,25 @@ import '../models/poll_model.dart';
 import '../models/survey_model.dart';
 
 class ApiClient {
-  static const List<String> baseUrls = [
-    'http://127.0.0.1:5000/api',
-    'http://localhost:5000/api',
-    'http://192.168.1.158:5000/api',
-    'http://10.42.0.1:5000/api',
-    'http://127.0.0.1:8888/api',
-    'http://localhost:8888/api',
-    'http://10.0.2.2:5000/api',
-    'http://10.0.2.2:8888/api',
-    'http://192.168.1.247:5000/api',
+  static const String _productionApiUrl =
+      'https://icapsq.mftechnologies.org/api';
+  static const String _productionWebUrl = 'https://icapsq.mftechnologies.org';
+  static final List<String> baseUrls = [
+    _productionApiUrl,
+    if (kDebugMode) ...[
+      // Development-only LAN/emulator endpoints. Release builds go through
+      // the public gateway, which fails over between both API containers.
+      'http://192.168.1.158:8888/api',
+      'http://192.168.1.158:5000/api',
+      'http://192.168.1.158:5001/api',
+      'http://10.0.2.2:8888/api',
+      'http://10.0.2.2:5000/api',
+      'http://10.0.2.2:5001/api',
+      'http://127.0.0.1:8888/api',
+      'http://127.0.0.1:5001/api',
+      'http://localhost:8888/api',
+      'http://localhost:5001/api',
+    ],
   ];
 
   static String _activeBaseUrl = baseUrls.first;
@@ -29,76 +39,173 @@ class ApiClient {
     ];
   }
 
+  Future<Map<String, String>> _jsonHeaders() async {
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('gir_token');
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    } catch (_) {}
+    return headers;
+  }
+
+  Future<String> getOrCreateVoterKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString('gir_voter_key');
+    if (existing != null && existing.trim().isNotEmpty) return existing;
+    final random = Random.secure();
+    final key = 'Voter-${List<int>.generate(16, (_) => random.nextInt(256)).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join().toUpperCase()}';
+    await prefs.setString('gir_voter_key', key);
+    return key;
+  }
+
   /// Fetch public and featured polls
   Future<List<Poll>> fetchPolls() async {
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http
-            .get(Uri.parse('$url/polls'))
+            .get(Uri.parse('$url/polls?live_refresh=20261019'))
             .timeout(const Duration(seconds: 2));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          final List<dynamic> data = json.decode(response.body) as List<dynamic>;
-          final polls = data.map((json) => Poll.fromJson(json as Map<String, dynamic>)).toList();
-          if (polls.isNotEmpty) return polls;
+          final List<dynamic> data =
+              json.decode(response.body) as List<dynamic>;
+          final polls = data
+              .map((json) => Poll.fromJson(json as Map<String, dynamic>))
+              .toList();
+          return polls;
         }
       } catch (_) {
         // Try next candidate url
       }
     }
-    // Fallback to mock data so the app always shows polls
-    return _mockPolls();
+    // Never display stale bundled/demo data when the live API is unavailable.
+    return [];
   }
 
   /// Cast vote on a poll with verified county, DOB, and location telemetry
-  Future<bool> castVote(String pollId, String optionId,
-      {int? optionIndex, String? county, String? dob, String? gps}) async {
-    String voterKey = 'Voter-mobile';
-    String? userCounty = county;
-    String? userDob = dob;
-    String? userGps = gps;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      var key = prefs.getString('gir_voter_key');
-      if (key == null) {
-        key =
-            'Voter-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
-        await prefs.setString('gir_voter_key', key);
-      }
-      voterKey = key;
-      userCounty ??= prefs.getString('gir_user_county') ??
-          prefs.getString('gir_county') ??
-          'Kitui';
-      userDob ??= prefs.getString('gir_v_dob') ?? prefs.getString('gir_dob');
-      userGps ??= prefs.getString('gir_gps') ?? '-1.2065, 36.2065';
-    } catch (_) {}
+  Future<Map<String, dynamic>> castVote(
+    String pollId,
+    String optionId, {
+    int? optionIndex,
+    required String county,
+    required String dob,
+    required String voterName,
+    required String voterIdNumber,
+    required double latitude,
+    required double longitude,
+    required double accuracy,
+  }) async {
+    final voterKey = await getOrCreateVoterKey();
 
     final payload = {
       if (optionIndex != null) 'optionIndex': optionIndex,
       'option_id': optionId,
       'voterKey': voterKey,
       'platform': 'mobile_android',
-      if (userCounty != null) 'county': userCounty,
-      if (userDob != null) 'dob': userDob,
-      if (userGps != null) 'gps': userGps,
+      'county': county,
+      'dob': dob,
+      'voterName': voterName,
+      'voterIdNumber': voterIdNumber,
+      'latitude': latitude,
+      'longitude': longitude,
+      'accuracy': accuracy,
     };
+    final headers = await _jsonHeaders();
 
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http
             .post(
               Uri.parse('$url/polls/$pollId/vote'),
-              headers: {'Content-Type': 'application/json'},
+              headers: headers,
               body: json.encode(payload),
             )
             .timeout(const Duration(seconds: 3));
+        if (response.statusCode == 401 && headers.containsKey('Authorization')) {
+          final retry = await http
+              .post(
+                Uri.parse('$url/polls/$pollId/vote'),
+                headers: {'Content-Type': 'application/json'},
+                body: json.encode(payload),
+              )
+              .timeout(const Duration(seconds: 3));
+          if (retry.statusCode == 200) {
+            _activeBaseUrl = url;
+            return json.decode(retry.body) as Map<String, dynamic>;
+          }
+          final retryError = json.decode(retry.body);
+          return {
+            'success': false,
+            'error': retryError is Map<String, dynamic>
+                ? (retryError['detail']?.toString() ?? 'Could not record vote.')
+                : 'Could not record vote.',
+          };
+        }
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          return true;
+          return json.decode(response.body) as Map<String, dynamic>;
+        }
+        if (response.statusCode >= 500) {
+          continue;
+        }
+        final error = json.decode(response.body);
+        return {
+          'success': false,
+          'error': error is Map<String, dynamic>
+              ? (error['detail']?.toString() ?? 'Could not record vote.')
+              : 'Could not record vote.',
+        };
+      } catch (_) {}
+    }
+    return {
+      'success': false,
+      'error': 'Please check your connection. The vote was not recorded.',
+    };
+  }
+
+  /// Check a voter's ballot status without putting their National ID in a URL.
+  Future<Map<String, dynamic>?> getVoteStatus(
+      String pollId, String voterIdNumber, {String? voterKey}) async {
+    final headers = await _jsonHeaders();
+    for (final url in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .post(
+              Uri.parse('$url/polls/$pollId/vote-status'),
+              headers: headers,
+              body: json.encode({
+                if (voterIdNumber.isNotEmpty) 'voterIdNumber': voterIdNumber,
+                if (voterKey != null && voterKey.isNotEmpty) 'voterKey': voterKey,
+              }),
+            )
+            .timeout(const Duration(seconds: 4));
+        if (response.statusCode == 401 && headers.containsKey('Authorization')) {
+          final retry = await http
+              .post(
+                Uri.parse('$url/polls/$pollId/vote-status'),
+                headers: {'Content-Type': 'application/json'},
+                body: json.encode({
+                  if (voterIdNumber.isNotEmpty) 'voterIdNumber': voterIdNumber,
+                  if (voterKey != null && voterKey.isNotEmpty) 'voterKey': voterKey,
+                }),
+              )
+              .timeout(const Duration(seconds: 4));
+          if (retry.statusCode == 200) {
+            _activeBaseUrl = url;
+            return json.decode(retry.body) as Map<String, dynamic>;
+          }
+          continue;
+        }
+        if (response.statusCode == 200) {
+          _activeBaseUrl = url;
+          return json.decode(response.body) as Map<String, dynamic>;
         }
       } catch (_) {}
     }
-    return true; // Optimistic update
+    return null;
   }
 
   /// Fetch all active surveys
@@ -106,18 +213,21 @@ class ApiClient {
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http
-            .get(Uri.parse('$url/surveys'))
+            .get(Uri.parse('$url/surveys?live_refresh=20261019'))
             .timeout(const Duration(seconds: 2));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          final List<dynamic> data = json.decode(response.body) as List<dynamic>;
-          final surveys = data.map((item) => Survey.fromJson(item as Map<String, dynamic>)).toList();
-          if (surveys.isNotEmpty) return surveys;
+          final List<dynamic> data =
+              json.decode(response.body) as List<dynamic>;
+          final surveys = data
+              .map((item) => Survey.fromJson(item as Map<String, dynamic>))
+              .toList();
+          return surveys;
         }
       } catch (_) {}
     }
-    // Fallback to mock data so the app always shows surveys
-    return _mockSurveys();
+    // Never display stale bundled/demo data when the live API is unavailable.
+    return [];
   }
 
   /// Fetch single survey with full questions
@@ -129,7 +239,8 @@ class ApiClient {
             .timeout(const Duration(seconds: 3));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          return Survey.fromJson(json.decode(response.body) as Map<String, dynamic>);
+          return Survey.fromJson(
+              json.decode(response.body) as Map<String, dynamic>);
         }
       } catch (_) {}
     }
@@ -140,40 +251,70 @@ class ApiClient {
   Future<Map<String, dynamic>?> submitSurveyResponse({
     required String surveyId,
     required List<Map<String, dynamic>> answers,
+    required String voterName,
+    required String voterIdNumber,
+    required String county,
+    required String dob,
+    required double latitude,
+    required double longitude,
+    required double accuracy,
     String? voterPseudonym,
   }) async {
     final payload = {
-      'voterPseudonym': voterPseudonym ?? 'Citizen_${DateTime.now().millisecondsSinceEpoch % 100000}',
+      'voterPseudonym': (voterPseudonym != null && voterPseudonym.trim().isNotEmpty)
+          ? voterPseudonym.trim()
+          : await getOrCreateVoterKey(),
       'answers': answers,
+      'voterName': voterName,
+      'voterIdNumber': voterIdNumber,
+      'county': county,
+      'dob': dob,
+      'latitude': latitude,
+      'longitude': longitude,
+      'accuracy': accuracy,
     };
 
-    debugPrint('[SURVEY SUBMIT] surveyId=$surveyId payload=${json.encode(payload)}');
+    debugPrint('[SURVEY SUBMIT] Submitting verified survey response: $surveyId');
 
-    for (final url in baseUrls) {
+    final headers = await _jsonHeaders();
+    String? lastError;
+    for (final url in _orderedBaseUrls) {
       try {
         debugPrint('[SURVEY SUBMIT] Trying $url/surveys/$surveyId/submit ...');
-        final response = await http.post(
-          Uri.parse('$url/surveys/$surveyId/submit'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode(payload),
-        ).timeout(const Duration(seconds: 12));
-        debugPrint('[SURVEY SUBMIT] Response: ${response.statusCode} ${response.body}');
+        var response = await http
+            .post(
+              Uri.parse('$url/surveys/$surveyId/submit'),
+              headers: headers,
+              body: json.encode(payload),
+            )
+            .timeout(const Duration(seconds: 12));
+        if (response.statusCode == 401 && headers.containsKey('Authorization')) {
+          response = await http
+              .post(
+                Uri.parse('$url/surveys/$surveyId/submit'),
+                headers: {'Content-Type': 'application/json'},
+                body: json.encode(payload),
+              )
+              .timeout(const Duration(seconds: 12));
+        }
+        debugPrint(
+            '[SURVEY SUBMIT] Response: ${response.statusCode} ${response.body}');
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
         }
+        final responseBody = json.decode(response.body);
+        lastError = responseBody is Map<String, dynamic>
+            ? responseBody['detail']?.toString()
+            : null;
       } catch (e) {
         debugPrint('[SURVEY SUBMIT] Error on $url: $e');
       }
     }
-    // Fallback receipt
-    debugPrint('[SURVEY SUBMIT] All URLs failed, returning fallback receipt');
+    debugPrint('[SURVEY SUBMIT] Submission failed; no receipt was created.');
     return {
-      'success': true,
-      'surveyId': surveyId,
-      'receiptHash': '0x${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}8f41e0a29c71',
-      'merkleLeafIndex': 142,
-      'timestamp': DateTime.now().toIso8601String(),
+      'success': false,
+      'error': lastError ?? 'Please check your connection. The response was not recorded.',
     };
   }
 
@@ -184,18 +325,20 @@ class ApiClient {
     String? userId,
   }) {
     final userToken = userId != null ? '&ref=$userId' : '';
-    // Use host machine web URL
-    return 'http://192.168.1.158:8888/${type == "poll" ? "pages/vote.html?poll_id=" : "pages/surveys.html?survey_id="}$id$userToken';
+    final webUrl = kDebugMode ? 'http://192.168.1.158:8888' : _productionWebUrl;
+    return '$webUrl/${type == "poll" ? "pages/vote.html?poll_id=" : "pages/surveys.html?survey_id="}$id$userToken';
   }
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
     for (final url in baseUrls) {
       try {
-        final response = await http.post(
-          Uri.parse('$url/auth/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({'email': email.trim(), 'password': password}),
-        ).timeout(const Duration(seconds: 4));
+        final response = await http
+            .post(
+              Uri.parse('$url/auth/login'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode({'email': email.trim(), 'password': password}),
+            )
+            .timeout(const Duration(seconds: 4));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
@@ -217,21 +360,23 @@ class ApiClient {
   }) async {
     for (final url in baseUrls) {
       try {
-        final response = await http.post(
-          Uri.parse('$url/users'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'fullName': fullName.trim(),
-            'email': email.trim(),
-            'password': password,
-            'dob': dob,
-            'nationalId': nationalId,
-            'county': county,
-            'plan': plan,
-            'organization': organization,
-            'role': 'Customer',
-          }),
-        ).timeout(const Duration(seconds: 4));
+        final response = await http
+            .post(
+              Uri.parse('$url/users'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode({
+                'fullName': fullName.trim(),
+                'email': email.trim(),
+                'password': password,
+                'dob': dob,
+                'nationalId': nationalId,
+                'county': county,
+                'plan': plan,
+                'organization': organization,
+                'role': 'Customer',
+              }),
+            )
+            .timeout(const Duration(seconds: 4));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
@@ -244,11 +389,13 @@ class ApiClient {
   Future<bool> updatePlan(String userId, String plan) async {
     for (final url in baseUrls) {
       try {
-        final response = await http.post(
-          Uri.parse('$url/users/$userId/plan'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({'plan': plan}),
-        ).timeout(const Duration(seconds: 4));
+        final response = await http
+            .post(
+              Uri.parse('$url/users/$userId/plan'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode({'plan': plan}),
+            )
+            .timeout(const Duration(seconds: 4));
         if (response.statusCode == 200) {
           return true;
         }
@@ -263,11 +410,13 @@ class ApiClient {
 
     for (final url in baseUrls) {
       try {
-        final response = await http.post(
-          Uri.parse('$url/auth/send-otp'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode(payload),
-        ).timeout(const Duration(seconds: 5));
+        final response = await http
+            .post(
+              Uri.parse('$url/auth/send-otp'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode(payload),
+            )
+            .timeout(const Duration(seconds: 5));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
@@ -296,11 +445,13 @@ class ApiClient {
 
     for (final url in baseUrls) {
       try {
-        final response = await http.post(
-          Uri.parse('$url/auth/verify-otp-reset'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode(payload),
-        ).timeout(const Duration(seconds: 5));
+        final response = await http
+            .post(
+              Uri.parse('$url/auth/verify-otp-reset'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode(payload),
+            )
+            .timeout(const Duration(seconds: 5));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
@@ -310,7 +461,8 @@ class ApiClient {
 
     return {
       'success': true,
-      'message': 'Email confirmed! Password for ${email.trim()} has been successfully reset.',
+      'message':
+          'Email confirmed! Password for ${email.trim()} has been successfully reset.',
     };
   }
 
@@ -319,17 +471,40 @@ class ApiClient {
       Poll(
         id: 'PL-KITUI-EAST-2027',
         title: 'Kitui East Constituency MP Aspirants Poll 2027',
-        description: 'Official 2027 opinion poll for Kitui East Constituency Member of Parliament (MP) aspirants.',
+        description:
+            'Official 2027 opinion poll for Kitui East Constituency Member of Parliament (MP) aspirants.',
         trackName: 'Constituency MP Election',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '148', text: 'Zak Syengo (Zacchaeus Syengo) - Wiper', votes: 0, percentage: 0.0),
-          PollOption(id: '149', text: 'Nelson Muling\'a - Wiper', votes: 0, percentage: 0.0),
-          PollOption(id: '150', text: 'Amb. Kiema Kilonzo - Wiper', votes: 0, percentage: 0.0),
-          PollOption(id: '151', text: 'Wilson Muange Musyoka', votes: 0, percentage: 0.0),
-          PollOption(id: '152', text: 'Hon. Nimrod Mbai - UDA (Incumbent)', votes: 0, percentage: 0.0),
-          PollOption(id: '153', text: 'Henry Nyamai', votes: 0, percentage: 0.0),
-          PollOption(id: '154', text: 'Other / Undecided', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '148',
+              text: 'Zak Syengo (Zacchaeus Syengo) - Wiper',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '149',
+              text: 'Nelson Muling\'a - Wiper',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '150',
+              text: 'Amb. Kiema Kilonzo - Wiper',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '151',
+              text: 'Wilson Muange Musyoka',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '152',
+              text: 'Hon. Nimrod Mbai - UDA (Incumbent)',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '153', text: 'Henry Nyamai', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '154', text: 'Other / Undecided', votes: 0, percentage: 0.0),
         ],
         totalVotes: 0,
         createdAt: DateTime.now(),
@@ -337,15 +512,23 @@ class ApiClient {
       Poll(
         id: 'PL-KITUI-VOO-2027',
         title: 'Voo / Kyamatu Ward MCA Aspirants Poll 2027 (Kitui East)',
-        description: 'Live opinion poll for Member of County Assembly (MCA) aspirants in Voo / Kyamatu Ward.',
+        description:
+            'Live opinion poll for Member of County Assembly (MCA) aspirants in Voo / Kyamatu Ward.',
         trackName: 'Kitui County Wards',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '155', text: 'Hon. Boniface Kilaa Musyoka', votes: 0, percentage: 0.0),
-          PollOption(id: '156', text: 'Dr. Musyoka Wambua', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '155',
+              text: 'Hon. Boniface Kilaa Musyoka',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '156', text: 'Dr. Musyoka Wambua', votes: 0, percentage: 0.0),
           PollOption(id: '157', text: 'Mary Mwinzi', votes: 0, percentage: 0.0),
-          PollOption(id: '158', text: 'Eng. Patrick Mutua', votes: 0, percentage: 0.0),
-          PollOption(id: '159', text: 'Samuel Kimanzi', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '158', text: 'Eng. Patrick Mutua', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '159', text: 'Samuel Kimanzi', votes: 0, percentage: 0.0),
         ],
         totalVotes: 0,
         createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
@@ -353,15 +536,23 @@ class ApiClient {
       Poll(
         id: 'PL-KITUI-KYANG-2027',
         title: 'Kyangwithya West Ward MCA Aspirants Poll 2027 (Kitui Central)',
-        description: 'Live ward opinion poll for Kyangwithya West MCA aspirants.',
+        description:
+            'Live ward opinion poll for Kyangwithya West MCA aspirants.',
         trackName: 'Kitui County Wards',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '160', text: 'Hon. Boniface Kanangalu', votes: 0, percentage: 0.0),
-          PollOption(id: '161', text: 'Jackson Mwangangi', votes: 0, percentage: 0.0),
-          PollOption(id: '162', text: 'Agnes Syombua', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '160',
+              text: 'Hon. Boniface Kanangalu',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '161', text: 'Jackson Mwangangi', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '162', text: 'Agnes Syombua', votes: 0, percentage: 0.0),
           PollOption(id: '163', text: 'David Nyamu', votes: 0, percentage: 0.0),
-          PollOption(id: '164', text: 'Titus Kilonzo', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '164', text: 'Titus Kilonzo', votes: 0, percentage: 0.0),
         ],
         totalVotes: 0,
         createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
@@ -373,10 +564,16 @@ class ApiClient {
         trackName: 'Kitui County Wards',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '165', text: 'Hon. Daniel Kimanzi', votes: 0, percentage: 0.0),
-          PollOption(id: '166', text: 'Dr. John Mwanza', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '165',
+              text: 'Hon. Daniel Kimanzi',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '166', text: 'Dr. John Mwanza', votes: 0, percentage: 0.0),
           PollOption(id: '167', text: 'Ruth Mueni', votes: 0, percentage: 0.0),
-          PollOption(id: '168', text: 'Josephat Kalu', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '168', text: 'Josephat Kalu', votes: 0, percentage: 0.0),
         ],
         totalVotes: 0,
         createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
@@ -388,10 +585,14 @@ class ApiClient {
         trackName: 'Kitui County Wards',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '169', text: 'Hon. David Munyoki', votes: 0, percentage: 0.0),
-          PollOption(id: '170', text: 'Peter Musyimi', votes: 0, percentage: 0.0),
-          PollOption(id: '171', text: 'Mercy Kalondu', votes: 0, percentage: 0.0),
-          PollOption(id: '172', text: 'Charles Nzioka', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '169', text: 'Hon. David Munyoki', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '170', text: 'Peter Musyimi', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '171', text: 'Mercy Kalondu', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '172', text: 'Charles Nzioka', votes: 0, percentage: 0.0),
         ],
         totalVotes: 0,
         createdAt: DateTime.now().subtract(const Duration(minutes: 20)),
@@ -403,8 +604,13 @@ class ApiClient {
         trackName: 'Kitui County Wards',
         authorName: 'Kitui Civic Research',
         options: [
-          PollOption(id: '173', text: 'Hon. Hussein Mwanzi', votes: 0, percentage: 0.0),
-          PollOption(id: '174', text: 'Julius Kitheka', votes: 0, percentage: 0.0),
+          PollOption(
+              id: '173',
+              text: 'Hon. Hussein Mwanzi',
+              votes: 0,
+              percentage: 0.0),
+          PollOption(
+              id: '174', text: 'Julius Kitheka', votes: 0, percentage: 0.0),
           PollOption(id: '175', text: 'Grace Mbula', votes: 0, percentage: 0.0),
           PollOption(id: '176', text: 'Alex Mutuku', votes: 0, percentage: 0.0),
         ],
@@ -418,8 +624,10 @@ class ApiClient {
     return [
       Survey(
         id: 'SRV-ELEC-01',
-        title: 'Sub-County Civic Ward Assembly Priority & Electoral Governance Census',
-        description: 'Sovereign precinct study on public participation, capital project allocation, and voter audit confidence.',
+        title:
+            'Sub-County Civic Ward Assembly Priority & Electoral Governance Census',
+        description:
+            'Sovereign precinct study on public participation, capital project allocation, and voter audit confidence.',
         track: 'Civic Governance',
         plan: 'election',
         status: 'Active',
@@ -435,15 +643,23 @@ class ApiClient {
             id: 1,
             surveyId: 'SRV-ELEC-01',
             index: 0,
-            questionText: 'How satisfied are you with the transparency of local ward budget allocation?',
+            questionText:
+                'How satisfied are you with the transparency of local ward budget allocation?',
             questionType: 'choice',
-            options: ['Very Satisfied', 'Somewhat Satisfied', 'Neutral', 'Dissatisfied', 'Highly Dissatisfied'],
+            options: [
+              'Very Satisfied',
+              'Somewhat Satisfied',
+              'Neutral',
+              'Dissatisfied',
+              'Highly Dissatisfied'
+            ],
           ),
           SurveyQuestion(
             id: 2,
             surveyId: 'SRV-ELEC-01',
             index: 1,
-            questionText: 'Rate your confidence in digital Merkle-tree cryptographic vote audits (1-5):',
+            questionText:
+                'Rate your confidence in digital Merkle-tree cryptographic vote audits (1-5):',
             questionType: 'rating',
             options: ['1 - Low', '2', '3', '4', '5 - Maximum Confidence'],
           ),
@@ -451,7 +667,8 @@ class ApiClient {
             id: 3,
             surveyId: 'SRV-ELEC-01',
             index: 2,
-            questionText: 'What key infrastructure project is most urgently needed in your constituency?',
+            questionText:
+                'What key infrastructure project is most urgently needed in your constituency?',
             questionType: 'text',
             options: [],
           ),
@@ -462,7 +679,33 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.6';
+    const currentAppVersion = '2.1.14';
+    bool isNewerVersion(String candidate, String current) {
+      List<int>? parse(String version) {
+        final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');
+        final parts = normalized.split('.');
+        if (parts.isEmpty || parts.any((part) => int.tryParse(part) == null)) {
+          return null;
+        }
+        return parts.map(int.parse).toList();
+      }
+
+      final candidateParts = parse(candidate);
+      final currentParts = parse(current);
+      if (candidateParts == null || currentParts == null) return false;
+      final length = candidateParts.length > currentParts.length
+          ? candidateParts.length
+          : currentParts.length;
+      for (var index = 0; index < length; index++) {
+        final candidatePart =
+            index < candidateParts.length ? candidateParts[index] : 0;
+        final currentPart =
+            index < currentParts.length ? currentParts[index] : 0;
+        if (candidatePart != currentPart) return candidatePart > currentPart;
+      }
+      return false;
+    }
+
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http
@@ -471,10 +714,12 @@ class ApiClient {
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           final data = json.decode(response.body) as Map<String, dynamic>;
-          final latestVer = data['latest_version']?.toString() ?? currentAppVersion;
+          final latestVer =
+              data['latest_version']?.toString() ?? currentAppVersion;
           return {
             ...data,
-            'update_available': (data['update_available'] == true && latestVer != currentAppVersion),
+            'update_available': (data['update_available'] == true &&
+                latestVer != currentAppVersion),
           };
         }
       } catch (_) {
@@ -485,12 +730,15 @@ class ApiClient {
           if (healthResp.statusCode == 200) {
             _activeBaseUrl = url;
             final data = json.decode(healthResp.body) as Map<String, dynamic>;
-            final serverVersion = data['version']?.toString() ?? currentAppVersion;
+            final serverVersion =
+                data['version']?.toString() ?? currentAppVersion;
             return {
               'latest_version': serverVersion,
-              'update_available': serverVersion != currentAppVersion,
-              'release_notes': 'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
-              'download_url': 'https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk',
+              'update_available':
+                  isNewerVersion(serverVersion, currentAppVersion),
+              'release_notes':
+                  'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
+              'download_url': '$_productionWebUrl/app-release.apk',
             };
           }
         } catch (_) {}
@@ -499,8 +747,9 @@ class ApiClient {
     return {
       'latest_version': currentAppVersion,
       'update_available': false,
-      'release_notes': 'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
-      'download_url': 'https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk',
+      'release_notes':
+          'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
+      'download_url': '$_productionWebUrl/app-release.apk',
     };
   }
 
@@ -513,7 +762,8 @@ class ApiClient {
             .timeout(const Duration(seconds: 2));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          final List<dynamic> data = json.decode(response.body) as List<dynamic>;
+          final List<dynamic> data =
+              json.decode(response.body) as List<dynamic>;
           return data.map((e) => e as Map<String, dynamic>).toList();
         }
       } catch (_) {}
@@ -521,4 +771,3 @@ class ApiClient {
     return [];
   }
 }
-

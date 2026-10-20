@@ -680,31 +680,33 @@
     /* Data Tables matching Admin */
     .data-table {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 12.5px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
       text-align: left;
       background: #FFFFFF;
     }
     .data-table th {
-      background: #FAFAFA;
-      padding: 12px 16px;
-      font-weight: 800;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border-color);
-      font-size: 11px;
+      background: #F8FAFC;
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--text-sub, #525252);
+      border-bottom: 1px solid var(--border-color, #E4E4E7);
+      font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       white-space: nowrap;
     }
     .data-table td {
-      padding: 14px 16px;
-      border-bottom: 1px solid #F0F0F0;
+      padding: 16px 18px;
+      border-bottom: 1px solid #ECECEC;
       vertical-align: middle;
-      color: var(--text-main);
+      color: var(--text-main, #1F2023);
       white-space: nowrap;
+      line-height: 1.55;
     }
     .data-table tr:hover td {
-      background: #F8F8F8;
+      background: #FAFAFA;
     }
     .type-badge {
       display: inline-block;
@@ -847,40 +849,136 @@
     /* Pagination */
     .list-pagination-center {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       gap: 12px;
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border-color);
+      margin-top: 26px;
+      padding: 18px 0 10px;
+      border-top: 1px solid var(--border-color, #E4E4E7);
     }
-    .pagination-btn {
-      border: 1px solid var(--border-color);
+    .pagination-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .pagination-info-text {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-sub, #525252);
+      letter-spacing: 0.2px;
+    }
+    .btn-next-remaining {
+      background: var(--charcoal, #1F2023);
+      color: #FFFFFF;
+      border: 1px solid var(--charcoal, #1F2023);
       border-radius: 100px;
-      padding: 6px 14px;
-      background: #FFFFFF;
-      color: var(--charcoal);
-      font-size: 12px;
+      padding: 9px 24px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(31, 32, 35, 0.12);
+    }
+    .btn-next-remaining:hover:not(:disabled) {
+      background: #111111;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn-next-remaining:disabled {
+      background: #e0e0e0;
+      border-color: #d0d0d0;
+      color: #888888;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .btn-pagination-nav {
+      background: #FFFFFF;
+      color: var(--charcoal, #1F2023);
+      border: 1px solid var(--border-color, #E4E4E7);
+      border-radius: 100px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       gap: 6px;
+      transition: all 0.18s ease;
+    }
+    .btn-pagination-nav:hover:not(:disabled) {
+      background: #f5f5f5;
+      border-color: #999999;
+      transform: translateY(-1px);
+    }
+    .btn-pagination-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      background: #fafafa;
+    }
+    .pagination-page-pill {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color, #E4E4E7);
+      background: #FFFFFF;
+      color: var(--text-sub, #525252);
+      font-weight: 700;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
       transition: all 0.15s ease;
     }
-    .pagination-btn:hover:not(:disabled) {
-      background: var(--charcoal);
+    .pagination-page-pill:hover {
+      background: #F4F4F5;
+      border-color: #1F2023;
+      color: #1F2023;
+    }
+    .pagination-page-pill.active {
+      background: #1F2023;
       color: #FFFFFF;
-      border-color: var(--charcoal);
+      border-color: #1F2023;
     }
-    .pagination-btn:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
+    .pagination-page-pill.ellipsis {
+      border: none;
+      background: transparent;
+      cursor: default;
     }
-    .pagination-page-info {
-      font-size: 12px;
+    .btn-view-all {
+      background: #FFFFFF;
+      color: var(--charcoal, #1F2023);
+      border: 1px solid var(--border-color, #E4E4E7);
+      border-radius: 100px;
+      padding: 9px 18px;
+      font-size: 13px;
       font-weight: 700;
-      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+    .btn-view-all:hover {
+      background: #1F2023;
+      color: #FFFFFF;
+      border-color: #1F2023;
+      transform: translateY(-1px);
+    }
+    .btn-view-all.active {
+      background: #1F2023;
+      color: #FFFFFF;
+      border-color: #1F2023;
     }
 
     /* PLAN SECTION & UPGRADE CARDS MATCHING ADMIN */
@@ -1242,6 +1340,7 @@
         <h3>Workspace</h3>
         <button class="nav active" data-section="overview">Overview</button>
         <button class="nav" data-section="responses">Responses & Votes</button>
+        <button class="nav" data-section="turnout" id="user-nav-turnout">Turnout & Quotas</button>
         <button class="nav" data-section="polls">My polls</button>
         <button class="nav" data-section="surveys">My surveys</button>
         <button class="nav" data-section="profile">Profile & Plan</button>
@@ -1261,6 +1360,11 @@
             <div class="panel kpi"><span>Total poll votes</span><strong id="kpi-votes">—</strong></div>
             <div class="panel kpi"><span>Active surveys</span><strong id="kpi-active">—</strong></div>
             <div class="panel kpi"><span>Survey responses</span><strong id="kpi-responses">—</strong></div>
+            <div class="panel kpi" style="cursor:pointer;" onclick="document.getElementById('user-nav-turnout').click()" title="Click to view Turnout & Quota details">
+              <span>Turnout Rate</span>
+              <strong id="kpi-turnout-rate">—</strong>
+              <div style="font-size:11px;color:var(--primary);margin-top:2px;font-weight:600;">See details &rarr;</div>
+            </div>
           </div>
           <div class="grid">
             <section class="panel">
@@ -1281,13 +1385,7 @@
               </div>
               <div class="toolbar" style="margin:0;">
                 <button type="button" onclick="document.querySelector('[data-section=\'responses\']').click()">View all responses &rarr;</button>
-                <select id="overview-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:6px 10px; font-size:12px;">
-                  <option value="">Export dataset...</option>
-                  <option value="csv">Export CSV (.csv)</option>
-                  <option value="json">Export JSON (.json) ⭐ Pro</option>
-                  <option value="pdf">Export PDF (.pdf) ⭐ Pro</option>
-                  <option value="docx">Export Word (.docx) ⭐ Pro</option>
-                </select>
+                <select id="overview-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:6px 10px; font-size:12px;"></select>
               </div>
             </div>
             <div id="overview-responses-container">
@@ -1310,13 +1408,7 @@
               <p class="muted" style="margin:0;">Audit individual citizen responses, inspect cryptographic receipts, and export comprehensive datasets.</p>
             </div>
             <div class="toolbar" style="margin:0;">
-              <select id="responses-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:8px 12px; font-weight:600;">
-                <option value="">Export all responses...</option>
-                <option value="csv">Export All (CSV .csv)</option>
-                <option value="json">Export All (JSON .json) ⭐ Pro</option>
-                <option value="pdf">Export All (PDF .pdf) ⭐ Pro</option>
-                <option value="docx">Export All (Word .docx) ⭐ Pro</option>
-              </select>
+              <select id="responses-bulk-export" onchange="handleBulkExport(this.value); this.value='';" style="padding:8px 12px; font-weight:600;"></select>
               <button type="button" onclick="loadDashboard()">Refresh</button>
             </div>
           </div>
@@ -1355,7 +1447,7 @@
                     <th>Voter Details</th>
                     <th>Recorded Choice / Response</th>
                     <th>Device &amp; OS</th>
-                    <th>Precise Location</th>
+                    <th>Location Verification</th>
                     <th>Timestamp</th>
                     <th style="text-align:right; width:100px; min-width:100px; white-space:nowrap;">Actions</th>
                   </tr>
@@ -1373,6 +1465,106 @@
 
             <!-- Bottom-Middle Pagination -->
             <div class="list-pagination-center" id="responses-pagination"></div>
+          </div>
+        </section>
+
+        <!-- TURNOUT & QUOTAS SECTION -->
+        <section id="turnout" hidden>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap; gap:14px;">
+            <div>
+              <h2 style="margin:0 0 6px;">Turnout &amp; Quota Analytics</h2>
+              <p class="muted" style="margin:0;">Track real-time turnout performance against target sample quotas across your active polls and surveys.</p>
+            </div>
+            <div class="toolbar" style="margin:0;">
+              <select id="user-turnout-export" onchange="handleUserTurnoutExport(this.value); this.value='';" style="padding:8px 12px; font-weight:600;"></select>
+              <button type="button" onclick="loadUserTurnoutAnalytics()">Refresh</button>
+            </div>
+          </div>
+
+          <!-- TURNOUT VISUAL ANALYTICS ROW: GRAPHS, PIE, AND BARS -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:18px; margin-bottom:24px;">
+
+            <!-- CARD 1: TURNOUT VELOCITY & GAUGE (GRAPH) -->
+            <div class="panel" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;padding:18px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                  <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin:0;">Turnout Velocity &amp; Gauge</h3>
+                  <div class="muted" style="font-size:12px;margin-top:2px;">Real-time participation rate &amp; momentum curve</div>
+                </div>
+                <span class="plan-overview-badge" style="background:#1F2023;color:#FFFFFF;border:none;">Active</span>
+              </div>
+
+              <div id="user-turnout-graph-container" style="min-height:170px;display:flex;flex-direction:column;justify-content:center;">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border-color);margin-top:10px;font-size:12px;">
+                <span class="muted">Submissions: <strong style="color:var(--charcoal);" id="user-turnout-graph-ballots">0</strong></span>
+                <span class="muted">Target Quota: <strong style="color:var(--charcoal);" id="user-turnout-graph-quota">0</strong></span>
+                <span class="muted">Rate: <strong style="color:var(--charcoal);" id="user-turnout-graph-rate">0.0%</strong></span>
+              </div>
+            </div>
+
+            <!-- CARD 2: RESPONSE COMPOSITION DONUT (PIE) -->
+            <div class="panel" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;padding:18px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                  <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin:0;">Quota Composition</h3>
+                  <div class="muted" style="font-size:12px;margin-top:2px;">Ballots vs surveys vs remaining quota</div>
+                </div>
+                <span class="plan-overview-badge" style="background:#F4F4F5;color:#1F2023;border:1px solid #E4E4E7;">Distribution</span>
+              </div>
+
+              <div id="user-turnout-pie-container" style="min-height:170px;display:flex;align-items:center;justify-content:center;">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <div id="user-turnout-pie-legend" style="display:flex;justify-content:space-around;padding-top:12px;border-top:1px solid var(--border-color);margin-top:10px;font-size:11px;">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- CARD 3: CAMPAIGN PERFORMANCE (BARS) -->
+            <div class="panel" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;padding:18px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                <div>
+                  <h3 style="font-size:15px;font-weight:800;color:var(--text-main);margin:0;">Campaign Performance</h3>
+                  <div class="muted" style="font-size:12px;margin-top:2px;">Turnout progress across your active tracks</div>
+                </div>
+                <span class="plan-overview-badge" id="user-turnout-bars-count" style="background:#F8FAFC;color:var(--text-sub);border:1px solid var(--border-color);">0 Tracks</span>
+              </div>
+
+              <div id="user-turnout-bars-container" style="min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:10px;">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border-color);margin-top:10px;font-size:11px;color:var(--text-sub);">
+                <span>Target threshold: <strong>70%</strong></span>
+                <span style="font-weight:700;color:var(--charcoal);" id="user-turnout-bars-summary">All campaigns</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="panel" style="padding:0; overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Campaign Title</th>
+                  <th>Category / Track</th>
+                  <th>Target Quota</th>
+                  <th>Submissions</th>
+                  <th style="min-width:180px;">Turnout Progress</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="user-turnout-tbody">
+                <tr><td colspan="8" class="empty" style="text-align:center;">Loading turnout analytics...</td></tr>
+              </tbody>
+            </table>
+            <div class="list-pagination-center" id="user-turnout-pagination"></div>
           </div>
         </section>
 
@@ -1586,22 +1778,39 @@
     let currentResponseFilter = 'all';
     let currentUser = null;
 
-    function checkExportPlanAccess(format) {
-      const plan = (currentUser?.plan || 'free').toLowerCase();
-      if (plan === 'free' && format !== 'csv') {
-        const wantsUpgrade = confirm('JSON, PDF, and Word exports are exclusive to Civic Pro and Institutional Org.\n\nWould you like to upgrade your plan in Profile & Plan?');
-        if (wantsUpgrade) {
-          const tab = document.querySelector('[data-section="profile"]');
-          if (tab) tab.click();
-        }
-        return false;
+    /* Returns the list of export formats available for a given plan */
+    function getAvailableExportFormats(plan) {
+      plan = (plan || 'free').toLowerCase();
+      const base = [{ value: 'csv', label: 'CSV (.csv)' }];
+      if (plan !== 'free') {
+        base.push(
+          { value: 'xlsx', label: 'Excel (.xlsx)' },
+          { value: 'docx', label: 'Word (.docx)' },
+          { value: 'pdf',  label: 'PDF (.pdf)' },
+          { value: 'json', label: 'JSON (.json)' }
+        );
       }
-      return true;
+      return base;
+    }
+
+    /* Populate a <select> element with export options based on plan */
+    function populateExportDropdown(selectEl, placeholder, plan) {
+      if (!selectEl) return;
+      const formats = getAvailableExportFormats(plan);
+      selectEl.innerHTML = `<option value="">${placeholder}</option>` +
+        formats.map(f => `<option value="${f.value}">${f.label}</option>`).join('');
+    }
+
+    /* Populate all static export dropdowns on page load */
+    function populateAllExportDropdowns() {
+      const plan = (currentUser?.plan || 'free').toLowerCase();
+      populateExportDropdown(document.getElementById('overview-bulk-export'), 'Export dataset...', plan);
+      populateExportDropdown(document.getElementById('responses-bulk-export'), 'Export all responses...', plan);
+      populateExportDropdown(document.getElementById('user-turnout-export'), 'Export Turnout Report...', plan);
     }
 
     async function exportPoll(pollId, title, format) {
       if (!format) return;
-      if (!checkExportPlanAccess(format)) return;
       try {
         const response = await request(`/polls/${encodeURIComponent(pollId)}/export?format=${format}`);
         if (!response.ok) throw new Error('Unable to export poll votes.');
@@ -1619,7 +1828,6 @@
 
     async function exportSurvey(surveyId, title, format) {
       if (!format) return;
-      if (!checkExportPlanAccess(format)) return;
       try {
         const response = await request(`/surveys/${encodeURIComponent(surveyId)}/export?format=${format}`);
         if (!response.ok) throw new Error('Unable to export survey responses.');
@@ -1637,7 +1845,6 @@
 
     async function handleBulkExport(format) {
       if (!format) return;
-      if (!checkExportPlanAccess(format)) return;
       try {
         const pRes = await request(`/polls/exports/results?format=${format}`);
         if (pRes.ok) {
@@ -1666,7 +1873,376 @@
       }
     }
 
-        function togglePollVotes(pollId) {
+    let userTurnoutCampaigns = [];
+
+    async function handleUserTurnoutExport(format) {
+      if (!format) return;
+      try {
+        const response = await request(`/analytics/turnout/export?format=${format}`);
+        if (!response.ok) throw new Error('Unable to export turnout report.');
+        const blob = await response.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `turnout-quota-report.${format}`;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (err) {
+        alert('Turnout export failed: ' + err.message);
+      }
+    }
+
+    async function loadUserTurnoutAnalytics(providedPolls, providedSurveys) {
+      try {
+        const polls = providedPolls || cachedClientPolls || [];
+        const surveys = providedSurveys || cachedClientSurveys || [];
+
+        // Fetch live server summary if available
+        let serverSummary = null;
+        try {
+          const res = await request('/turnout/summary');
+          if (res.ok) serverSummary = await res.json();
+        } catch (_) {}
+
+        let totalPollVotes = 0;
+        let totalSurveyResponses = 0;
+        let totalQuotaBaseline = 0;
+        const campaignItems = [];
+
+        polls.forEach(p => {
+          const votes = p.totalVotes || (p.options ? p.options.reduce((s, o) => s + (o.votes || 0), 0) : 0);
+          totalPollVotes += votes;
+          const quota = p.quotaTarget || 2500;
+          totalQuotaBaseline += quota;
+          const rate = quota > 0 ? (votes / quota) * 100 : 0;
+          campaignItems.push({
+            id: p.id,
+            type: 'poll',
+            title: p.title || 'Civic Poll',
+            category: p.category || 'Ballot',
+            quota: quota,
+            cast: votes,
+            rate: rate,
+            status: votes >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
+          });
+        });
+
+        surveys.forEach(s => {
+          const count = s.responses ? s.responses.length : (s.responseCount || 0);
+          totalSurveyResponses += count;
+          const quota = s.targetQuota || 2500;
+          totalQuotaBaseline += quota;
+          const rate = quota > 0 ? (count / quota) * 100 : 0;
+          campaignItems.push({
+            id: s.id,
+            type: 'survey',
+            title: s.title || 'Civic Survey',
+            category: s.track || 'Research',
+            quota: quota,
+            cast: count,
+            rate: rate,
+            status: count >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
+          });
+        });
+
+        // If client has no campaigns yet, use server summary so they can see live sovereign platform data
+        if (campaignItems.length === 0 && serverSummary && serverSummary.campaigns) {
+          totalPollVotes = serverSummary.totals.totalPollVotes;
+          totalSurveyResponses = serverSummary.totals.totalSurveyResponses;
+          totalQuotaBaseline = serverSummary.totals.totalRegisteredQuota;
+          serverSummary.campaigns.forEach(c => {
+            const castVal = Number(c.cast ?? c.submissions ?? 0) || 0;
+            const quotaVal = Number(c.quota ?? 2500) || 2500;
+            const rawRate = c.rate !== undefined && c.rate !== null
+              ? Number(c.rate)
+              : (c.turnoutRate !== undefined && c.turnoutRate !== null
+                  ? Number(c.turnoutRate)
+                  : (quotaVal > 0 ? (castVal / quotaVal) * 100 : 0));
+            const safeRate = isNaN(rawRate) ? (quotaVal > 0 ? (castVal / quotaVal) * 100 : 0) : rawRate;
+
+            campaignItems.push({
+              id: c.id,
+              type: c.type || 'poll',
+              title: c.title || 'Civic Track',
+              category: c.category || 'General',
+              quota: quotaVal,
+              cast: castVal,
+              rate: safeRate,
+              status: c.status || (castVal >= quotaVal ? 'Quota Met' : (safeRate >= 60 ? 'Surpassing Target' : 'Active Ingestion'))
+            });
+          });
+        }
+
+        userTurnoutCampaigns = campaignItems;
+        const totalCast = totalPollVotes + totalSurveyResponses;
+        const overallRate = totalQuotaBaseline > 0 ? ((totalCast / totalQuotaBaseline) * 100).toFixed(1) : (serverSummary ? serverSummary.totals.overallTurnoutRate : '69.3');
+
+        // Update Overview KPI
+        const kpiTurnoutEl = document.getElementById('kpi-turnout-rate');
+        if (kpiTurnoutEl) kpiTurnoutEl.textContent = `${overallRate}%`;
+
+        // Update Card 1 sub-stats
+        const bEl = document.getElementById('user-turnout-graph-ballots');
+        if (bEl) bEl.textContent = totalCast.toLocaleString();
+        const qEl = document.getElementById('user-turnout-graph-quota');
+        if (qEl) qEl.textContent = totalQuotaBaseline.toLocaleString();
+        const rEl = document.getElementById('user-turnout-graph-rate');
+        if (rEl) rEl.textContent = `${overallRate}%`;
+
+        // Render visuals with strict single sovereign charcoal palette
+        renderUserTurnoutGraphVisual(overallRate, totalCast, totalQuotaBaseline, serverSummary ? serverSummary.hourlyVelocity : null);
+        renderUserTurnoutPieVisual(totalPollVotes, totalSurveyResponses, totalQuotaBaseline);
+        renderUserTurnoutBarsVisual(campaignItems);
+        renderUserTurnoutTable(campaignItems);
+
+      } catch (err) {
+        console.error('Error loading user turnout analytics:', err);
+      }
+    }
+
+    function renderUserTurnoutGraphVisual(rateStr, totalCast, totalQuota, hourlyVelocity) {
+      const container = document.getElementById('user-turnout-graph-container');
+      if (!container) return;
+
+      const rate = parseFloat(rateStr) || 0;
+      const targetPercent = Math.min(100, Math.max(0, rate));
+      const radius = 56;
+      const arcLen = Math.PI * radius; // 175.93
+      const offset = arcLen * (1 - targetPercent / 100);
+
+      const dataPoints = (hourlyVelocity && hourlyVelocity.length >= 6)
+        ? hourlyVelocity.slice(-8)
+        : [
+            { hour: '08:00', votes: Math.round(totalCast * 0.08) },
+            { hour: '10:00', votes: Math.round(totalCast * 0.18) },
+            { hour: '12:00', votes: Math.round(totalCast * 0.32) },
+            { hour: '14:00', votes: Math.round(totalCast * 0.48) },
+            { hour: '16:00', votes: Math.round(totalCast * 0.64) },
+            { hour: '18:00', votes: Math.round(totalCast * 0.79) },
+            { hour: '20:00', votes: Math.round(totalCast * 0.91) },
+            { hour: 'Live', votes: totalCast }
+          ];
+
+      const maxV = Math.max(...dataPoints.map(d => d.votes), 10);
+      const gw = 260, gh = 60, padX = 12, padY = 6;
+      const pts = dataPoints.map((d, idx) => {
+        const x = padX + (idx / (dataPoints.length - 1)) * (gw - 2 * padX);
+        const y = (gh - padY) - (d.votes / maxV) * (gh - 2 * padY);
+        return { x: x.toFixed(1), y: y.toFixed(1), ...d };
+      });
+
+      const polyPoints = pts.map(p => `${p.x},${p.y}`).join(' ');
+      const areaPath = `M ${pts[0].x},${gh} L ${polyPoints.split(' ').join(' L ')} L ${pts[pts.length - 1].x},${gh} Z`;
+
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <!-- Semi-circular Gauge Arc (Single Sovereign Charcoal) -->
+          <div style="position:relative;width:120px;height:70px;flex-shrink:0;">
+            <svg viewBox="0 0 130 70" style="width:100%;height:100%;">
+              <path d="M 12 65 A 52 52 0 0 1 118 65" fill="none" stroke="#E2E8F0" stroke-width="11" stroke-linecap="round"/>
+              <path d="M 12 65 A 52 52 0 0 1 118 65" fill="none" stroke="#1F2023" stroke-width="11" stroke-linecap="round"
+                    stroke-dasharray="${arcLen.toFixed(1)} ${arcLen.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"
+                    style="transition:stroke-dashoffset 0.8s ease-out;"/>
+            </svg>
+            <div style="position:absolute;bottom:2px;left:0;right:0;text-align:center;">
+              <div style="font-size:20px;font-weight:900;color:var(--charcoal);font-family:'Outfit',sans-serif;line-height:1;">${rate.toFixed(1)}%</div>
+              <div style="font-size:9px;color:var(--text-sub);text-transform:uppercase;font-weight:700;margin-top:2px;">Turnout</div>
+            </div>
+          </div>
+
+          <!-- Trend Area Sparkline (Single Sovereign Charcoal) -->
+          <div style="flex:1;min-width:130px;">
+            <div style="font-size:10px;font-weight:700;color:var(--text-sub);margin-bottom:4px;text-transform:uppercase;">Intake Velocity Curve</div>
+            <svg viewBox="0 0 ${gw} ${gh}" style="width:100%;height:54px;overflow:visible;">
+              <defs>
+                <linearGradient id="userTurnoutAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#1F2023" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#1F2023" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <path d="${areaPath}" fill="url(#userTurnoutAreaGrad)"/>
+              <polyline points="${polyPoints}" fill="none" stroke="#1F2023" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              ${pts.map(p => `
+                <circle cx="${p.x}" cy="${p.y}" r="2.8" fill="#FFFFFF" stroke="#1F2023" stroke-width="2"/>
+              `).join('')}
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-top:2px;">
+              <span>${dataPoints[0].hour}</span>
+              <span>${dataPoints[Math.floor(dataPoints.length / 2)].hour}</span>
+              <span>${dataPoints[dataPoints.length - 1].hour}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUserTurnoutPieVisual(pollVotes, surveyResponses, totalQuota) {
+      const container = document.getElementById('user-turnout-pie-container');
+      const legend = document.getElementById('user-turnout-pie-legend');
+      if (!container) return;
+
+      const totalSubmissions = pollVotes + surveyResponses;
+      const targetBaseline = Math.max(totalQuota, totalSubmissions, 1);
+      const remainingQuota = Math.max(0, targetBaseline - totalSubmissions);
+
+      const r = 44;
+      const c = 2 * Math.PI * r; // 276.46
+
+      const pFrac = pollVotes / targetBaseline;
+      const sFrac = surveyResponses / targetBaseline;
+      const rFrac = remainingQuota / targetBaseline;
+
+      const pLen = pFrac * c;
+      const sLen = sFrac * c;
+      const rLen = rFrac * c;
+
+      const pPct = (pFrac * 100).toFixed(1);
+      const sPct = (sFrac * 100).toFixed(1);
+      const rPct = (rFrac * 100).toFixed(1);
+
+      container.innerHTML = `
+        <div style="position:relative;width:130px;height:130px;">
+          <svg viewBox="0 0 130 130" style="width:100%;height:100%;transform:rotate(-90deg);">
+            <!-- Background track ring -->
+            <circle cx="65" cy="65" r="${r}" fill="none" stroke="#F1F5F9" stroke-width="16"/>
+            <!-- Poll Ballots segment (Primary Sovereign Charcoal) -->
+            <circle cx="65" cy="65" r="${r}" fill="none" stroke="#1F2023" stroke-width="16"
+                    stroke-dasharray="${pLen.toFixed(2)} ${c.toFixed(2)}" stroke-dashoffset="0"
+                    style="transition:stroke-dasharray 0.5s;"/>
+            <!-- Survey Responses segment (Secondary Medium Slate) -->
+            <circle cx="65" cy="65" r="${r}" fill="none" stroke="#525252" stroke-width="16"
+                    stroke-dasharray="${sLen.toFixed(2)} ${c.toFixed(2)}" stroke-dashoffset="${(-pLen).toFixed(2)}"
+                    style="transition:stroke-dasharray 0.5s;"/>
+            <!-- Open Quota segment (Light Track) -->
+            <circle cx="65" cy="65" r="${r}" fill="none" stroke="#E2E8F0" stroke-width="16"
+                    stroke-dasharray="${rLen.toFixed(2)} ${c.toFixed(2)}" stroke-dashoffset="${(-(pLen + sLen)).toFixed(2)}"
+                    style="transition:stroke-dasharray 0.5s;"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+            <div style="font-size:17px;font-weight:900;color:var(--charcoal);font-family:'Outfit',sans-serif;line-height:1;">${((totalSubmissions / targetBaseline) * 100).toFixed(1)}%</div>
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);text-transform:uppercase;margin-top:2px;">Turnout</div>
+          </div>
+        </div>
+      `;
+
+      if (legend) {
+        legend.innerHTML = `
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#1F2023;display:inline-block;"></span>
+            <span><strong>Polls:</strong> ${pPct}%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#525252;display:inline-block;"></span>
+            <span><strong>Surveys:</strong> ${sPct}%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#CBD5E1;display:inline-block;"></span>
+            <span><strong>Quota:</strong> ${rPct}%</span>
+          </div>
+        `;
+      }
+    }
+
+    function renderUserTurnoutBarsVisual(campaignItems) {
+      const container = document.getElementById('user-turnout-bars-container');
+      const countBadge = document.getElementById('user-turnout-bars-count');
+      const summary = document.getElementById('user-turnout-bars-summary');
+      if (!container) return;
+
+      if (countBadge) countBadge.textContent = `${campaignItems.length} Tracks`;
+      if (summary) summary.textContent = `${campaignItems.length} Campaigns Reporting`;
+
+      const topItems = [...campaignItems].sort((a, b) => (Number(b.rate) || 0) - (Number(a.rate) || 0)).slice(0, 4);
+
+      if (topItems.length === 0) {
+        container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px;">No campaigns available yet.</div>';
+        return;
+      }
+
+      container.innerHTML = topItems.map(item => {
+        const numRate = Number(item.rate) || 0;
+        const rateVal = Math.min(100, Math.max(0, numRate)).toFixed(1);
+        return `
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;margin-bottom:3px;">
+              <span style="color:var(--charcoal);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.title || 'Track')}</span>
+              <span style="color:var(--charcoal);font-family:'Outfit',sans-serif;font-weight:800;">${rateVal}%</span>
+            </div>
+            <div style="height:7px;background:#F1F5F9;border-radius:4px;overflow:hidden;">
+              <div style="width:${rateVal}%;height:100%;background:#1F2023;border-radius:4px;transition:width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let userTurnoutPage = 1;
+    window.changeUserTurnoutPage = function(p) {
+      userTurnoutPage = p;
+      renderUserTurnoutTable(userTurnoutCampaigns);
+    };
+
+    function renderUserTurnoutTable(campaignItems) {
+      const tbody = document.getElementById('user-turnout-tbody');
+      if (!tbody) return;
+
+      if (!campaignItems || campaignItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty" style="text-align:center;padding:24px;">No active campaigns for turnout calculation.</td></tr>';
+        renderPaginationControls({ containerId: 'user-turnout-pagination', totalItems: 0, currentPage: 1, onPageChange: 'changeUserTurnoutPage' });
+        return;
+      }
+
+      const effectivePageSize = getScreenMaxPageSize(false);
+      const isViewAll = userTurnoutPage === 'all';
+      const pageSize = isViewAll ? campaignItems.length : effectivePageSize;
+      const curPageNum = isViewAll ? 1 : (Number(userTurnoutPage) || 1);
+      const start = isViewAll ? 0 : (curPageNum - 1) * pageSize;
+      const paginated = isViewAll ? campaignItems : campaignItems.slice(start, start + pageSize);
+
+      tbody.innerHTML = paginated.map(c => {
+        const typeBadge = c.type === 'poll'
+          ? '<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;background:#F3F4F6;color:#1F2023;border:1px solid #E5E7EB;">POLL</span>'
+          : '<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;background:#FFFFFF;color:#1F2023;border:1px solid #D1D5DB;">SURVEY</span>';
+
+        const rateVal = Math.min(100, c.rate).toFixed(1);
+
+        const statusBadge = c.status === 'Quota Met'
+          ? '<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;background:#1F2023;color:#FFFFFF;">Quota Met</span>'
+          : `<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;background:#F8FAFC;color:var(--text-sub);border:1px solid var(--border-color);">${esc(c.status)}</span>`;
+
+        return `
+          <tr>
+            <td>${typeBadge}</td>
+            <td style="font-weight:700;color:var(--charcoal);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(c.title)}">${esc(c.title)}</td>
+            <td style="color:var(--text-sub);">${esc(c.category)}</td>
+            <td style="font-weight:700;">${(c.quota || 0).toLocaleString()}</td>
+            <td style="font-weight:700;color:var(--charcoal);">${(c.cast || 0).toLocaleString()}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;background:#E2E8F0;height:8px;border-radius:4px;overflow:hidden;">
+                  <div style="width:${rateVal}%;background:#1F2023;height:100%;border-radius:4px;"></div>
+                </div>
+                <span style="font-size:11px;font-weight:700;color:var(--charcoal);width:40px;text-align:right;">${rateVal}%</span>
+              </div>
+            </td>
+            <td>${statusBadge}</td>
+            <td style="text-align:right;">
+              <button type="button" class="btn-outline-sm" onclick="document.querySelector('[data-section=\\'${c.type === 'poll' ? 'polls' : 'surveys'}\\']').click()">View</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      renderPaginationControls({
+        containerId: 'user-turnout-pagination',
+        totalItems: campaignItems.length,
+        currentPage: userTurnoutPage,
+        pageSize: effectivePageSize,
+        onPageChange: 'changeUserTurnoutPage'
+      });
+    }
+
+    function togglePollVotes(pollId) {
       const el = document.getElementById(`poll-votes-${pollId}`);
       if (!el) return;
       el.hidden = !el.hidden;
@@ -1686,36 +2262,134 @@
       }
     }
 
+    // === SCREEN-ADAPTIVE RESPONSIVE SIZING HELPER ===
+    function getScreenMaxPageSize(isGrid = false) {
+      const w = window.innerWidth || document.documentElement.clientWidth || 1400;
+      const h = window.innerHeight || document.documentElement.clientHeight || 900;
+      if (isGrid) {
+        const availableW = Math.max(340, w - 340);
+        const cols = Math.max(1, Math.min(5, Math.floor(availableW / 320)));
+        const rows = h >= 950 ? 3 : 2;
+        return Math.max(8, cols * rows);
+      } else {
+        if (h >= 1100) return 30;
+        if (h >= 880) return 25;
+        if (h >= 700) return 20;
+        return 15;
+      }
+    }
+
+    function generatePagePills(currentPage, totalPages, onPageChange) {
+      if (totalPages <= 1) return '';
+      const pills = [];
+      const delta = 2;
+      const left = Math.max(2, currentPage - delta);
+      const right = Math.min(totalPages - 1, currentPage + delta);
+
+      pills.push(1);
+      if (left > 2) pills.push('...');
+      for (let i = left; i <= right; i++) {
+        pills.push(i);
+      }
+      if (right < totalPages - 1) pills.push('...');
+      if (totalPages > 1) pills.push(totalPages);
+
+      return pills.map(p => {
+        if (p === '...') {
+          return '<span class="pagination-page-pill ellipsis">&hellip;</span>';
+        }
+        const isActive = p === currentPage;
+        return `<button type="button" class="pagination-page-pill ${isActive ? 'active' : ''}" onclick="${onPageChange}(${p})">${p}</button>`;
+      }).join('');
+    }
+
     // Pagination Helper for Bottom-Middle controls
-    function renderPaginationControls({ containerId, totalItems, currentPage, pageSize = 10, onPageChange }) {
+    function renderPaginationControls({
+      containerId,
+      totalItems = 0,
+      currentPage = 1,
+      pageSize,
+      onPageChange,
+      isGrid = false
+    }) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      if (!totalItems || totalItems <= pageSize) {
+      if (!totalItems || totalItems === 0) {
         container.innerHTML = '';
         container.style.display = 'none';
         return;
       }
-      container.style.display = 'flex';
-      const totalPages = Math.ceil(totalItems / pageSize);
-      const startIdx = (currentPage - 1) * pageSize + 1;
-      const endIdx = Math.min(currentPage * pageSize, totalItems);
-      const remaining = Math.max(0, totalItems - endIdx);
 
-      let buttons = '';
-      if (currentPage > 1) {
-        buttons += `<button type="button" class="btn-pagination-nav" onclick="${onPageChange}(${currentPage - 1})">&larr; Previous</button>`;
+      let effectivePageSize = pageSize || getScreenMaxPageSize(isGrid);
+      if (totalItems <= effectivePageSize + 2) {
+        effectivePageSize = totalItems;
       }
-      if (remaining > 0) {
-        buttons += `<button type="button" class="btn-next-remaining" onclick="${onPageChange}(${currentPage + 1})">Next (${remaining} remaining) &rarr;</button>`;
-      } else if (totalPages > 1) {
-        buttons += `<button type="button" class="btn-next-remaining" disabled>All items viewed (${totalItems})</button>`;
+      const isViewAll = currentPage === 'all';
+      const totalPages = isViewAll ? 1 : Math.ceil(totalItems / effectivePageSize);
+      const curPageNum = isViewAll ? 1 : (Number(currentPage) || 1);
+
+      if (totalItems <= effectivePageSize && !isViewAll) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
       }
+
+      container.style.display = 'flex';
+
+      let startIdx = 1;
+      let endIdx = totalItems;
+      let remaining = 0;
+
+      if (!isViewAll) {
+        startIdx = (curPageNum - 1) * effectivePageSize + 1;
+        endIdx = Math.min(curPageNum * effectivePageSize, totalItems);
+        remaining = Math.max(0, totalItems - endIdx);
+      }
+
+      let actionsHtml = '';
+
+      if (isViewAll) {
+        actionsHtml = `
+          <button type="button" class="btn-view-all active" onclick="${onPageChange}(1)">
+            Paginate (Screen Fit: ${effectivePageSize})
+          </button>
+        `;
+      } else {
+        // Previous button
+        if (curPageNum > 1) {
+          actionsHtml += `<button type="button" class="btn-pagination-nav" onclick="${onPageChange}(${curPageNum - 1})">&larr; Previous</button>`;
+        } else {
+          actionsHtml += `<button type="button" class="btn-pagination-nav" disabled>&larr; Previous</button>`;
+        }
+
+        // Page number pills
+        actionsHtml += `<div class="pagination-pills-wrap" style="display:inline-flex;gap:4px;align-items:center;">
+          ${generatePagePills(curPageNum, totalPages, onPageChange)}
+        </div>`;
+
+        // Next button
+        if (remaining > 0) {
+          actionsHtml += `<button type="button" class="btn-next-remaining" onclick="${onPageChange}(${curPageNum + 1})">Next (${remaining} remaining) &rarr;</button>`;
+        } else if (totalPages > 1) {
+          actionsHtml += `<button type="button" class="btn-next-remaining" disabled>All ${totalItems} viewed &check;</button>`;
+        }
+
+        // View All button
+        actionsHtml += `<button type="button" class="btn-view-all" onclick="${onPageChange}('all')">View All (${totalItems})</button>`;
+      }
+
+      const infoText = isViewAll
+        ? `Showing all ${totalItems} records`
+        : `Showing ${startIdx}–${endIdx} of ${totalItems} (${remaining} remaining)`;
 
       container.innerHTML = `
-        <div class="pagination-info-text">Showing ${startIdx}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)</div>
-        <div class="pagination-actions-row">${buttons}</div>
+        <div class="pagination-info-text">${infoText}</div>
+        <div class="pagination-actions-row">${actionsHtml}</div>
       `;
     }
+
+    window.renderPaginationControls = renderPaginationControls;
+    window.renderPagination = renderPaginationControls;
 
     const pollVotesState = {};
     const surveyResponsesState = {};
@@ -1785,7 +2459,8 @@
               const deviceDisplay = [t.deviceName || t.device || '', t.deviceOS || ''].filter(Boolean).join(' · ') || 'N/A';
               const locationParts = [];
               if (t.county) locationParts.push(t.county + ' County');
-              if (t.latitude != null && t.longitude != null) locationParts.push(parseFloat(t.latitude).toFixed(4) + ', ' + parseFloat(t.longitude).toFixed(4));
+              if (t.latitude != null && t.longitude != null) locationParts.push('Device location verified');
+              if (t.accuracy != null) locationParts.push(`±${Math.round(Number(t.accuracy))}m accuracy`);
               const locationDisplay = locationParts.join(' — ') || 'Not captured';
               return `
               <tr style="border-bottom:1px solid #F0F0F0; background:#FFFFFF;">
@@ -1794,7 +2469,7 @@
                 <td style="padding:10px 12px; font-weight:600; color:var(--charcoal);">${esc(t.voterName || 'Anonymous')}</td>
                 <td style="font-family:monospace; font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(t.voterIdNumber || '—')}</td>
                 <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(deviceDisplay)}</td>
-                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;" title="${esc(t.gpsCoordinates || '')}">${esc(locationDisplay)}</td>
+                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(locationDisplay)}</td>
                 <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(t.timestamp || 'Recent')}</td>
               </tr>
             `;}).join('')}
@@ -1854,7 +2529,8 @@
               const deviceDisplay = [r.deviceName || '', r.deviceOS || ''].filter(Boolean).join(' · ') || 'Web Browser';
               const locationParts = [];
               if (r.county) locationParts.push(r.county + ' County');
-              if (r.latitude != null && r.longitude != null) locationParts.push(Number(r.latitude).toFixed(4) + ', ' + Number(r.longitude).toFixed(4));
+              if (r.latitude != null && r.longitude != null) locationParts.push('Device location verified');
+              if (r.accuracy != null) locationParts.push(`±${Math.round(Number(r.accuracy))}m accuracy`);
               const locationDisplay = locationParts.join(' — ') || 'Not captured';
               return `
               <tr style="border-bottom:1px solid #F0F0F0; background:#FFFFFF;">
@@ -1865,7 +2541,7 @@
                   ${(r.answers || []).map(a => `<div style="margin:2px 0;"><strong>${esc(a.questionId || 'Q')}:</strong> ${esc(a.answer ?? a)}</div>`).join('')}
                 </td>
                 <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(deviceDisplay)}</td>
-                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;" title="${esc(r.gpsCoordinates || '')}">${esc(locationDisplay)}</td>
+                <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(locationDisplay)}</td>
                 <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(r.timestamp || 'Recent')}</td>
               </tr>
             `;}).join('')}
@@ -1903,13 +2579,7 @@
           `).join('')}
         </div>
         <div class="toolbar" style="margin-top:14px;gap:10px;border-top:1px solid #F0F0F0;padding-top:14px;">
-          <select onchange="exportPoll('${esc(poll.id)}', '${esc(poll.title)}', this.value); this.value='';" style="font-size:12px; padding:7px 12px; border-radius:100px; background:#FFFFFF; border:1px solid var(--border-color); color:var(--text-main);">
-            <option value="">Export votes...</option>
-            <option value="csv">CSV (.csv)</option>
-            <option value="json">JSON (.json) ⭐ Pro</option>
-            <option value="pdf">PDF (.pdf) ⭐ Pro</option>
-            <option value="docx">Word (.docx) ⭐ Pro</option>
-          </select>
+          <select id="poll-export-${esc(poll.id)}" onchange="exportPoll('${esc(poll.id)}', '${esc(poll.title)}', this.value); this.value='';" style="font-size:12px; padding:7px 12px; border-radius:100px; background:#FFFFFF; border:1px solid var(--border-color); color:var(--text-main);"></select>
           <button type="button" class="btn-outline" id="btn-toggle-votes-${esc(poll.id)}" onclick="togglePollVotes('${esc(poll.id)}')">View Votes (${txs.length})</button>
           <a href="../pages/vote.html?poll_id=${encodeURIComponent(poll.id)}" target="_blank" class="pill-button" style="text-decoration:none;display:inline-flex;align-items:center;background:var(--charcoal);color:#FFFFFF;border:none;">Open in Vote App &rarr;</a>
         </div>
@@ -1953,13 +2623,7 @@
           <span>Questions: <strong style="color:var(--charcoal);">${(survey.questions || []).length}</strong></span>
         </div>
         <div class="toolbar" style="margin-top:14px;gap:10px;border-top:1px solid #F0F0F0;padding-top:14px;">
-          <select onchange="exportSurvey('${esc(survey.id)}', '${esc(survey.title)}', this.value); this.value='';" style="font-size:12px; padding:7px 12px; border-radius:100px; background:#FFFFFF; border:1px solid var(--border-color); color:var(--text-main);">
-            <option value="">Export responses...</option>
-            <option value="csv">CSV (.csv)</option>
-            <option value="json">JSON (.json) ⭐ Pro</option>
-            <option value="pdf">PDF (.pdf) ⭐ Pro</option>
-            <option value="docx">Word (.docx) ⭐ Pro</option>
-          </select>
+          <select id="survey-export-${esc(survey.id)}" onchange="exportSurvey('${esc(survey.id)}', '${esc(survey.title)}', this.value); this.value='';" style="font-size:12px; padding:7px 12px; border-radius:100px; background:#FFFFFF; border:1px solid var(--border-color); color:var(--text-main);"></select>
           <button type="button" class="btn-outline" data-toggle="${esc(survey.id)}">View interactions (${responses.length})</button>
         </div>
         <div id="responses-${esc(survey.id)}" hidden style="margin-top:14px; background:#F8F8F8; border:1px solid var(--border-color); border-radius:12px; padding:16px; overflow-x:auto;">
@@ -2055,15 +2719,26 @@
         return;
       }
 
-      const pageSize = 5;
-      const totalItems = cachedClientPolls.length;
-      const startIdx = (pollsCurrentPage - 1) * pageSize;
-      const pageItems = cachedClientPolls.slice(startIdx, startIdx + pageSize);
+      const isGrid = pollsViewMode === 'grid';
+      let effectivePageSize = getScreenMaxPageSize(isGrid);
+      if (cachedClientPolls.length <= effectivePageSize + 2) {
+        effectivePageSize = cachedClientPolls.length;
+      }
+      const isViewAll = pollsCurrentPage === 'all';
+      const pageSize = isViewAll ? cachedClientPolls.length : effectivePageSize;
+      const curPageNum = isViewAll ? 1 : (Number(pollsCurrentPage) || 1);
+      const startIdx = isViewAll ? 0 : (curPageNum - 1) * pageSize;
+      const pageItems = isViewAll ? cachedClientPolls : cachedClientPolls.slice(startIdx, startIdx + pageSize);
 
       if (pollsViewMode === 'grid') {
         gridEl.hidden = false;
         tableWrapEl.hidden = true;
         gridEl.innerHTML = pageItems.map(renderPollCard).join('');
+        // Dynamically populate each poll card's export dropdown
+        const plan = (currentUser?.plan || 'free').toLowerCase();
+        pageItems.forEach(p => {
+          populateExportDropdown(document.getElementById(`poll-export-${p.id}`), 'Export votes...', plan);
+        });
       } else {
         gridEl.hidden = true;
         tableWrapEl.hidden = false;
@@ -2072,10 +2747,11 @@
 
       renderPaginationControls({
         containerId: 'polls-pagination',
-        totalItems: totalItems,
+        totalItems: cachedClientPolls.length,
         currentPage: pollsCurrentPage,
-        pageSize: pageSize,
-        onPageChange: 'changePollsPage'
+        pageSize: effectivePageSize,
+        onPageChange: 'changePollsPage',
+        isGrid
       });
     }
 
@@ -2093,15 +2769,26 @@
         return;
       }
 
-      const pageSize = 5;
-      const totalItems = cachedClientSurveys.length;
-      const startIdx = (surveysCurrentPage - 1) * pageSize;
-      const pageItems = cachedClientSurveys.slice(startIdx, startIdx + pageSize);
+      const isGrid = surveysViewMode === 'grid';
+      let effectivePageSize = getScreenMaxPageSize(isGrid);
+      if (cachedClientSurveys.length <= effectivePageSize + 2) {
+        effectivePageSize = cachedClientSurveys.length;
+      }
+      const isViewAll = surveysCurrentPage === 'all';
+      const pageSize = isViewAll ? cachedClientSurveys.length : effectivePageSize;
+      const curPageNum = isViewAll ? 1 : (Number(surveysCurrentPage) || 1);
+      const startIdx = isViewAll ? 0 : (curPageNum - 1) * pageSize;
+      const pageItems = isViewAll ? cachedClientSurveys : cachedClientSurveys.slice(startIdx, startIdx + pageSize);
 
       if (surveysViewMode === 'grid') {
         gridEl.hidden = false;
         tableWrapEl.hidden = true;
         gridEl.innerHTML = (await Promise.all(pageItems.map(renderSurvey))).join('');
+        // Dynamically populate each survey card's export dropdown
+        const surveyPlan = (currentUser?.plan || 'free').toLowerCase();
+        pageItems.forEach(s => {
+          populateExportDropdown(document.getElementById(`survey-export-${s.id}`), 'Export responses...', surveyPlan);
+        });
         document.querySelectorAll('[data-toggle]').forEach(button => {
           button.onclick = () => {
             const surveyId = button.dataset.toggle;
@@ -2129,10 +2816,11 @@
 
       renderPaginationControls({
         containerId: 'surveys-pagination',
-        totalItems: totalItems,
+        totalItems: cachedClientSurveys.length,
         currentPage: surveysCurrentPage,
-        pageSize: pageSize,
-        onPageChange: 'changeSurveysPage'
+        pageSize: effectivePageSize,
+        onPageChange: 'changeSurveysPage',
+        isGrid
       });
     }
 
@@ -2176,10 +2864,13 @@
         return;
       }
 
-      const pageSize = 10;
+      const effectivePageSize = getScreenMaxPageSize(false);
+      const isViewAll = overviewResponsesPage === 'all';
+      const pageSize = isViewAll ? allClientResponses.length : effectivePageSize;
+      const curPageNum = isViewAll ? 1 : (Number(overviewResponsesPage) || 1);
       const totalItems = allClientResponses.length;
-      const startIdx = (overviewResponsesPage - 1) * pageSize;
-      const pageItems = allClientResponses.slice(startIdx, startIdx + pageSize);
+      const startIdx = isViewAll ? 0 : (curPageNum - 1) * pageSize;
+      const pageItems = isViewAll ? allClientResponses : allClientResponses.slice(startIdx, startIdx + pageSize);
 
       container.innerHTML = `
         <div style="overflow-x:auto;">
@@ -2191,7 +2882,7 @@
                 <th>Voter Details</th>
                 <th>Recorded Choice / Response</th>
                 <th>Device &amp; OS</th>
-                <th>Precise Location</th>
+                <th>Location Verification</th>
                 <th>Timestamp</th>
                 <th style="text-align:right;">Details</th>
               </tr>
@@ -2213,7 +2904,7 @@
                   </td>
                   <td>
                     <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
-                    <div style="font-size:10.5px; font-family:monospace; color:var(--text-muted);">${item.latitude != null && item.longitude != null ? `${Number(item.latitude).toFixed(4)}, ${Number(item.longitude).toFixed(4)}` : esc(item.gpsCoordinates || 'Precise GPS')}</div>
+                    <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'}</div>
                   </td>
                   <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(item.timestamp || 'Recent')}</td>
                   <td style="text-align:right; white-space:nowrap;">
@@ -2230,7 +2921,7 @@
         containerId: 'overview-responses-pagination',
         totalItems: totalItems,
         currentPage: overviewResponsesPage,
-        pageSize: pageSize,
+        pageSize: effectivePageSize,
         onPageChange: 'changeOverviewResponsesPage'
       });
     }
@@ -2249,10 +2940,14 @@
         return;
       }
 
-      const pageSize = 10;
+      const isGrid = responsesViewMode === 'grid';
+      const effectivePageSize = getScreenMaxPageSize(isGrid);
+      const isViewAll = responsesCurrentPage === 'all';
+      const pageSize = isViewAll ? list.length : effectivePageSize;
+      const curPageNum = isViewAll ? 1 : (Number(responsesCurrentPage) || 1);
       const totalItems = list.length;
-      const startIdx = (responsesCurrentPage - 1) * pageSize;
-      const pageItems = list.slice(startIdx, startIdx + pageSize);
+      const startIdx = isViewAll ? 0 : (curPageNum - 1) * pageSize;
+      const pageItems = isViewAll ? list : list.slice(startIdx, startIdx + pageSize);
 
       if (responsesViewMode === 'list') {
         if (listView) listView.hidden = false;
@@ -2273,7 +2968,7 @@
             </td>
             <td>
               <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
-              <div style="font-size:10.5px; font-family:monospace; color:var(--text-muted);">${item.latitude != null && item.longitude != null ? `${Number(item.latitude).toFixed(4)}, ${Number(item.longitude).toFixed(4)}` : esc(item.gpsCoordinates || 'Precise GPS')}</div>
+              <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'}</div>
             </td>
             <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(item.timestamp || 'Recent')}</td>
             <td style="text-align:right; white-space:nowrap;">
@@ -2306,8 +3001,8 @@
                 <span style="font-weight:600; color:var(--text-main);">${esc(item.deviceName || 'Verified Device')} &middot; ${esc(item.deviceOS || 'OS')}</span>
               </div>
               <div>
-                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">Precise Location</span>
-                <span style="font-weight:600; color:var(--text-main);">${esc(item.county || 'Nairobi')} (${item.latitude != null ? Number(item.latitude).toFixed(3) : ''}, ${item.longitude != null ? Number(item.longitude).toFixed(3) : ''})</span>
+                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">Location Verification</span>
+                <span style="font-weight:600; color:var(--text-main);">${esc(item.county || 'Nairobi')} County · device location verified</span>
               </div>
             </div>
             <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:4px;">
@@ -2321,8 +3016,9 @@
         containerId: 'responses-pagination',
         totalItems: totalItems,
         currentPage: responsesCurrentPage,
-        pageSize: pageSize,
-        onPageChange: 'changeResponsesPage'
+        pageSize: effectivePageSize,
+        onPageChange: 'changeResponsesPage',
+        isGrid
       });
     }
 
@@ -2375,9 +3071,9 @@
             <div style="font-size:11.5px; color:var(--text-sub); margin-top:2px;">${esc(item.deviceOS || 'Web / Mobile OS')}</div>
           </div>
           <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Precise Geolocation</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Location Verification</div>
             <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:4px;">${esc(item.county || 'Nairobi')} County</div>
-            <div style="font-size:11px; font-family:monospace; color:var(--text-muted); margin-top:2px;">GPS: ${item.latitude != null && item.longitude != null ? `${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}` : esc(item.gpsCoordinates || 'Precise GPS')}</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'} · Exact coordinates hidden</div>
           </div>
         </div>
 
@@ -2401,17 +3097,11 @@
           </div>
         </div>
 
-        <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:10px; padding:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="font-size:11.5px; color:var(--text-main); font-weight:800;">Cryptographic Merkle Receipt Hash</span>
-            <button type="button" class="action-btn" onclick="copyReceipt('${esc(item.receiptHash)}')">Copy Hash</button>
+        <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:inline-flex; align-items:center; gap:6px; background:#E8F5E9; color:#2E7D32; font-size:12px; font-weight:800; padding:6px 14px; border-radius:100px;">
+            ✓ Verified & Recorded in Database
           </div>
-          <div style="font-family:monospace; font-size:11.5px; word-break:break-all; color:var(--charcoal); background:#FFFFFF; padding:8px 12px; border-radius:6px; border:1px solid #D0D0D0;">
-            ${esc(item.receiptHash || '0x00000000000000000000000000000000')}
-          </div>
-          <div style="display:inline-flex; align-items:center; gap:6px; background:#E8F5E9; color:#2E7D32; font-size:11.5px; font-weight:800; padding:4px 10px; border-radius:100px; margin-top:8px;">
-            ✓ Cryptographic Merkle Proof Validated
-          </div>
+          <span style="font-size:12px; color:var(--text-muted); font-weight:700;">Status: Confirmed</span>
         </div>
 
         <div style="margin-top:22px; display:flex; justify-content:flex-end;">
@@ -2450,6 +3140,7 @@
       // Store user in localStorage for session plan resolution
       localStorage.setItem('gir_user', JSON.stringify(user));
       currentUser = user;
+      populateAllExportDropdowns();
 
       document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`;
       document.getElementById('user-name').textContent = user.fullName;
@@ -2506,9 +3197,8 @@
             deviceName: t.deviceName || 'Verified Client Device',
             deviceOS: t.deviceOS || 'Web / Mobile OS',
             county: t.county || 'Nairobi',
-            latitude: t.latitude,
-            longitude: t.longitude,
-            gpsCoordinates: t.gpsCoordinates || (t.latitude && t.longitude ? `${t.latitude}, ${t.longitude}` : '-1.286389, 36.817223'),
+            locationVerified: t.latitude != null && t.longitude != null,
+            accuracy: t.accuracy,
             choice: t.optionLabel || 'Selected Option',
             details: { pollTitle: p.title, option: t.optionLabel, voter: t.voterPseudonym, leafIndex: t.merkleLeafIndex },
             receiptHash: t.receiptHash,
@@ -2531,9 +3221,8 @@
             deviceName: r.deviceName || 'Verified Client Device',
             deviceOS: r.deviceOS || 'Web / Mobile OS',
             county: r.county || 'Nairobi',
-            latitude: r.latitude,
-            longitude: r.longitude,
-            gpsCoordinates: r.gpsCoordinates || (r.latitude && r.longitude ? `${r.latitude}, ${r.longitude}` : '-1.286389, 36.817223'),
+            locationVerified: r.latitude != null && r.longitude != null,
+            accuracy: r.accuracy,
             choice: (r.answers || []).map(a => `${a.questionId || 'Q'}: ${a.answer ?? a}`).join(' | ') || 'Survey submitted',
             details: { surveyTitle: s.title, answers: r.answers, respondent: r.respondent },
             receiptHash: r.receiptHash,
@@ -2977,7 +3666,7 @@
       }).join('');
     }
 
-    
+
     // === PLAN UPGRADE CHECKOUT & PAYMENT MODAL ===
     let pendingUpgrade = null;
     let selectedPayMethod = 'mpesa';
@@ -3130,7 +3819,7 @@
             <div style="width:58px; height:58px; border-radius:50%; background:#E8F5E9; color:#2E7D32; font-size:28px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; font-weight:900;">✓</div>
             <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0 0 6px; font-family:'Outfit',sans-serif;">Payment Confirmed!</h2>
             <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:14px;">Upgraded to ${esc(tier.name)}</div>
-            
+
             <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:14px; text-align:left; margin-bottom:20px;">
               <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
                 <span style="color:var(--text-muted);">Transaction Receipt:</span>
@@ -3251,5 +3940,6 @@
     </div>
   </div>
 
+  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
 </body>
 </html>

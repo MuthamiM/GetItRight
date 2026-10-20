@@ -863,7 +863,8 @@
 
       <div class="ln-footer-bottom">
         <div>Copyright &copy; 2026 IcapsQ. All rights reserved.</div>
-        <div>Survey &amp; Feedback Platform</div>
+        <div><a href="mailto:info@mftechnologies.org">info@mftechnologies.org</a> · <a href="tel:+254748329410">0748329410</a></div>
+        <div>Product of <a href="https://mftechnologies.org" target="_blank" rel="noopener noreferrer">M&amp;F Technologies</a></div>
       </div>
     </div>
   </footer>
@@ -965,7 +966,7 @@
 
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
-  <script src="../js/core/demographics.js?v=20261017_telemetry_v2"></script>
+  <script src="../js/core/demographics.js?v=20261020-location-v4"></script>
   <script>
     const API_BASE = window.location.origin + '/api';
     let allSurveys = [];
@@ -979,7 +980,7 @@
     function getRespondentIdentity() {
       const assignedUserId = (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function')
         ? window.Demographics.getOrAssignUserId()
-        : (localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || 'USR-DEV-LOC1');
+        : (localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || '');
 
       return { userId: assignedUserId, voterKey: assignedUserId };
     }
@@ -1029,7 +1030,7 @@
     async function loadActiveSurveys() {
       const grid = document.getElementById('surveys-grid');
       try {
-        const res = await fetch(`${API_BASE}/surveys`);
+        const res = await fetch(`${API_BASE}/surveys?live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load surveys");
         allSurveys = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         
@@ -1061,7 +1062,10 @@
             if (userId) params.append('userId', userId);
             if (voterKey) params.append('voterKey', voterKey);
 
-            const res = await fetch(`${API_BASE}/surveys/${s.id}/response-status?${params.toString()}`);
+            const statusToken = localStorage.getItem('gir_token');
+            const res = await fetch(`${API_BASE}/surveys/${s.id}/response-status?${params.toString()}`, {
+              headers: statusToken ? { 'Authorization': `Bearer ${statusToken}` } : {}
+            });
             if (res.ok) {
               const data = await res.json();
               if (data.hasResponded) {
@@ -1399,10 +1403,8 @@
       progressBar.style.width = '100%';
       actionsBar.style.display = 'none';
 
-      const timestampStr = completedData.timestamp || 'Recorded in Ledger';
+      const timestampStr = completedData.timestamp || (completedData.alreadyRecorded ? 'Already recorded' : 'Recorded in Ledger');
       const respondentKey = completedData.userId || completedData.voterPseudonym || getRespondentIdentity().voterKey;
-      const leafIndex = completedData.merkleLeafIndex || '1';
-      const receiptHash = completedData.receiptHash || ('0x' + (surveyId.replace(/[^a-f0-9]/gi, '') + '4f8e91d03c').substring(0, 32));
 
       container.innerHTML = `
         <div style="text-align:center; padding:16px 0;">
@@ -1411,10 +1413,10 @@
           </div>
 
           <h3 style="font-family:var(--font-display); font-size:23px; font-weight:900; color:var(--silver); margin:0 0 8px 0; letter-spacing:-0.02em;">
-            You Have Already Completed This Survey
+            ${completedData.alreadyRecorded ? 'A Response Is Already Recorded' : 'You Have Already Completed This Survey'}
           </h3>
           <p style="font-size:14px; color:var(--silver); opacity:0.8; max-width:460px; margin:0 auto 24px auto; line-height:1.55;">
-            Your responses were previously recorded and sealed on the Merkle consensus ledger. Retaking this survey is not permitted in order to safeguard research integrity.
+            ${completedData.alreadyRecorded ? 'A response is already recorded for this National ID. No new response was created.' : 'Your responses were previously recorded and confirmed. Retaking this survey is not permitted in order to safeguard research integrity.'}
           </p>
 
           <!-- Cryptographic Receipt Box -->
@@ -1430,12 +1432,12 @@
 
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
               <span style="color:var(--silver); opacity:0.7;">Submission Time:</span>
-              <strong style="color:var(--silver); font-family:var(--font-mono);">${timestampStr}</strong>
+              <strong style="color:var(--silver); font-family:var(--font-mono);">${escapeSurveyHtml(timestampStr)}</strong>
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
               <span style="color:var(--silver); opacity:0.7;">Voter ID / Session:</span>
-              <strong style="color:var(--silver); font-family:var(--font-mono);">${respondentKey}</strong>
+              <strong style="color:var(--silver); font-family:var(--font-mono);">${escapeSurveyHtml(respondentKey)}</strong>
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
@@ -1466,6 +1468,10 @@
     function startSurveyTaker(surveyId) {
       const s = allSurveys.find(item => item.id === surveyId);
       if (!s) return;
+      if (!Array.isArray(s.questions) || s.questions.length === 0) {
+        App.showToast('This survey has no questions available yet. Please contact its publisher.', 'error');
+        return;
+      }
 
       // STRICT RETAKE PREVENTION GUARD
       if (isSurveyCompleted(surveyId)) {
@@ -1513,37 +1519,34 @@
         let options = [];
         try {
           options = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
+          if (!Array.isArray(options)) options = [];
         } catch (e) {
-          options = ['Agree', 'Disagree'];
+          options = [];
         }
-
+        const questionType = String(q.questionType || 'choice').trim().toLowerCase();
+        const isRating = questionType === 'rating' || questionType === 'rating_scale';
+        const ratingOptions = isRating ? (options.length ? options : [1, 2, 3, 4, 5]) : [];
+        const canUseChoices = !isRating && questionType !== 'text' && options.length > 0;
         let inputHtml = '';
-        if (q.questionType === 'rating') {
+        if (isRating) {
           inputHtml = `
-            <div style="display:flex; gap:10px; margin-top:18px;">
-              ${[1, 2, 3, 4, 5].map(val => `
-                <button type="button" class="rating-btn ${userAnswers[q.id] === val ? 'active' : ''}" onclick="selectRatingAnswer(${q.id}, ${val}, this)">
-                  ${val}
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:18px;">
+              ${ratingOptions.map((value, index) => `
+                <button type="button" class="rating-btn ${String(userAnswers[q.id]) === String(value) ? 'active' : ''}" data-rating-index="${index}">
+                  ${escapeSurveyHtml(value)}
                 </button>
               `).join('')}
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--silver); opacity:0.7; margin-top:10px;">
-              <span>1 = Poor / Strongly Disagree</span>
-              <span>5 = Excellent / Strongly Agree</span>
-            </div>
           `;
-        } else if (q.questionType === 'text') {
-          inputHtml = `
-            <textarea class="form-textarea" rows="4" placeholder="Enter your qualitative perspective here..." oninput="setTextAnswer(${q.id}, this.value)" style="margin-top:16px;">${userAnswers[q.id] || ''}</textarea>
-          `;
+        } else if (!canUseChoices) {
+          inputHtml = `<textarea class="form-textarea" rows="4" data-survey-text-answer style="margin-top:16px;"></textarea>`;
         } else {
-          // Multiple Choice (Radio)
           inputHtml = `
             <div style="display:flex; flex-direction:column; gap:10px; margin-top:16px;">
               ${options.map((opt, idx) => `
                 <label class="survey-option-choice">
-                  <input type="radio" name="question_${q.id}" value="${opt}" ${userAnswers[q.id] === opt ? 'checked' : ''} onchange="setChoiceAnswer(${q.id}, '${opt}')">
-                  <span style="font-size:14px; font-weight:700;">${opt}</span>
+                  <input type="radio" name="question_${Number(q.id)}" value="${idx}" data-choice-index="${idx}" ${String(userAnswers[q.id]) === String(opt) ? 'checked' : ''}>
+                  <span style="font-size:14px; font-weight:700;">${escapeSurveyHtml(opt)}</span>
                 </label>
               `).join('')}
             </div>
@@ -1556,11 +1559,30 @@
               Question #${stepNum}
             </div>
             <h4 style="font-family:var(--font-display); font-size:19px; font-weight:800; color:var(--silver); margin:0; line-height:1.4; letter-spacing:-0.01em;">
-              ${q.questionText}
+              ${escapeSurveyHtml(q.questionText)}
             </h4>
             ${inputHtml}
           </div>
         `;
+
+        const textAnswer = container.querySelector('[data-survey-text-answer]');
+        if (textAnswer) {
+          textAnswer.value = userAnswers[q.id] == null ? '' : String(userAnswers[q.id]);
+          textAnswer.addEventListener('input', () => setTextAnswer(q.id, textAnswer.value));
+        }
+        container.querySelectorAll('[data-choice-index]').forEach(input => {
+          input.addEventListener('change', () => {
+            if (input.checked) userAnswers[q.id] = options[Number(input.dataset.choiceIndex)];
+          });
+        });
+        container.querySelectorAll('[data-rating-index]').forEach(button => {
+          button.addEventListener('click', () => {
+            const rating = ratingOptions[Number(button.dataset.ratingIndex)];
+            userAnswers[q.id] = typeof rating === 'number' ? rating : String(rating);
+            container.querySelectorAll('.rating-btn').forEach(item => item.classList.remove('active'));
+            button.classList.add('active');
+          });
+        });
 
       } else {
         // Fallback completion view
@@ -1568,8 +1590,10 @@
       }
     }
 
-    function setChoiceAnswer(qId, val) {
-      userAnswers[qId] = val;
+    function escapeSurveyHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[character]));
     }
 
     function setTextAnswer(qId, val) {
@@ -1587,6 +1611,12 @@
 
     async function handleNextStep() {
       const questions = currentSurvey.questions || [];
+      const currentQuestion = questions[currentStepIndex];
+      const currentAnswer = currentQuestion ? userAnswers[currentQuestion.id] : null;
+      if (currentQuestion && (currentAnswer == null || String(currentAnswer).trim() === '')) {
+        App.showToast('Please answer this question before continuing.', 'error');
+        return;
+      }
       if (currentStepIndex < questions.length - 1) {
         currentStepIndex++;
         renderCurrentStep();
@@ -1617,18 +1647,17 @@
       const nextBtn = document.getElementById('next-step-btn');
       if (nextBtn) {
         nextBtn.disabled = true;
-        nextBtn.textContent = 'Recording in Ledger...';
+        nextBtn.textContent = 'Submitting...';
       }
 
-      const assignedUserId = verified.userId || (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function' ? window.Demographics.getOrAssignUserId() : (localStorage.getItem('gir_assigned_user_id') || 'USR-DEV-LOC1'));
-      const county = verified.county || localStorage.getItem('gir_county') || 'Nairobi';
-      const locTag = county.replace(/\s*County/i, '').replace(/\s+/g, '').toUpperCase() || 'LOCATION1';
-      const voterName = verified.voterName || localStorage.getItem('gir_voter_name') || `USER@${locTag}`;
-      const voterIdNumber = verified.voterIdNumber || localStorage.getItem('gir_voter_id_number') || 'ID-28491038';
+      const assignedUserId = verified.userId || (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function' ? window.Demographics.getOrAssignUserId() : (localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || ''));
+      const county = verified.county || localStorage.getItem('gir_county') || '';
+      const voterName = verified.voterName || localStorage.getItem('gir_voter_name') || '';
+      const voterIdNumber = verified.voterIdNumber || localStorage.getItem('gir_voter_id_number') || '';
 
-      const answersList = Object.keys(userAnswers).map(k => ({
-        questionId: parseInt(k, 10),
-        answer: userAnswers[k]
+      const answersList = (currentSurvey.questions || []).map(question => ({
+        questionId: Number(question.id),
+        answer: userAnswers[question.id]
       }));
 
       // Collect device info
@@ -1638,8 +1667,26 @@
 
       const latRaw = verified.lat ?? localStorage.getItem('gir_precise_lat');
       const lngRaw = verified.lng ?? localStorage.getItem('gir_precise_lng');
-      const lat = latRaw ? parseFloat(latRaw) : null;
-      const lng = lngRaw ? parseFloat(lngRaw) : null;
+      const lat = latRaw == null || latRaw === '' ? null : Number(latRaw);
+      const lng = lngRaw == null || lngRaw === '' ? null : Number(lngRaw);
+      const accuracy = verified.accuracy == null ? Number(localStorage.getItem('gir_location_accuracy')) : Number(verified.accuracy);
+
+      const missingAnswer = answersList.some(item => item.answer == null || String(item.answer).trim() === '');
+      if (missingAnswer || answersList.length !== currentSurvey.questions.length) {
+        App.showToast('Please answer every survey question before submitting.', 'error');
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
+        return;
+      }
+      if (voterName.trim().length < 3 || !/^\d{5,12}$/.test(voterIdNumber) || !county || !(verified.dob || localStorage.getItem('gir_dob'))) {
+        App.showToast('Please provide correct details: full name, 5–12 digit National ID, county, and date of birth are required.', 'error');
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
+        return;
+      }
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(accuracy) || accuracy <= 0 || accuracy > 500) {
+        App.showToast('Please provide correct details: allow precise device location (within 500 metres) and try again.', 'error');
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
+        return;
+      }
 
       try {
         const payload = {
@@ -1649,17 +1696,30 @@
           voterName: voterName,
           voterIdNumber: voterIdNumber,
           county: county,
-          latitude: (lat !== null && !isNaN(lat)) ? lat : null,
-          longitude: (lng !== null && !isNaN(lng)) ? lng : null,
+          dob: verified.dob || localStorage.getItem('gir_dob') || '',
+          latitude: lat,
+          longitude: lng,
+          accuracy: accuracy,
           deviceName: verified.deviceName || deviceInfo.deviceName,
           deviceOS: verified.deviceOS || deviceInfo.deviceOS
         };
 
-        const res = await fetch(`${API_BASE}/surveys/${currentSurvey.id}/respond`, {
+        const sessionToken = localStorage.getItem('gir_token');
+        let res = await fetch(`${API_BASE}/surveys/${currentSurvey.id}/respond`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
+          },
           body: JSON.stringify(payload)
         });
+        if (res.status === 401 && sessionToken) {
+          res = await fetch(`${API_BASE}/surveys/${currentSurvey.id}/respond`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
 
         if (res.ok) {
           const receiptData = await res.json();
@@ -1670,8 +1730,8 @@
             merkleLeafIndex: receiptData.merkleLeafIndex,
             timestamp: receiptData.timestamp,
             answers: answersList,
-            userId: userId,
-            voterPseudonym: voterKey
+            userId: assignedUserId,
+            voterPseudonym: assignedUserId
           };
 
           // Save completion permanently in localStorage and sessionStorage
@@ -1680,24 +1740,28 @@
           currentSurvey.totalResponses = (currentSurvey.totalResponses || 0) + 1;
           renderSurveys(allSurveys);
 
+          if (nextBtn) {
+            nextBtn.textContent = 'Submitted!';
+          }
+
           // Force display previous action / submission receipt view
           showPreviousActionModal(currentSurvey.id);
-          App.showToast('Survey completed! Your responses have been recorded.', 'success');
+          App.showToast('Submitted!', 'success');
         } else {
           const errData = await res.json().catch(() => ({}));
-          if (res.status === 400 && (errData.detail || '').includes('already completed')) {
+          if (res.status === 409 && /already (submitted|completed)/i.test(String(errData.detail || ''))) {
             const fallbackData = {
               completed: true,
               surveyId: currentSurvey.id,
-              timestamp: 'Recorded in Ledger',
-              answers: answersList,
-              userId: userId,
-              voterPseudonym: voterKey
+              timestamp: 'Already recorded',
+              alreadyRecorded: true,
+              userId: assignedUserId || null,
+              voterPseudonym: assignedUserId
             };
             saveCompletedSurveyData(currentSurvey.id, fallbackData);
             renderSurveys(allSurveys);
             showPreviousActionModal(currentSurvey.id);
-            App.showToast('You have already completed this survey.', 'info');
+            App.showToast('A response is already recorded for this National ID.', 'info');
           } else {
             App.showToast(errData.detail || 'Could not record response', 'error');
             if (nextBtn) {
@@ -1708,20 +1772,11 @@
         }
       } catch (err) {
         console.error(err);
-        // Save locally so user receipt is not lost
-        const fallbackData = {
-          completed: true,
-          surveyId: currentSurvey.id,
-          receiptHash: '0x' + Math.random().toString(16).substring(2) + 'receipt',
-          merkleLeafIndex: (currentSurvey.totalResponses || 0) + 1,
-          timestamp: new Date().toLocaleString(),
-          answers: answersList,
-          userId: userId,
-          voterPseudonym: voterKey
-        };
-        saveCompletedSurveyData(currentSurvey.id, fallbackData);
-        renderSurveys(allSurveys);
-        showPreviousActionModal(currentSurvey.id);
+        App.showToast('Please provide correct details and check your connection before submitting.', 'error');
+        if (nextBtn) {
+          nextBtn.disabled = false;
+          nextBtn.textContent = 'Submit Official Responses';
+        }
       }
     }
 
@@ -1739,5 +1794,6 @@
       document.getElementById('prev-step-btn')?.addEventListener('click', handlePrevStep);
     }
   </script>
+  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
 </body>
 </html>

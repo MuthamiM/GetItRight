@@ -1,0 +1,25 @@
+.git
+.gitignore
+.dockerignore
+
+# Only backend/ and web/ are copied by the production images.
+mobile/
+engine/
+native/
+shared/
+docs/
+node_modules/
+**/node_modules/
+**/target/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+backend/.venv/
+backend/csharp/
+**/bin/
+**/obj/
+*.log
+*.bak

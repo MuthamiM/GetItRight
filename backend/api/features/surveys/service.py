@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Optional, List
 # pyrefly: ignore [missing-import]
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 # pyrefly: ignore [missing-import]
@@ -15,6 +16,8 @@ from backend.api.features.surveys.schemas import (
     SurveyOut, QuestionOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
     SurveyAnalyticsOut, QuestionAnalytics, ReceiptVerificationOut
 )
+from backend.api.core.voter_verification import validate_voter_details
+from backend.api.core.ballot_claims import reserve_ballot_identities
 
 
 def _plain_text(value: str, field: str, maximum: int) -> str:
@@ -173,12 +176,56 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
     submitted_question_ids = [answer.questionId for answer in sub.answers]
     if len(submitted_question_ids) != len(set(submitted_question_ids)) or any(qid not in valid_question_ids for qid in submitted_question_ids):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Survey answers contain invalid questions")
+    if set(submitted_question_ids) != valid_question_ids or any(
+        answer.answer is None or not str(answer.answer).strip() for answer in sub.answers
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Please provide correct details: answer every survey question before submitting.",
+        )
 
-    import random
+    voter_name, voter_id_num = validate_voter_details(
+        voter_name=sub.voterName,
+        voter_id_number=sub.voterIdNumber,
+        county=sub.county,
+        dob=sub.dob,
+        latitude=sub.latitude,
+        longitude=sub.longitude,
+        accuracy=sub.accuracy,
+    )
+    duplicate_identity_filters = [SurveyResponseModel.VoterIdNumber == voter_id_num]
+    if sub.userId and sub.userId.strip():
+        duplicate_identity_filters.append(SurveyResponseModel.UserId == sub.userId.strip())
+    existing_response = db.query(SurveyResponseModel).filter(
+        SurveyResponseModel.SurveyId == survey.Id,
+        or_(*duplicate_identity_filters),
+    ).first()
+    if existing_response:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already submitted a response to this survey with this National ID.",
+        )
+
+    try:
+        reserve_ballot_identities(
+            db,
+            "survey",
+            survey.Id,
+            [
+                ("national_id", voter_id_num),
+                ("account_id", sub.userId),
+                ("voter_key", sub.voterPseudonym),
+            ],
+        )
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already submitted a response to this survey with this National ID.",
+        )
+
     user_id = sub.userId.strip() if sub.userId and str(sub.userId).strip() else None
     loc_tag = (sub.county or "LOCATION1").replace(" ", "").upper()
-    voter_name = (sub.voterName or "").strip() or f"USER@{loc_tag}"
-    voter_id_num = (sub.voterIdNumber or "").strip() or f"ID-{random.randint(10000000, 99999999)}"
     voter = (sub.voterPseudonym or f"USER@{loc_tag}-{uuid.uuid4().hex[:6].upper()}").strip()
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -214,15 +261,24 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         Timestamp=timestamp,
         VoterName=voter_name,
         VoterIdNumber=voter_id_num,
+        Dob=(sub.dob or "").strip(),
         DeviceName=(sub.deviceName or "Web Browser").strip() or None,
         DeviceOS=(sub.deviceOS or "").strip() or None,
         County=(sub.county or "").strip() or None,
         Latitude=sub.latitude,
         Longitude=sub.longitude,
+        Accuracy=sub.accuracy,
         GpsCoordinates=gps_coords
     )
     db.add(resp_record)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already submitted a response to this survey with this National ID.",
+        )
 
     return SurveySubmissionReceipt(
         success=True,

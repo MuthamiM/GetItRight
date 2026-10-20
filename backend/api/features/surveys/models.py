@@ -51,10 +51,12 @@ class SurveyResponseModel(Base):
     Timestamp = Column(String, nullable=False)
     VoterName = Column(String, nullable=True)
     VoterIdNumber = Column(String, nullable=True)
+    Dob = Column(String, nullable=True)
     DeviceName = Column(String, nullable=True)
     DeviceOS = Column(String, nullable=True)
     County = Column(String, nullable=True)
     Latitude = Column(Float, nullable=True)
     Longitude = Column(Float, nullable=True)
+    Accuracy = Column(Float, nullable=True)
     GpsCoordinates = Column(String, nullable=True)
 

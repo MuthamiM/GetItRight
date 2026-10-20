@@ -61,7 +61,7 @@
     <!-- Hero Action Buttons -->
     <div class="ln-hero-actions" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:20px;margin-bottom:28px;animation:fadeSlideUp 0.7s ease 0.4s both;">
       <a href="pages/vote.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(229,229,229,0.12);border:1px solid rgba(229,229,229,0.25);border-radius:30px;color:#E5E5E5;text-decoration:none;font-size:14px;font-weight:600;backdrop-filter:blur(8px);transition:all 0.25s;">Vote in Live Polls</a>
-      <a href="https://github.com/MuthamiM/GetItRight/releases/latest/download/app-release.apk" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#E5E5E5;border:none;border-radius:30px;color:#303030;text-decoration:none;font-size:14px;font-weight:700;transition:all 0.25s;">Download App v2.0</a>
+          <a href="/app-release.apk" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#E5E5E5;border:none;border-radius:30px;color:#303030;text-decoration:none;font-size:14px;font-weight:700;transition:all 0.25s;">Download App v2.1.14</a>
       <a href="console/surveys.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:rgba(229,229,229,0.12);border:1px solid rgba(229,229,229,0.25);border-radius:30px;color:#E5E5E5;text-decoration:none;font-size:14px;font-weight:600;backdrop-filter:blur(8px);transition:all 0.25s;">Organization Console</a>
     </div>
 
@@ -122,6 +122,16 @@
           Election Bodies
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="ln-live-directory reveal" id="live-campaigns">
+    <div class="ln-live-directory-inner">
+      <div class="ln-live-directory-head">
+        <div><span class="ln-section-tag">Live directory</span><h2 class="ln-section-headline">Active polls and surveys</h2><p class="ln-section-desc">Browse every active campaign published by our three verified client organizations.</p></div>
+        <div class="ln-live-directory-stats" id="live-directory-stats"><span class="ln-live-stat">Loading live campaigns…</span></div>
+      </div>
+      <div class="ln-live-grid"><div class="ln-live-panel"><h3>Polls</h3><div class="ln-live-list" id="landing-polls"><span class="ln-live-empty">Loading polls…</span></div></div><div class="ln-live-panel"><h3>Surveys</h3><div class="ln-live-list" id="landing-surveys"><span class="ln-live-empty">Loading surveys…</span></div></div></div>
     </div>
   </section>
 
@@ -416,7 +426,8 @@
 
       <div class="ln-footer-bottom">
         <div>Copyright &copy; 2026 IcapsQ. All rights reserved.</div>
-        <div>Survey &amp; Feedback Platform</div>
+        <div><a href="mailto:info@mftechnologies.org">info@mftechnologies.org</a> · <a href="tel:+254748329410">0748329410</a></div>
+        <div>Product of <a href="https://mftechnologies.org" target="_blank" rel="noopener noreferrer">M&amp;F Technologies</a></div>
       </div>
     </div>
   </footer>
@@ -468,6 +479,22 @@
         navLinks.classList.remove('open');
       });
     });
+
+    (async function loadLandingDirectory() {
+      const api = window.location.origin + '/api';
+      const esc = value => String(value || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const render = (id, rows, type) => {
+        const el = document.getElementById(id); if (!el) return;
+        el.innerHTML = rows.length ? rows.map(item => `<a class="ln-live-item" href="${type === 'poll' ? 'pages/vote.html' : 'pages/surveys.html'}"><span>${esc(item.title)}</span><small>${esc(item.category || item.track || 'Civic research')} · Active</small></a>`).join('') : '<span class="ln-live-empty">No active campaigns.</span>';
+      };
+      try {
+        const [pollsRes, surveysRes] = await Promise.all([fetch(api + '/polls?live_refresh=20261019', { cache: 'no-store' }), fetch(api + '/surveys?live_refresh=20261019', { cache: 'no-store' })]);
+        const polls = pollsRes.ok ? await pollsRes.json() : [], surveys = surveysRes.ok ? await surveysRes.json() : [];
+        render('landing-polls', polls, 'poll'); render('landing-surveys', surveys, 'survey');
+        document.getElementById('live-directory-stats').innerHTML = `<span class="ln-live-stat"><strong>${polls.length}</strong> active polls</span><span class="ln-live-stat"><strong>${surveys.length}</strong> active surveys</span><span class="ln-live-stat"><strong>3</strong> clients</span>`;
+      } catch (_) { render('landing-polls', [], 'poll'); render('landing-surveys', [], 'survey'); }
+    })();
   </script>
+  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
 </body>
 </html>

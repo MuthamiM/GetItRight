@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
@@ -70,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
       lastDate: now,
       initialDatePickerMode: DatePickerMode.year,
       helpText: 'SELECT DATE OF BIRTH',
-      fieldLabelText: 'DOB (YYYY-MM-DD)',
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -219,7 +219,11 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       if (_nationalIdController.text.trim().isEmpty) {
-        setState(() => _errorMessage = 'National ID required');
+        setState(() => _errorMessage = 'Please provide correct details: National ID is required.');
+        return;
+      }
+      if (!RegExp(r'^\d{5,12}$').hasMatch(_nationalIdController.text.trim())) {
+        setState(() => _errorMessage = 'Please provide correct details: National ID must contain 5–12 numbers only.');
         return;
       }
       if (_countyController.text.trim().isEmpty) {
@@ -235,6 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       Map<String, dynamic>? userData;
+      String? sessionToken;
 
       if (_isSignUp) {
         final regRes = await _apiClient.register(
@@ -251,11 +256,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (regRes != null && regRes['user'] != null) {
           userData = regRes['user'] as Map<String, dynamic>;
+          sessionToken = regRes['token']?.toString();
         } else {
           // Automatic login attempt or fallback account session
           final loginRes = await _apiClient.login(email, password);
           if (loginRes != null && loginRes['user'] != null) {
             userData = loginRes['user'] as Map<String, dynamic>;
+            sessionToken = loginRes['token']?.toString();
           } else {
             // Local offline user session so user can proceed
             userData = {
@@ -271,6 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final loginRes = await _apiClient.login(email, password);
         if (loginRes != null && loginRes['user'] != null) {
           userData = loginRes['user'] as Map<String, dynamic>;
+          sessionToken = loginRes['token']?.toString();
         } else {
           // Fallback login for demo/testing
           userData = {
@@ -285,6 +293,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final role = (userData['role'] ?? 'Customer').toString().toLowerCase();
       final prefs = await SharedPreferences.getInstance();
+      if (sessionToken != null && sessionToken.isNotEmpty) {
+        await prefs.setString('gir_token', sessionToken);
+      } else {
+        await prefs.remove('gir_token');
+      }
       await prefs.setString('gir_user_id', userData['id']?.toString() ?? 'USR-101');
       await prefs.setString('gir_user_role', role);
       await prefs.setString('gir_user_email', userData['email']?.toString() ?? email);
@@ -629,7 +642,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Date of Birth Field with forced format & calendar picker
                   _buildPillInput(
                     controller: _dobController,
-                    hint: 'Date of Birth (YYYY-MM-DD)',
+                    hint: '',
                     readOnly: true,
                     onTap: _pickDob,
                     prefixIcon: const Icon(Icons.calendar_today_outlined, color: Color(0xFFB8BAC0), size: 20),
@@ -639,8 +652,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   // National ID Field
                   _buildPillInput(
                     controller: _nationalIdController,
-                    hint: 'National ID Number',
+                    hint: 'National ID · 5–12 digits',
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(12),
+                    ],
                     prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFB8BAC0), size: 20),
                   ),
                   const SizedBox(height: 14),
@@ -783,6 +800,7 @@ class _LoginScreenState extends State<LoginScreen> {
     TextInputType? keyboardType,
     bool readOnly = false,
     VoidCallback? onTap,
+    List<TextInputFormatter>? inputFormatters,
     Widget? prefixIcon,
     Widget? suffixIcon,
   }) {
@@ -815,6 +833,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: controller,
                   obscureText: obscureText,
                   keyboardType: keyboardType,
+                  inputFormatters: inputFormatters,
                   readOnly: readOnly,
                   onTap: onTap,
                   textAlign: TextAlign.center,

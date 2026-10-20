@@ -21,5 +21,6 @@ RUN mkdir -p /app/data
 # Expose API port
 EXPOSE 5000
 
-# Seed the database then run the server
-CMD ["sh", "-c", "python -m backend.api.seed && uvicorn backend.api.main:app --host 0.0.0.0 --port 5000"]
+# The database is persistent and is migrated explicitly; do not reseed legacy
+# demo accounts every time the container restarts.
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "5000"]

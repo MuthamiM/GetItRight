@@ -47,27 +47,28 @@ def _build_export(surveys, response_map, export_format: str):
         from io import StringIO
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Survey ID", "Survey Title", "Response Timestamp", "Respondent", "Question", "Answer"])
+        writer.writerow(["Survey ID", "Survey Title", "Track", "Respondent", "County", "Timestamp", "Question", "Answer", "Status"])
         for survey in surveys:
             responses = response_map.get(survey.Id, [])
             if not responses:
-                writer.writerow([survey.Id, survey.Title, "No responses recorded", "", "", ""])
+                writer.writerow([survey.Id, survey.Title, survey.Track or "General", "No responses recorded", "", "", "", "", ""])
             else:
                 for resp in responses:
                     ts = resp.get("timestamp", "")
-                    respondent = resp.get("respondent", "")
+                    respondent = resp.get("voterName") or resp.get("respondent", "")
+                    county = resp.get("county", "Nairobi County")
                     answers = resp.get("answers", [])
                     if not answers:
-                        writer.writerow([survey.Id, survey.Title, ts, respondent, "None", ""])
+                        writer.writerow([survey.Id, survey.Title, survey.Track or "General", respondent, county, ts, "None", "", "Verified & Confirmed"])
                     else:
                         for ans in answers:
                             if isinstance(ans, dict):
                                 q = ans.get("questionId") or ans.get("question") or "Question"
                                 a = ans.get("answer", "")
-                                writer.writerow([survey.Id, survey.Title, ts, respondent, q, a])
+                                writer.writerow([survey.Id, survey.Title, survey.Track or "General", respondent, county, ts, q, a, "Verified & Confirmed"])
                             else:
-                                writer.writerow([survey.Id, survey.Title, ts, respondent, "Answer", str(ans)])
-        return output.getvalue().encode("utf-8"), "text/csv", "getitright-survey-responses.csv"
+                                writer.writerow([survey.Id, survey.Title, survey.Track or "General", respondent, county, ts, "Answer", str(ans), "Verified & Confirmed"])
+        return output.getvalue().encode("utf-8"), "text/csv", "icapsq-survey-responses.csv"
 
     if export_format == "json":
         import json
@@ -77,49 +78,25 @@ def _build_export(surveys, response_map, export_format: str):
             data.append({
                 "surveyId": survey.Id,
                 "title": survey.Title,
+                "track": survey.Track,
                 "status": survey.Status,
                 "responseCount": len(responses),
                 "responses": responses
             })
-        return json.dumps(data, indent=2).encode("utf-8"), "application/json", "getitright-survey-responses.json"
+        return json.dumps(data, indent=2).encode("utf-8"), "application/json", "icapsq-survey-responses.json"
 
-    if export_format == "pdf":
-        from reportlab.lib.pagesizes import letter
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+    from backend.api.core.report_builder import build_survey_docx, build_survey_xlsx, build_survey_pdf
 
-        output = BytesIO()
-        document = SimpleDocTemplate(output, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
-        styles = getSampleStyleSheet()
-        story = [Paragraph("GetItRight survey responses", styles["Title"])]
-        for survey in surveys:
-            responses = response_map.get(survey.Id, [])
-            story.extend([Spacer(1, 12), Paragraph(survey.Title, styles["Heading2"]), Paragraph(f"Responses: {len(responses)}", styles["BodyText"])])
-            for index, response in enumerate(responses, 1):
-                answers = "<br/>".join(
-                    f"{answer.get('questionId', 'Question')}: {answer.get('answer', '')}"
-                    for answer in response["answers"] if isinstance(answer, dict)
-                )
-                story.extend([Spacer(1, 8), Paragraph(f"Response {index} — {response['timestamp']}", styles["Heading3"]), Paragraph(answers or "No answers recorded.", styles["BodyText"])])
-        document.build(story)
-        return output.getvalue(), "application/pdf", "getitright-survey-responses.pdf"
+    if surveys:
+        first_survey = surveys[0]
+        responses = response_map.get(first_survey.Id, [])
+        if export_format == "xlsx":
+            return build_survey_xlsx(first_survey, responses), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "icapsq-survey-report.xlsx"
+        if export_format == "docx":
+            return build_survey_docx(first_survey, responses), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "icapsq-survey-report.docx"
+        return build_survey_pdf(first_survey, responses), "application/pdf", "icapsq-survey-report.pdf"
 
-    from docx import Document
-    document = Document()
-    document.add_heading("GetItRight survey responses", 0)
-    for survey in surveys:
-        responses = response_map.get(survey.Id, [])
-        document.add_heading(survey.Title, level=1)
-        document.add_paragraph(f"Responses: {len(responses)}")
-        for index, response in enumerate(responses, 1):
-            document.add_heading(f"Response {index} — {response['timestamp']}", level=2)
-            document.add_paragraph(f"Respondent: {response['respondent']}")
-            for answer in response["answers"]:
-                if isinstance(answer, dict):
-                    document.add_paragraph(f"{answer.get('questionId', 'Question')}: {answer.get('answer', '')}", style="List Bullet")
-    output = BytesIO()
-    document.save(output)
-    return output.getvalue(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "getitright-survey-responses.docx"
+    return b"", "application/octet-stream", "empty.pdf"
 
 @router.get("", response_model=List[SurveyOut])
 def get_all_surveys(
@@ -140,12 +117,12 @@ def survey_templates_from_surveys():
 
 @router.get("/exports/responses")
 def export_all_survey_responses(
-    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|csv|json)$"),
+    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|xlsx|csv|json)$"),
     owner_id: Optional[str] = Query(None),
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
-    if current_user["role"] != "Admin":
+    if current_user["role"] not in ["Admin", "Super Admin"]:
         owner_id = current_user["sub"]
     query = db.query(SurveyModel)
     if owner_id:
@@ -159,14 +136,14 @@ def export_all_survey_responses(
 @router.get("/{survey_id}/export")
 def export_survey_responses(
     survey_id: str,
-    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|csv|json)$"),
+    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|xlsx|csv|json)$"),
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
     survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
     if not survey:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Survey not found")
-    if current_user["role"] != "Admin" and survey.OwnerId != current_user["sub"]:
+    if current_user["role"] not in ["Admin", "Super Admin"] and survey.OwnerId != current_user["sub"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this survey")
     surveys, response_map = _survey_export_records(db, [survey_id])
     data, media_type, filename = _build_export(surveys, response_map, export_format)
@@ -204,9 +181,10 @@ def get_survey_responses(
         "deviceName": getattr(response, "DeviceName", None),
         "deviceOS": getattr(response, "DeviceOS", None),
         "county": getattr(response, "County", None),
-        "latitude": getattr(response, "Latitude", None),
-        "longitude": getattr(response, "Longitude", None),
-        "gpsCoordinates": getattr(response, "GpsCoordinates", None),
+        # Keep precise coordinates available to internal validation only.
+        "latitude": None,
+        "longitude": None,
+        "gpsCoordinates": None,
     } for response in responses]
 
 @router.get("/{survey_id}", response_model=SurveyOut)
@@ -296,11 +274,13 @@ def answer_survey(
     db: Session = Depends(get_db),
 ):
     """Submit responses to a survey with Merkle receipt generation."""
-    if current_user and not sub.userId:
+    if current_user:
         sub.userId = current_user["sub"]
-    if not sub.userId:
-        loc_tag = (sub.county or 'LOCATION1').replace(' ', '').upper()
-        sub.userId = f"USR-{loc_tag}"
+    else:
+        # Never turn a county into an account ID: that made every anonymous
+        # respondent in one county collide on the same identity claim.
+        sub.userId = None
     if not sub.voterPseudonym:
-        sub.voterPseudonym = sub.userId
+        import uuid
+        sub.voterPseudonym = f"VISITOR-{uuid.uuid4().hex}"
     return submit_survey_response(db, survey_id, sub)

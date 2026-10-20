@@ -689,7 +689,8 @@
 
       <div class="ln-footer-bottom">
         <div>Copyright &copy; 2026 IcapsQ. All rights reserved.</div>
-        <div>Survey &amp; Feedback Platform</div>
+        <div><a href="mailto:info@mftechnologies.org">info@mftechnologies.org</a> · <a href="tel:+254748329410">0748329410</a></div>
+        <div>Product of <a href="https://mftechnologies.org" target="_blank" rel="noopener noreferrer">M&amp;F Technologies</a></div>
       </div>
     </div>
   </footer>
@@ -699,7 +700,7 @@
 
   <script src="../js/core/icons.js"></script>
   <script src="../js/core/app.js"></script>
-  <script src="../js/core/demographics.js?v=20261017_telemetry_v2"></script>
+  <script src="../js/core/demographics.js?v=20261020-location-v4"></script>
   <script>
     const API_BASE = window.location.origin + '/api';
     let allPolls = [];
@@ -715,7 +716,7 @@
     async function loadActivePolls() {
       const container = document.getElementById('polls-feed-container');
       try {
-        const res = await fetch(`${API_BASE}/polls`);
+        const res = await fetch(`${API_BASE}/polls?live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load polls");
         allPolls = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
@@ -937,11 +938,11 @@
 
     async function executeVoteSubmission(pollId, optionIndex, btnEl, verified = {}) {
       try {
-        const assignedUserId = verified.userId || (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function' ? window.Demographics.getOrAssignUserId() : (localStorage.getItem('gir_assigned_user_id') || 'USR-DEV-LOC1'));
-        const county = verified.county || localStorage.getItem('gir_county') || 'Nairobi';
+        const assignedUserId = verified.userId || (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function' ? window.Demographics.getOrAssignUserId() : (localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || ''));
+        const county = verified.county || localStorage.getItem('gir_county') || '';
         const locTag = county.replace(/\s*County/i, '').replace(/\s+/g, '').toUpperCase() || 'LOCATION1';
-        const voterName = verified.voterName || localStorage.getItem('gir_voter_name') || `USER@${locTag}`;
-        const voterIdNumber = verified.voterIdNumber || localStorage.getItem('gir_voter_id_number') || 'ID-28491038';
+        const voterName = verified.voterName || localStorage.getItem('gir_voter_name') || '';
+        const voterIdNumber = verified.voterIdNumber || localStorage.getItem('gir_voter_id_number') || '';
 
         // Collect device info
         const deviceInfo = (window.Demographics && typeof window.Demographics.getDeviceInfo === 'function')
@@ -961,24 +962,62 @@
           voterName: voterName,
           voterIdNumber: voterIdNumber,
           county: county,
+          dob: verified.dob || localStorage.getItem('gir_dob') || '',
           latitude: (lat !== null && !isNaN(lat)) ? lat : null,
           longitude: (lng !== null && !isNaN(lng)) ? lng : null,
+          accuracy: verified.accuracy ?? Number(localStorage.getItem('gir_location_accuracy')),
           deviceName: verified.deviceName || deviceInfo.deviceName,
           deviceOS: verified.deviceOS || deviceInfo.deviceOS
         };
 
-        const res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
+        const sessionToken = localStorage.getItem('gir_token');
+        const voteRequestHeaders = (useSession = true) => ({
+          'Content-Type': 'application/json',
+          ...(useSession && sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
+        });
+        let priorVoteResponse = await fetch(`${API_BASE}/polls/${pollId}/vote-status`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: voteRequestHeaders(),
+          body: JSON.stringify({ voterIdNumber, voterKey: verified.voterKey || '' })
+        }).catch(() => null);
+        if (priorVoteResponse && priorVoteResponse.status === 401 && sessionToken) {
+          priorVoteResponse = await fetch(`${API_BASE}/polls/${pollId}/vote-status`, {
+            method: 'POST',
+            headers: voteRequestHeaders(false),
+            body: JSON.stringify({ voterIdNumber, voterKey: verified.voterKey || '' })
+          }).catch(() => null);
+        }
+        const priorVote = priorVoteResponse && priorVoteResponse.ok
+          ? await priorVoteResponse.json().catch(() => null)
+          : null;
+        if (priorVote && priorVote.hasVoted) {
+          App.showToast('This National ID already voted in this poll on the app or website. You can still vote in other polls.', 'error');
+          if (btnEl) btnEl.disabled = true;
+          return;
+        }
+
+        if (btnEl) {
+          btnEl.disabled = true;
+          App.showToast('Submitting...', 'info');
+        }
+
+        let res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
+          method: 'POST',
+          headers: voteRequestHeaders(),
           body: JSON.stringify(votePayload)
         });
+        if (res.status === 401 && sessionToken) {
+          res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
+            method: 'POST',
+            headers: voteRequestHeaders(false),
+            body: JSON.stringify(votePayload)
+          });
+        }
 
         if (res.ok) {
           const data = await res.json();
           localStorage.setItem('gir_voted_poll_' + pollId, optionIndex);
-          App.showToast(`Vote recorded! Total votes: ${data.totalVotes.toLocaleString()}`, 'success');
+          App.showToast('Submitted!', 'success');
 
           // Highlight selected and lock all options
           const card = document.getElementById(`poll-card-${pollId}`);
@@ -1014,10 +1053,13 @@
         } else {
           const errData = await res.json().catch(() => ({}));
           App.showToast(errData.detail || 'Could not record vote', 'error');
+          if (btnEl) btnEl.disabled = false;
         }
       } catch (err) {
         console.error(err);
         App.showToast('Network error submitting vote', 'error');
+        // Keep a transient network failure from locking this choice until page reload.
+        if (btnEl) btnEl.disabled = false;
       }
     }
 
@@ -1080,5 +1122,6 @@
       });
     }
   </script>
+  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
 </body>
 </html>

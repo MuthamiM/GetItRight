@@ -6,11 +6,14 @@ from sqlalchemy.orm import Session
 
 from backend.api.core.database import get_db
 from backend.api.core.security import decode_access_token
-from backend.api.features.auth.models import UserModel
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 def _authenticate(token: str, db: Session) -> dict:
+    # Import here so middleware package initialization does not recursively
+    # initialize the features package and its route modules.
+    from backend.api.features.auth.models import UserModel
+
     payload = decode_access_token(token)
     if not payload or not payload.get("sub"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired access token")

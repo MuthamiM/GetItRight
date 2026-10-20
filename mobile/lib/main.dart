@@ -35,16 +35,17 @@ class RootNavigationCoordinator extends StatefulWidget {
       _RootNavigationCoordinatorState();
 }
 
-class _RootNavigationCoordinatorState
-    extends State<RootNavigationCoordinator> {
+class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
   bool _isLoggedIn = false;
   String _userRole = 'user';
   int _currentIndex = 0;
   String _userName = 'User';
   String _currentPlan = 'free';
 
-  final GlobalKey<PollsFeedScreenState> _pollsKey = GlobalKey<PollsFeedScreenState>();
-  final GlobalKey<SurveysFeedScreenState> _surveysKey = GlobalKey<SurveysFeedScreenState>();
+  final GlobalKey<PollsFeedScreenState> _pollsKey =
+      GlobalKey<PollsFeedScreenState>();
+  final GlobalKey<SurveysFeedScreenState> _surveysKey =
+      GlobalKey<SurveysFeedScreenState>();
 
   @override
   void initState() {
@@ -152,6 +153,7 @@ class _RootNavigationCoordinatorState
     // Do NOT wipe SharedPreferences (which clears completed surveys and plan selection).
     // Just clear active user session state.
     await prefs.remove('gir_user_id');
+    await prefs.remove('gir_token');
     if (mounted) {
       setState(() {
         _isLoggedIn = false;
@@ -252,56 +254,61 @@ class _RootNavigationCoordinatorState
                   color: Colors.white,
                 ),
               ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white70),
-            color: const Color(0xFF424242),
-            onSelected: (val) {
-              if (val == 'settings') {
-                setState(() => _currentIndex = isOrgAdmin ? 3 : 2);
-              }
-              if (val == 'plan') _openPlanSelection();
-              if (val == 'logout') _logout();
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'settings',
-                child: Row(
-                  children: [
-                    Icon(Icons.settings, color: Colors.white, size: 18),
-                    SizedBox(width: 10),
-                    Text('Settings & Profile',
-                        style: TextStyle(fontSize: 13, color: Colors.white)),
+        actions: safeIndex == screens.length - 1
+            ? const []
+            : [
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.white70),
+                  color: const Color(0xFF424242),
+                  onSelected: (val) {
+                    if (val == 'settings') {
+                      setState(() => _currentIndex = isOrgAdmin ? 3 : 2);
+                    }
+                    if (val == 'plan') _openPlanSelection();
+                    if (val == 'logout') _logout();
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'settings',
+                      child: Row(
+                        children: [
+                          Icon(Icons.settings, color: Colors.white, size: 18),
+                          SizedBox(width: 10),
+                          Text('Settings & Profile',
+                              style:
+                                  TextStyle(fontSize: 13, color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'plan',
+                      child: Row(
+                        children: [
+                          Icon(Icons.workspace_premium,
+                              color: Colors.white, size: 18),
+                          SizedBox(width: 10),
+                          Text('Change Plan',
+                              style:
+                                  TextStyle(fontSize: 13, color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout,
+                              color: Color(0xFFFF6B6B), size: 18),
+                          SizedBox(width: 10),
+                          Text('Sign Out',
+                              style: TextStyle(
+                                  color: Color(0xFFFF6B6B), fontSize: 13)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'plan',
-                child: Row(
-                  children: [
-                    Icon(Icons.workspace_premium,
-                        color: Colors.white, size: 18),
-                    SizedBox(width: 10),
-                    Text('Change Plan',
-                        style: TextStyle(fontSize: 13, color: Colors.white)),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Color(0xFFFF6B6B), size: 18),
-                    SizedBox(width: 10),
-                    Text('Sign Out',
-                        style:
-                            TextStyle(color: Color(0xFFFF6B6B), fontSize: 13)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
       ),
       body: IndexedStack(
         index: safeIndex,

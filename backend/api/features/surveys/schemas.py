@@ -59,8 +59,10 @@ class SurveyResponseSubmission(BaseModel):
     deviceName: Optional[str] = None
     deviceOS: Optional[str] = None
     county: Optional[str] = None
+    dob: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    accuracy: Optional[float] = None
 
 class SurveySubmissionReceipt(BaseModel):
     success: bool

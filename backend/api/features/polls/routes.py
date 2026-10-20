@@ -5,7 +5,8 @@ from io import BytesIO
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.polls.schemas import (
-    PollOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut, VoteStatusOut
+    PollOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut,
+    VoteStatusOut, VoteStatusRequest
 )
 from backend.api.features.polls.service import (
     list_polls, get_poll_by_id, create_poll, cast_vote, get_transactions_by_poll, reset_poll, get_vote_status
@@ -37,69 +38,58 @@ def _build_poll_export(db: Session, owner_id: Optional[str], export_format: str)
 
     if export_format == "csv":
         import csv
+    if export_format == "csv":
+        import csv
         from io import StringIO
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Poll ID", "Poll Title", "Category", "Status", "Vote Option", "Timestamp", "Voter Key", "Receipt Hash"])
+        writer.writerow(["Poll ID", "Poll Title", "Category", "Status", "Total Votes", "Leading Option"])
         for poll in polls:
             votes = transactions_by_poll.get(poll.Id, [])
-            if not votes:
-                writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, "No votes yet", "", "", ""])
-            else:
-                for v in votes:
-                    writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, v.OptionLabel, v.Timestamp, v.VoterPseudonym, v.ReceiptHash])
-        return output.getvalue().encode("utf-8"), "text/csv", "getitright-poll-results.csv"
+            tallies = {}
+            for v in votes:
+                tallies[v.OptionLabel] = tallies.get(v.OptionLabel, 0) + 1
+            lead = max(tallies.items(), key=lambda x: x[1])[0] if tallies else "No votes yet"
+            writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, len(votes), lead])
+        return output.getvalue().encode("utf-8"), "text/csv", "icapsq-poll-results.csv"
 
     if export_format == "json":
         import json
         data = []
         for poll in polls:
             votes = transactions_by_poll.get(poll.Id, [])
+            tallies = {}
+            for v in votes:
+                tallies[v.OptionLabel] = tallies.get(v.OptionLabel, 0) + 1
             data.append({
                 "pollId": poll.Id,
                 "title": poll.Title,
                 "category": poll.Category,
                 "status": poll.Status,
                 "totalVotes": len(votes),
+                "optionDistribution": tallies,
                 "votes": [{
                     "id": v.Id,
                     "option": v.OptionLabel,
                     "timestamp": v.Timestamp,
-                    "voter": v.VoterPseudonym,
-                    "receiptHash": v.ReceiptHash
+                    "voter": v.VoterName or v.VoterPseudonym,
+                    "county": v.County or "Nairobi County",
+                    "status": "Verified & Confirmed"
                 } for v in votes]
             })
-        return json.dumps(data, indent=2).encode("utf-8"), "application/json", "getitright-poll-results.json"
+        return json.dumps(data, indent=2).encode("utf-8"), "application/json", "icapsq-poll-results.json"
 
-    if export_format == "pdf":
-        from reportlab.lib.pagesizes import letter
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+    from backend.api.core.report_builder import build_poll_docx, build_poll_xlsx, build_poll_pdf
+    if polls:
+        first_poll = polls[0]
+        votes = transactions_by_poll.get(first_poll.Id, [])
+        if export_format == "xlsx":
+            return build_poll_xlsx(first_poll, votes), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "icapsq-poll-results.xlsx"
+        if export_format == "docx":
+            return build_poll_docx(first_poll, votes), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "icapsq-poll-results.docx"
+        return build_poll_pdf(first_poll, votes), "application/pdf", "icapsq-poll-results.pdf"
 
-        output = BytesIO()
-        document = SimpleDocTemplate(output, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
-        styles = getSampleStyleSheet()
-        story = [Paragraph("GetItRight poll results", styles["Title"])]
-        for poll in polls:
-            votes = transactions_by_poll.get(poll.Id, [])
-            story.extend([Spacer(1, 12), Paragraph(poll.Title, styles["Heading2"]), Paragraph(f"Votes: {len(votes)}", styles["BodyText"])])
-            for index, vote in enumerate(votes, 1):
-                story.append(Paragraph(f"Vote {index} — {vote.Timestamp}: {vote.OptionLabel}", styles["BodyText"]))
-        document.build(story)
-        return output.getvalue(), "application/pdf", "getitright-poll-results.pdf"
-
-    from docx import Document
-    document = Document()
-    document.add_heading("GetItRight poll results", 0)
-    for poll in polls:
-        votes = transactions_by_poll.get(poll.Id, [])
-        document.add_heading(poll.Title, level=1)
-        document.add_paragraph(f"Votes: {len(votes)}")
-        for index, vote in enumerate(votes, 1):
-            document.add_paragraph(f"Vote {index} — {vote.Timestamp}: {vote.OptionLabel}", style="List Bullet")
-    output = BytesIO()
-    document.save(output)
-    return output.getvalue(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "getitright-poll-results.docx"
+    return b"", "application/octet-stream", "empty.pdf"
 
 @router.get("", response_model=List[PollOut])
 def get_polls(
@@ -114,12 +104,12 @@ def get_polls(
 
 @router.get("/exports/results")
 def export_poll_results(
-    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|csv|json)$"),
+    export_format: str = Query("pdf", alias="format", pattern="^(pdf|docx|xlsx|csv|json)$"),
     owner_id: Optional[str] = Query(None),
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
-    if current_user["role"] != "Admin":
+    if current_user["role"] not in ["Admin", "Super Admin"]:
         owner_id = current_user["sub"]
     data, media_type, filename = _build_poll_export(db, owner_id, export_format)
     return StreamingResponse(BytesIO(data), media_type=media_type, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
@@ -128,7 +118,7 @@ def export_poll_results(
 @router.get("/{poll_id}/export")
 def export_single_poll(
     poll_id: str,
-    export_format: str = Query("csv", alias="format", pattern="^(pdf|docx|csv|json)$"),
+    export_format: str = Query("csv", alias="format", pattern="^(pdf|docx|xlsx|csv|json)$"),
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
@@ -136,7 +126,7 @@ def export_single_poll(
     poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()
     if not poll:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Poll not found")
-    if current_user["role"] != "Admin" and poll.OwnerId != current_user["sub"]:
+    if current_user["role"] not in ["Admin", "Super Admin"] and poll.OwnerId != current_user["sub"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this poll")
 
     votes = db.query(VoteTransactionModel).filter(
@@ -150,61 +140,55 @@ def export_single_poll(
         from io import StringIO
         output = StringIO()
         writer = csv.writer(output)
-        writer.writerow(["Poll ID", "Poll Title", "Category", "Status", "Vote Option", "Timestamp", "Voter Key", "Receipt Hash"])
+        writer.writerow(["Poll ID", "Poll Title", "Category", "Status", "Option Choice", "Citizen Voter", "County", "Timestamp", "Device", "Verification Status"])
         if not votes:
-            writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, "No votes yet", "", "", ""])
+            writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, "No votes yet", "", "", "", "", ""])
         else:
             for v in votes:
-                writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, v.OptionLabel, v.Timestamp, v.VoterPseudonym, v.ReceiptHash])
+                voter_name = v.VoterName or v.VoterPseudonym
+                cty = v.County or "Nairobi County"
+                dev = v.DeviceName or v.Device or "Mobile / Web App"
+                writer.writerow([poll.Id, poll.Title, poll.Category or "General", poll.Status, v.OptionLabel, voter_name, cty, v.Timestamp, dev, "Verified & Confirmed"])
         return StreamingResponse(BytesIO(output.getvalue().encode("utf-8")), media_type="text/csv", headers={"Content-Disposition": f'attachment; filename="{slug}-votes.csv"'})
 
     if export_format == "json":
         import json
+        option_tallies = {}
+        for opt in (getattr(poll, 'options', []) or []):
+            option_tallies[opt.Label] = 0
+        for v in votes:
+            option_tallies[v.OptionLabel] = option_tallies.get(v.OptionLabel, 0) + 1
         data = {
             "pollId": poll.Id,
             "title": poll.Title,
             "category": poll.Category,
             "status": poll.Status,
             "totalVotes": len(votes),
+            "resultsBreakdown": [{"option": k, "votes": val, "percentage": round((val/len(votes)*100) if votes else 0, 1)} for k, val in option_tallies.items()],
             "votes": [{
                 "id": v.Id,
                 "option": v.OptionLabel,
                 "timestamp": v.Timestamp,
-                "voter": v.VoterPseudonym,
-                "receiptHash": v.ReceiptHash
+                "voter": v.VoterName or v.VoterPseudonym,
+                "county": v.County or "Nairobi County",
+                "device": v.DeviceName or "Mobile App",
+                "status": "Verified & Confirmed"
             } for v in votes]
         }
         return StreamingResponse(BytesIO(json.dumps(data, indent=2).encode("utf-8")), media_type="application/json", headers={"Content-Disposition": f'attachment; filename="{slug}-votes.json"'})
 
-    if export_format == "pdf":
-        from reportlab.lib.pagesizes import letter
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
-        output = BytesIO()
-        document = SimpleDocTemplate(output, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
-        styles = getSampleStyleSheet()
-        story = [
-            Paragraph(f"Poll Results: {poll.Title}", styles["Title"]),
-            Spacer(1, 10),
-            Paragraph(f"Category: {poll.Category or 'General'} | Status: {poll.Status} | Total Votes: {len(votes)}", styles["Normal"]),
-            Spacer(1, 14),
-            Paragraph("Vote Transactions Log", styles["Heading2"])
-        ]
-        for idx, v in enumerate(votes, 1):
-            story.append(Paragraph(f"{idx}. {v.Timestamp} — <strong>{v.OptionLabel}</strong> (Receipt: {v.ReceiptHash[:16]}...)", styles["BodyText"]))
-        document.build(story)
-        return StreamingResponse(BytesIO(output.getvalue()), media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{slug}-results.pdf"'})
+    from backend.api.core.report_builder import build_poll_docx, build_poll_xlsx, build_poll_pdf
 
-    from docx import Document
-    document = Document()
-    document.add_heading(poll.Title, 0)
-    document.add_paragraph(f"Category: {poll.Category or 'General'} | Status: {poll.Status} | Total Votes: {len(votes)}")
-    document.add_heading("Vote Transactions Log", level=1)
-    for idx, v in enumerate(votes, 1):
-        document.add_paragraph(f"{idx}. {v.Timestamp}: {v.OptionLabel} (Voter: {v.VoterPseudonym})", style="List Bullet")
-    output = BytesIO()
-    document.save(output)
-    return StreamingResponse(BytesIO(output.getvalue()), media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers={"Content-Disposition": f'attachment; filename="{slug}-results.docx"'})
+    if export_format == "xlsx":
+        content = build_poll_xlsx(poll, votes)
+        return StreamingResponse(BytesIO(content), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": f'attachment; filename="{slug}-report.xlsx"'})
+
+    if export_format == "docx":
+        content = build_poll_docx(poll, votes)
+        return StreamingResponse(BytesIO(content), media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers={"Content-Disposition": f'attachment; filename="{slug}-report.docx"'})
+
+    content = build_poll_pdf(poll, votes)
+    return StreamingResponse(BytesIO(content), media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{slug}-report.pdf"'})
 
 @router.get("/{poll_id}", response_model=PollOut)
 def get_single_poll(poll_id: str, db: Session = Depends(get_db)):
@@ -222,6 +206,28 @@ def check_vote_status(
     """Check if a user or voter pseudonym has already voted on this poll."""
     trusted_user_id = current_user["sub"] if current_user else None
     return get_vote_status(db, poll_id, user_id=trusted_user_id, voter_key=voterKey)
+
+
+@router.post("/{poll_id}/vote-status", response_model=VoteStatusOut)
+def check_vote_status_by_national_id(
+    poll_id: str,
+    request_data: VoteStatusRequest,
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
+    db: Session = Depends(get_db),
+):
+    """Check ballot history by National ID without placing the ID in a URL."""
+    if not (request_data.voterIdNumber or request_data.voterKey):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="National ID or voter key is required to check ballot history.",
+        )
+    return get_vote_status(
+        db,
+        poll_id,
+        user_id=current_user["sub"] if current_user else None,
+        voter_key=request_data.voterKey,
+        voter_id_number=request_data.voterIdNumber,
+    )
 
 @router.post("", response_model=PollOut)
 def create_new_poll(
@@ -242,15 +248,12 @@ def submit_vote(
     db: Session = Depends(get_db),
 ):
     """Cast a verifiable ballot, recalculate percentage distribution, and issue a cryptographic receipt."""
-    # Retain optional user ID for audit tracing if provided, but do not force-lockout session votes
-    if current_user and not vote_req.userId:
+    # Retain optional user ID for audit tracing if provided.
+    if current_user:
         vote_req.userId = current_user.get("sub")
-    loc_tag = (vote_req.county or "LOCATION1").replace(" ", "").upper()
-    if not (vote_req.voterName and vote_req.voterName.strip()):
-        vote_req.voterName = f"USER@{loc_tag}"
     if not (vote_req.voterKey and vote_req.voterKey.strip()):
         import uuid
-        vote_req.voterKey = f"USER@{loc_tag}-{uuid.uuid4().hex[:6].upper()}"
+        vote_req.voterKey = f"BALLOT-{uuid.uuid4().hex[:12].upper()}"
     return PollsController.submit_vote(db, poll_id, vote_req)
 
 @router.post("/{poll_id}/reset", response_model=PollOut)

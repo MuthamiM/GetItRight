@@ -71,6 +71,10 @@ class VoteCastResponse(BaseModel):
     totalVotes: int
     timestamp: str
 
+class VoteStatusRequest(BaseModel):
+    voterIdNumber: Optional[str] = None
+    voterKey: Optional[str] = None
+
 class VoteTransactionOut(BaseModel):
     id: int
     pollId: str
@@ -88,6 +92,7 @@ class VoteTransactionOut(BaseModel):
     county: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    accuracy: Optional[float] = None
     gpsCoordinates: Optional[str] = None
 
 class VoteStatusOut(BaseModel):

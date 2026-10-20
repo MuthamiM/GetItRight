@@ -2,7 +2,9 @@ import hashlib
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from backend.api.features.auth.models import UserModel
 from backend.api.features.polls.models import PollModel, PollOptionModel, VoteTransactionModel
@@ -10,6 +12,8 @@ from backend.api.features.polls.schemas import (
     PollOut, PollOptionOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut
 )
 from backend.api.core.security import generate_merkle_receipt
+from backend.api.core.voter_verification import validate_voter_details
+from backend.api.core.ballot_claims import reserve_ballot_identities
 
 
 def _plain_text(value: str, field: str, maximum: int) -> str:
@@ -158,6 +162,49 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         except ValueError:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This poll has an invalid closing time")
 
+    voter_name, voter_id_num = validate_voter_details(
+        voter_name=vote_req.voterName,
+        voter_id_number=vote_req.voterIdNumber,
+        county=vote_req.county,
+        dob=vote_req.dob,
+        latitude=vote_req.latitude,
+        longitude=vote_req.longitude,
+        accuracy=vote_req.accuracy,
+    )
+    duplicate_identity_filters = [
+        VoteTransactionModel.VoterIdNumber == voter_id_num,
+        VoteTransactionModel.VoterPseudonym == (vote_req.voterKey or "").strip(),
+    ]
+    if vote_req.userId and vote_req.userId.strip():
+        duplicate_identity_filters.append(VoteTransactionModel.UserId == vote_req.userId.strip())
+    existing_ballot = db.query(VoteTransactionModel).filter(
+        VoteTransactionModel.PollId == poll.Id,
+        or_(*duplicate_identity_filters),
+    ).first()
+    if existing_ballot:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already voted in this poll. Each National ID may submit one ballot.",
+        )
+
+    try:
+        reserve_ballot_identities(
+            db,
+            "poll",
+            poll.Id,
+            [
+                ("national_id", voter_id_num),
+                ("account_id", vote_req.userId),
+                ("voter_key", vote_req.voterKey),
+            ],
+        )
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already voted in this poll. Each National ID may submit one ballot.",
+        )
+
     target_option = None
     opt_key = None
     if vote_req.option_id is not None:
@@ -183,14 +230,10 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
-    import random
     user_id = vote_req.userId.strip() if vote_req.userId and str(vote_req.userId).strip() else None
 
     # Voter identity and telemetry resolution
     loc_tag = (vote_req.county or "LOCATION1").replace(" ", "").upper()
-    voter_name = (vote_req.voterName or "").strip() or f"USER@{loc_tag}"
-    voter_id_num = (vote_req.voterIdNumber or "").strip() or f"ID-{random.randint(10000000, 99999999)}"
-
     if vote_req.voterKey and vote_req.voterKey.strip():
         voter_key = vote_req.voterKey.strip()
     else:
@@ -230,9 +273,10 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         VoterPseudonym=voter_key,
         Timestamp=timestamp,
         County=county_str,
-        Dob=None,
+        Dob=(vote_req.dob or "").strip(),
         Latitude=lat_val,
         Longitude=lng_val,
+        Accuracy=vote_req.accuracy,
         GpsCoordinates=gps_str,
         Device=device_str,
         VoterName=voter_name,
@@ -241,7 +285,14 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         DeviceOS=os_str or None
     )
     db.add(tx)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already voted in this poll. Each National ID may submit one ballot.",
+        )
 
     return VoteCastResponse(
         success=True,
@@ -277,14 +328,23 @@ def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionO
             deviceName=getattr(t, 'DeviceName', None),
             deviceOS=getattr(t, 'DeviceOS', None),
             county=getattr(t, 'County', None),
-            latitude=getattr(t, 'Latitude', None),
-            longitude=getattr(t, 'Longitude', None),
-            gpsCoordinates=getattr(t, 'GpsCoordinates', None)
+            # Exact coordinates remain in the database for server-side county
+            # verification, but are never returned in the admin/client API.
+            latitude=None,
+            longitude=None,
+            accuracy=getattr(t, 'Accuracy', None),
+            gpsCoordinates=None
         )
         for t in txs
     ]
 
-def get_vote_status(db: Session, poll_id: str, user_id: Optional[str] = None, voter_key: Optional[str] = None):
+def get_vote_status(
+    db: Session,
+    poll_id: str,
+    user_id: Optional[str] = None,
+    voter_key: Optional[str] = None,
+    voter_id_number: Optional[str] = None,
+):
     from backend.api.features.polls.schemas import VoteStatusOut
     tx = None
     if user_id and str(user_id).strip():
@@ -297,6 +357,12 @@ def get_vote_status(db: Session, poll_id: str, user_id: Optional[str] = None, vo
         tx = db.query(VoteTransactionModel).filter(
             VoteTransactionModel.PollId == poll_id,
             VoteTransactionModel.VoterPseudonym == str(voter_key).strip()
+        ).first()
+
+    if not tx and voter_id_number and str(voter_id_number).strip():
+        tx = db.query(VoteTransactionModel).filter(
+            VoteTransactionModel.PollId == poll_id,
+            VoteTransactionModel.VoterIdNumber == str(voter_id_number).strip(),
         ).first()
 
     if tx:
