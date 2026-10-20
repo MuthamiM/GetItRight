@@ -1344,7 +1344,29 @@
           path.setAttribute('vector-effect', 'non-scaling-stroke');
           overlay.replaceChildren(path);
         } else {
-          overlay.replaceChildren();
+          // A zero-vote choice has no proportional wedge to fill. Mark its
+          // position with a colored arc on the chart rim so the selected
+          // choice is still visible without inventing votes or changing the
+          // pie's distribution.
+          const markerSweep = 14;
+          const markerRadius = 77;
+          const markerCenter = total > 0
+            ? start
+            : (selectedIndex / Math.max(1, poll.options.length)) * 360;
+          const markerStart = (markerCenter - markerSweep / 2 - 90) * Math.PI / 180;
+          const markerEnd = (markerCenter + markerSweep / 2 - 90) * Math.PI / 180;
+          const markerStartX = 84 + markerRadius * Math.cos(markerStart);
+          const markerStartY = 84 + markerRadius * Math.sin(markerStart);
+          const markerEndX = 84 + markerRadius * Math.cos(markerEnd);
+          const markerEndY = 84 + markerRadius * Math.sin(markerEnd);
+          const markerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          markerPath.setAttribute('d', `M ${markerStartX.toFixed(3)} ${markerStartY.toFixed(3)} A ${markerRadius} ${markerRadius} 0 0 1 ${markerEndX.toFixed(3)} ${markerEndY.toFixed(3)}`);
+          markerPath.setAttribute('fill', 'none');
+          markerPath.setAttribute('stroke', color);
+          markerPath.setAttribute('stroke-width', '10');
+          markerPath.setAttribute('stroke-linecap', 'round');
+          markerPath.setAttribute('vector-effect', 'non-scaling-stroke');
+          overlay.replaceChildren(markerPath);
         }
       }
       pie.setAttribute('aria-label', `${selectedOption.label}: ${getPollOptionVoteCount(selectedOption).toLocaleString()} votes, ${percentage.toFixed(1)} percent`);
