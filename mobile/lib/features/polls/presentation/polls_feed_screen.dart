@@ -133,11 +133,13 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     });
     final prefs = await SharedPreferences.getInstance();
     final savedNationalId = prefs.getString('gir_voter_id_number') ??
-        prefs.getString('gir_user_national_id') ?? '';
+        prefs.getString('gir_user_national_id') ??
+        '';
     final savedVoterKey = prefs.getString('gir_voter_key');
-    final serverVoteStatuses = savedNationalId.isNotEmpty || savedVoterKey != null
-        ? await Future.wait(polls.map((poll) =>
-            _apiClient.getVoteStatus(poll.id, savedNationalId, voterKey: savedVoterKey)))
+    final serverVoteStatuses = savedNationalId.isNotEmpty ||
+            savedVoterKey != null
+        ? await Future.wait(polls.map((poll) => _apiClient
+            .getVoteStatus(poll.id, savedNationalId, voterKey: savedVoterKey)))
         : List<Map<String, dynamic>?>.filled(polls.length, null);
     final now = DateTime.now();
 
@@ -149,10 +151,19 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
       if (serverStatus?['hasVoted'] == true) {
         final votedIndex = serverStatus?['optionIndex'];
-        if (votedIndex is int && votedIndex >= 0 && votedIndex < p.options.length) {
+        if (votedIndex is int &&
+            votedIndex >= 0 &&
+            votedIndex < p.options.length) {
           p.selectedOptionId = p.options[votedIndex].id;
-          await prefs.setString('gir_voted_option_${p.id}', p.options[votedIndex].id);
+          await prefs.setString(
+              'gir_voted_option_${p.id}', p.options[votedIndex].id);
+        } else {
+          p.selectedOptionId = '__voted__';
         }
+        await prefs.setString(
+          'gir_voted_time_${p.id}',
+          DateTime.now().toIso8601String(),
+        );
       } else if (serverStatus?['hasVoted'] == false || p.totalVotes == 0) {
         // Server ballot status is authoritative; discard optimistic local votes.
         prefs.remove('gir_voted_option_${p.id}');
@@ -371,14 +382,53 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
   }
 
   static const List<String> _kenyaCounties = [
-    'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu',
-    'Garissa', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho',
-    'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui',
-    'Kwale', 'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera',
-    'Marsabit', 'Meru', 'Migori', 'Mombasa', "Murang'a", 'Nairobi',
-    'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua', 'Nyeri',
-    'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi',
-    'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot'
+    'Baringo',
+    'Bomet',
+    'Bungoma',
+    'Busia',
+    'Elgeyo-Marakwet',
+    'Embu',
+    'Garissa',
+    'Homa Bay',
+    'Isiolo',
+    'Kajiado',
+    'Kakamega',
+    'Kericho',
+    'Kiambu',
+    'Kilifi',
+    'Kirinyaga',
+    'Kisii',
+    'Kisumu',
+    'Kitui',
+    'Kwale',
+    'Laikipia',
+    'Lamu',
+    'Machakos',
+    'Makueni',
+    'Mandera',
+    'Marsabit',
+    'Meru',
+    'Migori',
+    'Mombasa',
+    "Murang'a",
+    'Nairobi',
+    'Nakuru',
+    'Nandi',
+    'Narok',
+    'Nyamira',
+    'Nyandarua',
+    'Nyeri',
+    'Samburu',
+    'Siaya',
+    'Taita-Taveta',
+    'Tana River',
+    'Tharaka-Nithi',
+    'Trans Nzoia',
+    'Turkana',
+    'Uasin Gishu',
+    'Vihiga',
+    'Wajir',
+    'West Pokot'
   ];
 
   Future<void> _pickDobForPolls(
@@ -432,17 +482,20 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     if (!context.mounted) return false;
     final nameController = TextEditingController(
         text: prefs.getString('gir_voter_name') ??
-            prefs.getString('gir_user_name') ?? '');
+            prefs.getString('gir_user_name') ??
+            '');
     final savedId = (prefs.getString('gir_voter_id_number') ??
-            prefs.getString('gir_user_national_id') ?? '')
+            prefs.getString('gir_user_national_id') ??
+            '')
         .replaceAll(RegExp(r'\D'), '');
     final idController = TextEditingController(
         text: savedId.length > 12 ? savedId.substring(0, 12) : savedId);
     final dobController = TextEditingController(
         text: prefs.getString('gir_v_dob') ??
-            prefs.getString('gir_user_dob') ?? '');
-    String? selectedCounty = prefs.getString('gir_user_county') ??
-        prefs.getString('gir_county');
+            prefs.getString('gir_user_dob') ??
+            '');
+    String? selectedCounty =
+        prefs.getString('gir_user_county') ?? prefs.getString('gir_county');
     if (!_kenyaCounties.contains(selectedCounty)) selectedCounty = null;
     bool isCheckingLocation = false;
 
@@ -465,134 +518,65 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE5E5E5),
-                            borderRadius: BorderRadius.circular(8),
+                      Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE5E5E5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.how_to_vote,
+                                size: 18, color: Color(0xFF303030)),
                           ),
-                          child: const Icon(Icons.how_to_vote,
-                              size: 18, color: Color(0xFF303030)),
-                        ),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: Text(
-                            'Identity Verification',
-                            style: TextStyle(
-                                color: Color(0xFFE5E5E5),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Text(
+                              'Identity Verification',
+                              style: TextStyle(
+                                  color: Color(0xFFE5E5E5),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Full Name · as printed on ID',
-                        style: TextStyle(
-                            color: Color(0xFFE5E5E5),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF404040),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF606060)),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      alignment: Alignment.center,
-                      child: TextField(
-                        controller: nameController,
-                        textCapitalization: TextCapitalization.words,
-                        style: const TextStyle(color: Color(0xFFE5E5E5)),
-                        decoration: const InputDecoration(
-                          hintText: '',
-                          hintStyle: TextStyle(color: Color(0xFF888888)),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    const Text('National ID Number · 5–12 digits only',
-                        style: TextStyle(
-                            color: Color(0xFFE5E5E5),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF404040),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF606060)),
-                      ),
-                      child: TextField(
-                        controller: idController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(12),
                         ],
-                        style: const TextStyle(color: Color(0xFFE5E5E5)),
-                        decoration: const InputDecoration(
-                          hintText: 'Enter 5–12 digits',
-                          hintStyle: TextStyle(color: Color(0xFF888888)),
-                          border: InputBorder.none,
-                        ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    const Text('County · choose one',
-                        style: TextStyle(
-                            color: Color(0xFFE5E5E5),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF404040),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF606060)),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedCounty,
-                          hint: const Text('Choose your county', style: TextStyle(color: Color(0xFF888888))),
-                          dropdownColor: const Color(0xFF404040),
-                          isExpanded: true,
-                          style: const TextStyle(
+                      const SizedBox(height: 16),
+                      const Text('Full Name · as printed on ID',
+                          style: TextStyle(
                               color: Color(0xFFE5E5E5),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold),
-                          items: _kenyaCounties
-                              .map((c) => DropdownMenuItem(
-                                  value: c, child: Text('$c County')))
-                              .toList(),
-                          onChanged: (val) {
-                            setDialogState(() => selectedCounty = val);
-                          },
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF404040),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF606060)),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        alignment: Alignment.center,
+                        child: TextField(
+                          controller: nameController,
+                          textCapitalization: TextCapitalization.words,
+                          style: const TextStyle(color: Color(0xFFE5E5E5)),
+                          decoration: const InputDecoration(
+                            hintText: '',
+                            hintStyle: TextStyle(color: Color(0xFF888888)),
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    const Text('Date of Birth · YYYY-MM-DD',
-                        style: TextStyle(
-                            color: Color(0xFFE5E5E5),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    InkWell(
-                      onTap: () => _pickDobForPolls(
-                          dialogCtx, dobController, setDialogState),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
+                      const SizedBox(height: 14),
+                      const Text('National ID Number · 5–12 digits only',
+                          style: TextStyle(
+                              color: Color(0xFFE5E5E5),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Container(
                         height: 48,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
@@ -600,117 +584,231 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: const Color(0xFF606060)),
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.calendar_today_outlined,
-                                color: Color(0xFFB8BAC0), size: 18),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                dobController.text.isEmpty
-                                    ? 'Select date'
-                                    : dobController.text,
-                                style: TextStyle(
-                                  color: dobController.text.isEmpty
-                                      ? const Color(0xFF888888)
-                                      : const Color(0xFFE5E5E5),
-                                  fontSize: 13,
-                                  fontWeight: dobController.text.isEmpty
-                                      ? FontWeight.normal
-                                      : FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            const Icon(Icons.calendar_month,
-                                color: Color(0xFFE5E5E5), size: 22),
+                        child: TextField(
+                          controller: idController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(12),
                           ],
+                          style: const TextStyle(color: Color(0xFFE5E5E5)),
+                          decoration: const InputDecoration(
+                            hintText: 'Enter 5–12 digits',
+                            hintStyle: TextStyle(color: Color(0xFF888888)),
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel',
-                                style: TextStyle(
-                                    color: Color(0xFFB8B8B8),
-                                    fontWeight: FontWeight.bold)),
-                          ),
+                      const SizedBox(height: 14),
+                      const Text('County · choose one',
+                          style: TextStyle(
+                              color: Color(0xFFE5E5E5),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF404040),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF606060)),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 2,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE5E5E5),
-                              foregroundColor: const Color(0xFF2A2A2A),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            onPressed: isCheckingLocation ? null : () async {
-                              final dob = dobController.text.trim();
-                              final voterName = nameController.text.trim();
-                              final voterIdNumber = idController.text.trim();
-                              if (voterName.length < 3 ||
-                                  !RegExp(r'^\d{5,12}$').hasMatch(voterIdNumber) ||
-                                  selectedCounty == null || dob.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please provide correct details: full name, 5–12 digit National ID, county, and date of birth are required.')),
-                                );
-                                return;
-                              }
-                              final birthDate = DateTime.tryParse(dob);
-                              final today = DateTime.now();
-                              var age = birthDate == null ? -1 : today.year - birthDate.year;
-                              if (birthDate != null &&
-                                  (today.month < birthDate.month ||
-                                      (today.month == birthDate.month && today.day < birthDate.day))) {
-                                age--;
-                              }
-                              if (birthDate == null || birthDate.isAfter(today) || age < 18) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please provide correct details: enter a valid date of birth.')),
-                                );
-                                return;
-                              }
-                              setDialogState(() => isCheckingLocation = true);
-                              final location = await PreciseLocation.acquire();
-                              if (!location.succeeded) {
-                                setDialogState(() => isCheckingLocation = false);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Precise location is needed to verify your selected county.')),
-                                );
-                                if (location.issue != null && context.mounted) {
-                                  await PreciseLocation.promptSettings(context, location.issue!);
-                                }
-                                return;
-                              }
-                              final position = location.position!;
-                              await prefs.setString('gir_voter_name', voterName);
-                              await prefs.setString('gir_voter_id_number', voterIdNumber);
-                              await prefs.setString('gir_user_national_id', voterIdNumber);
-                              await prefs.setString(
-                                  'gir_user_county', selectedCounty!);
-                              await prefs.setString('gir_county', selectedCounty!);
-                              await prefs.setString('gir_v_dob', dob);
-                              await prefs.setDouble('gir_latitude', position.latitude);
-                              await prefs.setDouble('gir_longitude', position.longitude);
-                              await prefs.setDouble('gir_location_accuracy', position.accuracy);
-                              await prefs.setString('gir_gps', '${position.latitude},${position.longitude}');
-                              await prefs.setBool('gir_voter_verified', true);
-                              if (!ctx.mounted) return;
-                              Navigator.pop(ctx, true);
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: selectedCounty,
+                            hint: const Text('Choose your county',
+                                style: TextStyle(color: Color(0xFF888888))),
+                            dropdownColor: const Color(0xFF404040),
+                            isExpanded: true,
+                            style: const TextStyle(
+                                color: Color(0xFFE5E5E5),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold),
+                            items: _kenyaCounties
+                                .map((c) => DropdownMenuItem(
+                                    value: c, child: Text('$c County')))
+                                .toList(),
+                            onChanged: (val) {
+                              setDialogState(() => selectedCounty = val);
                             },
-                            child: isCheckingLocation
-                                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Text('Confirm & Vote', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Text('Date of Birth · YYYY-MM-DD',
+                          style: TextStyle(
+                              color: Color(0xFFE5E5E5),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      InkWell(
+                        onTap: () => _pickDobForPolls(
+                            dialogCtx, dobController, setDialogState),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          height: 48,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF404040),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF606060)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.calendar_today_outlined,
+                                  color: Color(0xFFB8BAC0), size: 18),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  dobController.text.isEmpty
+                                      ? 'Select date'
+                                      : dobController.text,
+                                  style: TextStyle(
+                                    color: dobController.text.isEmpty
+                                        ? const Color(0xFF888888)
+                                        : const Color(0xFFE5E5E5),
+                                    fontSize: 13,
+                                    fontWeight: dobController.text.isEmpty
+                                        ? FontWeight.normal
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.calendar_month,
+                                  color: Color(0xFFE5E5E5), size: 22),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancel',
+                                  style: TextStyle(
+                                      color: Color(0xFFB8B8B8),
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE5E5E5),
+                                foregroundColor: const Color(0xFF2A2A2A),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              onPressed: isCheckingLocation
+                                  ? null
+                                  : () async {
+                                      final dob = dobController.text.trim();
+                                      final voterName =
+                                          nameController.text.trim();
+                                      final voterIdNumber =
+                                          idController.text.trim();
+                                      if (voterName.length < 3 ||
+                                          !RegExp(r'^\d{5,12}$')
+                                              .hasMatch(voterIdNumber) ||
+                                          selectedCounty == null ||
+                                          dob.isEmpty) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Please provide correct details: full name, 5–12 digit National ID, county, and date of birth are required.')),
+                                        );
+                                        return;
+                                      }
+                                      final birthDate = DateTime.tryParse(dob);
+                                      final today = DateTime.now();
+                                      var age = birthDate == null
+                                          ? -1
+                                          : today.year - birthDate.year;
+                                      if (birthDate != null &&
+                                          (today.month < birthDate.month ||
+                                              (today.month == birthDate.month &&
+                                                  today.day < birthDate.day))) {
+                                        age--;
+                                      }
+                                      if (birthDate == null ||
+                                          birthDate.isAfter(today) ||
+                                          age < 18) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Please provide correct details: enter a valid date of birth.')),
+                                        );
+                                        return;
+                                      }
+                                      setDialogState(
+                                          () => isCheckingLocation = true);
+                                      final location =
+                                          await PreciseLocation.acquire();
+                                      if (!location.succeeded) {
+                                        setDialogState(
+                                            () => isCheckingLocation = false);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Precise location is needed to verify your selected county.')),
+                                        );
+                                        if (location.issue != null &&
+                                            context.mounted) {
+                                          await PreciseLocation.promptSettings(
+                                              context, location.issue!);
+                                        }
+                                        return;
+                                      }
+                                      final position = location.position!;
+                                      await prefs.setString(
+                                          'gir_voter_name', voterName);
+                                      await prefs.setString(
+                                          'gir_voter_id_number', voterIdNumber);
+                                      await prefs.setString(
+                                          'gir_user_national_id',
+                                          voterIdNumber);
+                                      await prefs.setString(
+                                          'gir_user_county', selectedCounty!);
+                                      await prefs.setString(
+                                          'gir_county', selectedCounty!);
+                                      await prefs.setString('gir_v_dob', dob);
+                                      await prefs.setDouble(
+                                          'gir_latitude', position.latitude);
+                                      await prefs.setDouble(
+                                          'gir_longitude', position.longitude);
+                                      await prefs.setDouble(
+                                          'gir_location_accuracy',
+                                          position.accuracy);
+                                      await prefs.setString('gir_gps',
+                                          '${position.latitude},${position.longitude}');
+                                      await prefs.setBool(
+                                          'gir_voter_verified', true);
+                                      if (!ctx.mounted) return;
+                                      Navigator.pop(ctx, true);
+                                    },
+                              child: isCheckingLocation
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2))
+                                  : const Text('Confirm & Vote',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -727,17 +825,26 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     return result ?? false;
   }
 
-  Future<void> _handleVote(Poll poll, String optionId, {int? optionIndex}) async {
+  Future<void> _handleVote(Poll poll, String optionId,
+      {int? optionIndex}) async {
     final prefs = await SharedPreferences.getInstance();
-    var savedDob = prefs.getString('gir_v_dob') ?? prefs.getString('gir_user_dob');
-    var savedCounty = prefs.getString('gir_user_county') ?? prefs.getString('gir_county');
-    var savedName = prefs.getString('gir_voter_name') ?? prefs.getString('gir_user_name');
-    var savedId = prefs.getString('gir_voter_id_number') ?? prefs.getString('gir_user_national_id');
+    var savedDob =
+        prefs.getString('gir_v_dob') ?? prefs.getString('gir_user_dob');
+    var savedCounty =
+        prefs.getString('gir_user_county') ?? prefs.getString('gir_county');
+    var savedName =
+        prefs.getString('gir_voter_name') ?? prefs.getString('gir_user_name');
+    var savedId = prefs.getString('gir_voter_id_number') ??
+        prefs.getString('gir_user_national_id');
 
-    if (savedDob == null || savedDob.isEmpty ||
-        savedCounty == null || savedCounty.isEmpty ||
-        savedName == null || savedName.trim().length < 3 ||
-        savedId == null || !RegExp(r'^\d{5,12}$').hasMatch(savedId)) {
+    if (savedDob == null ||
+        savedDob.isEmpty ||
+        savedCounty == null ||
+        savedCounty.isEmpty ||
+        savedName == null ||
+        savedName.trim().length < 3 ||
+        savedId == null ||
+        !RegExp(r'^\d{5,12}$').hasMatch(savedId)) {
       if (!mounted) return;
       final verified = await _showVoterDemographicsDialog(context);
       if (!verified) return;
@@ -747,11 +854,15 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       savedId = prefs.getString('gir_voter_id_number');
     }
 
-    if (savedDob == null || savedCounty == null || savedName == null || savedId == null) return;
+    if (savedDob == null ||
+        savedCounty == null ||
+        savedName == null ||
+        savedId == null) return;
 
     final location = await PreciseLocation.acquire();
     if (!location.succeeded) {
-      _showVoteError('Precise location is needed to verify your selected county.');
+      _showVoteError(
+          'Precise location is needed to verify your selected county.');
       if (location.issue != null && mounted) {
         await PreciseLocation.promptSettings(context, location.issue!);
       }
@@ -760,9 +871,11 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     final position = location.position!;
 
     final voterKey = await _apiClient.getOrCreateVoterKey();
-    final priorVote = await _apiClient.getVoteStatus(poll.id, savedId, voterKey: voterKey);
+    final priorVote =
+        await _apiClient.getVoteStatus(poll.id, savedId, voterKey: voterKey);
     if (priorVote == null) {
-      _showVoteError('Unable to check your ballot history. Check your connection and try again.');
+      _showVoteError(
+          'Unable to check your ballot history. Check your connection and try again.');
       return;
     }
     if (priorVote['error'] != null) {
@@ -771,10 +884,22 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     }
     if (priorVote['hasVoted'] == true) {
       final votedIndex = priorVote['optionIndex'];
-      if (votedIndex is int && votedIndex >= 0 && votedIndex < poll.options.length) {
-        setState(() => poll.selectedOptionId = poll.options[votedIndex].id);
+      String? savedOptionId;
+      if (votedIndex is int &&
+          votedIndex >= 0 &&
+          votedIndex < poll.options.length) {
+        savedOptionId = poll.options[votedIndex].id;
       }
-      _showVoteError('This National ID already voted in this poll on the app or website. You can still vote in other polls.');
+      await prefs.setString(
+        'gir_voted_time_${poll.id}',
+        DateTime.now().toIso8601String(),
+      );
+      if (savedOptionId != null) {
+        await prefs.setString('gir_voted_option_${poll.id}', savedOptionId);
+      }
+      if (mounted) {
+        setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+      }
       return;
     }
 
@@ -791,11 +916,32 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       accuracy: position.accuracy,
     );
     if (result['success'] != true) {
-      _showVoteError(result['error']?.toString() ?? 'Please provide correct details and try again.');
+      if (result['alreadyVoted'] == true) {
+        final votedIndex = result['optionIndex'];
+        final savedOptionId = votedIndex is int &&
+                votedIndex >= 0 &&
+                votedIndex < poll.options.length
+            ? poll.options[votedIndex].id
+            : null;
+        await prefs.setString(
+          'gir_voted_time_${poll.id}',
+          DateTime.now().toIso8601String(),
+        );
+        if (savedOptionId != null) {
+          await prefs.setString('gir_voted_option_${poll.id}', savedOptionId);
+        }
+        if (mounted) {
+          setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+        }
+        return;
+      }
+      _showVoteError(result['error']?.toString() ??
+          'Please provide correct details and try again.');
       return;
     }
 
-    await prefs.setString('gir_voted_time_${poll.id}', DateTime.now().toIso8601String());
+    await prefs.setString(
+        'gir_voted_time_${poll.id}', DateTime.now().toIso8601String());
     await prefs.setString('gir_voted_option_${poll.id}', optionId);
     await prefs.setDouble('gir_latitude', position.latitude);
     await prefs.setDouble('gir_longitude', position.longitude);
@@ -804,7 +950,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     setState(() {
       poll.selectedOptionId = optionId;
       final serverTotal = result['totalVotes'];
-      poll.totalVotes = serverTotal is num ? serverTotal.toInt() : poll.totalVotes + 1;
+      poll.totalVotes =
+          serverTotal is num ? serverTotal.toInt() : poll.totalVotes + 1;
       for (var opt in poll.options) {
         if (opt.id == optionId) {
           opt.votes += 1;
@@ -1248,9 +1395,13 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                                 .length];
 
                                                 return InkWell(
-                                                  onTap: () => _handleVote(
-                                                      poll, opt.id,
-                                                      optionIndex: i),
+                                                  onTap:
+                                                      poll.selectedOptionId ==
+                                                              null
+                                                          ? () => _handleVote(
+                                                              poll, opt.id,
+                                                              optionIndex: i)
+                                                          : null,
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                   child: Padding(

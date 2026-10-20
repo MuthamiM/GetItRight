@@ -33,14 +33,53 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
   final _voterIdController = TextEditingController();
   String? _selectedCounty;
   static const List<String> _kenyaCounties = [
-    'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu',
-    'Garissa', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho',
-    'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale',
-    'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru',
-    'Migori', 'Mombasa', "Murang'a", 'Nairobi', 'Nakuru', 'Nandi', 'Narok',
-    'Nyamira', 'Nyandarua', 'Nyeri', 'Samburu', 'Siaya', 'Taita-Taveta',
-    'Tana River', 'Tharaka-Nithi', 'Trans Nzoia', 'Turkana', 'Uasin Gishu',
-    'Vihiga', 'Wajir', 'West Pokot',
+    'Baringo',
+    'Bomet',
+    'Bungoma',
+    'Busia',
+    'Elgeyo-Marakwet',
+    'Embu',
+    'Garissa',
+    'Homa Bay',
+    'Isiolo',
+    'Kajiado',
+    'Kakamega',
+    'Kericho',
+    'Kiambu',
+    'Kilifi',
+    'Kirinyaga',
+    'Kisii',
+    'Kisumu',
+    'Kitui',
+    'Kwale',
+    'Laikipia',
+    'Lamu',
+    'Machakos',
+    'Makueni',
+    'Mandera',
+    'Marsabit',
+    'Meru',
+    'Migori',
+    'Mombasa',
+    "Murang'a",
+    'Nairobi',
+    'Nakuru',
+    'Nandi',
+    'Narok',
+    'Nyamira',
+    'Nyandarua',
+    'Nyeri',
+    'Samburu',
+    'Siaya',
+    'Taita-Taveta',
+    'Tana River',
+    'Tharaka-Nithi',
+    'Trans Nzoia',
+    'Turkana',
+    'Uasin Gishu',
+    'Vihiga',
+    'Wajir',
+    'West Pokot',
   ];
 
   bool _isSubmitting = false;
@@ -70,10 +109,14 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
   Future<void> _checkInitialVerificationStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final savedVerified = prefs.getBool('gir_voter_verified') ?? false;
-    final savedDob = prefs.getString('gir_v_dob') ?? prefs.getString('gir_user_dob');
-    final savedName = prefs.getString('gir_voter_name') ?? prefs.getString('gir_user_name');
-    final savedId = prefs.getString('gir_voter_id_number') ?? prefs.getString('gir_user_national_id');
-    final savedCounty = prefs.getString('gir_user_county') ?? prefs.getString('gir_county');
+    final savedDob =
+        prefs.getString('gir_v_dob') ?? prefs.getString('gir_user_dob');
+    final savedName =
+        prefs.getString('gir_voter_name') ?? prefs.getString('gir_user_name');
+    final savedId = prefs.getString('gir_voter_id_number') ??
+        prefs.getString('gir_user_national_id');
+    final savedCounty =
+        prefs.getString('gir_user_county') ?? prefs.getString('gir_county');
     _dobController.text = savedDob ?? '';
     _voterNameController.text = savedName ?? '';
     final sanitizedSavedId = (savedId ?? '').replaceAll(RegExp(r'\D'), '');
@@ -83,8 +126,11 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     _selectedCounty = _kenyaCounties.contains(savedCounty) ? savedCounty : null;
 
     // If user has verified once in the past, skip verification for all surveys
-    if (savedVerified && savedDob != null && savedName != null &&
-        savedId != null && RegExp(r'^\d{5,12}$').hasMatch(savedId) &&
+    if (savedVerified &&
+        savedDob != null &&
+        savedName != null &&
+        savedId != null &&
+        RegExp(r'^\d{5,12}$').hasMatch(savedId) &&
         _selectedCounty != null) {
       if (mounted) {
         setState(() {
@@ -161,22 +207,27 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     final voterName = _voterNameController.text.trim();
     final voterIdNumber = _voterIdController.text.trim();
 
-    if (dob.isEmpty || voterName.length < 3 ||
+    if (dob.isEmpty ||
+        voterName.length < 3 ||
         !RegExp(r'^\d{5,12}$').hasMatch(voterIdNumber) ||
         _selectedCounty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please provide correct details: full name, 5–12 digit National ID, county, and date of birth are required.'),
+          content: Text(
+              'Please provide correct details: full name, 5–12 digit National ID, county, and date of birth are required.'),
           backgroundColor: Color(0xFF505050),
         ),
       );
       return;
     }
     final birthDate = DateTime.tryParse(dob);
-    if (birthDate == null || birthDate.isAfter(DateTime.now()) ||
+    if (birthDate == null ||
+        birthDate.isAfter(DateTime.now()) ||
         !_isAdult(birthDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide correct details: enter a valid date of birth.')),
+        const SnackBar(
+            content: Text(
+                'Please provide correct details: enter a valid date of birth.')),
       );
       return;
     }
@@ -188,7 +239,9 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     if (!location.succeeded) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Precise location is needed to verify your selected county.')),
+        const SnackBar(
+            content: Text(
+                'Precise location is needed to verify your selected county.')),
       );
       if (location.issue != null && mounted) {
         await PreciseLocation.promptSettings(context, location.issue!);
@@ -209,7 +262,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     await prefs.setDouble('gir_latitude', position.latitude);
     await prefs.setDouble('gir_longitude', position.longitude);
     await prefs.setDouble('gir_location_accuracy', position.accuracy);
-    await prefs.setString('gir_gps', '${position.latitude},${position.longitude}');
+    await prefs.setString(
+        'gir_gps', '${position.latitude},${position.longitude}');
     await prefs.setBool('gir_voter_verified', true);
 
     setState(() {
@@ -231,28 +285,44 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     });
     if (missingAnswers) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please answer every survey question before submitting.')),
+        const SnackBar(
+            content:
+                Text('Please answer every survey question before submitting.')),
       );
       return;
     }
 
     final prefs = await SharedPreferences.getInstance();
-    final voterName = prefs.getString('gir_voter_name') ?? prefs.getString('gir_user_name') ?? '';
-    final voterIdNumber = prefs.getString('gir_voter_id_number') ?? prefs.getString('gir_user_national_id') ?? '';
-    final county = prefs.getString('gir_user_county') ?? prefs.getString('gir_county') ?? '';
-    final dob = prefs.getString('gir_v_dob') ?? prefs.getString('gir_user_dob') ?? '';
-    if (voterName.trim().length < 3 || !RegExp(r'^\d{5,12}$').hasMatch(voterIdNumber) ||
-        !_kenyaCounties.contains(county) || dob.isEmpty) {
+    final voterName = prefs.getString('gir_voter_name') ??
+        prefs.getString('gir_user_name') ??
+        '';
+    final voterIdNumber = prefs.getString('gir_voter_id_number') ??
+        prefs.getString('gir_user_national_id') ??
+        '';
+    final county = prefs.getString('gir_user_county') ??
+        prefs.getString('gir_county') ??
+        '';
+    final dob =
+        prefs.getString('gir_v_dob') ?? prefs.getString('gir_user_dob') ?? '';
+    if (voterName.trim().length < 3 ||
+        !RegExp(r'^\d{5,12}$').hasMatch(voterIdNumber) ||
+        !_kenyaCounties.contains(county) ||
+        dob.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide correct details before submitting.')),
+        const SnackBar(
+            content: Text('Please provide correct details before submitting.')),
       );
       setState(() => _isVerified = false);
       return;
     }
     final birthDate = DateTime.tryParse(dob);
-    if (birthDate == null || birthDate.isAfter(DateTime.now()) || !_isAdult(birthDate)) {
+    if (birthDate == null ||
+        birthDate.isAfter(DateTime.now()) ||
+        !_isAdult(birthDate)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide correct details: enter a valid date of birth.')),
+        const SnackBar(
+            content: Text(
+                'Please provide correct details: enter a valid date of birth.')),
       );
       return;
     }
@@ -261,7 +331,9 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     if (!location.succeeded) {
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Precise location is needed to verify your selected county.')),
+        const SnackBar(
+            content: Text(
+                'Precise location is needed to verify your selected county.')),
       );
       if (location.issue != null && mounted) {
         await PreciseLocation.promptSettings(context, location.issue!);
@@ -277,7 +349,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
       };
     }).toList();
 
-    debugPrint('[SURVEY DETAIL] Submitting survey ${widget.survey.id} with ${formattedAnswers.length} answers');
+    debugPrint(
+        '[SURVEY DETAIL] Submitting survey ${widget.survey.id} with ${formattedAnswers.length} answers');
 
     try {
       final result = await _apiClient.submitSurveyResponse(
@@ -294,79 +367,81 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
 
       debugPrint('[SURVEY DETAIL] Submit result: $result');
 
+      if (result?['alreadySubmitted'] == true) {
+        await prefs.setString(
+          'gir_survey_completed_time_${widget.survey.id}',
+          DateTime.now().toIso8601String(),
+        );
+        setState(() {
+          _isSubmitting = false;
+          _alreadySubmitted = true;
+        });
+        if (!mounted) return;
+        Navigator.of(context).pop(true);
+        return;
+      }
+
       if (result == null || result['success'] != true) {
-        final error = result?['error']?.toString() ?? 'Please provide correct details and try again.';
+        final error = result?['error']?.toString() ??
+            'Please provide correct details and try again.';
         if (error.toLowerCase().contains('already submitted') ||
             error.toLowerCase().contains('already responded')) {
-          await prefs.setString('gir_survey_completed_time_${widget.survey.id}', DateTime.now().toIso8601String());
+          await prefs.setString('gir_survey_completed_time_${widget.survey.id}',
+              DateTime.now().toIso8601String());
           setState(() {
             _isSubmitting = false;
             _alreadySubmitted = true;
           });
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('A response is already recorded for this National ID. No new response was created.')),
-          );
+          Navigator.of(context).pop(true);
           return;
         }
         setState(() => _isSubmitting = false);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        _showSubmissionFailure(error);
         return;
       }
 
-      await prefs.setString('gir_survey_completed_time_${widget.survey.id}', DateTime.now().toIso8601String());
+      await prefs.setString('gir_survey_completed_time_${widget.survey.id}',
+          DateTime.now().toIso8601String());
 
       setState(() => _isSubmitting = false);
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFF424242),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white, size: 24),
-              SizedBox(width: 10),
-              Text('Survey Submitted', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          content: const Text(
-            'Your response has been submitted and recorded successfully.',
-            style: TextStyle(color: Color(0xFFD0D0D0), fontSize: 14),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE5E5E5),
-                foregroundColor: const Color(0xFF2A2A2A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: const Text('Return to Survey Directory', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      );
+      Navigator.of(context).pop(true);
     } catch (e) {
       debugPrint('[SURVEY DETAIL] Submit error: $e');
       setState(() => _isSubmitting = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Submission failed: $e'),
-          backgroundColor: const Color(0xFF505050),
-          duration: const Duration(seconds: 4),
-        ),
+      _showSubmissionFailure(
+        'Could not connect to the server. Your response was not submitted. Check your connection and try again.',
       );
     }
+  }
+
+  void _showSubmissionFailure(String message) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF424242),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          'Response not submitted',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Color(0xFFD0D0D0), height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Review and retry'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -378,7 +453,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
         elevation: 0,
         title: Text(
           widget.survey.title,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
         ),
         centerTitle: true,
       ),
@@ -392,7 +468,9 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
               )
             : (_isFlaggedCheat
                 ? _buildNoSurveysAvailableView()
-                : (!_isVerified ? _buildPreVerificationView() : _buildSurveyQuestionsView())),
+                : (!_isVerified
+                    ? _buildPreVerificationView()
+                    : _buildSurveyQuestionsView())),
       ),
     );
   }
@@ -411,12 +489,16 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                 color: Color(0xFF424242),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.assignment_late_outlined, size: 42, color: Color(0xFFB8B8B8)),
+              child: const Icon(Icons.assignment_late_outlined,
+                  size: 42, color: Color(0xFFB8B8B8)),
             ),
             const SizedBox(height: 20),
             const Text(
               'No Surveys Available',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -430,9 +512,11 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE5E5E5),
                 foregroundColor: const Color(0xFF2A2A2A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
               ),
-              child: const Text('Back to Surveys', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Back to Surveys',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -458,21 +542,28 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
               children: [
                 Text(
                   'Identity Verification',
-                  style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 24),
-
-          const Text('Full Name · as printed on ID', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+          const Text('Full Name · as printed on ID',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           _buildPillInput(controller: _voterNameController, hint: ''),
-
           const SizedBox(height: 16),
-
-          const Text('National ID Number · 5–12 digits only', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+          const Text('National ID Number · 5–12 digits only',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           _buildPillInput(
             controller: _voterIdController,
@@ -483,10 +574,12 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
               LengthLimitingTextInputFormatter(12),
             ],
           ),
-
           const SizedBox(height: 16),
-
-          const Text('County · choose one', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+          const Text('County · choose one',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Container(
             height: 50,
@@ -498,34 +591,41 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedCounty,
-                hint: const Text('Select your county', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 14)),
+                hint: const Text('Select your county',
+                    style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 14)),
                 dropdownColor: const Color(0xFF505050),
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                items: _kenyaCounties.map((county) => DropdownMenuItem(
-                  value: county,
-                  child: Text('$county County', style: const TextStyle(color: Colors.white, fontSize: 14)),
-                )).toList(),
+                items: _kenyaCounties
+                    .map((county) => DropdownMenuItem(
+                          value: county,
+                          child: Text('$county County',
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 14)),
+                        ))
+                    .toList(),
                 onChanged: (value) => setState(() => _selectedCounty = value),
               ),
             ),
           ),
-
           const SizedBox(height: 16),
-
-          const Text('Date of Birth · YYYY-MM-DD', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+          const Text('Date of Birth · YYYY-MM-DD',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           _buildPillInput(
             controller: _dobController,
             hint: 'Select date',
             readOnly: true,
             onTap: _pickDob,
-            prefixIcon: const Icon(Icons.calendar_today_outlined, color: Color(0xFFB8B8B8), size: 20),
-            suffixIcon: const Icon(Icons.calendar_month, color: Colors.white, size: 22),
+            prefixIcon: const Icon(Icons.calendar_today_outlined,
+                color: Color(0xFFB8B8B8), size: 20),
+            suffixIcon:
+                const Icon(Icons.calendar_month, color: Colors.white, size: 22),
           ),
-
           const SizedBox(height: 32),
-
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -535,9 +635,14 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                 backgroundColor: const Color(0xFFE5E5E5),
                 foregroundColor: const Color(0xFF2A2A2A),
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25)),
               ),
-              child: const Text('Verify & Continue', style: TextStyle(color: Color(0xFF2A2A2A), fontSize: 15, fontWeight: FontWeight.bold)),
+              child: const Text('Verify & Continue',
+                  style: TextStyle(
+                      color: Color(0xFF2A2A2A),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -552,25 +657,37 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ...widget.survey.questions.map((q) => _buildQuestionCard(q)),
-
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: (_isSubmitting || _alreadySubmitted) ? null : _submitSurvey,
+              onPressed:
+                  (_isSubmitting || _alreadySubmitted) ? null : _submitSurvey,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE5E5E5),
                 foregroundColor: const Color(0xFF2A2A2A),
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25)),
               ),
               child: _alreadySubmitted
-                  ? const Text('Already Submitted', style: TextStyle(color: Color(0xFF2A2A2A), fontSize: 15, fontWeight: FontWeight.bold))
+                  ? const Text('Already Submitted',
+                      style: TextStyle(
+                          color: Color(0xFF2A2A2A),
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold))
                   : _isSubmitting
-                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5))
-                  : const Text('Submit Survey Answers', style: TextStyle(color: Color(0xFF2A2A2A), fontSize: 15, fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                              color: Colors.black, strokeWidth: 2.5))
+                      : const Text('Submit Survey Answers',
+                          style: TextStyle(
+                              color: Color(0xFF2A2A2A),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -598,10 +715,10 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
         children: [
           Text(
             'Q${q.index + 1}. ${q.questionText}',
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 14),
-
           if (questionType != 'text' && (options.isNotEmpty || isRating)) ...[
             if (isRating) ...[
               Row(
@@ -609,14 +726,24 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                 children: options.map((opt) {
                   final isSelected = _answers[q.id]?.toString() == opt;
                   return GestureDetector(
-                    onTap: () => setState(() => _answers[q.id] = int.tryParse(opt) ?? opt),
+                    onTap: () => setState(
+                        () => _answers[q.id] = int.tryParse(opt) ?? opt),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFE5E5E5) : const Color(0xFF505050),
+                        color: isSelected
+                            ? const Color(0xFFE5E5E5)
+                            : const Color(0xFF505050),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(opt, style: TextStyle(color: isSelected ? const Color(0xFF2A2A2A) : Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: Text(opt,
+                          style: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFF2A2A2A)
+                                  : Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12)),
                     ),
                   );
                 }).toList(),
@@ -634,16 +761,20 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _answers[q.id] as String?,
-                    hint: const Text('Select an option...', style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 14)),
+                    hint: const Text('Select an option...',
+                        style:
+                            TextStyle(color: Color(0xFFB8B8B8), fontSize: 14)),
                     dropdownColor: const Color(0xFF505050),
                     isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                    icon:
+                        const Icon(Icons.arrow_drop_down, color: Colors.white),
                     items: options.map((opt) {
                       return DropdownMenuItem<String>(
                         value: opt,
                         child: Text(
                           opt,
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13),
                           overflow: TextOverflow.ellipsis,
                         ),
                       );
@@ -661,17 +792,27 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                   onTap: () => setState(() => _answers[q.id] = opt),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF606060) : const Color(0xFF505050),
+                      color: isSelected
+                          ? const Color(0xFF606060)
+                          : const Color(0xFF505050),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: isSelected ? Colors.white : Colors.transparent, width: isSelected ? 1.5 : 0),
+                      border: Border.all(
+                          color: isSelected ? Colors.white : Colors.transparent,
+                          width: isSelected ? 1.5 : 0),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: Text(opt, style: const TextStyle(color: Colors.white, fontSize: 14))),
-                        if (isSelected) const Icon(Icons.check, size: 18, color: Colors.white),
+                        Expanded(
+                            child: Text(opt,
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 14))),
+                        if (isSelected)
+                          const Icon(Icons.check,
+                              size: 18, color: Colors.white),
                       ],
                     ),
                   ),
@@ -729,7 +870,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                   cursorColor: Colors.white,
                   decoration: InputDecoration(
                     hintText: hint,
-                    hintStyle: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 14),
+                    hintStyle:
+                        const TextStyle(color: Color(0xFFB8B8B8), fontSize: 14),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,

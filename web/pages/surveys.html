@@ -900,6 +900,8 @@
         <!-- Dynamic question steps injected here -->
       </div>
 
+      <div id="survey-submit-message" role="alert" style="display:none; margin:-8px 0 18px; padding:12px 14px; border:1px solid rgba(220,90,90,0.55); border-radius:12px; color:#8f2020; background:#fff0f0; font-size:13px; font-weight:700; line-height:1.45;"></div>
+
       <!-- Action Navigation Buttons -->
       <div id="wizard-actions" style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(229,229,229,0.18); padding-top:18px;">
         <button type="button" id="prev-step-btn" style="visibility:hidden; background:transparent; border:none; color:var(--silver); opacity:0.75; font-weight:700; font-size:13px; cursor:pointer;">&larr; Back</button>
@@ -1011,6 +1013,10 @@
       return !!getCompletedSurveyData(surveyId);
     }
 
+    function getAvailableSurveys() {
+      return allSurveys.filter(survey => !isSurveyCompleted(survey.id));
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       App.injectIcons();
       setupFilters();
@@ -1033,12 +1039,9 @@
         const res = await fetch(`${API_BASE}/surveys?live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load surveys");
         allSurveys = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-        
-        document.getElementById('active-surveys-pill').textContent = `${allSurveys.length} Live Surveys`;
-        renderSurveys(allSurveys);
-
-        // Asynchronously sync completions with backend DB for logged in or session voters
-        verifyCompletedSurveysWithDb();
+        await verifyCompletedSurveysWithDb();
+        document.getElementById('active-surveys-pill').textContent = `${getAvailableSurveys().length} Live Surveys`;
+        renderSurveys(getAvailableSurveys());
       } catch (err) {
         console.warn('Surveys fetch status:', err);
         grid.innerHTML = `
@@ -1053,44 +1056,41 @@
 
     async function verifyCompletedSurveysWithDb() {
       const { userId, voterKey } = getRespondentIdentity();
-      let updated = false;
-
-      for (const s of allSurveys) {
-        if (!isSurveyCompleted(s.id)) {
-          try {
-            const params = new URLSearchParams();
-            if (userId) params.append('userId', userId);
-            if (voterKey) params.append('voterKey', voterKey);
-
-            const statusToken = localStorage.getItem('gir_token');
-            const res = await fetch(`${API_BASE}/surveys/${s.id}/response-status?${params.toString()}`, {
-              headers: statusToken ? { 'Authorization': `Bearer ${statusToken}` } : {}
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data.hasResponded) {
-                saveCompletedSurveyData(s.id, {
-                  completed: true,
-                  surveyId: s.id,
-                  receiptHash: data.receiptHash,
-                  merkleLeafIndex: data.merkleLeafIndex,
-                  timestamp: data.timestamp,
-                  answers: data.answers || [],
-                  userId: data.userId,
-                  voterPseudonym: data.voterPseudonym
-                });
-                updated = true;
-              }
-            }
-          } catch (e) {
-            // Ignore offline network error
-          }
+      const statusToken = localStorage.getItem('gir_token');
+      const statuses = await Promise.all(allSurveys.map(async survey => {
+        try {
+          const params = new URLSearchParams();
+          if (userId) params.append('userId', userId);
+          if (voterKey) params.append('voterKey', voterKey);
+          const res = await fetch(`${API_BASE}/surveys/${survey.id}/response-status?${params.toString()}`, {
+            headers: statusToken ? { 'Authorization': `Bearer ${statusToken}` } : {}
+          });
+          if (!res.ok) return null;
+          return await res.json();
+        } catch (e) {
+          return null;
         }
-      }
+      }));
 
-      if (updated) {
-        renderSurveys(allSurveys);
-      }
+      statuses.forEach((data, index) => {
+        const survey = allSurveys[index];
+        if (!data || typeof data.hasResponded !== 'boolean') return;
+        if (data.hasResponded) {
+          saveCompletedSurveyData(survey.id, {
+            completed: true,
+            surveyId: survey.id,
+            receiptHash: data.receiptHash,
+            merkleLeafIndex: data.merkleLeafIndex,
+            timestamp: data.timestamp,
+            answers: data.answers || [],
+            userId: data.userId,
+            voterPseudonym: data.voterPseudonym
+          });
+        } else {
+          localStorage.removeItem('gir_survey_completed_' + survey.id);
+          sessionStorage.removeItem('gir_survey_completed_' + survey.id);
+        }
+      });
     }
 
     let currentFilteredSurveys = [];
@@ -1107,7 +1107,7 @@
       if (!currentFilteredSurveys || currentFilteredSurveys.length === 0) {
         grid.innerHTML = `
           <div style="grid-column:1/-1; padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
-            No active surveys match this audience filter.
+            ${getAvailableSurveys().length === 0 ? 'No surveys available. Check back again tomorrow.' : 'No active surveys match this audience filter.'}
           </div>
         `;
         if (pagContainer) pagContainer.innerHTML = '';
@@ -1126,8 +1126,6 @@
         const org = rawOrg.replace(/^Verified\s+/, '');
         const audience = s.targetAudience || 'General Public';
         const initials = org.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
-        const completed = isSurveyCompleted(s.id);
-
         return `
           <div class="survey-card" id="survey-card-${s.id}">
             <div>
@@ -1143,15 +1141,9 @@
                   </div>
                 </div>
 
-                ${completed ? `
-                  <span class="survey-completed-pill">
-                    <span data-icon="checkCircle"></span> Done
-                  </span>
-                ` : `
-                  <span style="font-size:11px; font-weight:800; color:var(--silver); opacity:0.7; border:1px solid rgba(229,229,229,0.25); padding:3px 10px; border-radius:100px;">
-                    ${s.plan ? s.plan.toUpperCase() : 'PUBLIC'}
-                  </span>
-                `}
+                <span style="font-size:11px; font-weight:800; color:var(--silver); opacity:0.7; border:1px solid rgba(229,229,229,0.25); padding:3px 10px; border-radius:100px;">
+                  ${s.plan ? s.plan.toUpperCase() : 'PUBLIC'}
+                </span>
               </div>
 
               <!-- Target Audience Pill -->
@@ -1188,15 +1180,9 @@
                 <span data-icon="share"></span> Share Link
               </button>
 
-              ${completed ? `
-                <button class="btn-completed-survey" onclick="showPreviousActionModal('${s.id}')">
-                  <span data-icon="checkCircle"></span> View Submission
-                </button>
-              ` : `
-                <button class="btn-take-survey" onclick="startSurveyTaker('${s.id}')">
-                  Take Survey &rarr;
-                </button>
-              `}
+              <button class="btn-take-survey" onclick="startSurveyTaker('${s.id}')">
+                Take Survey &rarr;
+              </button>
             </div>
           </div>
         `;
@@ -1249,11 +1235,11 @@
 
           const filter = pill.dataset.audience;
           if (filter === 'all') {
-            renderSurveys(allSurveys);
+            renderSurveys(getAvailableSurveys());
             return;
           }
 
-          const filtered = allSurveys.filter(s => {
+          const filtered = getAvailableSurveys().filter(s => {
             const aud = (s.targetAudience || '').toLowerCase();
             const track = (s.track || '').toLowerCase();
             if (filter === 'patients') return aud.includes('patient') || aud.includes('health') || track.includes('health');
@@ -1277,7 +1263,7 @@
 
       searchInput.addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase();
-        const filtered = allSurveys.filter(s => 
+        const filtered = getAvailableSurveys().filter(s =>
           s.title.toLowerCase().includes(q) ||
           (s.description || '').toLowerCase().includes(q) ||
           (s.organizationName || '').toLowerCase().includes(q) ||
@@ -1364,7 +1350,7 @@
       const s = allSurveys.find(item => item.id.toLowerCase() === id.toLowerCase());
       if (s) {
         if (isSurveyCompleted(s.id)) {
-          showPreviousActionModal(s.id);
+          showSurveyCompletionNotice(s.id);
         } else {
           startSurveyTaker(s.id);
         }
@@ -1374,92 +1360,27 @@
     }
 
     // ==========================================
-    // PREVIOUS ACTION & RETAKE PREVENTION
+    // Completed surveys are removed from the directory. Keep direct links quiet.
     // ==========================================
-    function showPreviousActionModal(surveyId, justSubmitted = false) {
+    function showSurveyCompletionNotice(surveyId, justSubmitted = false) {
       const s = allSurveys.find(item => item.id === surveyId);
       if (!s) return;
+      closeSurveyTakerModal();
+      App.showToast(justSubmitted ? 'Submitted!' : 'Survey already submitted.', justSubmitted ? 'success' : 'info');
+    }
 
-      currentSurvey = s;
-      sessionStorage.setItem('gir_last_survey_opened', surveyId);
+    function showSurveySubmissionFailure(message) {
+      const banner = document.getElementById('survey-submit-message');
+      if (!banner) return;
+      banner.textContent = `Response not submitted. ${message}`;
+      banner.style.display = 'block';
+    }
 
-      const completedData = getCompletedSurveyData(surveyId) || {};
-      const modal = document.getElementById('survey-taker-modal');
-      const container = document.getElementById('survey-step-content');
-      const progressText = document.getElementById('wizard-progress-text');
-      const progressBar = document.getElementById('survey-progress-bar');
-      const actionsBar = document.getElementById('wizard-actions');
-
-      document.getElementById('survey-taker-title').textContent = s.title;
-      const pubOrg = (s.organizationName || 'Organization').replace(/^Verified\s+/, '');
-      document.getElementById('survey-taker-publisher').textContent = `Published by ${pubOrg} • ${s.track}`;
-      document.getElementById('survey-taker-audience-badge').innerHTML = `
-        <span style="color:var(--silver); display:inline-flex; align-items:center; gap:6px;">
-          <span data-icon="checkCircle"></span> Responses Officially Recorded &amp; Sealed
-        </span>
-      `;
-
-      progressText.textContent = 'Survey Completed (Retakes Prohibited)';
-      progressBar.style.width = '100%';
-      actionsBar.style.display = 'none';
-
-      const timestampStr = completedData.timestamp || (completedData.alreadyRecorded ? 'Already recorded' : 'Recorded in Ledger');
-      const respondentKey = completedData.userId || completedData.voterPseudonym || getRespondentIdentity().voterKey;
-
-      container.innerHTML = `
-        <div style="text-align:center; padding:16px 0;">
-          <div style="width:68px; height:68px; border-radius:50%; background:rgba(229,229,229,0.15); color:var(--silver); display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto; border:2px solid var(--silver);">
-            <span data-icon="checkCircle" style="transform:scale(1.8);"></span>
-          </div>
-
-          <h3 style="font-family:var(--font-display); font-size:23px; font-weight:900; color:var(--silver); margin:0 0 8px 0; letter-spacing:-0.02em;">
-            ${completedData.alreadyRecorded ? 'A Response Is Already Recorded' : (justSubmitted ? 'Survey Submitted Successfully' : 'You Have Already Completed This Survey')}
-          </h3>
-          <p style="font-size:14px; color:var(--silver); opacity:0.8; max-width:460px; margin:0 auto 24px auto; line-height:1.55;">
-            ${completedData.alreadyRecorded ? 'A response is already recorded for this National ID. No new response was created.' : (justSubmitted ? 'Your response has been submitted and recorded successfully.' : 'Your responses were previously recorded and confirmed. Retaking this survey is not permitted in order to safeguard research integrity.')}
-          </p>
-
-          <!-- Cryptographic Receipt Box -->
-          <div style="background:rgba(229,229,229,0.08); border:1.5px solid rgba(229,229,229,0.22); border-radius:18px; padding:20px; text-align:left; margin-bottom:24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(229,229,229,0.15); padding-bottom:10px;">
-              <span style="font-size:11px; font-weight:800; color:var(--silver); opacity:0.75; text-transform:uppercase; letter-spacing:0.06em;">
-                Official Submission Receipt
-              </span>
-              <span class="survey-completed-pill" style="font-size:11px; padding:2px 10px;">
-                CONFIRMED
-              </span>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
-              <span style="color:var(--silver); opacity:0.7;">Submission Time:</span>
-              <strong style="color:var(--silver); font-family:var(--font-mono);">${escapeSurveyHtml(timestampStr)}</strong>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
-              <span style="color:var(--silver); opacity:0.7;">Voter ID / Session:</span>
-              <strong style="color:var(--silver); font-family:var(--font-mono);">${escapeSurveyHtml(respondentKey)}</strong>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
-              <span style="color:var(--silver); opacity:0.7;">Recorded Status:</span>
-              <strong style="color:var(--silver); font-family:var(--font-mono);">&#10003; Successfully Stored</strong>
-            </div>
-          </div>
-
-          <!-- Return Actions -->
-          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-            <button type="button" class="btn-take-survey" style="padding:12px 32px; font-size:14.5px;" onclick="closeSurveyTakerModal()">
-              Return to Survey Directory
-            </button>
-            <button type="button" class="btn-share-survey" onclick="closeSurveyTakerModal(); openShareModal('${s.id}');">
-              <span data-icon="share"></span> Share Survey Link
-            </button>
-          </div>
-        </div>
-      `;
-
-      modal.classList.add('active');
-      App.injectIcons();
+    function clearSurveySubmissionFailure() {
+      const banner = document.getElementById('survey-submit-message');
+      if (!banner) return;
+      banner.textContent = '';
+      banner.style.display = 'none';
     }
 
     // ==========================================
@@ -1475,13 +1396,14 @@
 
       // STRICT RETAKE PREVENTION GUARD
       if (isSurveyCompleted(surveyId)) {
-        showPreviousActionModal(surveyId);
+        showSurveyCompletionNotice(surveyId);
         return;
       }
 
       currentSurvey = s;
       currentStepIndex = 0;
       userAnswers = {};
+      clearSurveySubmissionFailure();
 
       sessionStorage.setItem('gir_last_survey_opened', surveyId);
 
@@ -1586,7 +1508,7 @@
 
       } else {
         // Fallback completion view
-        showPreviousActionModal(currentSurvey.id);
+        showSurveyCompletionNotice(currentSurvey.id);
       }
     }
 
@@ -1673,20 +1595,22 @@
 
       const missingAnswer = answersList.some(item => item.answer == null || String(item.answer).trim() === '');
       if (missingAnswer || answersList.length !== currentSurvey.questions.length) {
-        App.showToast('Please answer every survey question before submitting.', 'error');
+        showSurveySubmissionFailure('Please answer every survey question before submitting.');
         if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
         return;
       }
       if (voterName.trim().length < 3 || !/^\d{5,12}$/.test(voterIdNumber) || !county || !(verified.dob || localStorage.getItem('gir_dob'))) {
-        App.showToast('Please provide correct details: full name, 5–12 digit National ID, county, and date of birth are required.', 'error');
+        showSurveySubmissionFailure('Please provide a valid full name, 5–12 digit National ID, county, and date of birth.');
         if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
         return;
       }
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(accuracy) || accuracy <= 0 || accuracy > 500) {
-        App.showToast('Please provide correct details: allow precise device location (within 500 metres) and try again.', 'error');
+        showSurveySubmissionFailure('Allow precise device location (within 500 metres) and try again.');
         if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
         return;
       }
+
+      clearSurveySubmissionFailure();
 
       try {
         const payload = {
@@ -1738,15 +1662,14 @@
           saveCompletedSurveyData(currentSurvey.id, savedData);
 
           currentSurvey.totalResponses = (currentSurvey.totalResponses || 0) + 1;
-          renderSurveys(allSurveys);
+          document.getElementById('active-surveys-pill').textContent = `${getAvailableSurveys().length} Live Surveys`;
+          renderSurveys(getAvailableSurveys());
 
           if (nextBtn) {
             nextBtn.textContent = 'Submitted!';
           }
 
-          // Force display previous action / submission receipt view
-          showPreviousActionModal(currentSurvey.id, true);
-          App.showToast('Submitted!', 'success');
+          showSurveyCompletionNotice(currentSurvey.id, true);
         } else {
           const errData = await res.json().catch(() => ({}));
           if (res.status === 409 && /already (submitted|completed)/i.test(String(errData.detail || ''))) {
@@ -1759,11 +1682,11 @@
               voterPseudonym: assignedUserId
             };
             saveCompletedSurveyData(currentSurvey.id, fallbackData);
-            renderSurveys(allSurveys);
-            showPreviousActionModal(currentSurvey.id);
-            App.showToast('A response is already recorded for this National ID.', 'info');
+            document.getElementById('active-surveys-pill').textContent = `${getAvailableSurveys().length} Live Surveys`;
+            renderSurveys(getAvailableSurveys());
+            showSurveyCompletionNotice(currentSurvey.id);
           } else {
-            App.showToast(errData.detail || 'Could not record response', 'error');
+            showSurveySubmissionFailure(errData.detail || 'Could not record the response. Please try again.');
             if (nextBtn) {
               nextBtn.disabled = false;
               nextBtn.textContent = 'Submit Official Responses';
@@ -1772,7 +1695,7 @@
         }
       } catch (err) {
         console.error(err);
-        App.showToast('Please provide correct details and check your connection before submitting.', 'error');
+        showSurveySubmissionFailure('Could not connect to the server. Check your connection and try again.');
         if (nextBtn) {
           nextBtn.disabled = false;
           nextBtn.textContent = 'Submit Official Responses';

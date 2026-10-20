@@ -56,7 +56,8 @@ class ApiClient {
     final existing = prefs.getString('gir_voter_key');
     if (existing != null && existing.trim().isNotEmpty) return existing;
     final random = Random.secure();
-    final key = 'Voter-${List<int>.generate(16, (_) => random.nextInt(256)).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join().toUpperCase()}';
+    final key =
+        'Voter-${List<int>.generate(16, (_) => random.nextInt(256)).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join().toUpperCase()}';
     await prefs.setString('gir_voter_key', key);
     return key;
   }
@@ -132,11 +133,21 @@ class ApiClient {
           continue;
         }
         final error = json.decode(response.body);
+        final detail = error is Map<String, dynamic>
+            ? (error['detail']?.toString() ?? 'Could not record vote.')
+            : 'Could not record vote.';
+        if (response.statusCode == 409 &&
+            detail.toLowerCase().contains('already voted')) {
+          return {
+            'success': false,
+            'alreadyVoted': true,
+            'statusCode': response.statusCode,
+          };
+        }
         return {
           'success': false,
-          'error': error is Map<String, dynamic>
-              ? (error['detail']?.toString() ?? 'Could not record vote.')
-              : 'Could not record vote.',
+          'statusCode': response.statusCode,
+          'error': detail,
         };
       } catch (_) {}
     }
@@ -148,7 +159,8 @@ class ApiClient {
 
   /// Check a voter's ballot status without putting their National ID in a URL.
   Future<Map<String, dynamic>?> getVoteStatus(
-      String pollId, String voterIdNumber, {String? voterKey}) async {
+      String pollId, String voterIdNumber,
+      {String? voterKey}) async {
     final headers = await _jsonHeaders();
     for (final url in _orderedBaseUrls) {
       try {
@@ -158,7 +170,8 @@ class ApiClient {
               headers: headers,
               body: json.encode({
                 if (voterIdNumber.isNotEmpty) 'voterIdNumber': voterIdNumber,
-                if (voterKey != null && voterKey.isNotEmpty) 'voterKey': voterKey,
+                if (voterKey != null && voterKey.isNotEmpty)
+                  'voterKey': voterKey,
               }),
             )
             .timeout(const Duration(seconds: 4));
@@ -170,7 +183,8 @@ class ApiClient {
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('gir_token');
           return {
-            'error': 'Your sign-in session expired. Sign out and sign in again before voting.',
+            'error':
+                'Your sign-in session expired. Sign out and sign in again before voting.',
             'statusCode': 401,
           };
         }
@@ -178,7 +192,8 @@ class ApiClient {
           final error = json.decode(response.body);
           return {
             'error': error is Map<String, dynamic>
-                ? (error['detail']?.toString() ?? 'Your account cannot vote right now.')
+                ? (error['detail']?.toString() ??
+                    'Your account cannot vote right now.')
                 : 'Your account cannot vote right now.',
             'statusCode': 403,
           };
@@ -208,6 +223,35 @@ class ApiClient {
     }
     // Never display stale bundled/demo data when the live API is unavailable.
     return [];
+  }
+
+  /// Return the server's completion state for this respondent without exposing
+  /// their identity in a URL. The signed-in account is resolved from the
+  /// optional bearer token; anonymous responses are matched by voter key.
+  Future<bool?> hasRespondedToSurvey(String surveyId,
+      {String? voterKey}) async {
+    final headers = await _jsonHeaders();
+    for (final baseUrl in _orderedBaseUrls) {
+      try {
+        final uri = Uri.parse('$baseUrl/surveys/$surveyId/response-status')
+            .replace(queryParameters: {
+          if (voterKey != null && voterKey.trim().isNotEmpty)
+            'voterKey': voterKey.trim(),
+        });
+        final response = await http
+            .get(uri, headers: headers)
+            .timeout(const Duration(seconds: 4));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = baseUrl;
+          final data = json.decode(response.body) as Map<String, dynamic>;
+          return data['hasResponded'] == true;
+        }
+        if (response.statusCode >= 400 && response.statusCode < 500) {
+          return null;
+        }
+      } catch (_) {}
+    }
+    return null;
   }
 
   /// Fetch single survey with full questions
@@ -241,9 +285,10 @@ class ApiClient {
     String? voterPseudonym,
   }) async {
     final payload = {
-      'voterPseudonym': (voterPseudonym != null && voterPseudonym.trim().isNotEmpty)
-          ? voterPseudonym.trim()
-          : await getOrCreateVoterKey(),
+      'voterPseudonym':
+          (voterPseudonym != null && voterPseudonym.trim().isNotEmpty)
+              ? voterPseudonym.trim()
+              : await getOrCreateVoterKey(),
       'answers': answers,
       'voterName': voterName,
       'voterIdNumber': voterIdNumber,
@@ -254,7 +299,8 @@ class ApiClient {
       'accuracy': accuracy,
     };
 
-    debugPrint('[SURVEY SUBMIT] Submitting verified survey response: $surveyId');
+    debugPrint(
+        '[SURVEY SUBMIT] Submitting verified survey response: $surveyId');
 
     final headers = await _jsonHeaders();
     String? lastError;
@@ -268,7 +314,8 @@ class ApiClient {
               body: json.encode(payload),
             )
             .timeout(const Duration(seconds: 12));
-        if (response.statusCode == 401 && headers.containsKey('Authorization')) {
+        if (response.statusCode == 401 &&
+            headers.containsKey('Authorization')) {
           response = await http
               .post(
                 Uri.parse('$url/surveys/$surveyId/submit'),
@@ -287,6 +334,23 @@ class ApiClient {
         lastError = responseBody is Map<String, dynamic>
             ? responseBody['detail']?.toString()
             : null;
+        if (response.statusCode == 409 &&
+            (lastError ?? '').toLowerCase().contains('already submitted')) {
+          return {
+            'success': false,
+            'alreadySubmitted': true,
+            'statusCode': response.statusCode,
+          };
+        }
+        // Validation and other client errors cannot be repaired by retrying
+        // the same request against another API replica.
+        if (response.statusCode >= 400 && response.statusCode < 500) {
+          return {
+            'success': false,
+            'statusCode': response.statusCode,
+            'error': lastError ?? 'Could not record response.',
+          };
+        }
       } catch (e) {
         debugPrint('[SURVEY SUBMIT] Error on $url: $e');
       }
@@ -294,7 +358,8 @@ class ApiClient {
     debugPrint('[SURVEY SUBMIT] Submission failed; no receipt was created.');
     return {
       'success': false,
-      'error': lastError ?? 'Please check your connection. The response was not recorded.',
+      'error': lastError ??
+          'Please check your connection. The response was not recorded.',
     };
   }
 
@@ -310,7 +375,8 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
-    String lastError = 'Could not sign in. Check your connection and try again.';
+    String lastError =
+        'Could not sign in. Check your connection and try again.';
     for (final url in baseUrls) {
       try {
         final response = await http
@@ -327,12 +393,15 @@ class ApiClient {
         if (response.statusCode == 401) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('gir_token');
-          lastError = 'Email or password is incorrect. Check your details and try again.';
+          lastError =
+              'Email or password is incorrect. Check your details and try again.';
         }
-        lastError = _friendlyAuthError(response.body, response.statusCode, lastError);
+        lastError =
+            _friendlyAuthError(response.body, response.statusCode, lastError);
         if (response.statusCode < 500) break;
       } catch (_) {
-        lastError = 'Could not reach the sign-in server. Check your connection and try again.';
+        lastError =
+            'Could not reach the sign-in server. Check your connection and try again.';
       }
     }
     throw Exception(lastError);
@@ -348,7 +417,8 @@ class ApiClient {
     String plan = 'free',
     String organization = 'Independent',
   }) async {
-    String lastError = 'Could not create your account. Check your connection and try again.';
+    String lastError =
+        'Could not create your account. Check your connection and try again.';
     for (final url in baseUrls) {
       try {
         final response = await http
@@ -372,12 +442,15 @@ class ApiClient {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
         }
-        lastError = _friendlyAuthError(response.body, response.statusCode, lastError);
+        lastError =
+            _friendlyAuthError(response.body, response.statusCode, lastError);
         if (response.statusCode < 500) break;
       } on http.ClientException {
-        lastError = 'Could not reach the registration server. Check your connection and try again.';
+        lastError =
+            'Could not reach the registration server. Check your connection and try again.';
       } catch (_) {
-        lastError = 'Could not reach the registration server. Check your connection and try again.';
+        lastError =
+            'Could not reach the registration server. Check your connection and try again.';
       }
     }
     throw Exception(lastError);
@@ -392,25 +465,43 @@ class ApiClient {
       detail = null;
     }
     final raw = detail is List
-        ? detail.map((item) => item is Map ? item['msg']?.toString() ?? '' : item.toString()).join(' ')
+        ? detail
+            .map((item) =>
+                item is Map ? item['msg']?.toString() ?? '' : item.toString())
+            .join(' ')
         : detail?.toString() ?? '';
     final message = raw.toLowerCase();
-    if (statusCode == 409 || message.contains('already registered') || message.contains('already exists') || message.contains('already exist')) {
+    if (statusCode == 409 ||
+        message.contains('already registered') ||
+        message.contains('already exists') ||
+        message.contains('already exist')) {
       return 'An account with this email already exists. Sign in or reset your password.';
     }
-    if (message.contains('password') && (message.contains('12 characters') || message.contains('upper-case') || message.contains('uppercase'))) {
+    if (message.contains('password') &&
+        (message.contains('12 characters') ||
+            message.contains('upper-case') ||
+            message.contains('uppercase'))) {
       return 'Choose a password with at least 12 characters, including uppercase, lowercase, and a number.';
     }
-    if (message.contains('email') && (message.contains('valid') || message.contains('@-sign') || message.contains('value error'))) {
+    if (message.contains('email') &&
+        (message.contains('valid') ||
+            message.contains('@-sign') ||
+            message.contains('value error'))) {
       return 'Enter a valid email address.';
     }
-    if (message.contains('password') && (message.contains('incorrect') || statusCode == 401)) {
+    if (message.contains('password') &&
+        (message.contains('incorrect') || statusCode == 401)) {
       return 'That password does not match this account. Try again or reset your password.';
     }
-    if (statusCode == 401 || message.contains('no account') || message.contains('user not found') || message.contains('not found')) {
+    if (statusCode == 401 ||
+        message.contains('no account') ||
+        message.contains('user not found') ||
+        message.contains('not found')) {
       return 'We could not find an account for that email. Check the address or create an account.';
     }
-    if (message.contains('national') || message.contains('identity') || message.contains('id number')) {
+    if (message.contains('national') ||
+        message.contains('identity') ||
+        message.contains('id number')) {
       return 'Check your ID number. Enter the required digits only.';
     }
     if (message.contains('county') || message.contains('location')) {
@@ -422,8 +513,11 @@ class ApiClient {
     if (message.contains('password') && message.contains('required')) {
       return 'Enter your password to continue.';
     }
-    if (statusCode >= 500) return 'The service is temporarily unavailable. Please try again shortly.';
-    if (raw.isNotEmpty && !message.contains('value error') && !message.contains('field required')) return raw;
+    if (statusCode >= 500)
+      return 'The service is temporarily unavailable. Please try again shortly.';
+    if (raw.isNotEmpty &&
+        !message.contains('value error') &&
+        !message.contains('field required')) return raw;
     return fallback;
   }
 
@@ -720,7 +814,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.18';
+    const currentAppVersion = '2.1.19';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');

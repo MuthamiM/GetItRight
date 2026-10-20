@@ -704,6 +704,7 @@
   <script>
     const API_BASE = window.location.origin + '/api';
     let allPolls = [];
+    const serverVotedPolls = new Map();
     let currentFilterPlan = 'all';
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -719,7 +720,7 @@
         const res = await fetch(`${API_BASE}/polls?live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load polls");
         allPolls = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-
+        await syncAccountPollStatuses();
         renderPollsFeed(allPolls);
       } catch (err) {
         console.error(err);
@@ -729,6 +730,48 @@
           </div>
         `;
       }
+    }
+
+    async function syncAccountPollStatuses() {
+      const token = localStorage.getItem('gir_token');
+      if (!token) return;
+      await Promise.all(allPolls.map(async poll => {
+        try {
+          const response = await fetch(`${API_BASE}/polls/${poll.id}/vote-status`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            cache: 'no-store'
+          });
+          if (!response.ok) return;
+          const status = await response.json();
+          serverVotedPolls.set(poll.id, status);
+          if (status.hasVoted) {
+            lockPollOptions(poll.id, status.optionIndex);
+          } else {
+            localStorage.removeItem('gir_voted_poll_' + poll.id);
+          }
+        } catch (_) {}
+      }));
+    }
+
+    function lockPollOptions(pollId, optionIndex) {
+      const hasOptionIndex = optionIndex !== null && optionIndex !== undefined && optionIndex !== '' &&
+        Number.isInteger(Number(optionIndex)) && Number(optionIndex) >= 0;
+      localStorage.setItem('gir_voted_poll_' + pollId, hasOptionIndex ? String(optionIndex) : 'locked');
+      const card = document.getElementById(`poll-card-${pollId}`);
+      if (!card) return;
+      card.querySelectorAll('.poll-opt-btn').forEach((button, index) => {
+        button.disabled = true;
+        button.style.cursor = 'not-allowed';
+        button.classList.toggle('voted', hasOptionIndex && index === Number(optionIndex));
+        if (hasOptionIndex && index === Number(optionIndex)) {
+          const label = button.querySelector('span');
+          if (label && !label.innerHTML.includes('[Voted]')) {
+            label.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>';
+          }
+        }
+      });
+      const statusEl = document.getElementById(`voted-status-${pollId}`);
+      if (statusEl) statusEl.style.display = 'inline-flex';
     }
 
     function getPollDeadlineDate(p) {
@@ -812,10 +855,12 @@
 
       container.innerHTML = pageItems.map(p => {
         const savedVoteIdx = localStorage.getItem('gir_voted_poll_' + p.id);
-        const hasVoted = savedVoteIdx !== null;
+        const serverStatus = serverVotedPolls.get(p.id);
+        const hasVoted = serverStatus?.hasVoted === true || savedVoteIdx !== null;
 
         const optionsHtml = (p.options || []).map(opt => {
-          const isVotedChoice = hasVoted && String(opt.index) === String(savedVoteIdx);
+          const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : savedVoteIdx;
+          const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(opt.index) === String(selectedVote);
           const votedClass = isVotedChoice ? 'voted' : '';
           return `
             <button class="poll-opt-btn ${votedClass}" ${hasVoted ? 'disabled style="cursor:not-allowed;"' : ''} onclick="submitPollVote('${p.id}', ${opt.index}, this)">
@@ -993,8 +1038,8 @@
           ? await priorVoteResponse.json().catch(() => null)
           : null;
         if (priorVote && priorVote.hasVoted) {
-          App.showToast('This National ID already voted in this poll on the app or website. You can still vote in other polls.', 'error');
-          if (btnEl) btnEl.disabled = true;
+          serverVotedPolls.set(pollId, priorVote);
+          lockPollOptions(pollId, priorVote.optionIndex);
           return;
         }
 
@@ -1010,29 +1055,9 @@
         });
         if (res.ok) {
           const data = await res.json();
-          localStorage.setItem('gir_voted_poll_' + pollId, optionIndex);
+          serverVotedPolls.set(pollId, { hasVoted: true, optionIndex });
+          lockPollOptions(pollId, optionIndex);
           App.showToast('Submitted!', 'success');
-
-          // Highlight selected and lock all options
-          const card = document.getElementById(`poll-card-${pollId}`);
-          if (card) {
-            card.querySelectorAll('.poll-opt-btn').forEach(b => {
-              b.classList.remove('voted');
-              b.disabled = true;
-              b.style.cursor = 'not-allowed';
-            });
-            // Show voted indicator on top right inside card: just words with a tick!
-            const votedStatusEl = document.getElementById(`voted-status-${pollId}`);
-            if (votedStatusEl) {
-              votedStatusEl.style.display = 'inline-flex';
-            }
-
-            // Also add subtle tick to the clicked option in silver
-            const optLabelSpan = btnEl.querySelector('span');
-            if (optLabelSpan && !optLabelSpan.innerHTML.includes('[Voted]')) {
-              optLabelSpan.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>';
-            }
-          }
 
           // Refresh polls data
           const refreshRes = await fetch(`${API_BASE}/polls/${pollId}`);
@@ -1046,6 +1071,11 @@
           }
         } else {
           const errData = await res.json().catch(() => ({}));
+          if (res.status === 409 && /already voted/i.test(String(errData.detail || ''))) {
+            serverVotedPolls.set(pollId, { hasVoted: true, optionIndex: null });
+            lockPollOptions(pollId, null);
+            return;
+          }
           App.showToast(errData.detail || 'Could not record vote', 'error');
           if (btnEl) btnEl.disabled = false;
         }

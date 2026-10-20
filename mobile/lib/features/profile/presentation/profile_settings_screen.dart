@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../core/network/api_client.dart';
 import '../../legal/presentation/legal_dialogs.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
@@ -110,58 +108,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
             ]),
             const SizedBox(height: 24),
-            _buildSectionHeader('ACCOUNT'),
-            const SizedBox(height: 8),
             _buildAccountInformationCard(),
-            const SizedBox(height: 22),
-            _buildSectionHeader('PREFERENCES'),
-            const SizedBox(height: 8),
-            _settingsPanel([
-              _settingsActionRow(
-                icon: Icons.notifications_none_rounded,
-                title: 'Push notifications',
-                subtitle: 'Receive live updates and poll results',
-                trailing: Switch(
-                  value: _notificationsEnabled,
-                  activeColor: const Color(0xFFE5E5E5),
-                  activeTrackColor: const Color(0xFF777777),
-                  inactiveTrackColor: const Color(0xFF404040),
-                  onChanged: _setNotifications,
-                ),
-              ),
-            ]),
-            const SizedBox(height: 22),
-            _buildSectionHeader('APP'),
-            const SizedBox(height: 8),
-            _settingsPanel([
-              _settingsActionRow(
-                icon: Icons.phone_android_rounded,
-                title: 'IcapsQ Official App',
-                subtitle: 'Version 2.1.18 · Build 23',
-                trailing: IconButton(
-                  tooltip: 'Check for updates',
-                  onPressed: _checkUpdateManually,
-                  icon: const Icon(Icons.refresh_rounded,
-                      color: Color(0xFFE5E5E5)),
-                ),
-              ),
-              const Divider(height: 1, color: Color(0xFF606060), indent: 54),
-              _settingsActionRow(
-                icon: Icons.info_outline_rounded,
-                title: 'Terms of Service',
-                trailing: const Icon(Icons.open_in_new_rounded,
-                    color: Color(0xFFB8B8B8), size: 18),
-                onTap: () => LegalDialogs.showTermsOfService(context),
-              ),
-              const Divider(height: 1, color: Color(0xFF606060), indent: 54),
-              _settingsActionRow(
-                icon: Icons.privacy_tip_outlined,
-                title: 'Privacy Policy',
-                trailing: const Icon(Icons.open_in_new_rounded,
-                    color: Color(0xFFB8B8B8), size: 18),
-                onTap: () => LegalDialogs.showPrivacyPolicy(context),
-              ),
-            ]),
             const SizedBox(height: 18),
             const Text('© 2026 IcapsQ. All rights reserved.',
                 textAlign: TextAlign.center,
@@ -171,13 +118,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       ),
     );
   }
-
-  Widget _settingsPanel(List<Widget> children) => Material(
-        color: const Color(0xFF3B3B3B),
-        borderRadius: BorderRadius.circular(18),
-        clipBehavior: Clip.antiAlias,
-        child: Column(children: children),
-      );
 
   Widget _settingsActionRow(
           {required IconData icon,
@@ -200,167 +140,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 style: const TextStyle(color: Color(0xFFB8B8B8), fontSize: 12)),
         trailing: trailing,
       );
-
-  Future<void> _checkUpdateManually() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Checking for latest updates...',
-          style:
-              TextStyle(color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Color(0xFFE5E5E5),
-        duration: Duration(seconds: 1),
-      ),
-    );
-
-    try {
-      final updateInfo = await ApiClient().checkAppUpdate();
-      if (!mounted) return;
-
-      if (updateInfo['update_available'] == true) {
-        _showUpdateDialog(
-          version: updateInfo['latest_version']?.toString() ?? '2.0.0',
-          releaseNotes: updateInfo['release_notes']?.toString(),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'You are using the latest version of IcapsQ (v2.1.18)',
-              style: TextStyle(
-                  color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
-            ),
-            backgroundColor: Color(0xFFE5E5E5),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('Could not reach update server. Please try again later.'),
-            backgroundColor: Color(0xFF424242),
-          ),
-        );
-      }
-    }
-  }
-
-  void _showUpdateDialog({required String version, String? releaseNotes}) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF424242),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF555555),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.system_update_rounded,
-                  color: Color(0xFFE5E5E5), size: 24),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                'Update Available',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF303030),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFF606060)),
-              ),
-              child: Text(
-                'Version $version is now available (Current: v2.1.18)',
-                style: const TextStyle(
-                    color: Color(0xFFE5E5E5),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'What\'s New in this release:',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              releaseNotes ??
-                  '• Instant scroll-to-top navigation\n'
-                      '• Real-time poll vote tallying & animated charts\n'
-                      '• Cryptographic survey receipt verification\n'
-                      '• Offline vote persistence & auto-sync\n'
-                      '• Stability & performance improvements',
-              style: const TextStyle(
-                  color: Color(0xFFD0D0D0), fontSize: 12.5, height: 1.45),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Later',
-                style: TextStyle(
-                    color: Color(0xFFB8B8B8), fontWeight: FontWeight.w600)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Downloading IcapsQ v$version...',
-                    style: const TextStyle(
-                        color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
-                  ),
-                  backgroundColor: const Color(0xFFE5E5E5),
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-              try {
-                final uri = Uri.parse(
-                    'https://icapsq.mftechnologies.org/app-release.apk');
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              } catch (_) {}
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE5E5E5),
-              foregroundColor: const Color(0xFF2A2A2A),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-            ),
-            child: const Text('Update Now',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSectionHeader(String title) {
     return Text(
@@ -414,6 +193,42 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             hint: 'Organization',
           ),
           const SizedBox(height: 5),
+          _buildAccountDivider(),
+          _settingsActionRow(
+            icon: Icons.notifications_none_rounded,
+            title: 'Push notifications',
+            subtitle: 'Receive live updates and poll results',
+            trailing: Switch(
+              value: _notificationsEnabled,
+              activeColor: const Color(0xFFE5E5E5),
+              activeTrackColor: const Color(0xFF777777),
+              inactiveTrackColor: const Color(0xFF404040),
+              onChanged: _setNotifications,
+            ),
+          ),
+          _buildAccountDivider(),
+          _settingsActionRow(
+            icon: Icons.phone_android_rounded,
+            title: 'IcapsQ Official App',
+            subtitle: 'Version 2.1.19 · Build 24',
+            trailing: const SizedBox(width: 4),
+          ),
+          _buildAccountDivider(),
+          _settingsActionRow(
+            icon: Icons.info_outline_rounded,
+            title: 'Terms of Service',
+            trailing: const Icon(Icons.chevron_right_rounded,
+                color: Color(0xFFB8B8B8), size: 22),
+            onTap: () => LegalDialogs.showTermsOfService(context),
+          ),
+          _buildAccountDivider(),
+          _settingsActionRow(
+            icon: Icons.privacy_tip_outlined,
+            title: 'Privacy Policy',
+            trailing: const Icon(Icons.chevron_right_rounded,
+                color: Color(0xFFB8B8B8), size: 22),
+            onTap: () => LegalDialogs.showPrivacyPolicy(context),
+          ),
         ],
       ),
     );
