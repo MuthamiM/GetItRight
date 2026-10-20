@@ -273,9 +273,9 @@
     }
     .poll-vote-layout {
       display: grid;
-      grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       align-items: center;
-      gap: 24px;
+      gap: 14px;
       margin-bottom: 18px;
     }
     .poll-vote-chart-column {
@@ -284,13 +284,14 @@
       align-items: center;
       gap: 10px;
       min-width: 0;
+      width: 100%;
     }
     .poll-vote-pie {
       position: relative;
       display: grid;
       place-items: center;
-      width: 168px;
-      height: 168px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
       box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
       flex-shrink: 0;
@@ -324,17 +325,12 @@
       text-transform: uppercase;
       margin-top: 4px;
     }
-    .poll-chart-caption {
-      color: var(--graphite-300);
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-    }
     .poll-vote-options-group {
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 0;
       min-width: 0;
+      width: 100%;
     }
     .poll-options-heading {
       color: var(--silver);
@@ -345,18 +341,18 @@
     }
     .poll-opt-btn {
       padding: 12px 14px;
-      border-color: color-mix(in srgb, var(--option-accent) 52%, transparent);
+      border-color: rgba(229, 229, 229, 0.25);
     }
     .poll-opt-btn:hover:not(:disabled) {
-      border-color: var(--option-accent);
+      border-color: var(--silver);
       background: rgba(229, 229, 229, 0.12);
     }
     .poll-opt-btn.voted {
-      border-color: var(--option-accent);
-      box-shadow: inset 3px 0 0 var(--option-accent);
+      border-color: var(--silver);
+      box-shadow: inset 3px 0 0 var(--silver);
     }
     .poll-opt-btn .poll-progress-bar-fill {
-      background: color-mix(in srgb, var(--option-accent) 24%, transparent);
+      background: rgba(229, 229, 229, 0.16);
     }
     .poll-option-content {
       position: relative;
@@ -376,16 +372,20 @@
       font-weight: 700;
       overflow-wrap: anywhere;
     }
-    .poll-option-dot {
-      width: 10px;
-      height: 10px;
-      flex: 0 0 10px;
+    .poll-option-number {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
       border-radius: 50%;
-      background: var(--option-accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--option-accent) 18%, transparent);
+      border: 1px solid var(--silver);
+      color: var(--silver);
+      font: 800 11px/1 var(--font-display);
+      box-sizing: border-box;
     }
     .poll-opt-btn.voted .poll-option-name {
-      color: #FFFFFF;
+      color: var(--silver);
     }
     .poll-option-percent {
       flex: 0 0 auto;
@@ -515,12 +515,7 @@
 
     @media (max-width: 620px) {
       .poll-vote-layout {
-        grid-template-columns: minmax(0, 1fr);
         gap: 16px;
-      }
-      .poll-vote-pie {
-        width: 152px;
-        height: 152px;
       }
       .poll-vote-options-group {
         width: 100%;
@@ -1125,15 +1120,14 @@
           const optionIndex = Number.isInteger(Number(opt.index)) ? Number(opt.index) : index;
           const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(optionIndex) === String(selectedVote);
           const votedClass = isVotedChoice ? 'voted' : '';
-          const color = pollOptionColors[index % pollOptionColors.length];
           const votes = getPollOptionVoteCount(opt);
           const percentage = getPollOptionPercent(p, opt);
           return `
-            <button class="poll-opt-btn ${votedClass}" style="--option-accent:${color};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
+            <button class="poll-opt-btn ${votedClass}" style="${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
               <div class="poll-progress-bar-fill" style="width:${percentage}%;"></div>
               <div class="poll-option-content">
                 <span class="poll-option-name option-label">
-                  <span class="poll-option-dot" aria-hidden="true"></span>
+                  <span class="poll-option-number" aria-hidden="true">${index + 1}</span>
                   <span>${opt.label}</span> ${isVotedChoice ? '<span style="font-size:11px;font-weight:800;">[Voted]</span>' : ''}
                 </span>
                 <span class="poll-option-percent option-percent">
@@ -1172,13 +1166,11 @@
                 <div class="poll-vote-pie" id="poll-pie-${p.id}" role="img" aria-label="Live vote distribution for ${p.title}" style="background:${getPollPieGradient(p)};">
                   <div class="poll-vote-pie-center">
                     <strong class="poll-pie-total">${Number(p.totalVotes || 0).toLocaleString()}</strong>
-                    <span class="poll-pie-caption">Votes cast</span>
+                    <span class="poll-pie-caption">Total Votes</span>
                   </div>
                 </div>
-                <div class="poll-chart-caption">Live results by option</div>
               </div>
               <div class="poll-vote-options-group">
-                <div class="poll-options-heading">Select your choice</div>
                 ${optionsHtml}
               </div>
             </div>
