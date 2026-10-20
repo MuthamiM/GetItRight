@@ -197,6 +197,64 @@
       transform: translateY(-4px);
       box-shadow: 0 16px 36px rgba(48, 48, 48, 0.25);
     }
+    .poll-feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .poll-voted-text {
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border: 1px solid rgba(229, 229, 229, 0.55);
+      border-radius: 100px;
+      background: var(--silver);
+      color: var(--charcoal);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .poll-turnout {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid rgba(229, 229, 229, 0.28);
+      border-radius: 10px;
+      background: rgba(229, 229, 229, 0.12);
+      color: var(--silver);
+    }
+    .poll-turnout-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+    .poll-turnout .vote-count {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .poll-turnout-caption {
+      font-size: 10px;
+      opacity: 0.75;
+    }
+    .poll-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      border-top: 1px solid rgba(229,229,229,0.15);
+      padding-top: 14px;
+      color: var(--silver);
+    }
 
     /* ── Poll Option Buttons ── */
     .poll-opt-btn {
@@ -442,7 +500,30 @@
         flex-shrink: 0 !important;
       }
       .poll-feed-card {
-        padding: 20px !important;
+        padding: 17px 15px !important;
+        border-radius: 17px !important;
+      }
+      .poll-feed-header {
+        gap: 8px !important;
+        align-items: flex-start !important;
+      }
+      .poll-voted-text {
+        padding: 6px 8px !important;
+        font-size: 9px !important;
+      }
+      .poll-turnout {
+        padding: 7px 9px !important;
+        gap: 5px !important;
+      }
+      .poll-turnout .vote-count {
+        font-size: 16px !important;
+      }
+      .poll-card-footer {
+        align-items: flex-start !important;
+      }
+      .poll-card-footer .btn-share-poll {
+        padding: 7px 10px !important;
+        font-size: 11px !important;
       }
     }
 
@@ -889,20 +970,16 @@
 
         return `
           <div class="poll-feed-card" id="poll-card-${p.id}">
-            <!-- Header -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
-              <div>
+            <div class="poll-feed-header">
+              <div style="min-width:0;">
                 <span style="font-size:11px; font-weight:800; color:var(--silver); text-transform:uppercase; background:rgba(229,229,229,0.12); border:1px solid rgba(229,229,229,0.22); padding:4px 10px; border-radius:6px; margin-right:8px;">
                   ${p.category || 'Civic'}
                 </span>
                 <span style="font-family:var(--font-mono); font-size:11px; color:var(--silver); opacity:0.6;">${p.id}</span>
               </div>
-              <div>
-                <!-- Voted Status: Words with a tick on top right inside card (Strictly landing page silver palette, NO GREEN) -->
-                <span id="voted-status-${p.id}" class="poll-voted-text" style="${hasVoted ? 'display:inline-flex;' : 'display:none;'} align-items:center; gap:4px; font-size:12px; font-weight:800; color:var(--silver); opacity:0.95; letter-spacing:0.02em;">
-                  <span style="font-size:13px; font-weight:900;">[x]</span> Voted
-                </span>
-              </div>
+              <span id="voted-status-${p.id}" class="poll-voted-text" style="${hasVoted ? 'display:inline-flex;' : 'display:none;'}">
+                <span aria-hidden="true">✓</span> VOTED
+              </span>
             </div>
 
             <!-- Title & Description -->
@@ -922,12 +999,13 @@
             <div id="receipt-container-${p.id}" style="display:none;"></div>
 
             <!-- Footer -->
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid rgba(229,229,229,0.15); padding-top:14px; font-size:12.5px; color:var(--silver); opacity:0.85;">
-              <div style="display:flex; flex-direction:column; gap:4px; text-align:left;">
-                <div>
-                  <strong style="color:var(--silver); font-weight:800;" class="vote-count">${p.totalVotes.toLocaleString()}</strong> total votes
+            <div class="poll-card-footer" style="font-size:12.5px; opacity:0.9;">
+              <div style="display:flex; flex-direction:column; align-items:flex-start; gap:7px;">
+                <div class="poll-turnout" aria-label="${p.totalVotes.toLocaleString()} votes cast">
+                  <span class="poll-turnout-label">Turnout</span>
+                  <strong class="vote-count">${p.totalVotes.toLocaleString()}</strong>
+                  <span class="poll-turnout-caption">votes cast</span>
                 </div>
-                <!-- Countdown strictly below total votes, format 4d 23h 03mins left, no Root, no 0x -->
                 <div id="countdown-${p.id}" class="poll-countdown-text" style="font-family:var(--font-mono); font-size:11.5px; color:var(--silver); opacity:0.75; font-weight:700; letter-spacing:0.02em;">
                   ${getCountdownDisplay(p)}
                 </div>

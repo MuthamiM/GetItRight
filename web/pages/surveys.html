@@ -262,6 +262,34 @@
       border-radius: 10px;
       transition: width 0.6s ease;
     }
+    .survey-progress-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .survey-progress-label {
+      color: var(--silver);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .survey-progress-count {
+      color: var(--silver);
+      opacity: 0.72;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .survey-progress-pct {
+      color: var(--silver);
+      font-family: var(--font-display);
+      font-size: 23px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+    }
 
     /* Card Action Buttons */
     .btn-take-survey {
@@ -615,6 +643,15 @@
         font-size: 13px !important;
         margin: 0 0 16px 0 !important;
         line-height: 1.5 !important;
+      }
+      .survey-progress-summary {
+        margin-bottom: 9px !important;
+      }
+      .survey-progress-pct {
+        font-size: 22px !important;
+      }
+      .survey-progress-count {
+        line-height: 1.35 !important;
       }
       .publisher-avatar {
         width: 36px !important;
@@ -1129,14 +1166,15 @@
               </p>
 
               <!-- Progress Bar -->
-              <div style="margin-bottom:20px;">
-                <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:7px;">
-                  <span style="color:var(--silver); opacity:0.7;">Responses Progress</span>
-                  <span style="color:var(--silver); font-weight:800; font-family:var(--font-mono);">
-                    ${total.toLocaleString()} / ${target.toLocaleString()} (${pct}%)
-                  </span>
+              <div class="survey-progress-block" style="margin-bottom:20px;">
+                <div class="survey-progress-summary">
+                  <div>
+                    <div class="survey-progress-label">Response target</div>
+                    <div class="survey-progress-count">${total.toLocaleString()} of ${target.toLocaleString()} responses</div>
+                  </div>
+                  <span class="survey-progress-pct" aria-label="${pct}% of response target">${pct}%</span>
                 </div>
-                <div class="survey-progress-track">
+                <div class="survey-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}">
                   <div class="survey-progress-fill" style="width:${pct}%;"></div>
                 </div>
               </div>
