@@ -271,6 +271,128 @@
       text-align: left;
       box-sizing: border-box;
     }
+    .poll-vote-layout {
+      display: grid;
+      grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+    .poll-vote-chart-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .poll-vote-pie {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 168px;
+      height: 168px;
+      border-radius: 50%;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+      flex-shrink: 0;
+    }
+    .poll-vote-pie::before {
+      content: '';
+      position: absolute;
+      inset: 29%;
+      border-radius: 50%;
+      background: var(--charcoal);
+      border: 1px solid rgba(242, 242, 243, 0.2);
+    }
+    .poll-vote-pie-center {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      pointer-events: none;
+    }
+    .poll-pie-total {
+      color: var(--silver);
+      font: 900 20px/1.1 var(--font-display);
+    }
+    .poll-pie-caption {
+      color: var(--graphite-300);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .poll-chart-caption {
+      color: var(--graphite-300);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .poll-vote-options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      min-width: 0;
+    }
+    .poll-options-heading {
+      color: var(--silver);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin: 0 0 2px;
+    }
+    .poll-opt-btn {
+      padding: 12px 14px;
+      border-color: color-mix(in srgb, var(--option-accent) 52%, transparent);
+    }
+    .poll-opt-btn:hover:not(:disabled) {
+      border-color: var(--option-accent);
+      background: rgba(229, 229, 229, 0.12);
+    }
+    .poll-opt-btn.voted {
+      border-color: var(--option-accent);
+      box-shadow: inset 3px 0 0 var(--option-accent);
+    }
+    .poll-opt-btn .poll-progress-bar-fill {
+      background: color-mix(in srgb, var(--option-accent) 24%, transparent);
+    }
+    .poll-option-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .poll-option-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      color: var(--silver);
+      font-size: 14px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .poll-option-dot {
+      width: 10px;
+      height: 10px;
+      flex: 0 0 10px;
+      border-radius: 50%;
+      background: var(--option-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--option-accent) 18%, transparent);
+    }
+    .poll-opt-btn.voted .poll-option-name {
+      color: #FFFFFF;
+    }
+    .poll-option-percent {
+      flex: 0 0 auto;
+      color: var(--silver);
+      font: 800 12px/1.2 var(--font-display);
+      white-space: nowrap;
+    }
     .poll-opt-btn:hover:not(:disabled) {
       border-color: var(--silver);
       background: rgba(229, 229, 229, 0.14);
@@ -389,6 +511,23 @@
       gap: 24px;
       position: sticky;
       top: 96px;
+    }
+
+    @media (max-width: 620px) {
+      .poll-vote-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+      }
+      .poll-vote-pie {
+        width: 152px;
+        height: 152px;
+      }
+      .poll-vote-options-group {
+        width: 100%;
+      }
+      .poll-option-percent {
+        font-size: 11px;
+      }
     }
 
     .ln-nav-top-row {
@@ -854,7 +993,7 @@
         button.style.cursor = 'not-allowed';
         button.classList.toggle('voted', hasOptionIndex && index === Number(optionIndex));
         if (hasOptionIndex && index === Number(optionIndex)) {
-          const label = button.querySelector('span');
+          const label = button.querySelector('.option-label');
           if (label && !label.innerHTML.includes('[Voted]')) {
             label.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>';
           }
@@ -918,6 +1057,38 @@
 
     setInterval(updateAllCountdowns, 1000);
 
+    const pollOptionColors = ['#29B6F6', '#FF9800', '#66BB6A', '#AB47BC', '#FFCA28', '#EF5350', '#26C6DA', '#8D6E63'];
+
+    function getPollOptionVoteCount(option) {
+      return Math.max(0, Number(option && option.votes) || 0);
+    }
+
+    function getPollOptionTotal(poll) {
+      return (poll.options || []).reduce((total, option) => total + getPollOptionVoteCount(option), 0);
+    }
+
+    function getPollOptionPercent(poll, option) {
+      const total = getPollOptionTotal(poll);
+      return total > 0 ? (getPollOptionVoteCount(option) / total) * 100 : 0;
+    }
+
+    function getPollPieGradient(poll) {
+      const options = poll.options || [];
+      const total = getPollOptionTotal(poll);
+      if (total <= 0 || options.length === 0) return 'conic-gradient(#6B6E76 0deg 360deg)';
+
+      let cursor = 0;
+      const stops = options.map((option, index) => {
+        const count = getPollOptionVoteCount(option);
+        if (count <= 0) return '';
+        const start = cursor;
+        cursor += (count / total) * 360;
+        return pollOptionColors[index % pollOptionColors.length] + ' ' + start.toFixed(2) + 'deg ' + cursor.toFixed(2) + 'deg';
+      }).filter(Boolean);
+
+      return stops.length ? 'conic-gradient(' + stops.join(', ') + ')' : 'conic-gradient(#6B6E76 0deg 360deg)';
+    }
+
     let currentFilteredPolls = [];
     let pollsCurrentPage = 1;
     const POLLS_PAGE_SIZE = 8;
@@ -949,19 +1120,24 @@
         // Old local markers were device-wide and blocked other accounts.
         const hasVoted = serverStatus?.hasVoted === true;
 
-        const optionsHtml = (p.options || []).map(opt => {
+        const optionsHtml = (p.options || []).map((opt, index) => {
           const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : null;
-          const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(opt.index) === String(selectedVote);
+          const optionIndex = Number.isInteger(Number(opt.index)) ? Number(opt.index) : index;
+          const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(optionIndex) === String(selectedVote);
           const votedClass = isVotedChoice ? 'voted' : '';
+          const color = pollOptionColors[index % pollOptionColors.length];
+          const votes = getPollOptionVoteCount(opt);
+          const percentage = getPollOptionPercent(p, opt);
           return `
-            <button class="poll-opt-btn ${votedClass}" ${hasVoted ? 'disabled style="cursor:not-allowed;"' : ''} onclick="submitPollVote('${p.id}', ${opt.index}, this)">
-              <div class="poll-progress-bar-fill" style="width:${opt.percentage}%;"></div>
-              <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:700; font-size:14px; color:var(--silver); display:inline-flex; align-items:center;">
-                  ${opt.label} ${isVotedChoice ? '<span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>' : ''}
+            <button class="poll-opt-btn ${votedClass}" style="--option-accent:${color};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
+              <div class="poll-progress-bar-fill" style="width:${percentage}%;"></div>
+              <div class="poll-option-content">
+                <span class="poll-option-name option-label">
+                  <span class="poll-option-dot" aria-hidden="true"></span>
+                  <span>${opt.label}</span> ${isVotedChoice ? '<span style="font-size:11px;font-weight:800;">[Voted]</span>' : ''}
                 </span>
-                <span class="option-percent" style="font-weight:800; color:var(--silver); font-size:14px; font-family:var(--font-display);">
-                  ${opt.percentage}% (${opt.votes.toLocaleString()})
+                <span class="poll-option-percent option-percent">
+                  ${percentage.toFixed(1)}% (${votes.toLocaleString()})
                 </span>
               </div>
             </button>
@@ -990,9 +1166,21 @@
               ${p.description}
             </p>
 
-            <!-- Options Group -->
-            <div class="poll-options-group" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
-              ${optionsHtml}
+            <!-- Live database breakdown beside selectable ballot options -->
+            <div class="poll-vote-layout">
+              <div class="poll-vote-chart-column">
+                <div class="poll-vote-pie" id="poll-pie-${p.id}" role="img" aria-label="Live vote distribution for ${p.title}" style="background:${getPollPieGradient(p)};">
+                  <div class="poll-vote-pie-center">
+                    <strong class="poll-pie-total">${Number(p.totalVotes || 0).toLocaleString()}</strong>
+                    <span class="poll-pie-caption">Votes cast</span>
+                  </div>
+                </div>
+                <div class="poll-chart-caption">Live results by option</div>
+              </div>
+              <div class="poll-vote-options-group">
+                <div class="poll-options-heading">Select your choice</div>
+                ${optionsHtml}
+              </div>
             </div>
 
             <!-- Hidden Receipt Container (Clean, no awful extra button inside card) -->
@@ -1180,15 +1368,22 @@
       if (!card) return;
 
       const countEl = card.querySelector('.vote-count');
-      if (countEl) countEl.textContent = p.totalVotes.toLocaleString();
+      const totalVotes = Number(p.totalVotes) || 0;
+      if (countEl) countEl.textContent = totalVotes.toLocaleString();
+      const pieTotalEl = card.querySelector('.poll-pie-total');
+      if (pieTotalEl) pieTotalEl.textContent = totalVotes.toLocaleString();
+      const pieEl = card.querySelector('.poll-vote-pie');
+      if (pieEl) pieEl.style.background = getPollPieGradient(p);
 
       const btns = card.querySelectorAll('.poll-opt-btn');
       (p.options || []).forEach((opt, idx) => {
         if (btns[idx]) {
+          const percentage = getPollOptionPercent(p, opt);
+          const votes = getPollOptionVoteCount(opt);
           const fill = btns[idx].querySelector('.poll-progress-bar-fill');
-          if (fill) fill.style.width = `${opt.percentage}%`;
+          if (fill) fill.style.width = `${percentage}%`;
           const pctText = btns[idx].querySelector('.option-percent');
-          if (pctText) pctText.textContent = `${opt.percentage}% (${opt.votes.toLocaleString()})`;
+          if (pctText) pctText.textContent = `${percentage.toFixed(1)}% (${votes.toLocaleString()})`;
         }
       });
     }

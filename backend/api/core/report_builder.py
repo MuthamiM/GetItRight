@@ -1210,7 +1210,7 @@ def build_survey_pdf(survey, responses) -> bytes:
 # 3. TURNOUT & QUOTA ANALYTICS REPORTS (XLSX, DOCX, CSV)
 # ==============================================================================
 
-def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey, total_registered_baseline: int = 15000) -> bytes:
+def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey, total_registered_baseline: int = 0) -> bytes:
     """Build an official executive Turnout & Quota Analytics Excel workbook (.xlsx)."""
     wb = openpyxl.Workbook()
 
@@ -1245,17 +1245,17 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
     ws1["C3"] = "Cross-Campaign Turnout Analytics, Quotas & Demographic Participation"
     ws1["C3"].font = Font(name="Segoe UI", size=11, bold=True, color="1E293B")
 
-    total_poll_votes = sum(len(transactions_by_poll.get(p.Id, [])) for p in polls)
-    total_survey_resp = sum(len(responses_by_survey.get(s.Id, [])) for s in surveys)
+    total_poll_votes = sum(max(int(p.TotalVotes or 0), len(transactions_by_poll.get(p.Id, []))) for p in polls)
+    total_survey_resp = sum(max(int(s.TotalResponses or 0), len(responses_by_survey.get(s.Id, []))) for s in surveys)
     total_activity = total_poll_votes + total_survey_resp
-    overall_turnout_pct = (total_activity / total_registered_baseline * 100) if total_registered_baseline > 0 else 0.0
+    overall_turnout_pct = (total_activity / total_registered_baseline * 100) if total_registered_baseline > 0 else None
 
     ws1["C4"] = f"Total Campaigns: {len(polls) + len(surveys)}  |  Total Ballots Cast: {total_activity:,}  |  Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC')}"
     ws1["C4"].font = Font(name="Segoe UI", size=9, italic=True, color="64748B")
 
     # 5 KPI Cards
     kpis = [
-        ("A", "OVERALL TURNOUT", f"{overall_turnout_pct:.1f}%"),
+        ("A", "OVERALL TURNOUT", f"{overall_turnout_pct:.1f}%" if overall_turnout_pct is not None else "—"),
         ("B", "TOTAL BALLOTS CAST", f"{total_activity:,}"),
         ("C", "REGISTERED QUOTA", f"{total_registered_baseline:,}"),
         ("D", "ACTIVE CAMPAIGNS", f"{len(polls) + len(surveys)}"),
@@ -1295,9 +1295,9 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
     # Add polls
     for p in polls:
         v_list = transactions_by_poll.get(p.Id, [])
-        v_count = len(v_list)
-        quota = getattr(p, 'TargetVoters', 1000) or 1000
-        rate = (v_count / quota) if quota > 0 else 0.0
+        v_count = max(int(p.TotalVotes or 0), len(v_list))
+        quota = max(0, int(getattr(p, 'TargetVoters', 0) or 0))
+        rate = (v_count / quota) if quota > 0 else None
 
         ws1.row_dimensions[curr_row].height = 20
         ws1[f"A{curr_row}"] = "Poll"
@@ -1305,8 +1305,8 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
         ws1[f"C{curr_row}"] = p.Category or "Civic Priority"
         ws1[f"D{curr_row}"] = quota
         ws1[f"E{curr_row}"] = v_count
-        ws1[f"F{curr_row}"] = rate
-        ws1[f"G{curr_row}"] = (p.Status or "Active").upper()
+        ws1[f"F{curr_row}"] = rate if rate is not None else "—"
+        ws1[f"G{curr_row}"] = (p.Status or "Active").upper() if quota > 0 else "NO TARGET SET"
 
         ws1[f"A{curr_row}"].alignment = Alignment(horizontal="center", vertical="center")
         ws1[f"D{curr_row}"].alignment = Alignment(horizontal="right", vertical="center")
@@ -1316,7 +1316,8 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
 
         ws1[f"D{curr_row}"].number_format = "#,##0"
         ws1[f"E{curr_row}"].number_format = "#,##0"
-        ws1[f"F{curr_row}"].number_format = "0.0%"
+        if rate is not None:
+            ws1[f"F{curr_row}"].number_format = "0.0%"
 
         for col, _ in headers:
             cell = ws1[f"{col}{curr_row}"]
@@ -1329,9 +1330,9 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
     # Add surveys
     for s in surveys:
         r_list = responses_by_survey.get(s.Id, [])
-        r_count = len(r_list)
-        quota = getattr(s, 'TargetResponses', 500) or 500
-        rate = (r_count / quota) if quota > 0 else 0.0
+        r_count = max(int(s.TotalResponses or 0), len(r_list))
+        quota = max(0, int(getattr(s, 'TargetResponses', 0) or 0))
+        rate = (r_count / quota) if quota > 0 else None
 
         ws1.row_dimensions[curr_row].height = 20
         ws1[f"A{curr_row}"] = "Survey"
@@ -1339,8 +1340,8 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
         ws1[f"C{curr_row}"] = s.Track or "Public Policy"
         ws1[f"D{curr_row}"] = quota
         ws1[f"E{curr_row}"] = r_count
-        ws1[f"F{curr_row}"] = rate
-        ws1[f"G{curr_row}"] = (s.Status or "Active").upper()
+        ws1[f"F{curr_row}"] = rate if rate is not None else "—"
+        ws1[f"G{curr_row}"] = (s.Status or "Active").upper() if quota > 0 else "NO TARGET SET"
 
         ws1[f"A{curr_row}"].alignment = Alignment(horizontal="center", vertical="center")
         ws1[f"D{curr_row}"].alignment = Alignment(horizontal="right", vertical="center")
@@ -1350,7 +1351,8 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
 
         ws1[f"D{curr_row}"].number_format = "#,##0"
         ws1[f"E{curr_row}"].number_format = "#,##0"
-        ws1[f"F{curr_row}"].number_format = "0.0%"
+        if rate is not None:
+            ws1[f"F{curr_row}"].number_format = "0.0%"
 
         for col, _ in headers:
             cell = ws1[f"{col}{curr_row}"]
@@ -1370,8 +1372,8 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
         ws1[f"C{curr_row}"] = "-"
         ws1[f"D{curr_row}"] = f"=SUM(D{start_camp_row}:D{end_camp_row})"
         ws1[f"E{curr_row}"] = f"=SUM(E{start_camp_row}:E{end_camp_row})"
-        ws1[f"F{curr_row}"] = f"=E{curr_row}/D{curr_row}"
-        ws1[f"G{curr_row}"] = "Verified"
+        ws1[f"F{curr_row}"] = f'=IF(D{curr_row}>0,E{curr_row}/D{curr_row},"—")'
+        ws1[f"G{curr_row}"] = f'=IF(D{curr_row}>0,"Verified","No target set")'
 
         ws1[f"A{curr_row}"].alignment = Alignment(horizontal="center", vertical="center")
         ws1[f"D{curr_row}"].alignment = Alignment(horizontal="right", vertical="center")
@@ -1421,7 +1423,7 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
     return out.getvalue()
 
 
-def build_turnout_docx(polls, surveys, transactions_by_poll, responses_by_survey, total_registered_baseline: int = 15000) -> bytes:
+def build_turnout_docx(polls, surveys, transactions_by_poll, responses_by_survey, total_registered_baseline: int = 0) -> bytes:
     """Build an official executive Turnout & Quota Analytics Word report (.docx)."""
     doc = Document()
     for section in doc.sections:
@@ -1451,15 +1453,15 @@ def build_turnout_docx(polls, surveys, transactions_by_poll, responses_by_survey
     r_title.font.size = Pt(17)
     r_title.font.color.rgb = RGBColor(15, 23, 42)
 
-    total_poll_votes = sum(len(transactions_by_poll.get(p.Id, [])) for p in polls)
-    total_survey_resp = sum(len(responses_by_survey.get(s.Id, [])) for s in surveys)
+    total_poll_votes = sum(max(int(p.TotalVotes or 0), len(transactions_by_poll.get(p.Id, []))) for p in polls)
+    total_survey_resp = sum(max(int(s.TotalResponses or 0), len(responses_by_survey.get(s.Id, []))) for s in surveys)
     total_activity = total_poll_votes + total_survey_resp
-    overall_turnout_pct = (total_activity / total_registered_baseline * 100) if total_registered_baseline > 0 else 0.0
+    overall_turnout_pct = (total_activity / total_registered_baseline * 100) if total_registered_baseline > 0 else None
 
     meta_table = doc.add_table(rows=4, cols=2)
     meta_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     meta_data = [
-        ("Overall Platform Turnout", f"{overall_turnout_pct:.1f}% ({total_activity:,} of {total_registered_baseline:,} baseline)"),
+        ("Overall Platform Turnout", f"{overall_turnout_pct:.1f}% ({total_activity:,} of {total_registered_baseline:,} baseline)" if overall_turnout_pct is not None else f"Unavailable: no target quotas set ({total_activity:,} recorded)"),
         ("Active Sovereign Campaigns", f"{len(polls)} Polls, {len(surveys)} Surveys"),
         ("Verification Integrity", "100% Cryptographically Validated Ballots"),
         ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC")),
@@ -1485,28 +1487,28 @@ def build_turnout_docx(polls, surveys, transactions_by_poll, responses_by_survey
         _format_docx_header_cell(t_camp.cell(0, i), hdr, width_in=w)
 
     for p in polls:
-        v_count = len(transactions_by_poll.get(p.Id, []))
-        quota = getattr(p, 'TargetVoters', 1000) or 1000
-        rate = (v_count / quota * 100) if quota > 0 else 0.0
+        v_count = max(int(p.TotalVotes or 0), len(transactions_by_poll.get(p.Id, [])))
+        quota = max(0, int(getattr(p, 'TargetVoters', 0) or 0))
+        rate = (v_count / quota * 100) if quota > 0 else None
         row = t_camp.add_row()
         _format_docx_body_cell(row.cells[0], "Poll", bg_hex="F8FAFC", align=WD_ALIGN_PARAGRAPH.CENTER)
         _format_docx_body_cell(row.cells[1], p.Title, bg_hex="F8FAFC", bold=True)
         _format_docx_body_cell(row.cells[2], p.Category or "Civic Priority", bg_hex="F8FAFC")
         _format_docx_body_cell(row.cells[3], f"{quota:,}", bg_hex="F8FAFC", align=WD_ALIGN_PARAGRAPH.RIGHT)
         _format_docx_body_cell(row.cells[4], f"{v_count:,}", bg_hex="F8FAFC", align=WD_ALIGN_PARAGRAPH.RIGHT)
-        _format_docx_body_cell(row.cells[5], f"{rate:.1f}%", bg_hex="F8FAFC", align=WD_ALIGN_PARAGRAPH.RIGHT)
+        _format_docx_body_cell(row.cells[5], f"{rate:.1f}%" if rate is not None else "—", bg_hex="F8FAFC", align=WD_ALIGN_PARAGRAPH.RIGHT)
 
     for s in surveys:
-        r_count = len(responses_by_survey.get(s.Id, []))
-        quota = getattr(s, 'TargetResponses', 500) or 500
-        rate = (r_count / quota * 100) if quota > 0 else 0.0
+        r_count = max(int(s.TotalResponses or 0), len(responses_by_survey.get(s.Id, [])))
+        quota = max(0, int(getattr(s, 'TargetResponses', 0) or 0))
+        rate = (r_count / quota * 100) if quota > 0 else None
         row = t_camp.add_row()
         _format_docx_body_cell(row.cells[0], "Survey", bg_hex="FFFFFF", align=WD_ALIGN_PARAGRAPH.CENTER)
         _format_docx_body_cell(row.cells[1], s.Title, bg_hex="FFFFFF", bold=True)
         _format_docx_body_cell(row.cells[2], s.Track or "Public Policy", bg_hex="FFFFFF")
         _format_docx_body_cell(row.cells[3], f"{quota:,}", bg_hex="FFFFFF", align=WD_ALIGN_PARAGRAPH.RIGHT)
         _format_docx_body_cell(row.cells[4], f"{r_count:,}", bg_hex="FFFFFF", align=WD_ALIGN_PARAGRAPH.RIGHT)
-        _format_docx_body_cell(row.cells[5], f"{rate:.1f}%", bg_hex="FFFFFF", align=WD_ALIGN_PARAGRAPH.RIGHT)
+        _format_docx_body_cell(row.cells[5], f"{rate:.1f}%" if rate is not None else "—", bg_hex="FFFFFF", align=WD_ALIGN_PARAGRAPH.RIGHT)
 
     out = BytesIO()
     doc.save(out)

@@ -332,6 +332,7 @@ def get_turnout_summary(
     from backend.api.features.polls.models import PollModel, VoteTransactionModel
     from backend.api.features.surveys.models import SurveyModel, SurveyResponseModel
     from backend.api.features.analytics.models import StationModel
+    from backend.api.features.auth.models import UserModel
 
     # Role checking: If client user, scope to their ownerId
     if current_user and current_user.get("role") not in ["Admin", "Super Admin"]:
@@ -363,7 +364,12 @@ def get_turnout_summary(
         poll_query = poll_query.filter(PollModel.OwnerId == owner_id)
     polls = poll_query.all()
 
-    plan_quotas = {"free": 1000, "starter": 2500, "pro": 5000, "enterprise": 20000, "electoral": 50000}
+    poll_owner_ids = {poll.OwnerId for poll in polls if poll.OwnerId}
+    user_quotas = {
+        user_id: int(voter_quota or 0)
+        for user_id, voter_quota in db.query(UserModel.Id, UserModel.VoterQuota)
+        .filter(UserModel.Id.in_(poll_owner_ids)).all()
+    } if poll_owner_ids else {}
     poll_items = []
     tot_poll_votes = 0
     tot_poll_quota = 0
@@ -372,18 +378,18 @@ def get_turnout_summary(
         tx_count = db.query(VoteTransactionModel).filter(VoteTransactionModel.PollId == p.Id).count()
         votes = max(p.TotalVotes or 0, tx_count)
         tot_poll_votes += votes
-        quota = plan_quotas.get((p.Plan or "free").lower(), 2500)
+        quota = max(0, user_quotas.get(p.OwnerId, 0))
         tot_poll_quota += quota
-        rate = round((votes / max(quota, 1)) * 100, 1)
+        rate = round((votes / quota) * 100, 1) if quota > 0 else 0.0
 
         # Leading county for this poll
         top_cty_row = db.query(VoteTransactionModel.County, func.count(VoteTransactionModel.Id))\
             .filter(VoteTransactionModel.PollId == p.Id, VoteTransactionModel.County != None)\
             .group_by(VoteTransactionModel.County)\
             .order_by(func.count(VoteTransactionModel.Id).desc()).first()
-        top_cty = top_cty_row[0] if top_cty_row else "Nairobi County"
+        top_cty = top_cty_row[0] if top_cty_row else "No submissions yet"
 
-        status_str = "Quota Met" if votes >= quota else ("Surpassing Target" if rate >= 60 else "Active Ingestion")
+        status_str = "No target set" if quota <= 0 else ("Quota Met" if votes >= quota else ("Surpassing Target" if rate >= 60 else "Active Ingestion"))
 
         poll_items.append({
             "id": p.Id,
@@ -412,18 +418,18 @@ def get_turnout_summary(
         resp_count = db.query(SurveyResponseModel).filter(SurveyResponseModel.SurveyId == s.Id).count()
         resp = max(s.TotalResponses or 0, resp_count)
         tot_survey_resp += resp
-        quota = s.TargetResponses or 5000
+        quota = max(0, int(s.TargetResponses or 0))
         tot_survey_quota += quota
-        rate = round((resp / max(quota, 1)) * 100, 1)
+        rate = round((resp / quota) * 100, 1) if quota > 0 else 0.0
 
         # Leading county for this survey
         top_cty_row = db.query(SurveyResponseModel.County, func.count(SurveyResponseModel.Id))\
             .filter(SurveyResponseModel.SurveyId == s.Id, SurveyResponseModel.County != None)\
             .group_by(SurveyResponseModel.County)\
             .order_by(func.count(SurveyResponseModel.Id).desc()).first()
-        top_cty = top_cty_row[0] if top_cty_row else "Nairobi County"
+        top_cty = top_cty_row[0] if top_cty_row else "No submissions yet"
 
-        status_str = "Quota Met" if resp >= quota else ("Surpassing Target" if rate >= 60 else "Active Ingestion")
+        status_str = "No target set" if quota <= 0 else ("Quota Met" if resp >= quota else ("Surpassing Target" if rate >= 60 else "Active Ingestion"))
 
         survey_items.append({
             "id": s.Id,
@@ -440,11 +446,23 @@ def get_turnout_summary(
 
     # 4. County Distribution from real votes and survey submissions
     county_counts = defaultdict(int)
-    for r in db.query(VoteTransactionModel.County, func.count(VoteTransactionModel.Id)).group_by(VoteTransactionModel.County).all():
+    county_votes_query = db.query(VoteTransactionModel.County, func.count(VoteTransactionModel.Id))
+    if owner_id:
+        if polls:
+            county_votes_query = county_votes_query.filter(VoteTransactionModel.PollId.in_([p.Id for p in polls]))
+        else:
+            county_votes_query = None
+    for r in (county_votes_query.group_by(VoteTransactionModel.County).all() if county_votes_query is not None else []):
         if r[0]: county_counts[r[0]] += r[1]
-    for r in db.query(SurveyResponseModel.County, func.count(SurveyResponseModel.Id)).group_by(SurveyResponseModel.County).all():
+    county_surveys_query = db.query(SurveyResponseModel.County, func.count(SurveyResponseModel.Id))
+    if owner_id:
+        if surveys:
+            county_surveys_query = county_surveys_query.filter(SurveyResponseModel.SurveyId.in_([s.Id for s in surveys]))
+        else:
+            county_surveys_query = None
+    for r in (county_surveys_query.group_by(SurveyResponseModel.County).all() if county_surveys_query is not None else []):
         if r[0]: county_counts[r[0]] += r[1]
-    for st in stations:
+    for st in (stations if not owner_id else []):
         if st.County: county_counts[st.County] += (st.VotesCast or 0)
 
     total_regional_cast = sum(county_counts.values()) or 1
@@ -459,7 +477,13 @@ def get_turnout_summary(
 
     # 5. Real 24h Hourly Velocity
     hourly_counts = defaultdict(int)
-    for vt in db.query(VoteTransactionModel.Timestamp).all():
+    velocity_votes_query = db.query(VoteTransactionModel.Timestamp)
+    if owner_id:
+        if polls:
+            velocity_votes_query = velocity_votes_query.filter(VoteTransactionModel.PollId.in_([p.Id for p in polls]))
+        else:
+            velocity_votes_query = None
+    for vt in (velocity_votes_query.all() if velocity_votes_query is not None else []):
         try:
             ts = vt[0]
             if len(ts) >= 13 and ts[10] in (" ", "T"):
@@ -467,7 +491,13 @@ def get_turnout_summary(
                 hourly_counts[hour] += 1
         except Exception:
             pass
-    for sr in db.query(SurveyResponseModel.Timestamp).all():
+    velocity_surveys_query = db.query(SurveyResponseModel.Timestamp)
+    if owner_id:
+        if surveys:
+            velocity_surveys_query = velocity_surveys_query.filter(SurveyResponseModel.SurveyId.in_([s.Id for s in surveys]))
+        else:
+            velocity_surveys_query = None
+    for sr in (velocity_surveys_query.all() if velocity_surveys_query is not None else []):
         try:
             ts = sr[0]
             if len(ts) >= 13 and ts[10] in (" ", "T"):
@@ -484,7 +514,7 @@ def get_turnout_summary(
     # Overall Turnout Rate: station turnout if available or combined quota turnout
     total_submissions = tot_poll_votes + tot_survey_resp
     total_quota = tot_poll_quota + tot_survey_quota
-    overall_turnout_rate = station_turnout_rate if station_turnout_rate > 0 else round((total_submissions / max(total_quota, 1)) * 100, 1)
+    overall_turnout_rate = station_turnout_rate if station_turnout_rate > 0 else (round((total_submissions / total_quota) * 100, 1) if total_quota > 0 else 0.0)
 
     return {
         "totals": {
@@ -520,6 +550,7 @@ def export_turnout_analytics(
     import json
     from backend.api.features.polls.models import PollModel, VoteTransactionModel
     from backend.api.features.surveys.models import SurveyModel, SurveyResponseModel
+    from backend.api.features.auth.models import UserModel
     from backend.api.core.report_builder import build_turnout_xlsx, build_turnout_docx
 
     is_admin = current_user.get("role") in ["Admin", "Super Admin"]
@@ -553,11 +584,20 @@ def export_turnout_analytics(
         responses_by_survey.setdefault(r.SurveyId, []).append({
             "timestamp": r.Timestamp,
             "respondent": r.VoterPseudonym,
-            "county": getattr(r, "County", "Nairobi County") or "Nairobi County",
+            "county": getattr(r, "County", None) or "Not provided",
             "answers": json.loads(r.AnswersJson or "[]") if isinstance(r.AnswersJson, str) else []
         })
 
-    total_registered_baseline = max(1000, (len(polls) + len(surveys)) * 2500)
+    poll_owner_ids = {poll.OwnerId for poll in polls if poll.OwnerId}
+    poll_target_quotas = {
+        user_id: max(0, int(voter_quota or 0))
+        for user_id, voter_quota in db.query(UserModel.Id, UserModel.VoterQuota)
+        .filter(UserModel.Id.in_(poll_owner_ids)).all()
+    } if poll_owner_ids else {}
+    for poll in polls:
+        poll.TargetVoters = poll_target_quotas.get(poll.OwnerId, 0)
+    total_registered_baseline = sum(poll_target_quotas.get(poll.OwnerId, 0) for poll in polls)
+    total_registered_baseline += sum(max(0, int(survey.TargetResponses or 0)) for survey in surveys)
 
     if export_format == "xlsx":
         data = build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey, total_registered_baseline)
@@ -572,16 +612,16 @@ def export_turnout_analytics(
         writer = csv.writer(out)
         writer.writerow(["Type", "Campaign ID", "Campaign Title", "Category / Track", "Target Quota", "Ballots / Responses Cast", "Turnout Rate (%)", "Status"])
         for p in polls:
-            cnt = len(transactions_by_poll.get(p.Id, []))
-            target = getattr(p, "QuotaTarget", 2500) or 2500
-            rate = f"{(cnt / target * 100):.1f}%" if target > 0 else "0.0%"
-            status = "Target Met" if cnt >= target else "Active Ingestion"
+            cnt = max(int(p.TotalVotes or 0), len(transactions_by_poll.get(p.Id, [])))
+            target = poll_target_quotas.get(p.OwnerId, 0)
+            rate = f"{(cnt / target * 100):.1f}%" if target > 0 else "—"
+            status = "No target set" if target <= 0 else ("Target Met" if cnt >= target else "Active Ingestion")
             writer.writerow(["POLL", p.Id, p.Title, p.Category or "General", target, cnt, rate, status])
         for s in surveys:
-            cnt = len(responses_by_survey.get(s.Id, []))
-            target = getattr(s, "TargetQuota", 2500) or 2500
-            rate = f"{(cnt / target * 100):.1f}%" if target > 0 else "0.0%"
-            status = "Target Met" if cnt >= target else "Active Ingestion"
+            cnt = max(int(s.TotalResponses or 0), len(responses_by_survey.get(s.Id, [])))
+            target = max(0, int(s.TargetResponses or 0))
+            rate = f"{(cnt / target * 100):.1f}%" if target > 0 else "—"
+            status = "No target set" if target <= 0 else ("Target Met" if cnt >= target else "Active Ingestion")
             writer.writerow(["SURVEY", s.Id, s.Title, s.Track or "General", target, cnt, rate, status])
         data = out.getvalue().encode("utf-8")
         media_type = "text/csv"
@@ -589,20 +629,20 @@ def export_turnout_analytics(
     elif export_format == "json":
         items = []
         for p in polls:
-            cnt = len(transactions_by_poll.get(p.Id, []))
-            target = getattr(p, "QuotaTarget", 2500) or 2500
+            cnt = max(int(p.TotalVotes or 0), len(transactions_by_poll.get(p.Id, [])))
+            target = poll_target_quotas.get(p.OwnerId, 0)
             items.append({
                 "type": "POLL", "id": p.Id, "title": p.Title, "category": p.Category,
                 "targetQuota": target, "votesCast": cnt,
-                "turnoutRate": round(cnt / target * 100, 1) if target > 0 else 0
+                "turnoutRate": round(cnt / target * 100, 1) if target > 0 else None
             })
         for s in surveys:
-            cnt = len(responses_by_survey.get(s.Id, []))
-            target = getattr(s, "TargetQuota", 2500) or 2500
+            cnt = max(int(s.TotalResponses or 0), len(responses_by_survey.get(s.Id, [])))
+            target = max(0, int(s.TargetResponses or 0))
             items.append({
                 "type": "SURVEY", "id": s.Id, "title": s.Title, "category": s.Track,
                 "targetQuota": target, "responsesCast": cnt,
-                "turnoutRate": round(cnt / target * 100, 1) if target > 0 else 0
+                "turnoutRate": round(cnt / target * 100, 1) if target > 0 else None
             })
         data = json.dumps(items, indent=2).encode("utf-8")
         media_type = "application/json"

@@ -1490,9 +1490,9 @@
               </div>
 
               <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border-color);margin-top:10px;font-size:12px;">
-                <span class="muted">Submissions: <strong style="color:var(--charcoal);" id="user-turnout-graph-ballots">0</strong></span>
-                <span class="muted">Target Quota: <strong style="color:var(--charcoal);" id="user-turnout-graph-quota">0</strong></span>
-                <span class="muted">Rate: <strong style="color:var(--charcoal);" id="user-turnout-graph-rate">0.0%</strong></span>
+                <span class="muted">Submissions: <strong style="color:var(--charcoal);" id="user-turnout-graph-ballots">—</strong></span>
+                <span class="muted">Target Quota: <strong style="color:var(--charcoal);" id="user-turnout-graph-quota">—</strong></span>
+                <span class="muted">Rate: <strong style="color:var(--charcoal);" id="user-turnout-graph-rate">—</strong></span>
               </div>
             </div>
 
@@ -1877,92 +1877,49 @@
       }
     }
 
-    async function loadUserTurnoutAnalytics(providedPolls, providedSurveys) {
+    async function loadUserTurnoutAnalytics() {
       try {
-        const polls = providedPolls || cachedClientPolls || [];
-        const surveys = providedSurveys || cachedClientSurveys || [];
-
-        // Fetch live server summary if available
-        let serverSummary = null;
-        try {
-          const res = await request('/turnout/summary');
-          if (res.ok) serverSummary = await res.json();
-        } catch (_) {}
+        const response = await request('/turnout/summary');
+        if (!response.ok) throw new Error(`Turnout service returned HTTP ${response.status}`);
+        const serverSummary = await response.json();
+        if (!Array.isArray(serverSummary.campaigns)) {
+          throw new Error('Turnout service returned no campaign data');
+        }
 
         let totalPollVotes = 0;
         let totalSurveyResponses = 0;
         let totalQuotaBaseline = 0;
         const campaignItems = [];
 
-        if (serverSummary && Array.isArray(serverSummary.campaigns) &&
-            (serverSummary.campaigns.length > 0 || (polls.length === 0 && surveys.length === 0))) {
-          serverSummary.campaigns.forEach(c => {
-            const type = c.type === 'survey' ? 'survey' : 'poll';
-            const cast = Math.max(0, Number(c.cast ?? c.submissions ?? 0) || 0);
-            const quota = Math.max(0, Number(c.quota ?? 0) || 0);
-            const rateValue = c.rate !== undefined && c.rate !== null
-              ? Number(c.rate)
-              : (quota > 0 ? (cast / quota) * 100 : 0);
-            const rate = Number.isFinite(rateValue) ? rateValue : 0;
-            if (type === 'poll') totalPollVotes += cast;
-            else totalSurveyResponses += cast;
-            totalQuotaBaseline += quota;
-            campaignItems.push({
-              id: c.id,
-              type,
-              title: c.title || 'Civic Track',
-              category: c.category || 'General',
-              quota,
-              cast,
-              rate,
-              status: c.status || (cast >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion'))
-            });
+        serverSummary.campaigns.forEach(c => {
+          const type = c.type === 'survey' ? 'survey' : 'poll';
+          const cast = Math.max(0, Number(c.cast ?? c.submissions ?? 0) || 0);
+          const quota = Math.max(0, Number(c.quota ?? 0) || 0);
+          const serverRate = Number(c.rate);
+          const rate = Number.isFinite(serverRate) ? serverRate : (quota > 0 ? (cast / quota) * 100 : 0);
+          if (type === 'poll') totalPollVotes += cast;
+          else totalSurveyResponses += cast;
+          totalQuotaBaseline += quota;
+          campaignItems.push({
+            id: c.id,
+            type,
+            title: c.title || 'Civic Track',
+            category: c.category || 'General',
+            quota,
+            cast,
+            rate,
+            status: c.status || (quota <= 0 ? 'No target set' : (cast >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')))
           });
-        } else {
-          polls.forEach(p => {
-            const votes = Math.max(Number(p.totalVotes) || 0, p.options ? p.options.reduce((sum, option) => sum + (Number(option.votes) || 0), 0) : 0);
-            const quota = Number(p.targetQuota ?? p.quotaTarget ?? 2500) || 2500;
-            totalPollVotes += votes;
-            totalQuotaBaseline += quota;
-            const rate = quota > 0 ? (votes / quota) * 100 : 0;
-            campaignItems.push({
-              id: p.id,
-              type: 'poll',
-              title: p.title || 'Civic Poll',
-              category: p.category || 'Ballot',
-              quota,
-              cast: votes,
-              rate,
-              status: votes >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
-            });
-          });
-
-          surveys.forEach(s => {
-            const count = Math.max(Number(s.totalResponses) || 0, s.responses?.length || Number(s.responseCount) || 0);
-            const quota = Number(s.targetResponses ?? s.targetQuota ?? 5000) || 5000;
-            totalSurveyResponses += count;
-            totalQuotaBaseline += quota;
-            const rate = quota > 0 ? (count / quota) * 100 : 0;
-            campaignItems.push({
-              id: s.id,
-              type: 'survey',
-              title: s.title || 'Civic Survey',
-              category: s.track || 'Research',
-              quota,
-              cast: count,
-              rate,
-              status: count >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
-            });
-          });
-        }
+        });
 
         userTurnoutCampaigns = campaignItems;
         const totalCast = totalPollVotes + totalSurveyResponses;
-        const overallRate = totalQuotaBaseline > 0 ? ((totalCast / totalQuotaBaseline) * 100).toFixed(1) : '0.0';
+        const overallRate = totalQuotaBaseline > 0 ? ((totalCast / totalQuotaBaseline) * 100).toFixed(1) : '—';
 
         // Update Overview KPI
         const kpiTurnoutEl = document.getElementById('kpi-turnout-rate');
-        if (kpiTurnoutEl) kpiTurnoutEl.textContent = `${overallRate}%`;
+        const rateDisplay = overallRate === '—' ? '—' : `${overallRate}%`;
+        if (kpiTurnoutEl) kpiTurnoutEl.textContent = rateDisplay;
 
         // Update Card 1 sub-stats
         const bEl = document.getElementById('user-turnout-graph-ballots');
@@ -1970,16 +1927,25 @@
         const qEl = document.getElementById('user-turnout-graph-quota');
         if (qEl) qEl.textContent = totalQuotaBaseline.toLocaleString();
         const rEl = document.getElementById('user-turnout-graph-rate');
-        if (rEl) rEl.textContent = `${overallRate}%`;
+        if (rEl) rEl.textContent = rateDisplay;
 
         // Render visuals with strict single sovereign charcoal palette
-        renderUserTurnoutGraphVisual(overallRate, totalCast, totalQuotaBaseline, null);
+        renderUserTurnoutGraphVisual(overallRate, totalCast, totalQuotaBaseline, serverSummary.hourlyVelocity);
         renderUserTurnoutPieVisual(totalPollVotes, totalSurveyResponses, totalQuotaBaseline);
         renderUserTurnoutBarsVisual(campaignItems);
         renderUserTurnoutTable(campaignItems);
 
       } catch (err) {
         console.error('Error loading user turnout analytics:', err);
+        userTurnoutCampaigns = [];
+        ['kpi-turnout-rate', 'user-turnout-graph-ballots', 'user-turnout-graph-quota', 'user-turnout-graph-rate'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = '—';
+        });
+        ['user-turnout-graph-container', 'user-turnout-pie-container', 'user-turnout-pie-legend', 'user-turnout-bars-container'].forEach(id => {
+          const element = document.getElementById(id);
+          if (element) element.innerHTML = '<div class="muted" style="padding:12px;text-align:center;">Turnout data is unavailable. Refresh to try again.</div>';
+        });
         const tbody = document.getElementById('user-turnout-tbody');
         if (tbody) {
           tbody.innerHTML = '<tr><td colspan="8" class="empty" style="text-align:center;padding:24px;">Turnout analytics could not be loaded. Select Refresh to try again.</td></tr>';
@@ -1991,24 +1957,22 @@
       const container = document.getElementById('user-turnout-graph-container');
       if (!container) return;
 
-      const rate = parseFloat(rateStr) || 0;
+      const parsedRate = Number.parseFloat(rateStr);
+      const hasRate = Number.isFinite(parsedRate);
+      const rate = hasRate ? parsedRate : 0;
       const targetPercent = Math.min(100, Math.max(0, rate));
       const radius = 56;
       const arcLen = Math.PI * radius; // 175.93
       const offset = arcLen * (1 - targetPercent / 100);
 
-      const dataPoints = (hourlyVelocity && hourlyVelocity.length >= 6)
+      const dataPoints = Array.isArray(hourlyVelocity) && hourlyVelocity.length >= 2
         ? hourlyVelocity.slice(-8)
-        : [
-            { hour: '08:00', votes: Math.round(totalCast * 0.08) },
-            { hour: '10:00', votes: Math.round(totalCast * 0.18) },
-            { hour: '12:00', votes: Math.round(totalCast * 0.32) },
-            { hour: '14:00', votes: Math.round(totalCast * 0.48) },
-            { hour: '16:00', votes: Math.round(totalCast * 0.64) },
-            { hour: '18:00', votes: Math.round(totalCast * 0.79) },
-            { hour: '20:00', votes: Math.round(totalCast * 0.91) },
-            { hour: 'Live', votes: totalCast }
-          ];
+        : [];
+
+      if (dataPoints.length < 2) {
+        container.innerHTML = `<div class="muted" style="padding:14px;text-align:center;">${hasRate ? `${rate.toFixed(1)}% turnout` : 'Turnout rate unavailable'}<br>No hourly activity recorded in the database yet.</div>`;
+        return;
+      }
 
       const maxV = Math.max(...dataPoints.map(d => d.votes), 10);
       const gw = 260, gh = 60, padX = 12, padY = 6;
@@ -2032,7 +1996,7 @@
                     style="transition:stroke-dashoffset 0.8s ease-out;"/>
             </svg>
             <div style="position:absolute;bottom:2px;left:0;right:0;text-align:center;">
-              <div style="font-size:20px;font-weight:900;color:var(--charcoal);font-family:'Outfit',sans-serif;line-height:1;">${rate.toFixed(1)}%</div>
+              <div style="font-size:20px;font-weight:900;color:var(--charcoal);font-family:'Outfit',sans-serif;line-height:1;">${hasRate ? `${rate.toFixed(1)}%` : '—'}</div>
               <div style="font-size:9px;color:var(--text-sub);text-transform:uppercase;font-weight:700;margin-top:2px;">Turnout</div>
             </div>
           </div>
@@ -2068,8 +2032,14 @@
       const legend = document.getElementById('user-turnout-pie-legend');
       if (!container) return;
 
+      if (totalQuota <= 0) {
+        container.innerHTML = '<div class="muted" style="padding:14px;text-align:center;">No target quota is stored for these campaigns.</div>';
+        if (legend) legend.innerHTML = '';
+        return;
+      }
+
       const totalSubmissions = pollVotes + surveyResponses;
-      const targetBaseline = Math.max(totalQuota, totalSubmissions, 1);
+      const targetBaseline = Math.max(totalQuota, totalSubmissions);
       const remainingQuota = Math.max(0, targetBaseline - totalSubmissions);
 
       const r = 44;
@@ -3151,7 +3121,7 @@
       const stats = statsRes.ok ? await statsRes.json() : null;
 
       // Load turnout from account-scoped server records before fetching every response ledger.
-      await loadUserTurnoutAnalytics(myPolls, surveys);
+      await loadUserTurnoutAnalytics();
 
       // Fetch poll vote transactions
       const pollTxs = await Promise.all(myPolls.map(async p => {
