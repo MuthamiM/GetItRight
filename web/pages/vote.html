@@ -749,9 +749,17 @@
         gap: 8px !important;
         align-items: flex-start !important;
       }
+      .poll-feed-header > div:first-child {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
       .poll-voted-text {
         padding: 6px 8px !important;
         font-size: 9px !important;
+        flex-shrink: 0 !important;
       }
       .poll-turnout {
         gap: 5px !important;
@@ -1059,23 +1067,19 @@
       if (!token) return;
       await Promise.all(allPolls.map(async poll => {
         try {
-          const response = await fetch(`${API_BASE}/polls/${poll.id}/vote-status`, {
-            method: 'POST',
+          const response = await fetch(`${API_BASE}/polls/${encodeURIComponent(poll.id)}/vote-status`, {
+            method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-              voterIdNumber: localStorage.getItem('gir_voter_id_number') || '',
-              voterKey: localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || ''
-            }),
             cache: 'no-store'
           });
           if (!response.ok) return;
           const status = await response.json();
           serverVotedPolls.set(poll.id, status);
           if (status.hasVoted) {
-            lockPollOptions(poll.id, status.optionIndex);
+            const selectedIndex = getPollOptionArrayIndex(poll, status.optionIndex);
+            if (selectedIndex >= 0) pollOptionSelections.set(poll.id, selectedIndex);
           } else {
             // Clear legacy device-wide markers. They were shared across accounts
             // and could incorrectly make this poll appear already voted.
@@ -1104,6 +1108,18 @@
           }
         }
       });
+    }
+
+    function getPollOptionApiIndex(option, arrayIndex) {
+      const rawIndex = option?.index;
+      return rawIndex !== null && rawIndex !== undefined && rawIndex !== '' && Number.isInteger(Number(rawIndex))
+        ? Number(rawIndex)
+        : arrayIndex;
+    }
+
+    function getPollOptionArrayIndex(poll, apiIndex) {
+      if (!poll || apiIndex === null || apiIndex === undefined || apiIndex === '' || !Number.isInteger(Number(apiIndex))) return -1;
+      return (poll.options || []).findIndex((option, index) => getPollOptionApiIndex(option, index) === Number(apiIndex));
     }
 
     function setPollVotedBadge(pollId, hasVoted) {
@@ -1382,7 +1398,7 @@
         const optionColors = (p.options || []).map((_, index) => pollOptionColors[index % pollOptionColors.length]);
         const optionsHtml = (p.options || []).map((opt, index) => {
           const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : null;
-          const optionIndex = Number.isInteger(Number(opt.index)) ? Number(opt.index) : index;
+          const optionIndex = getPollOptionApiIndex(opt, index);
           const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(optionIndex) === String(selectedVote);
           const votedClass = isVotedChoice ? 'voted' : '';
           const votes = getPollOptionVoteCount(opt);
@@ -1613,7 +1629,8 @@
           const data = await res.json();
           serverVotedPolls.set(pollId, { hasVoted: true, optionIndex });
           lockPollOptions(pollId, optionIndex);
-          setPollOptionSelection(pollId, optionIndex, false);
+          const selectedArrayIndex = getPollOptionArrayIndex(allPolls.find(poll => poll.id === pollId), optionIndex);
+          if (selectedArrayIndex >= 0) setPollOptionSelection(pollId, selectedArrayIndex, false);
           App.showToast('Submitted!', 'success');
 
           // Refresh polls data
