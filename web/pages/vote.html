@@ -1065,13 +1065,20 @@
     async function syncAccountPollStatuses() {
       const token = localStorage.getItem('gir_token');
       if (!token) return;
+      const voterIdNumber = localStorage.getItem('gir_voter_id_number') ||
+        localStorage.getItem('gir_user_national_id') || '';
       await Promise.all(allPolls.map(async poll => {
         try {
+          const hasVerificationIdentity = Boolean(voterIdNumber);
           const response = await fetch(`${API_BASE}/polls/${encodeURIComponent(poll.id)}/vote-status`, {
-            method: 'GET',
+            method: hasVerificationIdentity ? 'POST' : 'GET',
             headers: {
+              ...(hasVerificationIdentity ? { 'Content-Type': 'application/json' } : {}),
               'Authorization': `Bearer ${token}`
             },
+            ...(hasVerificationIdentity ? {
+              body: JSON.stringify({ voterIdNumber })
+            } : {}),
             cache: 'no-store'
           });
           if (!response.ok) return;
@@ -1344,12 +1351,11 @@
           path.setAttribute('vector-effect', 'non-scaling-stroke');
           overlay.replaceChildren(path);
         } else {
-          // A zero-vote choice has no proportional wedge to fill. Mark its
-          // position with a colored arc on the chart rim so the selected
-          // choice is still visible without inventing votes or changing the
-          // pie's distribution.
-          const markerSweep = 14;
-          const markerRadius = 77;
+          // A zero-vote choice has no proportional wedge. Show a temporary
+          // selected-choice preview inside the pie, while keeping its stored
+          // count and percentage at zero.
+          const markerSweep = 24;
+          const markerRadius = 84;
           const markerCenter = total > 0
             ? start
             : (selectedIndex / Math.max(1, poll.options.length)) * 360;
@@ -1360,11 +1366,12 @@
           const markerEndX = 84 + markerRadius * Math.cos(markerEnd);
           const markerEndY = 84 + markerRadius * Math.sin(markerEnd);
           const markerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          markerPath.setAttribute('d', `M ${markerStartX.toFixed(3)} ${markerStartY.toFixed(3)} A ${markerRadius} ${markerRadius} 0 0 1 ${markerEndX.toFixed(3)} ${markerEndY.toFixed(3)}`);
-          markerPath.setAttribute('fill', 'none');
-          markerPath.setAttribute('stroke', color);
-          markerPath.setAttribute('stroke-width', '10');
-          markerPath.setAttribute('stroke-linecap', 'round');
+          markerPath.setAttribute('d', `M 84 84 L ${markerStartX.toFixed(3)} ${markerStartY.toFixed(3)} A ${markerRadius} ${markerRadius} 0 0 1 ${markerEndX.toFixed(3)} ${markerEndY.toFixed(3)} Z`);
+          markerPath.setAttribute('fill', color);
+          markerPath.setAttribute('fill-opacity', '0.82');
+          markerPath.setAttribute('stroke', '#fff');
+          markerPath.setAttribute('stroke-width', '2.5');
+          markerPath.setAttribute('stroke-linejoin', 'round');
           markerPath.setAttribute('vector-effect', 'non-scaling-stroke');
           overlay.replaceChildren(markerPath);
         }
