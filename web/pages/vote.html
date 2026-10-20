@@ -308,32 +308,28 @@
       outline: 2px solid var(--silver);
       outline-offset: 5px;
     }
-    .poll-vote-pie.has-selection::after {
-      content: '';
+    .poll-pie-selection-overlay {
       position: absolute;
-      inset: 0;
+      left: -4px;
+      top: -4px;
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
       z-index: 1;
-      border-radius: 50%;
       pointer-events: none;
-      background: conic-gradient(from 0deg, transparent 0deg var(--selection-start), #fff var(--selection-start) var(--selection-end), transparent var(--selection-end) 360deg);
-      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 2px));
-      mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 2px));
+      overflow: visible;
     }
     .poll-vote-pie::before {
       content: '';
       position: absolute;
       inset: 29%;
+      z-index: 2;
       border-radius: 50%;
       background: var(--charcoal);
       border: 1px solid rgba(242, 242, 243, 0.2);
     }
-    .poll-vote-pie.has-selection::before {
-      background: var(--option-accent);
-      border: 2px solid rgba(255, 255, 255, 0.85);
-    }
     .poll-vote-pie-center {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -362,16 +358,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: var(--charcoal);
+      color: var(--silver);
       font-size: 9px;
       font-weight: 800;
     }
     .poll-pie-total.is-selection {
-      color: var(--charcoal);
+      color: var(--silver);
       font-size: 11px;
     }
     .poll-pie-selection-percent {
-      color: var(--charcoal);
+      color: var(--graphite-300);
       font-size: 9px;
       font-weight: 700;
     }
@@ -1269,8 +1265,8 @@
       if (!selectedOption) {
         pie.classList.remove('has-selection');
         pie.style.removeProperty('--option-accent');
-        pie.style.removeProperty('--selection-start');
-        pie.style.removeProperty('--selection-end');
+        const overlay = pie.querySelector('.poll-pie-selection-overlay');
+        if (overlay) overlay.replaceChildren();
         pie.setAttribute('aria-label', `Live vote distribution for ${poll.title}. Tap a slice to inspect its votes.`);
         if (totalEl) {
           totalEl.textContent = Number(poll.totalVotes || 0).toLocaleString();
@@ -1296,8 +1292,35 @@
       const percentage = getPollOptionPercent(poll, selectedOption);
       pie.classList.add('has-selection');
       pie.style.setProperty('--option-accent', color);
-      pie.style.setProperty('--selection-start', `${start}deg`);
-      pie.style.setProperty('--selection-end', `${end}deg`);
+      const overlay = pie.querySelector('.poll-pie-selection-overlay');
+      if (overlay) {
+        const optionVotes = getPollOptionVoteCount(selectedOption);
+        const sweep = total > 0 ? optionVotes / total * 360 : 0;
+        if (sweep > 0) {
+          const radius = 84;
+          const center = 84;
+          const startRadians = (start - 90) * Math.PI / 180;
+          const endRadians = (end - 90) * Math.PI / 180;
+          const startX = center + radius * Math.cos(startRadians);
+          const startY = center + radius * Math.sin(startRadians);
+          const endX = center + radius * Math.cos(endRadians);
+          const endY = center + radius * Math.sin(endRadians);
+          const largeArc = sweep > 180 ? 1 : 0;
+          const pathData = sweep >= 359.999
+            ? `M ${center} ${center - radius} A ${radius} ${radius} 0 1 1 ${center} ${center + radius} A ${radius} ${radius} 0 1 1 ${center} ${center - radius} Z`
+            : `M ${center} ${center} L ${startX.toFixed(3)} ${startY.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} 1 ${endX.toFixed(3)} ${endY.toFixed(3)} Z`;
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', pathData);
+          path.setAttribute('fill', color);
+          path.setAttribute('stroke', '#fff');
+          path.setAttribute('stroke-width', '2.5');
+          path.setAttribute('stroke-linejoin', 'round');
+          path.setAttribute('vector-effect', 'non-scaling-stroke');
+          overlay.replaceChildren(path);
+        } else {
+          overlay.replaceChildren();
+        }
+      }
       pie.setAttribute('aria-label', `${selectedOption.label}: ${getPollOptionVoteCount(selectedOption).toLocaleString()} votes, ${percentage.toFixed(1)} percent`);
       if (totalEl) {
         totalEl.textContent = `${getPollOptionVoteCount(selectedOption).toLocaleString()} votes`;
@@ -1407,6 +1430,7 @@
             <div class="poll-vote-layout">
               <div class="poll-vote-chart-column">
                 <button type="button" class="poll-vote-pie" id="poll-pie-${p.id}" aria-label="Live vote distribution for ${p.title}. Tap a slice to inspect its votes." onclick="handlePollPieClick(event, '${p.id}')" style="background:${getPollPieGradient(p)};">
+                  <svg class="poll-pie-selection-overlay" viewBox="0 0 168 168" aria-hidden="true"></svg>
                   <div class="poll-vote-pie-center">
                     <span class="poll-pie-selection-label" style="display:none;"></span>
                     <strong class="poll-pie-total">${Number(p.totalVotes || 0).toLocaleString()}</strong>
