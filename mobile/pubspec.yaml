@@ -1,7 +1,7 @@
 name: getitright_mobile
 description: "IcapsQ - Production Survey and Feedback Cross-Platform App"
 publish_to: "none"
-version: 2.1.16+21
+version: 2.1.17+22
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

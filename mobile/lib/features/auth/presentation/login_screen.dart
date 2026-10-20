@@ -258,15 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
           userData = regRes['user'] as Map<String, dynamic>;
           sessionToken = regRes['token']?.toString();
         } else {
-          // If registration may have completed before a network interruption,
-          // accept only a real server-authenticated session.
-          final loginRes = await _apiClient.login(email, password);
-          if (loginRes != null && loginRes['user'] != null) {
-            userData = loginRes['user'] as Map<String, dynamic>;
-            sessionToken = loginRes['token']?.toString();
-          } else {
-            throw Exception('Registration did not return an authenticated account. Please try again.');
-          }
+          throw Exception('Your account was not created. Please try again.');
         }
       } else {
         final loginRes = await _apiClient.login(email, password);
@@ -335,9 +327,15 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      final message = e.toString().replaceFirst('Exception: ', '').trim();
+      var message = e.toString().replaceFirst('Exception: ', '').trim();
+      final lower = message.toLowerCase();
+      if (lower.contains('socketexception') || lower.contains('failed host lookup') || lower.contains('timed out')) {
+        message = 'Could not connect to IcapsQ. Check your internet connection and try again.';
+      } else if (lower.contains('format_exception') || lower.contains('type \'') || lower.contains('null')) {
+        message = 'The server returned an unexpected response. Please try again shortly.';
+      }
       setState(() => _errorMessage = message.isEmpty
-          ? 'Sign-in failed. Please check your details and try again.'
+          ? 'Could not complete your request. Check your details and try again.'
           : message);
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -327,15 +327,9 @@ class ApiClient {
         if (response.statusCode == 401) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('gir_token');
-          lastError = 'Email or password is incorrect. Please try again.';
+          lastError = 'Email or password is incorrect. Check your details and try again.';
         }
-        final error = json.decode(response.body);
-        if (error is Map<String, dynamic>) {
-          final detail = error['detail'];
-          lastError = detail is List
-              ? detail.map((item) => item is Map ? item['msg'] : item).join(', ')
-              : (detail?.toString() ?? lastError);
-        }
+        lastError = _friendlyAuthError(response.body, response.statusCode, lastError);
         if (response.statusCode < 500) break;
       } catch (_) {
         lastError = 'Could not reach the sign-in server. Check your connection and try again.';
@@ -354,11 +348,12 @@ class ApiClient {
     String plan = 'free',
     String organization = 'Independent',
   }) async {
+    String lastError = 'Could not create your account. Check your connection and try again.';
     for (final url in baseUrls) {
       try {
         final response = await http
             .post(
-              Uri.parse('$url/users'),
+              Uri.parse('$url/auth/register'),
               headers: {'Content-Type': 'application/json'},
               body: json.encode({
                 'fullName': fullName.trim(),
@@ -377,9 +372,59 @@ class ApiClient {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
         }
-      } catch (_) {}
+        lastError = _friendlyAuthError(response.body, response.statusCode, lastError);
+        if (response.statusCode < 500) break;
+      } on http.ClientException {
+        lastError = 'Could not reach the registration server. Check your connection and try again.';
+      } catch (_) {
+        lastError = 'Could not reach the registration server. Check your connection and try again.';
+      }
     }
-    return null;
+    throw Exception(lastError);
+  }
+
+  String _friendlyAuthError(String body, int statusCode, String fallback) {
+    dynamic detail;
+    try {
+      final decoded = json.decode(body);
+      if (decoded is Map) detail = decoded['detail'] ?? decoded['message'];
+    } catch (_) {
+      detail = null;
+    }
+    final raw = detail is List
+        ? detail.map((item) => item is Map ? item['msg']?.toString() ?? '' : item.toString()).join(' ')
+        : detail?.toString() ?? '';
+    final message = raw.toLowerCase();
+    if (statusCode == 409 || message.contains('already registered') || message.contains('already exists') || message.contains('already exist')) {
+      return 'An account with this email already exists. Sign in or reset your password.';
+    }
+    if (message.contains('password') && (message.contains('12 characters') || message.contains('upper-case') || message.contains('uppercase'))) {
+      return 'Choose a password with at least 12 characters, including uppercase, lowercase, and a number.';
+    }
+    if (message.contains('email') && (message.contains('valid') || message.contains('@-sign') || message.contains('value error'))) {
+      return 'Enter a valid email address, such as name@example.com.';
+    }
+    if (message.contains('password') && (message.contains('incorrect') || statusCode == 401)) {
+      return 'That password does not match this account. Try again or reset your password.';
+    }
+    if (statusCode == 401 || message.contains('no account') || message.contains('user not found') || message.contains('not found')) {
+      return 'We could not find an account for that email. Check the address or create an account.';
+    }
+    if (message.contains('national') || message.contains('identity') || message.contains('id number')) {
+      return 'Check your ID number. Enter the required digits only.';
+    }
+    if (message.contains('county') || message.contains('location')) {
+      return 'Check your county selection and try again.';
+    }
+    if (message.contains('email') && message.contains('required')) {
+      return 'Enter your email address to continue.';
+    }
+    if (message.contains('password') && message.contains('required')) {
+      return 'Enter your password to continue.';
+    }
+    if (statusCode >= 500) return 'The service is temporarily unavailable. Please try again shortly.';
+    if (raw.isNotEmpty && !message.contains('value error') && !message.contains('field required')) return raw;
+    return fallback;
   }
 
   Future<bool> updatePlan(String userId, String plan) async {
