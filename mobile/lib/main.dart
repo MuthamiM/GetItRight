@@ -56,11 +56,15 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
   Future<void> _checkSavedSession() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('gir_user_id');
+    final sessionToken = prefs.getString('gir_token');
     final role = prefs.getString('gir_user_role') ?? 'user';
     final plan = prefs.getString('gir_user_plan') ?? 'free';
     final name = prefs.getString('gir_user_name') ?? 'User';
 
-    if (userId != null && userId.isNotEmpty) {
+    // Older app builds could create local fallback users. Cached profile data
+    // without a server-issued token is not an authenticated session.
+    if (userId != null && userId.isNotEmpty &&
+        sessionToken != null && sessionToken.isNotEmpty) {
       if (mounted) {
         setState(() {
           _isLoggedIn = true;
@@ -71,6 +75,9 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
         });
         _requestNotificationPermissionIfNeeded();
       }
+    } else {
+      await prefs.remove('gir_user_id');
+      await prefs.remove('gir_token');
     }
   }
 

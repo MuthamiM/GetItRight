@@ -258,20 +258,14 @@ class _LoginScreenState extends State<LoginScreen> {
           userData = regRes['user'] as Map<String, dynamic>;
           sessionToken = regRes['token']?.toString();
         } else {
-          // Automatic login attempt or fallback account session
+          // If registration may have completed before a network interruption,
+          // accept only a real server-authenticated session.
           final loginRes = await _apiClient.login(email, password);
           if (loginRes != null && loginRes['user'] != null) {
             userData = loginRes['user'] as Map<String, dynamic>;
             sessionToken = loginRes['token']?.toString();
           } else {
-            // Local offline user session so user can proceed
-            userData = {
-              'id': 'USR-${DateTime.now().millisecondsSinceEpoch % 10000}',
-              'fullName': _fullNameController.text.trim(),
-              'email': email,
-              'role': 'user',
-              'plan': 'free',
-            };
+            throw Exception('Registration did not return an authenticated account. Please try again.');
           }
         }
       } else {
@@ -280,15 +274,12 @@ class _LoginScreenState extends State<LoginScreen> {
           userData = loginRes['user'] as Map<String, dynamic>;
           sessionToken = loginRes['token']?.toString();
         } else {
-          // Fallback login for demo/testing
-          userData = {
-            'id': 'USR-101',
-            'fullName': email.split('@').first,
-            'email': email,
-            'role': email.contains('admin') ? 'admin' : 'user',
-            'plan': 'free',
-          };
+          throw Exception('Sign-in did not return an authenticated account. Please try again.');
         }
+      }
+
+      if (sessionToken == null || sessionToken.isEmpty) {
+        throw Exception('Sign-in failed to create a secure session. Please try again.');
       }
 
       final role = (userData['role'] ?? 'Customer').toString().toLowerCase();
@@ -343,38 +334,11 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     } catch (e) {
-      // Create seamless offline session
-      final fallbackData = {
-        'id': 'USR-LOCAL',
-        'fullName': _isSignUp ? _fullNameController.text.trim() : 'User',
-        'email': email,
-        'role': 'user',
-        'plan': 'free',
-      };
       if (!mounted) return;
-      final navigator = Navigator.of(context);
-      final prefs = await SharedPreferences.getInstance();
-      if (!mounted) return;
-      final planChosen = prefs.getBool('gir_plan_chosen') ?? false;
-      final savedPlan = prefs.getString('gir_user_plan');
-
-      if (planChosen || (savedPlan != null && savedPlan.isNotEmpty)) {
-        widget.onLoginSuccess('user');
-      } else {
-        navigator.push(
-          MaterialPageRoute(
-            builder: (subContext) => PlanSelectionScreen(
-              userData: fallbackData,
-              onProceed: () async {
-                final p = await SharedPreferences.getInstance();
-                await p.setBool('gir_plan_chosen', true);
-                navigator.pop();
-                widget.onLoginSuccess('user');
-              },
-            ),
-          ),
-        );
-      }
+      final message = e.toString().replaceFirst('Exception: ', '').trim();
+      setState(() => _errorMessage = message.isEmpty
+          ? 'Sign-in failed. Please check your details and try again.'
+          : message);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

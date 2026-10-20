@@ -166,6 +166,23 @@ class ApiClient {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
         }
+        if (response.statusCode == 401) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('gir_token');
+          return {
+            'error': 'Your sign-in session expired. Sign out and sign in again before voting.',
+            'statusCode': 401,
+          };
+        }
+        if (response.statusCode == 403) {
+          final error = json.decode(response.body);
+          return {
+            'error': error is Map<String, dynamic>
+                ? (error['detail']?.toString() ?? 'Your account cannot vote right now.')
+                : 'Your account cannot vote right now.',
+            'statusCode': 403,
+          };
+        }
       } catch (_) {}
     }
     return null;
@@ -293,6 +310,7 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
+    String lastError = 'Could not sign in. Check your connection and try again.';
     for (final url in baseUrls) {
       try {
         final response = await http
@@ -306,9 +324,24 @@ class ApiClient {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
         }
-      } catch (_) {}
+        if (response.statusCode == 401) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('gir_token');
+          lastError = 'Email or password is incorrect. Please try again.';
+        }
+        final error = json.decode(response.body);
+        if (error is Map<String, dynamic>) {
+          final detail = error['detail'];
+          lastError = detail is List
+              ? detail.map((item) => item is Map ? item['msg'] : item).join(', ')
+              : (detail?.toString() ?? lastError);
+        }
+        if (response.statusCode < 500) break;
+      } catch (_) {
+        lastError = 'Could not reach the sign-in server. Check your connection and try again.';
+      }
     }
-    return null;
+    throw Exception(lastError);
   }
 
   Future<Map<String, dynamic>?> register({
@@ -642,7 +675,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.14';
+    const currentAppVersion = '2.1.16';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');

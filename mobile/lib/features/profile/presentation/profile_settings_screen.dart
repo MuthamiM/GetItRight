@@ -191,7 +191,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                                     ),
                                     SizedBox(height: 3),
                                     Text(
-                                      'Version 2.1.14 (Build 19)',
+                                      'Version 2.1.16 (Build 21)',
                                       style: TextStyle(
                                         color: Color(0xFFB8B8B8),
                                         fontSize: 12,
@@ -327,7 +327,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'You are using the latest version of IcapsQ (v2.1.14)',
+              'You are using the latest version of IcapsQ (v2.1.16)',
               style: TextStyle(
                   color: Color(0xFF2A2A2A), fontWeight: FontWeight.bold),
             ),
@@ -391,7 +391,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 border: Border.all(color: const Color(0xFF606060)),
               ),
               child: Text(
-                'Version $version is now available (Current: v2.1.14)',
+                'Version $version is now available (Current: v2.1.16)',
                 style: const TextStyle(
                     color: Color(0xFFE5E5E5),
                     fontSize: 12,

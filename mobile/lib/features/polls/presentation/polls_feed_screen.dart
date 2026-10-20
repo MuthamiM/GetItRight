@@ -765,6 +765,10 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       _showVoteError('Unable to check your ballot history. Check your connection and try again.');
       return;
     }
+    if (priorVote['error'] != null) {
+      _showVoteError(priorVote['error'].toString());
+      return;
+    }
     if (priorVote['hasVoted'] == true) {
       final votedIndex = priorVote['optionIndex'];
       if (votedIndex is int && votedIndex >= 0 && votedIndex < poll.options.length) {
