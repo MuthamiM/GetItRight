@@ -325,7 +325,8 @@
       border: 1px solid rgba(242, 242, 243, 0.2);
     }
     .poll-vote-pie.has-selection::before {
-      border: 2px solid var(--option-accent);
+      background: var(--option-accent);
+      border: 2px solid rgba(255, 255, 255, 0.85);
     }
     .poll-vote-pie-center {
       position: relative;
@@ -358,16 +359,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      color: var(--silver);
+      color: var(--charcoal);
       font-size: 9px;
       font-weight: 800;
     }
     .poll-pie-total.is-selection {
-      color: var(--option-accent);
+      color: var(--charcoal);
       font-size: 11px;
     }
     .poll-pie-selection-percent {
-      color: var(--graphite-300);
+      color: var(--charcoal);
       font-size: 9px;
       font-weight: 700;
     }
@@ -403,11 +404,11 @@
       transition: background 0.15s ease, border-color 0.15s ease;
     }
     .poll-legend-item.selected {
-      background: color-mix(in srgb, var(--option-accent) 20%, transparent);
-      border-color: var(--option-accent);
+      background: rgba(229, 229, 229, 0.08);
+      border-color: rgba(229, 229, 229, 0.3);
     }
     .poll-legend-item:focus-visible {
-      outline: 2px solid var(--option-accent);
+      outline: 2px solid var(--silver);
       outline-offset: 2px;
     }
     .poll-legend-dot {
@@ -416,7 +417,7 @@
       height: 12px;
       margin-top: 2px;
       border-radius: 50%;
-      background: var(--option-accent);
+      background: var(--graphite-300);
     }
     .poll-legend-label {
       overflow: hidden;
@@ -424,7 +425,7 @@
       white-space: nowrap;
     }
     .poll-legend-stats {
-      color: var(--option-accent);
+      color: var(--silver);
       font-size: 11px;
       font-weight: 800;
     }
@@ -462,35 +463,31 @@
       font-weight: 700;
       overflow-wrap: anywhere;
     }
-    .poll-option-number {
-      display: inline-grid;
-      place-items: center;
-      width: 24px;
-      height: 24px;
-      flex: 0 0 24px;
+    .poll-option-marker {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
       border-radius: 50%;
-      border: 1.5px solid var(--option-accent);
-      color: var(--option-accent);
-      font: 800 11px/1 var(--font-display);
+      border: 2px solid var(--graphite-300);
+      background: transparent;
       box-sizing: border-box;
+      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
-    .poll-opt-btn.voted .poll-option-number {
+    .poll-opt-btn.selected .poll-option-marker {
       background: var(--option-accent);
-      color: var(--charcoal);
+      border-color: var(--option-accent);
+      box-shadow: 0 0 0 3px rgba(229, 229, 229, 0.12);
     }
     .poll-opt-btn.selected {
-      background: color-mix(in srgb, var(--option-accent) 18%, transparent);
-    }
-    .poll-opt-btn.selected .poll-option-number {
-      background: var(--option-accent);
-      color: var(--charcoal);
+      background: rgba(229, 229, 229, 0.06);
     }
     .poll-opt-btn.voted .poll-option-name {
       color: var(--silver);
     }
     .poll-option-percent {
       flex: 0 0 auto;
-      color: var(--option-accent);
+      color: var(--silver);
       font: 800 12px/1.2 var(--font-display);
       white-space: nowrap;
     }
@@ -1349,7 +1346,7 @@
             <button class="poll-opt-btn ${votedClass}" style="--option-accent:${optionColor};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
               <div class="poll-option-content">
                 <span class="poll-option-name option-label">
-                  <span class="poll-option-number" aria-hidden="true">${index + 1}</span>
+                  <span class="poll-option-marker" aria-hidden="true"></span>
                   <span>${opt.label}</span> ${isVotedChoice ? '<span style="font-size:11px;font-weight:800;">[Voted]</span>' : ''}
                 </span>
                 <span class="poll-option-percent option-percent">
