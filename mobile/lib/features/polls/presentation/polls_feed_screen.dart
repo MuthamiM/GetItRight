@@ -98,6 +98,67 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         p.options.any((o) => o.text.toLowerCase().contains('syengo'));
   }
 
+  String? _accountVoteCachePrefix(SharedPreferences prefs) {
+    final accountId = prefs.getString('gir_user_id')?.trim();
+    if (accountId == null || accountId.isEmpty) return null;
+    return 'gir_account_vote_${Uri.encodeComponent(accountId)}';
+  }
+
+  String? _cachedAccountVote(Poll poll, SharedPreferences prefs) {
+    final prefix = _accountVoteCachePrefix(prefs);
+    if (prefix == null ||
+        prefs.getBool('${prefix}_${poll.id}_has_voted') != true) {
+      return null;
+    }
+    final optionId = prefs.getString('${prefix}_${poll.id}_option');
+    return optionId != null &&
+            poll.options.any((option) => option.id == optionId)
+        ? optionId
+        : '__voted__';
+  }
+
+  Future<void> _cacheAccountVote(
+    Poll poll,
+    SharedPreferences prefs, {
+    String? optionId,
+  }) async {
+    final prefix = _accountVoteCachePrefix(prefs);
+    if (prefix == null) return;
+    await prefs.setBool('${prefix}_${poll.id}_has_voted', true);
+    if (optionId != null) {
+      await prefs.setString('${prefix}_${poll.id}_option', optionId);
+    } else {
+      await prefs.remove('${prefix}_${poll.id}_option');
+    }
+  }
+
+  Future<void> _clearAccountVoteCache(
+      Poll poll, SharedPreferences prefs) async {
+    final prefix = _accountVoteCachePrefix(prefs);
+    if (prefix == null) return;
+    await prefs.remove('${prefix}_${poll.id}_has_voted');
+    await prefs.remove('${prefix}_${poll.id}_option');
+  }
+
+  int? _optionArrayIndex(Poll poll, Object? rawOptionIndex) {
+    final optionIndex = rawOptionIndex is int
+        ? rawOptionIndex
+        : int.tryParse(rawOptionIndex?.toString() ?? '');
+    if (optionIndex == null) return null;
+    final apiIndex =
+        poll.options.indexWhere((option) => option.index == optionIndex);
+    if (apiIndex >= 0) return apiIndex;
+    if (optionIndex >= 0 && optionIndex < poll.options.length) {
+      return optionIndex;
+    }
+    return null;
+  }
+
+  String? _optionIdForStatus(Poll poll, Map<String, dynamic>? status) {
+    final arrayIndex = _optionArrayIndex(poll, status?['optionIndex']);
+    return arrayIndex == null ? null : poll.options[arrayIndex].id;
+  }
+
   /// Format countdown strictly as "Xd Xh XXmins left", no emojis, no Root, no 0x
   String _formatPollCountdown(Poll poll) {
     DateTime deadline;
@@ -142,9 +203,11 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     final serverVoteStatuses = hasAccountSession || hasIdentity
         ? await Future.wait(polls.map((poll) => _apiClient.getVoteStatus(
               poll.id,
-              // An authenticated session is checked by account ID. Do not
-              // carry a device-wide ID or voter key across signed-in accounts.
-              hasAccountSession ? '' : savedNationalId,
+              // Check both the signed-in account and the ID used on older
+              // ballots, which may not have an account ID recorded yet.
+              savedNationalId,
+              // A device-wide voter key must never follow a user into another
+              // signed-in account.
               voterKey: hasAccountSession ? null : savedVoterKey,
             )))
         : List<Map<String, dynamic>?>.filled(polls.length, null);
@@ -157,29 +220,21 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       final serverStatus = serverVoteStatuses[index];
 
       if (serverStatus?['hasVoted'] == true) {
-        final votedIndex = serverStatus?['optionIndex'];
-        if (votedIndex is int &&
-            votedIndex >= 0 &&
-            votedIndex < p.options.length) {
-          p.selectedOptionId = p.options[votedIndex].id;
-          await prefs.setString(
-              'gir_voted_option_${p.id}', p.options[votedIndex].id);
-        } else {
-          p.selectedOptionId = '__voted__';
-        }
-        await prefs.setString(
-          'gir_voted_time_${p.id}',
-          DateTime.now().toIso8601String(),
+        p.selectedOptionId = _optionIdForStatus(p, serverStatus) ?? '__voted__';
+        await _cacheAccountVote(
+          p,
+          prefs,
+          optionId:
+              p.selectedOptionId == '__voted__' ? null : p.selectedOptionId,
         );
-      } else if (serverStatus?['hasVoted'] == false || p.totalVotes == 0) {
-        // Server ballot status is authoritative; discard optimistic local votes.
-        prefs.remove('gir_voted_option_${p.id}');
-        prefs.remove('gir_voted_time_${p.id}');
+      } else if (serverStatus?['hasVoted'] == false) {
+        // Server ballot status is authoritative; clear this account's cache.
+        await _clearAccountVoteCache(p, prefs);
         p.selectedOptionId = null;
       } else {
-        // Unknown status is not proof that this account voted. The old local
-        // selection cache was shared across accounts and disabled valid options.
-        p.selectedOptionId = null;
+        // Preserve a confirmed local state during a temporary network outage,
+        // but scope it to this account so shared devices do not cross-contaminate.
+        p.selectedOptionId = _cachedAccountVote(p, prefs);
       }
 
       // Keep server-confirmed votes visible so users can always see their
@@ -833,6 +888,38 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         prefs.getString('gir_voter_name') ?? prefs.getString('gir_user_name');
     var savedId = prefs.getString('gir_voter_id_number') ??
         prefs.getString('gir_user_national_id');
+    final savedIdBeforePrompt = savedId;
+
+    final hasAccountSession = (prefs.getString('gir_token') ?? '').isNotEmpty;
+    final voterKey =
+        hasAccountSession ? null : await _apiClient.getOrCreateVoterKey();
+    final priorVote = await _apiClient.getVoteStatus(
+      poll.id,
+      savedId ?? '',
+      voterKey: voterKey,
+    );
+    if (priorVote == null) {
+      _showVoteError(
+          'Unable to check your ballot history. Check your connection and try again.');
+      return;
+    }
+    if (priorVote['error'] != null) {
+      _showVoteError(priorVote['error'].toString());
+      return;
+    }
+    if (priorVote['hasVoted'] == true) {
+      final savedOptionId = _optionIdForStatus(poll, priorVote);
+      await _cacheAccountVote(poll, prefs, optionId: savedOptionId);
+      if (mounted) {
+        setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+      }
+      return;
+    }
+    if (priorVote['hasVoted'] != false) {
+      _showVoteError(
+          'Unable to confirm your ballot status. Check your connection and try again.');
+      return;
+    }
 
     if (savedDob == null ||
         savedDob.isEmpty ||
@@ -856,6 +943,32 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         savedName == null ||
         savedId == null) return;
 
+    if (savedId != savedIdBeforePrompt) {
+      final identityStatus = await _apiClient.getVoteStatus(
+        poll.id,
+        savedId,
+        voterKey: hasAccountSession ? null : voterKey,
+      );
+      if (identityStatus == null || identityStatus['error'] != null) {
+        _showVoteError(identityStatus?['error']?.toString() ??
+            'Unable to check your ballot history. Check your connection and try again.');
+        return;
+      }
+      if (identityStatus['hasVoted'] == true) {
+        final savedOptionId = _optionIdForStatus(poll, identityStatus);
+        await _cacheAccountVote(poll, prefs, optionId: savedOptionId);
+        if (mounted) {
+          setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+        }
+        return;
+      }
+      if (identityStatus['hasVoted'] != false) {
+        _showVoteError(
+            'Unable to confirm your ballot status. Check your connection and try again.');
+        return;
+      }
+    }
+
     final location = await PreciseLocation.acquire();
     if (!location.succeeded) {
       _showVoteError(
@@ -866,39 +979,6 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       return;
     }
     final position = location.position!;
-
-    final voterKey = await _apiClient.getOrCreateVoterKey();
-    final priorVote =
-        await _apiClient.getVoteStatus(poll.id, savedId, voterKey: voterKey);
-    if (priorVote == null) {
-      _showVoteError(
-          'Unable to check your ballot history. Check your connection and try again.');
-      return;
-    }
-    if (priorVote['error'] != null) {
-      _showVoteError(priorVote['error'].toString());
-      return;
-    }
-    if (priorVote['hasVoted'] == true) {
-      final votedIndex = priorVote['optionIndex'];
-      String? savedOptionId;
-      if (votedIndex is int &&
-          votedIndex >= 0 &&
-          votedIndex < poll.options.length) {
-        savedOptionId = poll.options[votedIndex].id;
-      }
-      await prefs.setString(
-        'gir_voted_time_${poll.id}',
-        DateTime.now().toIso8601String(),
-      );
-      if (savedOptionId != null) {
-        await prefs.setString('gir_voted_option_${poll.id}', savedOptionId);
-      }
-      if (mounted) {
-        setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
-      }
-      return;
-    }
 
     final result = await _apiClient.castVote(
       poll.id,
@@ -914,21 +994,20 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     );
     if (result['success'] != true) {
       if (result['alreadyVoted'] == true) {
-        final votedIndex = result['optionIndex'];
-        final savedOptionId = votedIndex is int &&
-                votedIndex >= 0 &&
-                votedIndex < poll.options.length
-            ? poll.options[votedIndex].id
-            : null;
-        await prefs.setString(
-          'gir_voted_time_${poll.id}',
-          DateTime.now().toIso8601String(),
+        // A vote from another device may win after the status check. Refresh
+        // the committed ballot so the badge and selected option match the DB.
+        final duplicateStatus = await _apiClient.getVoteStatus(
+          poll.id,
+          savedId,
+          voterKey: voterKey,
         );
-        if (savedOptionId != null) {
-          await prefs.setString('gir_voted_option_${poll.id}', savedOptionId);
-        }
+        final savedOptionId = duplicateStatus?['hasVoted'] == true
+            ? _optionIdForStatus(poll, duplicateStatus)
+            : null;
+        await _cacheAccountVote(poll, prefs, optionId: savedOptionId);
         if (mounted) {
           setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+          _showVoteError('This poll already has a recorded vote.');
         }
         return;
       }
@@ -937,9 +1016,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       return;
     }
 
-    await prefs.setString(
-        'gir_voted_time_${poll.id}', DateTime.now().toIso8601String());
-    await prefs.setString('gir_voted_option_${poll.id}', optionId);
+    await _cacheAccountVote(poll, prefs, optionId: optionId);
     await prefs.setDouble('gir_latitude', position.latitude);
     await prefs.setDouble('gir_longitude', position.longitude);
     await prefs.setDouble('gir_location_accuracy', position.accuracy);
@@ -1395,6 +1472,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
                                               // Interactive Pie Chart Breakdown
                                               InteractivePieChartWidget(
+                                                  key: ValueKey(
+                                                      '${poll.id}:${poll.selectedOptionId ?? ''}'),
                                                   poll: poll),
 
                                               const SizedBox(height: 14),
@@ -1750,9 +1829,30 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = _votedArrayIndex(widget.poll);
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
+  }
+
+  int? _votedArrayIndex(Poll poll) {
+    final selectedOptionId = poll.selectedOptionId;
+    if (selectedOptionId == null || selectedOptionId == '__voted__')
+      return null;
+    final index =
+        poll.options.indexWhere((option) => option.id == selectedOptionId);
+    return index < 0 ? null : index;
+  }
+
+  @override
+  void didUpdateWidget(covariant InteractivePieChartWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.poll.id != widget.poll.id) {
+      _selectedIndex = _votedArrayIndex(widget.poll);
+    } else if (oldWidget.poll.selectedOptionId !=
+        widget.poll.selectedOptionId) {
+      _selectedIndex = _votedArrayIndex(widget.poll);
+    }
   }
 
   @override
@@ -1843,7 +1943,7 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
 
             // Center donut tap clears selection
             if (math.sqrt(dx * dx + dy * dy) < 32) {
-              setState(() => _selectedIndex = null);
+              setState(() => _selectedIndex = _votedArrayIndex(widget.poll));
               return;
             }
 
@@ -1859,8 +1959,10 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
                   ? (opt.votes / widget.poll.totalVotes) * 2 * math.pi
                   : 0.0;
               if (angle >= start && angle < start + sweep) {
+                final votedIndex = _votedArrayIndex(widget.poll);
                 setState(() {
-                  _selectedIndex = (_selectedIndex == i) ? null : i;
+                  _selectedIndex =
+                      _selectedIndex == i && votedIndex != i ? null : i;
                 });
                 return;
               }
