@@ -1543,6 +1543,10 @@
     }
 
     async function submitPollVote(pollId, optionIndex, btnEl) {
+      const poll = allPolls.find(item => item.id === pollId);
+      const selectedArrayIndex = getPollOptionArrayIndex(poll, optionIndex);
+      if (selectedArrayIndex >= 0) setPollOptionSelection(pollId, selectedArrayIndex, false);
+
       // BEFORE TAKING A POLL: Verify identity, county, DOB & precise location
       if (window.Demographics && typeof window.Demographics.ensureVoterSurveyBeforePoll === 'function') {
         window.Demographics.ensureVoterSurveyBeforePoll(async (verified) => {
@@ -1612,6 +1616,8 @@
         if (priorVote && priorVote.hasVoted) {
           serverVotedPolls.set(pollId, priorVote);
           lockPollOptions(pollId, priorVote.optionIndex);
+          const votedArrayIndex = getPollOptionArrayIndex(allPolls.find(poll => poll.id === pollId), priorVote.optionIndex);
+          if (votedArrayIndex >= 0) setPollOptionSelection(pollId, votedArrayIndex, false);
           return;
         }
 
