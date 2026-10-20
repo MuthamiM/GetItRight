@@ -43,7 +43,7 @@ class SystemController:
             "force_update": False,
             "title": f"IcapsQ v{settings.VERSION}",
             "release_notes": "• Web and Android now use the same database-backed API\n• Redundant API servers fail over behind the public gateway\n• Survey submission, location checks and duplicate-vote protection improved",
-            "download_url": "https://icapsq.mftechnologies.org/app-release.apk",
+            "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v2.1.23/IcapsQ-v2.1.23-build-29.apk",
         }
 
     @staticmethod

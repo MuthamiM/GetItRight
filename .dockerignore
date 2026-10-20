@@ -17,6 +17,8 @@ node_modules/
 **/*.db
 **/*.sqlite
 **/*.sqlite3
+web/*.apk
+web/downloads/*.apk
 backend/.venv/
 backend/csharp/
 **/bin/
