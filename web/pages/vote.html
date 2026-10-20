@@ -219,6 +219,9 @@
       line-height: 1;
       white-space: nowrap;
     }
+    .poll-voted-text[hidden] {
+      display: none !important;
+    }
     .poll-turnout {
       display: inline-flex;
       align-items: baseline;
@@ -487,9 +490,12 @@
     }
     .poll-option-percent {
       flex: 0 0 auto;
-      color: var(--silver);
+      color: var(--silver) !important;
       font: 800 12px/1.2 var(--font-display);
       white-space: nowrap;
+    }
+    .poll-legend-stats {
+      color: var(--silver) !important;
     }
     .poll-opt-btn:hover:not(:disabled) {
       background: rgba(229, 229, 229, 0.08);
@@ -1078,6 +1084,7 @@
     }
 
     function lockPollOptions(pollId, optionIndex) {
+      setPollVotedBadge(pollId, true);
       const hasOptionIndex = optionIndex !== null && optionIndex !== undefined && optionIndex !== '' &&
         Number.isInteger(Number(optionIndex)) && Number(optionIndex) >= 0;
       const card = document.getElementById(`poll-card-${pollId}`);
@@ -1093,8 +1100,14 @@
           }
         }
       });
+    }
+
+    function setPollVotedBadge(pollId, hasVoted) {
       const statusEl = document.getElementById(`voted-status-${pollId}`);
-      if (statusEl) statusEl.style.display = 'inline-flex';
+      if (!statusEl) return;
+      statusEl.hidden = !hasVoted;
+      statusEl.style.setProperty('display', hasVoted ? 'inline-flex' : 'none', 'important');
+      statusEl.setAttribute('aria-hidden', String(!hasVoted));
     }
 
     function getPollDeadlineDate(p) {
@@ -1377,8 +1390,8 @@
                 </span>
                 <span style="font-family:var(--font-mono); font-size:11px; color:var(--silver); opacity:0.6;">${p.id}</span>
               </div>
-              <span id="voted-status-${p.id}" class="poll-voted-text" style="${hasVoted ? 'display:inline-flex;' : 'display:none;'}">
-                <span aria-hidden="true">✓</span> VOTED
+              <span id="voted-status-${p.id}" class="poll-voted-text" aria-live="polite" aria-label="You voted in this poll" ${hasVoted ? '' : 'hidden'} style="display:${hasVoted ? 'inline-flex' : 'none'} !important;" aria-hidden="${!hasVoted}">
+                <span aria-hidden="true">✓</span><span>VOTED</span>
               </span>
             </div>
 
