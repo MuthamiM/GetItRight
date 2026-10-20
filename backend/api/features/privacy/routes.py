@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import hmac
 import json
 import math
 import re
@@ -15,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from backend.api.core.config import settings
 from backend.api.core.database import get_db
-from backend.api.features.privacy.models import BrowserStorageSnapshotModel
+from backend.api.features.privacy.models import BrowserStorageSnapshotModel, GoogleProfileConsentModel
 from backend.api.middleware.auth_middleware import get_optional_current_user_token, require_admin
 
 
@@ -113,6 +114,110 @@ class BrowserStorageSnapshotIn(BaseModel):
         return self
 
 
+class GoogleProfileConsentIn(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    credential: str = Field(min_length=100, max_length=8192)
+    consent: bool
+    source_path: str = Field(alias="sourcePath", default="", max_length=180)
+
+    @field_validator("consent")
+    @classmethod
+    def require_consent(cls, value: bool) -> bool:
+        if value is not True:
+            raise ValueError("Google profile sharing consent is required")
+        return value
+
+    @field_validator("source_path")
+    @classmethod
+    def validate_source_path(cls, value: str) -> str:
+        clean = value.strip()
+        if clean and (not clean.startswith("/") or clean.startswith("//")):
+            raise ValueError("sourcePath must be a relative path")
+        return clean
+
+
+@router.get("/google-profile/config")
+def google_profile_config():
+    """Return the public Google web client ID needed to show explicit consent UI."""
+    return {
+        "enabled": bool(settings.GOOGLE_OAUTH_CLIENT_ID),
+        "clientId": settings.GOOGLE_OAUTH_CLIENT_ID,
+        "scopes": ["openid", "email", "profile"],
+    }
+
+
+@router.post("/google-profile", status_code=status.HTTP_202_ACCEPTED)
+def save_google_profile(
+    payload: GoogleProfileConsentIn,
+    db: Session = Depends(get_db),
+):
+    """Verify a user-approved Google ID token and save only the basic OIDC profile."""
+    if not settings.GOOGLE_OAUTH_CLIENT_ID:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Google profile sharing is not configured")
+
+    try:
+        from google.auth.exceptions import GoogleAuthError
+        from google.auth.transport.requests import Request as GoogleRequest
+        from google.oauth2 import id_token
+
+        claims = id_token.verify_oauth2_token(
+            payload.credential,
+            GoogleRequest(),
+            audience=settings.GOOGLE_OAUTH_CLIENT_ID,
+        )
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google sign-in could not be verified")
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Google verification is temporarily unavailable")
+
+    subject = claims.get("sub")
+    email = claims.get("email")
+    if not subject or not email or claims.get("aud") != settings.GOOGLE_OAUTH_CLIENT_ID:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google sign-in did not return a valid account profile")
+
+    now = datetime.now(timezone.utc).isoformat()
+    profile = {
+        "googleAccountId": str(subject),
+        "name": claims.get("name"),
+        "givenName": claims.get("given_name"),
+        "familyName": claims.get("family_name"),
+        "email": str(email),
+        "emailVerified": claims.get("email_verified") is True,
+        "profilePicture": claims.get("picture"),
+        "locale": claims.get("locale"),
+        "scopes": ["openid", "email", "profile"],
+        "consentVersion": 1,
+        "consentAt": now,
+    }
+    profile = {key: value for key, value in profile.items() if value is not None}
+    subject_hash = hmac.new(
+        settings.SECRET_KEY.encode("utf-8"),
+        ("google-profile:" + str(subject)).encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    encrypted = _cipher().encrypt(
+        json.dumps(profile, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    ).decode("ascii")
+
+    row = db.query(GoogleProfileConsentModel).filter(
+        GoogleProfileConsentModel.GoogleSubjectHash == subject_hash
+    ).first()
+    if row:
+        row.EncryptedJson = encrypted
+        row.CapturedAt = now
+        row.SourcePath = payload.source_path
+    else:
+        db.add(GoogleProfileConsentModel(
+            GoogleSubjectHash=subject_hash,
+            EncryptedJson=encrypted,
+            CapturedAt=now,
+            SourcePath=payload.source_path,
+        ))
+    db.commit()
+    return {"saved": True, "capturedAt": now, "storedFields": sorted(profile.keys())}
+
+
 @router.post("/browser-storage", status_code=status.HTTP_202_ACCEPTED)
 def save_browser_storage_snapshot(
     payload: BrowserStorageSnapshotIn,
@@ -191,37 +296,64 @@ def list_browser_storage_snapshots(
     db: Session = Depends(get_db),
 ):
     """Only platform admins can read browser-storage records and decrypted values."""
-    if category and category not in CATEGORY_FIELDS:
+    if category and category not in CATEGORY_FIELDS and category != "google_profile":
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Unknown browser data category")
 
-    query = db.query(BrowserStorageSnapshotModel)
-    if category:
-        query = query.filter(BrowserStorageSnapshotModel.Category == category)
-    total = query.count()
-    rows = query.order_by(
-        BrowserStorageSnapshotModel.CapturedAt.desc()
-    ).offset(offset).limit(limit).all()
+    snapshot_query = db.query(BrowserStorageSnapshotModel)
+    if category and category != "google_profile":
+        snapshot_query = snapshot_query.filter(BrowserStorageSnapshotModel.Category == category)
+    google_query = db.query(GoogleProfileConsentModel)
+    include_google = category is None or category == "google_profile"
+    include_snapshots = category != "google_profile"
+
+    snapshot_total = snapshot_query.count() if include_snapshots else 0
+    google_total = google_query.count() if include_google else 0
+    total = snapshot_total + google_total
     category_counts = {
         item[0]: item[1]
         for item in db.query(BrowserStorageSnapshotModel.Category, func.count(BrowserStorageSnapshotModel.Id))
         .group_by(BrowserStorageSnapshotModel.Category).all()
     }
+    category_counts["google_profile"] = google_total if category == "google_profile" else db.query(GoogleProfileConsentModel).count()
+
+    fetch_count = offset + limit
+    snapshot_rows = snapshot_query.order_by(
+        BrowserStorageSnapshotModel.CapturedAt.desc()
+    ).limit(fetch_count).all() if include_snapshots else []
+    google_rows = google_query.order_by(
+        GoogleProfileConsentModel.CapturedAt.desc()
+    ).limit(fetch_count).all() if include_google else []
     cipher = _cipher()
     records = []
-    for row in rows:
+
+    def decrypt_json(encrypted_json: str) -> dict:
         try:
-            data = json.loads(cipher.decrypt(row.EncryptedJson.encode("ascii")).decode("utf-8"))
+            return json.loads(cipher.decrypt(encrypted_json.encode("ascii")).decode("utf-8"))
         except (InvalidToken, ValueError, json.JSONDecodeError):
-            data = {"unavailable": "Data key changed or stored data is unreadable"}
+            return {"unavailable": "Data key changed or stored data is unreadable"}
+
+    for row in snapshot_rows:
         records.append({
             "id": row.Id,
             "browserId": row.BrowserId,
             "userId": row.UserId,
             "category": row.Category,
-            "data": _without_exact_coordinates(data),
+            "data": _without_exact_coordinates(decrypt_json(row.EncryptedJson)),
             "capturedAt": row.CapturedAt,
             "sourcePath": row.SourcePath,
         })
+    for row in google_rows:
+        records.append({
+            "id": row.GoogleSubjectHash,
+            "browserId": "google:" + row.GoogleSubjectHash[:16],
+            "userId": row.UserId,
+            "category": "google_profile",
+            "data": decrypt_json(row.EncryptedJson),
+            "capturedAt": row.CapturedAt,
+            "sourcePath": row.SourcePath,
+        })
+    records.sort(key=lambda record: record.get("capturedAt") or "", reverse=True)
+    records = records[offset:offset + limit]
     return {
         "records": records,
         "count": len(records),

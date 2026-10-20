@@ -1543,7 +1543,7 @@
             <button type="button" class="btn-create" onclick="loadBrowserStorageRecords()" style="justify-content:center;">Refresh data</button>
           </div>
           <div class="bottom-card" style="margin-bottom:16px;border-left:4px solid var(--charcoal);">
-              <div style="font-size:12px;line-height:1.6;color:var(--text-sub);">Snapshots are saved only after a visitor enables <strong>Share saved data for admin review</strong> in the public privacy settings. Passwords, sign-in tokens, cookie values and exact GPS coordinates are excluded. Voter identity and location accuracy may be included when saved in browser storage. Values below are decrypted for this Admin view only.</div>
+              <div style="font-size:12px;line-height:1.6;color:var(--text-sub);">Browser snapshots require <strong>Share saved data for admin review</strong>. Google profile rows require a separate, explicit Google sign-in consent and contain only basic identity fields. Passwords, sign-in tokens, cookie values and exact GPS coordinates are excluded. Values below are decrypted for this Admin view only.</div>
           </div>
           <div class="cookie-storage-layout">
             <nav id="cookie-category-list" class="cookie-category-list" aria-label="Browser data categories"></nav>
@@ -1740,6 +1740,7 @@
     const browserStorageCategories = [
       { id: 'all', title: 'All collected data', description: 'Every category stored from consent-enabled browser snapshots.' },
       { id: 'account', title: 'Account profile', description: 'Account ID, name, email, phone, role and organization saved in this browser.' },
+      { id: 'google_profile', title: 'Google account profile', description: 'Google account ID, name, email, email verification status, profile photo, locale and consent time shared by the user.' },
       { id: 'voter_identity', title: 'Voter identity', description: 'Voter name and national ID saved for form completion.' },
       { id: 'demographics', title: 'Demographics', description: 'County, date of birth and verification flags.' },
       { id: 'location', title: 'Location verification', description: 'Location accuracy and capture time; exact coordinates are excluded.' },
@@ -2213,7 +2214,11 @@
         status.style.display = 'block';
         status.textContent = browserStorageTotal
           ? 'No entries on this page.'
-          : 'No snapshots are stored yet. Visitors need to enable “Share saved data for admin review” in public privacy settings.';
+          : activeBrowserStorageCategory === 'google_profile'
+            ? 'No Google profiles have been shared yet. Users must choose Google sign-in and approve the profile sharing notice.'
+            : activeBrowserStorageCategory === 'all'
+              ? 'No snapshots are stored yet. Browser snapshots require admin-review consent; Google profiles require separate sign-in consent.'
+              : 'No snapshots are stored yet. Visitors need to enable “Share saved data for admin review” in public privacy settings.';
         return;
       }
       status.style.display = 'none';

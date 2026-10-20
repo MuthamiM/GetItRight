@@ -457,13 +457,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Identity & Location Verification',
+                  'Identity Verification',
                   style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  'Full name as on your ID. National ID: 5–12 digits. DOB: YYYY-MM-DD. Choose one county. Allow location access and turn on Location Services; exact coordinates are hidden.',
-                  style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 13),
                 ),
               ],
             ),
@@ -522,7 +517,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
           const SizedBox(height: 6),
           _buildPillInput(
             controller: _dobController,
-            hint: 'Select date · YYYY-MM-DD',
+            hint: 'Select date',
             readOnly: true,
             onTap: _pickDob,
             prefixIcon: const Icon(Icons.calendar_today_outlined, color: Color(0xFFB8B8B8), size: 20),

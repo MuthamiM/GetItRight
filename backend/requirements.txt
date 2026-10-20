@@ -12,6 +12,7 @@ ecdsa==0.19.2
 email-validator==2.3.0
 et_xmlfile==2.0.0
 fastapi==0.142.2
+google-auth>=2.32,<3
 h11==0.16.0
 httpcore==1.0.9
 httptools==0.8.0

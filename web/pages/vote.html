@@ -971,6 +971,10 @@
         };
 
         const sessionToken = localStorage.getItem('gir_token');
+        if (!sessionToken) {
+          App.showToast('Sign in to vote. Each account can vote once in each poll.', 'error');
+          return;
+        }
         const voteRequestHeaders = (useSession = true) => ({
           'Content-Type': 'application/json',
           ...(useSession && sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {})
@@ -980,12 +984,10 @@
           headers: voteRequestHeaders(),
           body: JSON.stringify({ voterIdNumber, voterKey: verified.voterKey || '' })
         }).catch(() => null);
-        if (priorVoteResponse && priorVoteResponse.status === 401 && sessionToken) {
-          priorVoteResponse = await fetch(`${API_BASE}/polls/${pollId}/vote-status`, {
-            method: 'POST',
-            headers: voteRequestHeaders(false),
-            body: JSON.stringify({ voterIdNumber, voterKey: verified.voterKey || '' })
-          }).catch(() => null);
+        if (!priorVoteResponse || !priorVoteResponse.ok) {
+          const statusError = priorVoteResponse ? await priorVoteResponse.json().catch(() => ({})) : {};
+          App.showToast(statusError.detail || 'Could not verify your account ballot history. Please sign in again and retry.', 'error');
+          return;
         }
         const priorVote = priorVoteResponse && priorVoteResponse.ok
           ? await priorVoteResponse.json().catch(() => null)
@@ -1006,14 +1008,6 @@
           headers: voteRequestHeaders(),
           body: JSON.stringify(votePayload)
         });
-        if (res.status === 401 && sessionToken) {
-          res = await fetch(`${API_BASE}/polls/${pollId}/vote`, {
-            method: 'POST',
-            headers: voteRequestHeaders(false),
-            body: JSON.stringify(votePayload)
-          });
-        }
-
         if (res.ok) {
           const data = await res.json();
           localStorage.setItem('gir_voted_poll_' + pollId, optionIndex);

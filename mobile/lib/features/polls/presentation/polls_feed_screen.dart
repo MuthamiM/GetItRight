@@ -480,7 +480,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
-                            'Identity & Location Verification',
+                            'Identity Verification',
                             style: TextStyle(
                                 color: Color(0xFFE5E5E5),
                                 fontSize: 16,
@@ -488,12 +488,6 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Full name as on your ID. National ID: 5–12 digits. DOB: YYYY-MM-DD. Choose one county. Allow location access and turn on Location Services; exact coordinates are hidden.',
-                      style: TextStyle(
-                          color: Color(0xFFB8B8B8), fontSize: 12, height: 1.4),
                     ),
                     const SizedBox(height: 16),
                     const Text('Full Name · as printed on ID',
@@ -614,7 +608,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                             Expanded(
                               child: Text(
                                 dobController.text.isEmpty
-                                    ? 'Select date · YYYY-MM-DD'
+                                    ? 'Select date'
                                     : dobController.text,
                                 style: TextStyle(
                                   color: dobController.text.isEmpty

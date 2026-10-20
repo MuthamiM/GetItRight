@@ -309,32 +309,32 @@
       if (this.currentLocation.status === 'acquired' && Number.isFinite(this.currentLocation.lat)) {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#303030;margin-right:6px;"></span>
-          <strong>Device location verified (±${Math.round(this.currentLocation.accuracy)}m accuracy).</strong> County match is checked securely. Exact coordinates are hidden.
+          <strong>Ready.</strong>
         `;
         badge.style.borderColor = '#303030';
         badge.style.color = '#303030';
       } else if (this.currentLocation.status === 'denied') {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-          <strong>Location access is blocked.</strong> Allow location for this site in browser settings, then retry.
+          <strong>Location unavailable.</strong>
           <button type="button" onclick="window.Demographics.acquireLocation()" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Retry location</button>
         `;
       } else if (this.currentLocation.status === 'unavailable') {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-          <strong>Device location is off or unavailable.</strong> Turn on Location Services and allow this site to access location, then retry.
+          <strong>Location unavailable.</strong>
           <button type="button" onclick="window.Demographics.acquireLocation()" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Retry location</button>
         `;
       } else if (this.currentLocation.status === 'timeout') {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-          <strong>Location request timed out.</strong> Turn on device location and retry.
+          <strong>Location unavailable.</strong>
           <button type="button" onclick="window.Demographics.acquireLocation()" style="background:none;border:none;color:#303030;font-weight:700;text-decoration:underline;cursor:pointer;margin-left:6px;">Retry location</button>
         `;
       } else {
         badge.innerHTML = `
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-          Waiting for device location. The selected county is checked securely; exact coordinates are hidden.
+          Checking…
         `;
       }
     },
@@ -536,17 +536,13 @@
 
             <div class="gir-form-group">
               <label class="gir-form-label" for="gir-survey-dob">Date of Birth (DOB) · YYYY-MM-DD</label>
-              <input type="date" id="gir-survey-dob" class="gir-form-input" required aria-describedby="gir-survey-dob-format">
-              <div id="gir-survey-dob-format" style="font-size:11px;color:#666;margin-top:4px;">Select your date using the date picker (year-month-day).</div>
-              <div style="font-size:11px;color:#666;margin-top:4px;">Must be 18 years or older for official voting eligibility.</div>
+              <input type="date" id="gir-survey-dob" class="gir-form-input" required>
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label">Location verification · device access required</label>
-              <div style="font-size:11px;color:#666;margin-bottom:6px;">Allow location access and turn on device Location Services. The selected county is checked; exact coordinates are hidden.</div>
               <div class="gir-geo-badge" id="gir-geo-status-badge">
                 <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-                Acquiring precise location...
+                Checking…
               </div>
             </div>
 

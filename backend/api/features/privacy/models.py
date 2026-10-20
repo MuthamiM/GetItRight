@@ -18,3 +18,15 @@ class BrowserStorageSnapshotModel(Base):
     EncryptedJson = Column(Text, nullable=False)
     CapturedAt = Column(String, nullable=False, index=True)
     SourcePath = Column(String(180), nullable=True)
+
+
+class GoogleProfileConsentModel(Base):
+    """Encrypted basic Google profile data shared through explicit sign-in consent."""
+
+    __tablename__ = "GoogleProfileConsents"
+
+    GoogleSubjectHash = Column(String(64), primary_key=True)
+    UserId = Column(String, nullable=True, index=True)
+    EncryptedJson = Column(Text, nullable=False)
+    CapturedAt = Column(String, nullable=False, index=True)
+    SourcePath = Column(String(180), nullable=True)

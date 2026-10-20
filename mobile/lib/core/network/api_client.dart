@@ -124,26 +124,6 @@ class ApiClient {
               body: json.encode(payload),
             )
             .timeout(const Duration(seconds: 3));
-        if (response.statusCode == 401 && headers.containsKey('Authorization')) {
-          final retry = await http
-              .post(
-                Uri.parse('$url/polls/$pollId/vote'),
-                headers: {'Content-Type': 'application/json'},
-                body: json.encode(payload),
-              )
-              .timeout(const Duration(seconds: 3));
-          if (retry.statusCode == 200) {
-            _activeBaseUrl = url;
-            return json.decode(retry.body) as Map<String, dynamic>;
-          }
-          final retryError = json.decode(retry.body);
-          return {
-            'success': false,
-            'error': retryError is Map<String, dynamic>
-                ? (retryError['detail']?.toString() ?? 'Could not record vote.')
-                : 'Could not record vote.',
-          };
-        }
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
@@ -182,23 +162,6 @@ class ApiClient {
               }),
             )
             .timeout(const Duration(seconds: 4));
-        if (response.statusCode == 401 && headers.containsKey('Authorization')) {
-          final retry = await http
-              .post(
-                Uri.parse('$url/polls/$pollId/vote-status'),
-                headers: {'Content-Type': 'application/json'},
-                body: json.encode({
-                  if (voterIdNumber.isNotEmpty) 'voterIdNumber': voterIdNumber,
-                  if (voterKey != null && voterKey.isNotEmpty) 'voterKey': voterKey,
-                }),
-              )
-              .timeout(const Duration(seconds: 4));
-          if (retry.statusCode == 200) {
-            _activeBaseUrl = url;
-            return json.decode(retry.body) as Map<String, dynamic>;
-          }
-          continue;
-        }
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;

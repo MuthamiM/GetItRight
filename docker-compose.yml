@@ -13,6 +13,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8888,http://localhost:8090}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}
@@ -40,6 +41,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8888,http://localhost:8090}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}

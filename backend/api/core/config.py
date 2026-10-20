@@ -11,7 +11,7 @@ if not DEFAULT_DB_PATH.exists():
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IcapsQ API"
-    VERSION: str = "2.1.14"
+    VERSION: str = "2.1.15"
     API_PREFIX: str = "/api"
     ENVIRONMENT: str = "production"
 
@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     JWT_ISSUER: str = "getitright-api"
     JWT_AUDIENCE: str = "getitright-clients"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    GOOGLE_OAUTH_CLIENT_ID: str = ""
 
     # Comma-separated explicit origin allowlist.
     CORS_ORIGINS: str = "http://localhost:8888,http://localhost:8090,http://127.0.0.1:8888,http://127.0.0.1:8090"

@@ -2,7 +2,7 @@ import hashlib
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
-from sqlalchemy import or_
+from sqlalchemy import func, or_, text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
@@ -348,9 +348,26 @@ def get_vote_status(
     from backend.api.features.polls.schemas import VoteStatusOut
     tx = None
     if user_id and str(user_id).strip():
+        account_claim = db.execute(text('''
+            SELECT 1 FROM "BallotIdentityClaims"
+            WHERE "BallotType" = 'poll'
+              AND "BallotId" = :poll_id
+              AND "IdentityType" = 'account_id'
+              AND lower(trim("IdentityValue")) = :user_id
+            LIMIT 1
+        '''), {"poll_id": poll_id, "user_id": str(user_id).strip().casefold()}).first()
+        if account_claim:
+            tx = db.query(VoteTransactionModel).filter(
+                VoteTransactionModel.PollId == poll_id,
+                func.lower(VoteTransactionModel.UserId) == str(user_id).strip().casefold(),
+            ).first()
+            if not tx:
+                return VoteStatusOut(hasVoted=True, pollId=poll_id, userId=user_id)
+
+    if user_id and str(user_id).strip() and not tx:
         tx = db.query(VoteTransactionModel).filter(
             VoteTransactionModel.PollId == poll_id,
-            VoteTransactionModel.UserId == str(user_id).strip()
+            func.lower(VoteTransactionModel.UserId) == str(user_id).strip().casefold()
         ).first()
 
     if not tx and voter_key and str(voter_key).strip():
