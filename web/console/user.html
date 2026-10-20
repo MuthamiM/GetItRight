@@ -1800,18 +1800,39 @@
       populateExportDropdown(document.getElementById('user-turnout-export'), 'Export Turnout Report...', plan);
     }
 
+    async function getExportError(response, fallback) {
+      const body = await response.text().catch(() => '');
+      try {
+        const payload = JSON.parse(body);
+        return payload.detail || payload.message || fallback;
+      } catch (_) {
+        const message = body.trim().replace(/\s+/g, ' ');
+        return message ? `${fallback} (${message.slice(0, 240)})` : `${fallback} (HTTP ${response.status})`;
+      }
+    }
+
+    function downloadExportBlob(blob, filename) {
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    }
+
+    function exportFilename(response, fallback) {
+      return response.headers.get('Content-Disposition')?.match(/filename="?([^";]+)"?/i)?.[1] || fallback;
+    }
+
     async function exportPoll(pollId, title, format) {
       if (!format) return;
       try {
         const response = await request(`/polls/${encodeURIComponent(pollId)}/export?format=${format}`);
-        if (!response.ok) throw new Error('Unable to export poll votes.');
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${title || 'poll'}-votes.${format}`;
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        if (!response.ok) throw new Error(await getExportError(response, 'Unable to export poll votes'));
+        downloadExportBlob(await response.blob(), exportFilename(response, `${title || 'poll'}-votes.${format}`));
       } catch (err) {
         alert('Export failed: ' + err.message);
       }
@@ -1821,14 +1842,8 @@
       if (!format) return;
       try {
         const response = await request(`/surveys/${encodeURIComponent(surveyId)}/export?format=${format}`);
-        if (!response.ok) throw new Error('Unable to export survey responses.');
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${title || 'survey'}-responses.${format}`;
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        if (!response.ok) throw new Error(await getExportError(response, 'Unable to export survey responses'));
+        downloadExportBlob(await response.blob(), exportFilename(response, `${title || 'survey'}-responses.${format}`));
       } catch (err) {
         alert('Export failed: ' + err.message);
       }
@@ -1838,27 +1853,12 @@
       if (!format) return;
       try {
         const pRes = await request(`/polls/exports/results?format=${format}`);
-        if (pRes.ok) {
-          const pBlob = await pRes.blob();
-          const pLink = document.createElement('a');
-          pLink.href = URL.createObjectURL(pBlob);
-          pLink.download = pRes.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `my-poll-results.${format}`;
-          pLink.click();
-          URL.revokeObjectURL(pLink.href);
-        }
-        setTimeout(async () => {
-          try {
-            const sRes = await request(`/surveys/exports/responses?format=${format}`);
-            if (sRes.ok) {
-              const sBlob = await sRes.blob();
-              const sLink = document.createElement('a');
-              sLink.href = URL.createObjectURL(sBlob);
-              sLink.download = sRes.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `my-survey-responses.${format}`;
-              sLink.click();
-              URL.revokeObjectURL(sLink.href);
-            }
-          } catch (_) {}
-        }, 600);
+        if (!pRes.ok) throw new Error(await getExportError(pRes, 'Unable to export poll results'));
+        downloadExportBlob(await pRes.blob(), exportFilename(pRes, `my-poll-results.${format}`));
+
+        const sRes = await request(`/surveys/exports/responses?format=${format}`);
+        if (!sRes.ok) throw new Error(await getExportError(sRes, 'Unable to export survey responses'));
+        downloadExportBlob(await sRes.blob(), exportFilename(sRes, `my-survey-responses.${format}`));
       } catch (err) {
         alert('Bulk export failed: ' + err.message);
       }
@@ -1870,14 +1870,8 @@
       if (!format) return;
       try {
         const response = await request(`/analytics/turnout/export?format=${format}`);
-        if (!response.ok) throw new Error('Unable to export turnout report.');
-        const blob = await response.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        const filename = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `turnout-quota-report.${format}`;
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        if (!response.ok) throw new Error(await getExportError(response, 'Unable to export turnout report'));
+        downloadExportBlob(await response.blob(), exportFilename(response, `turnout-quota-report.${format}`));
       } catch (err) {
         alert('Turnout export failed: ' + err.message);
       }

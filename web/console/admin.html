@@ -3918,6 +3918,59 @@
     }
     window.changeAdminResponsesPage = changeAdminResponsesPage;
 
+    async function getAdminExportError(response, fallback) {
+      const body = await response.text().catch(() => '');
+      try {
+        const payload = JSON.parse(body);
+        return payload.detail || payload.message || fallback;
+      } catch (_) {
+        const message = body.trim().replace(/\s+/g, ' ');
+        return message ? `${fallback} (${message.slice(0, 240)})` : `${fallback} (HTTP ${response.status})`;
+      }
+    }
+
+    function downloadAdminExport(blob, filename) {
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    }
+
+    function adminExportFilename(response, fallback) {
+      return response.headers.get('Content-Disposition')?.match(/filename="?([^";]+)"?/i)?.[1] || fallback;
+    }
+
+    async function exportAdminReport(type) {
+      const format = document.getElementById('admin-export-format')?.value || 'csv';
+      const ownerId = document.getElementById('admin-export-client')?.value || '';
+      const params = new URLSearchParams({ format });
+      if (ownerId) params.set('owner_id', ownerId);
+      const endpoint = type === 'poll' ? 'polls/exports/results' : 'surveys/exports/responses';
+      try {
+        const response = await fetch(`${API}/${endpoint}?${params.toString()}`, {
+          headers: { Authorization: 'Bearer ' + (localStorage.getItem('gir_token') || '') }
+        });
+        if (!response.ok) throw new Error(await getAdminExportError(response, `Unable to export ${type} data`));
+        const fallback = `icapsq-${type === 'poll' ? 'poll-results' : 'survey-responses'}.${format}`;
+        downloadAdminExport(await response.blob(), adminExportFilename(response, fallback));
+      } catch (err) {
+        alert('Export failed: ' + err.message);
+      }
+    }
+
+    function exportAdminSurveyReport() {
+      return exportAdminReport('survey');
+    }
+
+    function exportAdminPollReport() {
+      return exportAdminReport('poll');
+    }
+
     async function exportAdminSingleResponse(type, parentId, title, format) {
       if (!format) return;
       try {
@@ -3927,12 +3980,8 @@
         const response = await fetch(endpoint, {
           headers: { Authorization: 'Bearer ' + (localStorage.getItem('gir_token') || '') }
         });
-        if (!response.ok) throw new Error('Export failed');
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(await response.blob());
-        link.download = response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `${title || 'export'}.${format}`;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        if (!response.ok) throw new Error(await getAdminExportError(response, 'Unable to export this report'));
+        downloadAdminExport(await response.blob(), adminExportFilename(response, `${title || 'export'}.${format}`));
       } catch (err) { alert('Export failed: ' + err.message); }
     }
 
@@ -3942,25 +3991,11 @@
         const token = localStorage.getItem('gir_token') || '';
         const headers = { Authorization: 'Bearer ' + token };
         const pRes = await fetch(`${API}/polls/exports/results?format=${format}`, { headers });
-        if (pRes.ok) {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(await pRes.blob());
-          link.download = pRes.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `all-poll-results.${format}`;
-          link.click();
-          URL.revokeObjectURL(link.href);
-        }
-        setTimeout(async () => {
-          try {
-            const sRes = await fetch(`${API}/surveys/exports/responses?format=${format}`, { headers });
-            if (sRes.ok) {
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(await sRes.blob());
-              link.download = sRes.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || `all-survey-responses.${format}`;
-              link.click();
-              URL.revokeObjectURL(link.href);
-            }
-          } catch (_) {}
-        }, 600);
+        if (!pRes.ok) throw new Error(await getAdminExportError(pRes, 'Unable to export poll results'));
+        downloadAdminExport(await pRes.blob(), adminExportFilename(pRes, `all-poll-results.${format}`));
+        const sRes = await fetch(`${API}/surveys/exports/responses?format=${format}`, { headers });
+        if (!sRes.ok) throw new Error(await getAdminExportError(sRes, 'Unable to export survey responses'));
+        downloadAdminExport(await sRes.blob(), adminExportFilename(sRes, `all-survey-responses.${format}`));
       } catch (err) { alert('Bulk export failed: ' + err.message); }
     }
 
@@ -4473,17 +4508,8 @@
         const token = localStorage.getItem('gir_token') || '';
         const headers = { Authorization: 'Bearer ' + token };
         const res = await fetch(`${API}/analytics/turnout/export?format=${format}`, { headers });
-        if (!res.ok) {
-          throw new Error('Server returned ' + res.status);
-        }
-        const blob = await res.blob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        const dispo = res.headers.get('Content-Disposition') || '';
-        const match = dispo.match(/filename="([^"]+)"/);
-        link.download = match ? match[1] : `icapsq-turnout-and-quotas-report.${format}`;
-        link.click();
-        URL.revokeObjectURL(link.href);
+        if (!res.ok) throw new Error(await getAdminExportError(res, 'Unable to export turnout report'));
+        downloadAdminExport(await res.blob(), adminExportFilename(res, `icapsq-turnout-and-quotas-report.${format}`));
       } catch (err) {
         alert('Turnout export failed: ' + err.message);
       }

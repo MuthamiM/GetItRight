@@ -24,6 +24,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, KeepTogether
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from xml.sax.saxutils import escape
 
 LOGO_OFFICIAL = "/home/cantroll/POLL/web/assets/images/logo-official.png"
 LOGO_FALLBACK = "/home/cantroll/POLL/web/assets/images/logo-horizontal.png"
@@ -34,6 +35,39 @@ def _get_logo_path() -> Optional[str]:
     if os.path.exists(LOGO_FALLBACK):
         return LOGO_FALLBACK
     return None
+
+
+def build_empty_report(title: str, message: str, export_format: str) -> bytes:
+    """Return a valid office document when there are no records to export."""
+    export_format = export_format.lower()
+    if export_format == "xlsx":
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Export"
+        sheet.append([title])
+        sheet.append([message])
+        sheet.column_dimensions["A"].width = 72
+        out = BytesIO()
+        workbook.save(out)
+        return out.getvalue()
+
+    if export_format == "docx":
+        document = Document()
+        document.add_heading(title, level=1)
+        document.add_paragraph(message)
+        out = BytesIO()
+        document.save(out)
+        return out.getvalue()
+
+    out = BytesIO()
+    document = SimpleDocTemplate(out, pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    styles = getSampleStyleSheet()
+    document.build([
+        Paragraph(escape(title), styles["Heading1"]),
+        Spacer(1, 8),
+        Paragraph(escape(message), styles["Normal"]),
+    ])
+    return out.getvalue()
 
 # ==============================================================================
 # DOCX STYLING HELPERS
@@ -1042,6 +1076,133 @@ def build_survey_docx(survey, responses) -> bytes:
 
     out = BytesIO()
     doc.save(out)
+    return out.getvalue()
+
+
+def build_survey_pdf(survey, responses) -> bytes:
+    """Build an executive PDF report for a survey and its recorded responses."""
+    out = BytesIO()
+    doc = SimpleDocTemplate(out, pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    styles = getSampleStyleSheet()
+    story = []
+
+    logo_path = _get_logo_path()
+    if logo_path and os.path.exists(logo_path):
+        try:
+            story.append(RLImage(logo_path, width=140, height=47))
+            story.append(Spacer(1, 8))
+        except Exception:
+            pass
+
+    story.append(Paragraph("ICAPSQ / GETITRIGHT SOVEREIGN RESEARCH PLATFORM", ParagraphStyle(
+        "SurveyOrgHeader", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9,
+        textColor=colors.HexColor("#64748B"),
+    )))
+    story.append(Paragraph("OFFICIAL SURVEY RESPONSE REPORT", ParagraphStyle(
+        "SurveyReportTitle", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=16,
+        textColor=colors.HexColor("#0F172A"), spaceAfter=4,
+    )))
+    story.append(Paragraph("Survey findings and recorded respondent feedback", ParagraphStyle(
+        "SurveyReportSubtitle", parent=styles["Normal"], fontName="Helvetica-Oblique", fontSize=9.5,
+        textColor=colors.HexColor("#64748B"), spaceAfter=10,
+    )))
+
+    def safe(value, fallback=""):
+        return escape(str(value if value is not None else fallback))
+
+    meta_data = [
+        [Paragraph("<b>Survey title</b>", styles["Normal"]), Paragraph(safe(getattr(survey, "Title", "Survey")), styles["Normal"])],
+        [Paragraph("<b>Track</b>", styles["Normal"]), Paragraph(safe(getattr(survey, "Track", None), "General"), styles["Normal"])],
+        [Paragraph("<b>Status</b>", styles["Normal"]), Paragraph(safe(getattr(survey, "Status", None), "Active").upper(), styles["Normal"])],
+        [Paragraph("<b>Recorded responses</b>", styles["Normal"]), Paragraph(f"{len(responses):,}", styles["Normal"])],
+        [Paragraph("<b>Target responses</b>", styles["Normal"]), Paragraph(f"{getattr(survey, 'TargetResponses', 500) or 500:,}", styles["Normal"])],
+        [Paragraph("<b>Generated</b>", styles["Normal"]), Paragraph(datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC"), styles["Normal"])],
+    ]
+    meta_table = Table(meta_data, colWidths=[135, 405])
+    meta_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
+        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#CBD5E1")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+        ("PADDING", (0, 0), (-1, -1), 5),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.extend([meta_table, Spacer(1, 14), Paragraph("1. Question findings", styles["Heading2"]), Spacer(1, 6)])
+
+    questions = sorted(getattr(survey, "questions", []) or [], key=lambda q: getattr(q, "Index", 0))
+    if not questions:
+        story.append(Paragraph("No questions are configured for this survey.", styles["Normal"]))
+    for q_idx, question in enumerate(questions, 1):
+        question_id = str(getattr(question, "Id", q_idx))
+        question_index = str(getattr(question, "Index", q_idx))
+        story.append(Paragraph(f"<b>Question {q_idx}:</b> {safe(getattr(question, 'QuestionText', ''))}", styles["Normal"]))
+        story.append(Spacer(1, 4))
+        tally = {}
+        for response in responses:
+            answers = response.get("answers", []) if isinstance(response, dict) else (getattr(response, "answers", []) or [])
+            for answer in answers:
+                if not isinstance(answer, dict):
+                    continue
+                answer_question_id = str(answer.get("questionId") or answer.get("question") or "")
+                if answer_question_id in {question_id, question_index, str(q_idx)}:
+                    answer_value = str(answer.get("answer", ""))
+                    if answer_value:
+                        tally[answer_value] = tally.get(answer_value, 0) + 1
+
+        if tally:
+            total_answers = sum(tally.values())
+            findings = [["Rank", "Response / choice", "Responses", "Share"]]
+            for rank, (answer_text, count) in enumerate(sorted(tally.items(), key=lambda item: item[1], reverse=True), 1):
+                findings.append([str(rank), Paragraph(safe(answer_text), styles["BodyText"]), f"{count:,}", f"{count / total_answers * 100:.1f}%"])
+            findings_table = Table(findings, colWidths=[42, 335, 80, 83], repeatRows=1)
+            findings_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0F172A")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+                ("ALIGN", (0, 0), (0, -1), "CENTER"),
+                ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
+                ("PADDING", (0, 0), (-1, -1), 5),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.HexColor("#F8FAFC"), colors.white]),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]))
+            story.extend([findings_table, Spacer(1, 10)])
+        else:
+            story.extend([Paragraph("No responses recorded for this question yet.", styles["Italic"]), Spacer(1, 10)])
+
+    story.extend([Paragraph("2. Respondent ledger", styles["Heading2"]), Spacer(1, 6)])
+    ledger = [["#", "Timestamp", "Respondent", "County", "Answers"]]
+    for idx, response in enumerate(responses[:100], 1):
+        if isinstance(response, dict):
+            timestamp = response.get("timestamp", "")
+            respondent = response.get("respondent") or response.get("voterName") or f"Respondent {idx}"
+            county = response.get("county", "")
+            answers = response.get("answers", [])
+        else:
+            timestamp = getattr(response, "Timestamp", "")
+            respondent = getattr(response, "VoterPseudonym", None) or f"Respondent {idx}"
+            county = getattr(response, "County", "") or ""
+            answers = getattr(response, "answers", []) or []
+        answer_summary = " | ".join(str(a.get("answer", "")) for a in answers if isinstance(a, dict)) or "Submitted"
+        ledger.append([
+            str(idx), safe(str(timestamp)[:19]), Paragraph(safe(respondent), styles["BodyText"]),
+            safe(str(county).replace(" County", "")), Paragraph(safe(answer_summary[:180]), styles["BodyText"]),
+        ])
+    if len(ledger) == 1:
+        ledger.append(["—", "—", Paragraph("No responses recorded", styles["BodyText"]), "—", "—"])
+    ledger_table = Table(ledger, colWidths=[24, 100, 112, 76, 228], repeatRows=1)
+    ledger_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0F172A")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+        ("PADDING", (0, 0), (-1, -1), 4),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.HexColor("#F8FAFC"), colors.white]),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(ledger_table)
+    doc.build(story)
     return out.getvalue()
 
 

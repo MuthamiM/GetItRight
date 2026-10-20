@@ -87,6 +87,17 @@ def _build_export(surveys, response_map, export_format: str):
             })
         return json.dumps(data, indent=2).encode("utf-8"), "application/json", "icapsq-survey-responses.json"
 
+    if not surveys:
+        from backend.api.core.report_builder import build_empty_report
+        extensions = {
+            "xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "icapsq-survey-report.xlsx"),
+            "docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "icapsq-survey-report.docx"),
+            "pdf": ("application/pdf", "icapsq-survey-report.pdf"),
+        }
+        media_type, filename = extensions[export_format]
+        content = build_empty_report("Survey response report", "No surveys are available to export for this account.", export_format)
+        return content, media_type, filename
+
     from backend.api.core.report_builder import build_survey_docx, build_survey_xlsx, build_survey_pdf
 
     if surveys:
@@ -98,7 +109,7 @@ def _build_export(surveys, response_map, export_format: str):
             return build_survey_docx(first_survey, responses), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "icapsq-survey-report.docx"
         return build_survey_pdf(first_survey, responses), "application/pdf", "icapsq-survey-report.pdf"
 
-    return b"", "application/octet-stream", "empty.pdf"
+    raise ValueError(f"Unsupported survey export format: {export_format}")
 
 @router.get("", response_model=List[SurveyOut])
 def get_all_surveys(

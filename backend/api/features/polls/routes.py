@@ -79,6 +79,17 @@ def _build_poll_export(db: Session, owner_id: Optional[str], export_format: str)
             })
         return json.dumps(data, indent=2).encode("utf-8"), "application/json", "icapsq-poll-results.json"
 
+    if not polls:
+        from backend.api.core.report_builder import build_empty_report
+        extensions = {
+            "xlsx": ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "icapsq-poll-results.xlsx"),
+            "docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "icapsq-poll-results.docx"),
+            "pdf": ("application/pdf", "icapsq-poll-results.pdf"),
+        }
+        media_type, filename = extensions[export_format]
+        content = build_empty_report("Poll results report", "No polls are available to export for this account.", export_format)
+        return content, media_type, filename
+
     from backend.api.core.report_builder import build_poll_docx, build_poll_xlsx, build_poll_pdf
     if polls:
         first_poll = polls[0]
@@ -89,7 +100,7 @@ def _build_poll_export(db: Session, owner_id: Optional[str], export_format: str)
             return build_poll_docx(first_poll, votes), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "icapsq-poll-results.docx"
         return build_poll_pdf(first_poll, votes), "application/pdf", "icapsq-poll-results.pdf"
 
-    return b"", "application/octet-stream", "empty.pdf"
+    raise ValueError(f"Unsupported poll export format: {export_format}")
 
 @router.get("", response_model=List[PollOut])
 def get_polls(
