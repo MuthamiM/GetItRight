@@ -83,6 +83,11 @@ class SurveyResponseStatusOut(BaseModel):
     voterPseudonym: Optional[str] = None
 
 
+class SurveyResponseStatusQuery(BaseModel):
+    voterKey: Optional[str] = None
+    voterIdNumber: Optional[str] = None
+
+
 class SurveyStatusUpdate(BaseModel):
     status: str
 

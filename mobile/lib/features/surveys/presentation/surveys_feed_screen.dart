@@ -106,9 +106,6 @@ class SurveysFeedScreenState extends State<SurveysFeedScreen> {
           localKey,
           prefs.getString(localKey) ?? DateTime.now().toIso8601String(),
         );
-      } else if (serverStatus == false) {
-        // The server is authoritative when the active account changes.
-        await prefs.remove(localKey);
       }
       final completedLocally = prefs.getString(localKey) != null;
       if (serverStatus != true && !completedLocally) {
@@ -342,6 +339,12 @@ class SurveysFeedScreenState extends State<SurveysFeedScreen> {
                                               ),
                                             );
                                             if (submitted == true && mounted) {
+                                              setState(() {
+                                                _surveys.removeWhere(
+                                                  (item) =>
+                                                      item.id == survey.id,
+                                                );
+                                              });
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
                                                 const SnackBar(
@@ -350,8 +353,9 @@ class SurveysFeedScreenState extends State<SurveysFeedScreen> {
                                                       Duration(seconds: 2),
                                                 ),
                                               );
+                                            } else if (mounted) {
+                                              await _loadSurveys();
                                             }
-                                            await _loadSurveys();
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor:

@@ -18,6 +18,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final _orgController = TextEditingController();
 
   bool _notificationsEnabled = true;
+  String _userPlan = 'free';
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       _orgController.text = prefs.getString('gir_user_org') ?? 'Independent';
       _notificationsEnabled =
           prefs.getBool('gir_notifications_enabled') ?? true;
+      _userPlan = prefs.getString('gir_user_plan') ?? 'free';
     });
   }
 
@@ -90,22 +92,13 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           fontSize: 19,
                           fontWeight: FontWeight.w700)),
                   const SizedBox(height: 3),
-                  Text(_emailController.text,
+                  Text('Plan: ${_planDisplayName(_userPlan)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           color: Color(0xFFB8B8B8), fontSize: 13)),
                 ],
               )),
-              IconButton(
-                tooltip: 'Edit display name',
-                onPressed: () => _editAccountField(
-                    label: 'Display Name',
-                    controller: _nameController,
-                    preferenceKey: 'gir_user_name',
-                    hint: 'Name'),
-                icon: const Icon(Icons.edit_outlined, color: Color(0xFFE5E5E5)),
-              ),
             ]),
             const SizedBox(height: 24),
             _buildAccountInformationCard(),
@@ -152,6 +145,20 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     );
   }
 
+  String _planDisplayName(String plan) {
+    switch (plan.trim().toLowerCase()) {
+      case 'pro':
+        return 'Pro';
+      case 'org':
+      case 'organization':
+        return 'Organization';
+      case 'election':
+        return 'Election';
+      default:
+        return 'Free';
+    }
+  }
+
   Widget _buildAccountInformationCard() {
     return Material(
       color: const Color(0xFF505050),
@@ -165,9 +172,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             child: _buildSectionHeader('ACCOUNT INFORMATION'),
           ),
           _buildAccountRow(
-            label: 'Display Name',
+            label: 'Username',
             controller: _nameController,
-            preferenceKey: 'gir_user_name',
             hint: 'Name',
           ),
           _buildAccountDivider(),
@@ -210,7 +216,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           _settingsActionRow(
             icon: Icons.phone_android_rounded,
             title: 'IcapsQ Official App',
-            subtitle: 'Version 2.1.19 · Build 24',
+            subtitle: 'Version 2.1.20 · Build 25',
             trailing: const SizedBox(width: 4),
           ),
           _buildAccountDivider(),
@@ -293,7 +299,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               ),
               const SizedBox(width: 12),
               Icon(
-                editable ? Icons.edit_outlined : Icons.mail_outline_rounded,
+                editable ? Icons.edit_outlined : Icons.lock_outline_rounded,
                 size: 18,
                 color: const Color(0xFFE5E5E5),
               ),

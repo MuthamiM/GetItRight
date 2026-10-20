@@ -847,7 +847,6 @@
           <ul class="ln-footer-links">
             <li><a href="../auth/login.html">Organization Sign In</a></li>
             <li><a href="../auth/signup.html">Create Account</a></li>
-            <li><a href="../index.html#compare">Plan &amp; Quotas</a></li>
           </ul>
         </div>
 
@@ -1055,15 +1054,20 @@
     }
 
     async function verifyCompletedSurveysWithDb() {
-      const { userId, voterKey } = getRespondentIdentity();
+      const { voterKey } = getRespondentIdentity();
       const statusToken = localStorage.getItem('gir_token');
       const statuses = await Promise.all(allSurveys.map(async survey => {
         try {
-          const params = new URLSearchParams();
-          if (userId) params.append('userId', userId);
-          if (voterKey) params.append('voterKey', voterKey);
-          const res = await fetch(`${API_BASE}/surveys/${survey.id}/response-status?${params.toString()}`, {
-            headers: statusToken ? { 'Authorization': `Bearer ${statusToken}` } : {}
+          const res = await fetch(`${API_BASE}/surveys/${survey.id}/response-status`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(statusToken ? { 'Authorization': `Bearer ${statusToken}` } : {})
+            },
+            body: JSON.stringify({
+              voterKey,
+              voterIdNumber: localStorage.getItem('gir_voter_id_number') || ''
+            })
           });
           if (!res.ok) return null;
           return await res.json();
@@ -1086,9 +1090,6 @@
             userId: data.userId,
             voterPseudonym: data.voterPseudonym
           });
-        } else {
-          localStorage.removeItem('gir_survey_completed_' + survey.id);
-          sessionStorage.removeItem('gir_survey_completed_' + survey.id);
         }
       });
     }
@@ -1130,7 +1131,7 @@
           <div class="survey-card" id="survey-card-${s.id}">
             <div>
               <!-- Publisher Header -->
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+              <div style="display:flex; justify-content:flex-start; align-items:flex-start; margin-bottom:14px;">
                 <div class="publisher-badge" title="${org}">
                   <span class="publisher-avatar">
                     ${initials}
@@ -1141,9 +1142,6 @@
                   </div>
                 </div>
 
-                <span style="font-size:11px; font-weight:800; color:var(--silver); opacity:0.7; border:1px solid rgba(229,229,229,0.25); padding:3px 10px; border-radius:100px;">
-                  ${s.plan ? s.plan.toUpperCase() : 'PUBLIC'}
-                </span>
               </div>
 
               <!-- Target Audience Pill -->
@@ -1369,17 +1367,34 @@
       App.showToast(justSubmitted ? 'Submitted!' : 'Survey already submitted.', justSubmitted ? 'success' : 'info');
     }
 
-    function showSurveySubmissionFailure(message) {
+    function showSurveySubmissionFailure(message, options = {}) {
       const banner = document.getElementById('survey-submit-message');
       if (!banner) return;
-      banner.textContent = `Response not submitted. ${message}`;
+      banner.replaceChildren(document.createTextNode(`Response not submitted. ${message}`));
+      if (options.reviewCounty && window.Demographics && typeof window.Demographics.openSurveyModal === 'function') {
+        const reviewButton = document.createElement('button');
+        reviewButton.type = 'button';
+        reviewButton.textContent = 'Review county and location';
+        reviewButton.style.cssText = 'display:block;margin-top:10px;padding:8px 12px;border:0;border-radius:999px;background:#303030;color:#fff;font-weight:700;cursor:pointer;';
+        reviewButton.addEventListener('click', () => {
+          window.Demographics.pendingVoteCallback = async (verified) => {
+            await executeSurveySubmission(verified);
+          };
+          window.Demographics.openSurveyModal({
+            title: 'Review Verification Details',
+            subtitle: 'County and Location Check',
+            notice: 'The detected location does not match the selected county. Correct the county if needed, then allow location access and retry.'
+          });
+        });
+        banner.appendChild(reviewButton);
+      }
       banner.style.display = 'block';
     }
 
     function clearSurveySubmissionFailure() {
       const banner = document.getElementById('survey-submit-message');
       if (!banner) return;
-      banner.textContent = '';
+      banner.replaceChildren();
       banner.style.display = 'none';
     }
 
@@ -1567,6 +1582,7 @@
 
     async function executeSurveySubmission(verified = {}) {
       const nextBtn = document.getElementById('next-step-btn');
+      clearSurveySubmissionFailure();
       if (nextBtn) {
         nextBtn.disabled = true;
         nextBtn.textContent = 'Submitting...';
@@ -1686,7 +1702,10 @@
             renderSurveys(getAvailableSurveys());
             showSurveyCompletionNotice(currentSurvey.id);
           } else {
-            showSurveySubmissionFailure(errData.detail || 'Could not record the response. Please try again.');
+            const detail = errData.detail || 'Could not record the response. Please try again.';
+            showSurveySubmissionFailure(detail, {
+              reviewCounty: /device location does not match/i.test(String(detail))
+            });
             if (nextBtn) {
               nextBtn.disabled = false;
               nextBtn.textContent = 'Submit Official Responses';

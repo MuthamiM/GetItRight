@@ -7,11 +7,14 @@ import uuid
 from typing import Optional
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from backend.api.features.auth.models import PasswordRecoveryCodeModel, UserModel
 from backend.api.core.config import settings
 from backend.api.features.auth.schemas import LoginRequest, RegisterRequest, AuthResponse, UserOut
 from backend.api.core.security import verify_password, get_password_hash, create_access_token
+from backend.api.core.identity import normalize_email, normalize_phone
 
 PLAN_META = {
     "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
@@ -29,7 +32,7 @@ def _plain_text(value: Optional[str], field: str, maximum: int, required: bool =
     return clean
 
 def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
-    user = db.query(UserModel).filter(UserModel.Email == creds.email.strip()).first()
+    user = db.query(UserModel).filter(func.lower(func.trim(UserModel.Email)) == normalize_email(creds.email)).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -84,11 +87,24 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
     )
 
 def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
-    existing = db.query(UserModel).filter(UserModel.Email == data.email.strip()).first()
+    email = normalize_email(data.email)
+    phone = _plain_text(data.phoneNumber, "Phone number", 30)
+    phone_canonical = normalize_phone(phone)
+    if phone and not phone_canonical:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Enter a valid phone number."
+        )
+    existing = db.query(UserModel).filter(func.lower(func.trim(UserModel.Email)) == email).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email address already exists."
+        )
+    if phone_canonical and db.query(UserModel.Id).filter(UserModel.PhoneCanonical == phone_canonical).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this phone number already exists."
         )
 
     # Public registration never grants paid plans or administrative access.
@@ -100,9 +116,10 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
     new_user = UserModel(
         Id=new_id,
         FullName=_plain_text(data.fullName, "Full name", 120, required=True),
-        Email=data.email.strip(),
+        Email=email,
         Password=get_password_hash(data.password),
-        PhoneNumber=_plain_text(data.phoneNumber, "Phone number", 30),
+        PhoneNumber=phone,
+        PhoneCanonical=phone_canonical,
         IpAddress=None,
         Latitude=None,
         Longitude=None,
@@ -122,7 +139,14 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
     )
 
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email address or phone number already exists."
+        )
     db.refresh(new_user)
 
     token = create_access_token({
@@ -163,7 +187,7 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
     )
 
 def generate_email_otp(db: Session, email: str) -> dict:
-    user = db.query(UserModel).filter(UserModel.Email == email.strip()).first()
+    user = db.query(UserModel).filter(func.lower(func.trim(UserModel.Email)) == normalize_email(email)).first()
     generic = "If the account exists, a recovery code has been sent to its email address."
     if not user or not settings.RESEND_API_KEY:
         return {"success": True, "message": generic}
@@ -226,7 +250,7 @@ def generate_email_otp(db: Session, email: str) -> dict:
         ) from error
 
 def verify_otp_and_reset_password(db: Session, email: str, otp: str, new_password: str) -> dict:
-    user = db.query(UserModel).filter(UserModel.Email == email.strip()).first()
+    user = db.query(UserModel).filter(func.lower(func.trim(UserModel.Email)) == normalize_email(email)).first()
     now = datetime.now(timezone.utc)
     recovery = db.query(PasswordRecoveryCodeModel).filter(
         PasswordRecoveryCodeModel.UserId == (user.Id if user else ""),
@@ -259,13 +283,40 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
     user = db.query(UserModel).filter(UserModel.Id == user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if full_name and full_name.strip():
-        user.FullName = _plain_text(full_name, "Full name", 120, required=True)
+    if full_name and full_name.strip() and full_name.strip() != user.FullName:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username cannot be changed after account creation."
+        )
     if phone is not None:
-        user.PhoneNumber = _plain_text(phone, "Phone number", 30)
+        normalized_phone = _plain_text(phone, "Phone number", 30)
+        phone_canonical = normalize_phone(normalized_phone)
+        if normalized_phone and not phone_canonical:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Enter a valid phone number."
+            )
+        duplicate_phone = db.query(UserModel.Id).filter(
+            UserModel.PhoneCanonical == phone_canonical,
+            UserModel.Id != user.Id,
+        ).first() if phone_canonical else None
+        if duplicate_phone:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this phone number already exists."
+            )
+        user.PhoneNumber = normalized_phone
+        user.PhoneCanonical = phone_canonical
     if org and org.strip():
         user.Organization = _plain_text(org, "Organization", 200)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this phone number already exists."
+        )
     db.refresh(user)
     redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else user.ConsoleUrl
     return UserOut(

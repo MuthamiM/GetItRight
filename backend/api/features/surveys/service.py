@@ -289,20 +289,22 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         userId=user_id
     )
 
-def get_survey_user_response(db: Session, survey_id: str, user_id: Optional[str] = None, voter_key: Optional[str] = None):
+def get_survey_user_response(db: Session, survey_id: str, user_id: Optional[str] = None, voter_key: Optional[str] = None, voter_id_number: Optional[str] = None):
     query = db.query(SurveyResponseModel).filter(SurveyResponseModel.SurveyId == survey_id)
     u_id = user_id.strip() if user_id and str(user_id).strip() else None
     v_key = voter_key.strip() if voter_key and str(voter_key).strip() else None
+    id_number = voter_id_number.strip() if voter_id_number and str(voter_id_number).strip() else None
+    identity_filters = []
+    if u_id:
+        identity_filters.append(SurveyResponseModel.UserId == u_id)
+    if v_key:
+        identity_filters.append(SurveyResponseModel.VoterPseudonym == v_key)
+    if id_number:
+        identity_filters.append(SurveyResponseModel.VoterIdNumber == id_number)
 
-    if u_id and v_key:
-        query = query.filter(or_(SurveyResponseModel.UserId == u_id, SurveyResponseModel.VoterPseudonym == v_key))
-    elif u_id:
-        query = query.filter(SurveyResponseModel.UserId == u_id)
-    elif v_key:
-        query = query.filter(SurveyResponseModel.VoterPseudonym == v_key)
-    else:
+    if not identity_filters:
         return None
-    return query.first()
+    return query.filter(or_(*identity_filters)).order_by(SurveyResponseModel.Id.desc()).first()
 
 
 def update_survey_status(db: Session, survey_id: str, new_status: str) -> SurveyOut:

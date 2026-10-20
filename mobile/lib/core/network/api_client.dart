@@ -231,6 +231,37 @@ class ApiClient {
   Future<bool?> hasRespondedToSurvey(String surveyId,
       {String? voterKey}) async {
     final headers = await _jsonHeaders();
+    final prefs = await SharedPreferences.getInstance();
+    final voterIdNumber = prefs.getString('gir_voter_id_number') ??
+        prefs.getString('gir_user_national_id');
+    for (final baseUrl in _orderedBaseUrls) {
+      try {
+        final response = await http
+            .post(
+              Uri.parse('$baseUrl/surveys/$surveyId/response-status'),
+              headers: headers,
+              body: json.encode({
+                if (voterKey != null && voterKey.trim().isNotEmpty)
+                  'voterKey': voterKey.trim(),
+                if (voterIdNumber != null && voterIdNumber.trim().isNotEmpty)
+                  'voterIdNumber': voterIdNumber.trim(),
+              }),
+            )
+            .timeout(const Duration(seconds: 4));
+        if (response.statusCode == 200) {
+          _activeBaseUrl = baseUrl;
+          final data = json.decode(response.body) as Map<String, dynamic>;
+          return data['hasResponded'] == true;
+        }
+        // During a rolling API update an older replica may not have this POST route.
+        if (response.statusCode == 404 || response.statusCode == 405) continue;
+        if (response.statusCode >= 400 && response.statusCode < 500) {
+          return null;
+        }
+      } catch (_) {}
+    }
+    // Keep compatibility with an API replica that has not yet received the
+    // private identity-aware status route.
     for (final baseUrl in _orderedBaseUrls) {
       try {
         final uri = Uri.parse('$baseUrl/surveys/$surveyId/response-status')
@@ -245,9 +276,6 @@ class ApiClient {
           _activeBaseUrl = baseUrl;
           final data = json.decode(response.body) as Map<String, dynamic>;
           return data['hasResponded'] == true;
-        }
-        if (response.statusCode >= 400 && response.statusCode < 500) {
-          return null;
         }
       } catch (_) {}
     }
@@ -814,7 +842,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.19';
+    const currentAppVersion = '2.1.20';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');

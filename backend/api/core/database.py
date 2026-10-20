@@ -61,6 +61,46 @@ def sync_db_schema():
                             except Exception as ex:
                                 print(f"[DB MIGRATION NOTICE] {ex}")
             if "sqlite" in settings.DATABASE_URL:
+                # Keep email and phone uniqueness enforced in the live database,
+                # including concurrent registration requests.
+                from backend.api.core.identity import normalize_phone
+
+                with engine.begin() as migration_conn:
+                    user_rows = migration_conn.execute(text(
+                        'SELECT "Id", "PhoneNumber", "PhoneCanonical" FROM "Users"'
+                    )).all()
+                    for user_id, phone, canonical in user_rows:
+                        normalized_phone = normalize_phone(phone)
+                        if canonical != normalized_phone:
+                            migration_conn.execute(
+                                text('UPDATE "Users" SET "PhoneCanonical" = :phone WHERE "Id" = :id'),
+                                {"phone": normalized_phone, "id": user_id},
+                            )
+
+                    email_duplicates = migration_conn.execute(text(
+                        'SELECT COUNT(*) FROM (SELECT lower(trim("Email")) AS normalized '
+                        'FROM "Users" GROUP BY normalized HAVING COUNT(*) > 1)'
+                    )).scalar_one()
+                    if not email_duplicates:
+                        migration_conn.execute(text(
+                            'CREATE UNIQUE INDEX IF NOT EXISTS "uq_users_email_normalized" '
+                            'ON "Users" (lower(trim("Email")))'
+                        ))
+                    else:
+                        print("[DB MIGRATION NOTICE] Normalized email index skipped; duplicate account emails need review")
+
+                    phone_duplicates = migration_conn.execute(text(
+                        'SELECT COUNT(*) FROM (SELECT "PhoneCanonical" FROM "Users" '
+                        'WHERE "PhoneCanonical" IS NOT NULL GROUP BY "PhoneCanonical" HAVING COUNT(*) > 1)'
+                    )).scalar_one()
+                    if not phone_duplicates:
+                        migration_conn.execute(text(
+                            'CREATE UNIQUE INDEX IF NOT EXISTS "uq_users_phone_canonical" '
+                            'ON "Users" ("PhoneCanonical") WHERE "PhoneCanonical" IS NOT NULL'
+                        ))
+                    else:
+                        print("[DB MIGRATION NOTICE] Phone uniqueness index skipped; duplicate account phones need review")
+
                 conn.execute(text('''
                     CREATE TABLE IF NOT EXISTS "BallotIdentityClaims" (
                         "Id" INTEGER PRIMARY KEY AUTOINCREMENT,

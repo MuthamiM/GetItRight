@@ -1,4 +1,5 @@
 from typing import Optional, List
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
@@ -7,7 +8,8 @@ from backend.api.core.database import get_db
 from backend.api.features.surveys.models import SurveyModel
 from backend.api.features.surveys.schemas import (
     SurveyOut, SurveyCreate, SurveyResponseSubmission, SurveySubmissionReceipt,
-    SurveyStatusUpdate, SurveyAnalyticsOut, ReceiptVerificationOut, SurveyResponseStatusOut
+    SurveyStatusUpdate, SurveyAnalyticsOut, ReceiptVerificationOut, SurveyResponseStatusOut,
+    SurveyResponseStatusQuery
 )
 from backend.api.features.surveys.service import (
     list_surveys, get_survey_by_id, create_survey, submit_survey_response,
@@ -263,6 +265,44 @@ def check_survey_user_status(
     return SurveyResponseStatusOut(
         hasResponded=False,
         surveyId=survey_id
+    )
+
+
+@router.post("/{survey_id}/response-status", response_model=SurveyResponseStatusOut)
+def check_survey_user_status_by_identity(
+    survey_id: str,
+    identity: SurveyResponseStatusQuery,
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
+    db: Session = Depends(get_db),
+):
+    """Check completion using private JSON fields so voter IDs never enter URLs or access logs."""
+    import json
+
+    voter_id_number = (identity.voterIdNumber or "").strip()
+    if voter_id_number and not re.fullmatch(r"\d{5,12}", voter_id_number):
+        voter_id_number = None
+    resp = get_survey_user_response(
+        db,
+        survey_id,
+        user_id=current_user["sub"] if current_user else None,
+        voter_key=identity.voterKey,
+        voter_id_number=voter_id_number,
+    )
+    if not resp:
+        return SurveyResponseStatusOut(hasResponded=False, surveyId=survey_id)
+    try:
+        answers = json.loads(resp.AnswersJson)
+    except Exception:
+        answers = []
+    return SurveyResponseStatusOut(
+        hasResponded=True,
+        surveyId=survey_id,
+        receiptHash=resp.ReceiptHash,
+        merkleLeafIndex=resp.MerkleLeafIndex,
+        timestamp=resp.Timestamp,
+        answers=answers,
+        userId=resp.UserId,
+        voterPseudonym=resp.VoterPseudonym,
     )
 
 @router.post("/{survey_id}/respond", response_model=SurveySubmissionReceipt)

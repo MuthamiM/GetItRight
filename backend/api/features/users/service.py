@@ -6,6 +6,9 @@ from fastapi import HTTPException, status
 from backend.api.features.auth.models import UserModel
 from backend.api.features.users.schemas import UserDetailOut, UserStatusUpdate, CreateUserRequest, UpdateUserPlanRequest
 from backend.api.core.security import get_password_hash
+from backend.api.core.identity import normalize_email
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 PLAN_METADATA = {
     "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
@@ -82,7 +85,8 @@ def create_user(db: Session, req: CreateUserRequest) -> UserDetailOut:
     if not req.email or not effective_name:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email and Full Name are required.")
 
-    existing = db.query(UserModel).filter(UserModel.Email == req.email.strip().lower()).first()
+    email = normalize_email(req.email)
+    existing = db.query(UserModel).filter(func.lower(func.trim(UserModel.Email)) == email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A user with this email already exists.")
 
@@ -98,7 +102,7 @@ def create_user(db: Session, req: CreateUserRequest) -> UserDetailOut:
     user = UserModel(
         Id=new_id,
         FullName=effective_name,
-        Email=req.email.strip().lower(),
+        Email=email,
         Password=get_password_hash(req.password),
         Role="Customer" if not req.role or req.role.lower() != "admin" else "Admin",
         Plan=plan_key,
@@ -114,7 +118,11 @@ def create_user(db: Session, req: CreateUserRequest) -> UserDetailOut:
         LastLogin="Just now"
     )
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A user with this email already exists.")
     db.refresh(user)
     return map_user(user)
 

@@ -9,6 +9,7 @@ class UserModel(Base):
     Email = Column(String, unique=True, index=True, nullable=False)
     Password = Column(String, nullable=False)
     PhoneNumber = Column(String, nullable=True)
+    PhoneCanonical = Column(String, nullable=True, index=True)
     IpAddress = Column(String, nullable=True)
     Latitude = Column(Float, nullable=True)
     Longitude = Column(Float, nullable=True)

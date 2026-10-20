@@ -421,6 +421,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
   }
 
   void _showSubmissionFailure(String message) {
+    final countyMismatch =
+        message.toLowerCase().contains('device location does not match');
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -435,9 +437,17 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
           style: const TextStyle(color: Color(0xFFD0D0D0), height: 1.4),
         ),
         actions: [
+          if (countyMismatch)
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (mounted) setState(() => _isVerified = false);
+              },
+              child: const Text('Review county and location'),
+            ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Review and retry'),
+            child: Text(countyMismatch ? 'Close' : 'Review and retry'),
           ),
         ],
       ),
