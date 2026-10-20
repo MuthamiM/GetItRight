@@ -772,32 +772,15 @@
           Active Surveys &amp; Research Inquiries
         </h1>
         <p class="page-banner-desc" style="font-size:14.5px; color:var(--charcoal); opacity:0.8; margin:0; line-height:1.6;">
-          Direct participation surveys published by verified institutions, labor unions, healthcare boards, and civic assemblies. Filter by your target group, voice your experience, and share direct links with your community.
+          Direct participation surveys published by verified institutions, labor unions, healthcare boards, and civic assemblies. Share your experience and pass direct links to your community.
         </p>
       </div>
 
       <div class="search-box-wrap" style="display:flex; gap:12px; align-items:center;">
         <div class="search-box" style="width:320px;">
           <span class="search-icon" data-icon="search"></span>
-          <input type="text" class="search-input" id="survey-search-input" placeholder="Search by audience, topic, publisher...">
+          <input type="text" class="search-input" id="survey-search-input" placeholder="Search by topic or publisher...">
         </div>
-      </div>
-    </div>
-
-    <!-- Target Audience Filter Bar -->
-    <div style="margin-bottom:32px;">
-      <div style="font-family:var(--font-display); font-size:12px; font-weight:800; color:var(--charcoal); opacity:0.75; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">
-        Filter by Target Audience:
-      </div>
-      <div id="audience-filters-bar">
-        <button class="audience-filter-pill active" data-audience="all">All Audiences (8)</button>
-        <button class="audience-filter-pill" data-audience="patients">Healthcare &amp; Patients</button>
-        <button class="audience-filter-pill" data-audience="teachers">Teachers &amp; Educators</button>
-        <button class="audience-filter-pill" data-audience="citizens">Citizens &amp; Ward Residents</button>
-        <button class="audience-filter-pill" data-audience="farmers">Farmers &amp; Cooperatives</button>
-        <button class="audience-filter-pill" data-audience="merchants">Mobile Money Consumers</button>
-        <button class="audience-filter-pill" data-audience="developers">Developers &amp; Engineers</button>
-        <button class="audience-filter-pill" data-audience="students">University Students</button>
       </div>
     </div>
 
@@ -882,11 +865,6 @@
         <button class="ln-modal-close" id="close-taker-btn" aria-label="Close modal">
           <span data-icon="close"></span>
         </button>
-      </div>
-
-      <!-- Target Audience Banner in Modal -->
-      <div id="survey-taker-audience-badge" class="audience-tag" style="margin-bottom:20px;">
-        Target Audience: All Participants
       </div>
 
       <!-- Progress bar -->
@@ -1018,7 +996,6 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       App.injectIcons();
-      setupFilters();
       setupSearch();
       setupModals();
 
@@ -1108,7 +1085,7 @@
       if (!currentFilteredSurveys || currentFilteredSurveys.length === 0) {
         grid.innerHTML = `
           <div style="grid-column:1/-1; padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
-            ${getAvailableSurveys().length === 0 ? 'No surveys available. Check back again tomorrow.' : 'No active surveys match this audience filter.'}
+            ${getAvailableSurveys().length === 0 ? 'No surveys available. Check back again tomorrow.' : 'No active surveys match your search.'}
           </div>
         `;
         if (pagContainer) pagContainer.innerHTML = '';
@@ -1125,7 +1102,6 @@
         const pct = Math.min(100, Math.round((total / target) * 100));
         const rawOrg = s.organizationName || 'Organization';
         const org = rawOrg.replace(/^Verified\s+/, '');
-        const audience = s.targetAudience || 'General Public';
         const initials = org.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
         return `
           <div class="survey-card" id="survey-card-${s.id}">
@@ -1142,12 +1118,6 @@
                   </div>
                 </div>
 
-              </div>
-
-              <!-- Target Audience Pill -->
-              <div class="audience-tag">
-                <span style="opacity:0.75;">Target:</span>
-                <strong>${audience}</strong>
               </div>
 
               <!-- Survey Title & Description (BIGGER TYPOGRAPHY) -->
@@ -1224,37 +1194,6 @@
       }
     }
 
-    function setupFilters() {
-      const pills = document.querySelectorAll('.audience-filter-pill');
-      pills.forEach(pill => {
-        pill.addEventListener('click', () => {
-          pills.forEach(p => p.classList.remove('active'));
-          pill.classList.add('active');
-
-          const filter = pill.dataset.audience;
-          if (filter === 'all') {
-            renderSurveys(getAvailableSurveys());
-            return;
-          }
-
-          const filtered = getAvailableSurveys().filter(s => {
-            const aud = (s.targetAudience || '').toLowerCase();
-            const track = (s.track || '').toLowerCase();
-            if (filter === 'patients') return aud.includes('patient') || aud.includes('health') || track.includes('health');
-            if (filter === 'teachers') return aud.includes('teacher') || aud.includes('educat') || track.includes('labor');
-            if (filter === 'citizens') return aud.includes('citizen') || aud.includes('resident') || track.includes('civic');
-            if (filter === 'farmers') return aud.includes('farmer') || aud.includes('agri') || track.includes('agri');
-            if (filter === 'merchants') return aud.includes('money') || aud.includes('merchant') || track.includes('fin');
-            if (filter === 'developers') return aud.includes('engineer') || aud.includes('developer') || track.includes('tech');
-            if (filter === 'students') return aud.includes('student') || aud.includes('academic') || track.includes('educat');
-            return true;
-          });
-
-          renderSurveys(filtered);
-        });
-      });
-    }
-
     function setupSearch() {
       const searchInput = document.getElementById('survey-search-input');
       if (!searchInput) return;
@@ -1265,7 +1204,6 @@
           s.title.toLowerCase().includes(q) ||
           (s.description || '').toLowerCase().includes(q) ||
           (s.organizationName || '').toLowerCase().includes(q) ||
-          (s.targetAudience || '').toLowerCase().includes(q) ||
           (s.track || '').toLowerCase().includes(q)
         );
         renderSurveys(filtered);
@@ -1286,7 +1224,7 @@
       document.getElementById('share-direct-link-input').value = shareUrl;
 
       // WhatsApp Share Link
-      const waText = encodeURIComponent(`Participate in this official survey: "${s.title}" for ${s.targetAudience}. Direct link: ${shareUrl}`);
+      const waText = encodeURIComponent(`Participate in this official survey: "${s.title}". Direct link: ${shareUrl}`);
       document.getElementById('share-whatsapp-btn').href = `https://api.whatsapp.com/send?text=${waText}`;
 
       // Telegram Share Link
@@ -1419,6 +1357,8 @@
       currentStepIndex = 0;
       userAnswers = {};
       clearSurveySubmissionFailure();
+      const nextBtn = document.getElementById('next-step-btn');
+      if (nextBtn) nextBtn.disabled = false;
 
       sessionStorage.setItem('gir_last_survey_opened', surveyId);
 
@@ -1426,8 +1366,6 @@
       document.getElementById('survey-taker-title').textContent = s.title;
       const pubOrg = (s.organizationName || 'Organization').replace(/^Verified\s+/, '');
       document.getElementById('survey-taker-publisher').textContent = `Published by ${pubOrg} • ${s.track}`;
-      document.getElementById('survey-taker-audience-badge').textContent = `Target Audience: ${s.targetAudience || 'All Participants'}`;
-
       renderCurrentStep();
       modal.classList.add('active');
     }
@@ -1499,17 +1437,26 @@
               ${escapeSurveyHtml(q.questionText)}
             </h4>
             ${inputHtml}
+            <div id="survey-question-validation" role="alert" style="display:none; margin-top:12px; color:#ffaaaa; font-size:13px; font-weight:700;">
+              Choose an answer to continue.
+            </div>
           </div>
         `;
 
         const textAnswer = container.querySelector('[data-survey-text-answer]');
         if (textAnswer) {
           textAnswer.value = userAnswers[q.id] == null ? '' : String(userAnswers[q.id]);
-          textAnswer.addEventListener('input', () => setTextAnswer(q.id, textAnswer.value));
+          textAnswer.addEventListener('input', () => {
+            setTextAnswer(q.id, textAnswer.value);
+            if (textAnswer.value.trim()) hideQuestionValidation();
+          });
         }
         container.querySelectorAll('[data-choice-index]').forEach(input => {
           input.addEventListener('change', () => {
-            if (input.checked) userAnswers[q.id] = options[Number(input.dataset.choiceIndex)];
+            if (input.checked) {
+              userAnswers[q.id] = options[Number(input.dataset.choiceIndex)];
+              hideQuestionValidation();
+            }
           });
         });
         container.querySelectorAll('[data-rating-index]').forEach(button => {
@@ -1518,6 +1465,7 @@
             userAnswers[q.id] = typeof rating === 'number' ? rating : String(rating);
             container.querySelectorAll('.rating-btn').forEach(item => item.classList.remove('active'));
             button.classList.add('active');
+            hideQuestionValidation();
           });
         });
 
@@ -1537,6 +1485,11 @@
       userAnswers[qId] = val;
     }
 
+    function hideQuestionValidation() {
+      const validation = document.getElementById('survey-question-validation');
+      if (validation) validation.style.display = 'none';
+    }
+
     function selectRatingAnswer(qId, val, btn) {
       userAnswers[qId] = val;
       const parent = btn.parentElement;
@@ -1549,11 +1502,41 @@
     async function handleNextStep() {
       const questions = currentSurvey.questions || [];
       const currentQuestion = questions[currentStepIndex];
+      const stepContainer = document.getElementById('survey-step-content');
+      const selectedChoice = stepContainer?.querySelector('[data-choice-index]:checked');
+      const textAnswer = stepContainer?.querySelector('[data-survey-text-answer]');
+      const selectedRating = stepContainer?.querySelector('.rating-btn.active[data-rating-index]');
+      if (currentQuestion && selectedChoice) {
+        let options = currentQuestion.options || [];
+        try {
+          if (typeof options === 'string') options = JSON.parse(options);
+        } catch (_) {
+          options = [];
+        }
+        userAnswers[currentQuestion.id] = options[Number(selectedChoice.dataset.choiceIndex)];
+      } else if (currentQuestion && textAnswer) {
+        userAnswers[currentQuestion.id] = textAnswer.value;
+      } else if (currentQuestion && selectedRating) {
+        let options = currentQuestion.options || [];
+        try {
+          if (typeof options === 'string') options = JSON.parse(options);
+        } catch (_) {
+          options = [];
+        }
+        if (!Array.isArray(options) || options.length === 0) options = [1, 2, 3, 4, 5];
+        const rating = options[Number(selectedRating.dataset.ratingIndex)];
+        userAnswers[currentQuestion.id] = rating;
+      }
       const currentAnswer = currentQuestion ? userAnswers[currentQuestion.id] : null;
       if (currentQuestion && (currentAnswer == null || String(currentAnswer).trim() === '')) {
-        App.showToast('Please answer this question before continuing.', 'error');
+        const validation = document.getElementById('survey-question-validation');
+        if (validation) {
+          validation.textContent = 'Choose an answer to continue.';
+          validation.style.display = 'block';
+        }
         return;
       }
+      hideQuestionValidation();
       if (currentStepIndex < questions.length - 1) {
         currentStepIndex++;
         renderCurrentStep();

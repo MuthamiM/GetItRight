@@ -738,7 +738,15 @@
       await Promise.all(allPolls.map(async poll => {
         try {
           const response = await fetch(`${API_BASE}/polls/${poll.id}/vote-status`, {
-            headers: { 'Authorization': `Bearer ${token}` },
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              voterIdNumber: localStorage.getItem('gir_voter_id_number') || '',
+              voterKey: localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || ''
+            }),
             cache: 'no-store'
           });
           if (!response.ok) return;
@@ -746,8 +754,6 @@
           serverVotedPolls.set(poll.id, status);
           if (status.hasVoted) {
             lockPollOptions(poll.id, status.optionIndex);
-          } else {
-            localStorage.removeItem('gir_voted_poll_' + poll.id);
           }
         } catch (_) {}
       }));

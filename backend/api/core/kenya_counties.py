@@ -79,3 +79,21 @@ def point_is_in_county(latitude: float, longitude: float, county: str) -> bool:
     if geometry_type == "MultiPolygon":
         return any(_point_in_polygon(point, polygon) for polygon in coordinates)
     return False
+
+
+def county_for_point(latitude: float, longitude: float) -> str | None:
+    """Return the county containing a WGS84 point, without returning coordinates."""
+    point = (longitude, latitude)
+    for feature in _county_features().values():
+        geometry = feature.get("geometry") or {}
+        geometry_type = geometry.get("type")
+        coordinates = geometry.get("coordinates") or []
+        if geometry_type == "Polygon":
+            inside = _point_in_polygon(point, coordinates)
+        elif geometry_type == "MultiPolygon":
+            inside = any(_point_in_polygon(point, polygon) for polygon in coordinates)
+        else:
+            inside = False
+        if inside:
+            return feature.get("properties", {}).get("shapeName")
+    return None

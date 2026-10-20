@@ -6,7 +6,7 @@ from datetime import date
 
 from fastapi import HTTPException, status
 
-from backend.api.core.kenya_counties import point_is_in_county
+from backend.api.core.kenya_counties import county_for_point, point_is_in_county
 
 
 def validate_voter_details(
@@ -78,9 +78,15 @@ def validate_voter_details(
             detail="Please provide correct details: device location must be precise (within 500 metres).",
         )
     if not point_is_in_county(latitude, longitude, selected_county):
+        detected_county = county_for_point(latitude, longitude)
+        location_detail = (
+            f" Detected location: {detected_county} County. Select the correct county or try again from {selected_county} County."
+            if detected_county
+            else " Device location must be within the selected county in Kenya."
+        )
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Please provide correct details: your device location does not match {selected_county} County.",
+            detail=f"Please provide correct details: your device location does not match {selected_county} County.{location_detail}",
         )
 
     return name, national_id
