@@ -25,6 +25,16 @@
       --silver: #F2F2F3;
       --font-display: 'Outfit', sans-serif;
       --font-body: 'Inter', sans-serif;
+
+      /* Match InteractivePieChartWidget.sliceColors in the mobile app. */
+      --poll-slice-0: #29B6F6;
+      --poll-slice-1: #FF9800;
+      --poll-slice-2: #66BB6A;
+      --poll-slice-3: #AB47BC;
+      --poll-slice-4: #FFCA28;
+      --poll-slice-5: #EF5350;
+      --poll-slice-6: #26C6DA;
+      --poll-slice-7: #8D6E63;
     }
 
     body {
@@ -226,10 +236,6 @@
       display: inline-flex;
       align-items: baseline;
       gap: 7px;
-      padding: 7px 11px;
-      border: 1px solid rgba(229, 229, 229, 0.28);
-      border-radius: 10px;
-      background: rgba(229, 229, 229, 0.12);
       color: var(--silver);
     }
     .poll-turnout-label {
@@ -473,7 +479,8 @@
       box-sizing: border-box;
       transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
-    .poll-opt-btn.selected .poll-option-marker {
+    .poll-opt-btn.selected .poll-option-marker,
+    .poll-opt-btn.voted .poll-option-marker {
       background: var(--option-accent);
       border-color: var(--option-accent);
       box-shadow: 0 0 0 3px rgba(229, 229, 229, 0.12);
@@ -747,7 +754,6 @@
         font-size: 9px !important;
       }
       .poll-turnout {
-        padding: 7px 9px !important;
         gap: 5px !important;
       }
       .poll-turnout .vote-count {
@@ -1086,10 +1092,12 @@
       const card = document.getElementById(`poll-card-${pollId}`);
       if (!card) return;
       card.querySelectorAll('.poll-opt-btn').forEach((button, index) => {
+        const buttonOptionIndex = Number(button.dataset.optionIndex ?? index);
+        const isVotedChoice = hasOptionIndex && buttonOptionIndex === Number(optionIndex);
         button.disabled = true;
         button.style.cursor = 'not-allowed';
-        button.classList.toggle('voted', hasOptionIndex && index === Number(optionIndex));
-        if (hasOptionIndex && index === Number(optionIndex)) {
+        button.classList.toggle('voted', isVotedChoice);
+        if (isVotedChoice) {
           const label = button.querySelector('.option-label');
           if (label && !label.innerHTML.includes('[Voted]')) {
             label.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>';
@@ -1160,7 +1168,9 @@
 
     setInterval(updateAllCountdowns, 1000);
 
-    const pollOptionColors = ['#29B6F6', '#FF9800', '#66BB6A', '#AB47BC', '#FFCA28', '#EF5350', '#26C6DA', '#8D6E63'];
+    const pollOptionColors = Array.from({ length: 8 }, (_, index) =>
+      getComputedStyle(document.documentElement).getPropertyValue(`--poll-slice-${index}`).trim()
+    );
     const pollOptionSelections = new Map();
 
     function getPollOptionVoteCount(option) {
@@ -1379,7 +1389,7 @@
           const percentage = getPollOptionPercent(p, opt);
           const optionColor = optionColors[index];
           return `
-            <button class="poll-opt-btn ${votedClass}" style="--option-accent:${optionColor};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
+            <button class="poll-opt-btn ${votedClass}" data-option-index="${optionIndex}" style="--option-accent:${optionColor};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
               <div class="poll-option-content">
                 <span class="poll-option-name option-label">
                   <span class="poll-option-marker" aria-hidden="true"></span>
