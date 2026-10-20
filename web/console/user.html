@@ -1894,73 +1894,71 @@
         let totalQuotaBaseline = 0;
         const campaignItems = [];
 
-        polls.forEach(p => {
-          const votes = p.totalVotes || (p.options ? p.options.reduce((s, o) => s + (o.votes || 0), 0) : 0);
-          totalPollVotes += votes;
-          const quota = p.quotaTarget || 2500;
-          totalQuotaBaseline += quota;
-          const rate = quota > 0 ? (votes / quota) * 100 : 0;
-          campaignItems.push({
-            id: p.id,
-            type: 'poll',
-            title: p.title || 'Civic Poll',
-            category: p.category || 'Ballot',
-            quota: quota,
-            cast: votes,
-            rate: rate,
-            status: votes >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
-          });
-        });
-
-        surveys.forEach(s => {
-          const count = s.responses ? s.responses.length : (s.responseCount || 0);
-          totalSurveyResponses += count;
-          const quota = s.targetQuota || 2500;
-          totalQuotaBaseline += quota;
-          const rate = quota > 0 ? (count / quota) * 100 : 0;
-          campaignItems.push({
-            id: s.id,
-            type: 'survey',
-            title: s.title || 'Civic Survey',
-            category: s.track || 'Research',
-            quota: quota,
-            cast: count,
-            rate: rate,
-            status: count >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
-          });
-        });
-
-        // If client has no campaigns yet, use server summary so they can see live sovereign platform data
-        if (campaignItems.length === 0 && serverSummary && serverSummary.campaigns) {
-          totalPollVotes = serverSummary.totals.totalPollVotes;
-          totalSurveyResponses = serverSummary.totals.totalSurveyResponses;
-          totalQuotaBaseline = serverSummary.totals.totalRegisteredQuota;
+        if (serverSummary && Array.isArray(serverSummary.campaigns) &&
+            (serverSummary.campaigns.length > 0 || (polls.length === 0 && surveys.length === 0))) {
           serverSummary.campaigns.forEach(c => {
-            const castVal = Number(c.cast ?? c.submissions ?? 0) || 0;
-            const quotaVal = Number(c.quota ?? 2500) || 2500;
-            const rawRate = c.rate !== undefined && c.rate !== null
+            const type = c.type === 'survey' ? 'survey' : 'poll';
+            const cast = Math.max(0, Number(c.cast ?? c.submissions ?? 0) || 0);
+            const quota = Math.max(0, Number(c.quota ?? 0) || 0);
+            const rateValue = c.rate !== undefined && c.rate !== null
               ? Number(c.rate)
-              : (c.turnoutRate !== undefined && c.turnoutRate !== null
-                  ? Number(c.turnoutRate)
-                  : (quotaVal > 0 ? (castVal / quotaVal) * 100 : 0));
-            const safeRate = isNaN(rawRate) ? (quotaVal > 0 ? (castVal / quotaVal) * 100 : 0) : rawRate;
-
+              : (quota > 0 ? (cast / quota) * 100 : 0);
+            const rate = Number.isFinite(rateValue) ? rateValue : 0;
+            if (type === 'poll') totalPollVotes += cast;
+            else totalSurveyResponses += cast;
+            totalQuotaBaseline += quota;
             campaignItems.push({
               id: c.id,
-              type: c.type || 'poll',
+              type,
               title: c.title || 'Civic Track',
               category: c.category || 'General',
-              quota: quotaVal,
-              cast: castVal,
-              rate: safeRate,
-              status: c.status || (castVal >= quotaVal ? 'Quota Met' : (safeRate >= 60 ? 'Surpassing Target' : 'Active Ingestion'))
+              quota,
+              cast,
+              rate,
+              status: c.status || (cast >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion'))
+            });
+          });
+        } else {
+          polls.forEach(p => {
+            const votes = Math.max(Number(p.totalVotes) || 0, p.options ? p.options.reduce((sum, option) => sum + (Number(option.votes) || 0), 0) : 0);
+            const quota = Number(p.targetQuota ?? p.quotaTarget ?? 2500) || 2500;
+            totalPollVotes += votes;
+            totalQuotaBaseline += quota;
+            const rate = quota > 0 ? (votes / quota) * 100 : 0;
+            campaignItems.push({
+              id: p.id,
+              type: 'poll',
+              title: p.title || 'Civic Poll',
+              category: p.category || 'Ballot',
+              quota,
+              cast: votes,
+              rate,
+              status: votes >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
+            });
+          });
+
+          surveys.forEach(s => {
+            const count = Math.max(Number(s.totalResponses) || 0, s.responses?.length || Number(s.responseCount) || 0);
+            const quota = Number(s.targetResponses ?? s.targetQuota ?? 5000) || 5000;
+            totalSurveyResponses += count;
+            totalQuotaBaseline += quota;
+            const rate = quota > 0 ? (count / quota) * 100 : 0;
+            campaignItems.push({
+              id: s.id,
+              type: 'survey',
+              title: s.title || 'Civic Survey',
+              category: s.track || 'Research',
+              quota,
+              cast: count,
+              rate,
+              status: count >= quota ? 'Quota Met' : (rate >= 60 ? 'Surpassing Target' : 'Active Ingestion')
             });
           });
         }
 
         userTurnoutCampaigns = campaignItems;
         const totalCast = totalPollVotes + totalSurveyResponses;
-        const overallRate = totalQuotaBaseline > 0 ? ((totalCast / totalQuotaBaseline) * 100).toFixed(1) : (serverSummary ? serverSummary.totals.overallTurnoutRate : '69.3');
+        const overallRate = totalQuotaBaseline > 0 ? ((totalCast / totalQuotaBaseline) * 100).toFixed(1) : '0.0';
 
         // Update Overview KPI
         const kpiTurnoutEl = document.getElementById('kpi-turnout-rate');
@@ -1975,13 +1973,17 @@
         if (rEl) rEl.textContent = `${overallRate}%`;
 
         // Render visuals with strict single sovereign charcoal palette
-        renderUserTurnoutGraphVisual(overallRate, totalCast, totalQuotaBaseline, serverSummary ? serverSummary.hourlyVelocity : null);
+        renderUserTurnoutGraphVisual(overallRate, totalCast, totalQuotaBaseline, null);
         renderUserTurnoutPieVisual(totalPollVotes, totalSurveyResponses, totalQuotaBaseline);
         renderUserTurnoutBarsVisual(campaignItems);
         renderUserTurnoutTable(campaignItems);
 
       } catch (err) {
         console.error('Error loading user turnout analytics:', err);
+        const tbody = document.getElementById('user-turnout-tbody');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="8" class="empty" style="text-align:center;padding:24px;">Turnout analytics could not be loaded. Select Refresh to try again.</td></tr>';
+        }
       }
     }
 
@@ -3148,6 +3150,9 @@
                                 .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
       const stats = statsRes.ok ? await statsRes.json() : null;
 
+      // Load turnout from account-scoped server records before fetching every response ledger.
+      await loadUserTurnoutAnalytics(myPolls, surveys);
+
       // Fetch poll vote transactions
       const pollTxs = await Promise.all(myPolls.map(async p => {
         try {
@@ -3304,6 +3309,7 @@
       try {
         checkSavedDraftAlert();
       } catch (e) {}
+
     }
 
     // === PER-CLIENT NOTIFICATION ENGINE ===
@@ -3495,6 +3501,7 @@
           document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
           button.classList.add('active');
           document.querySelectorAll('main > section').forEach(s => { s.hidden = s.id !== button.dataset.section; });
+          if (button.dataset.section === 'turnout') loadUserTurnoutAnalytics();
         };
       });
     }

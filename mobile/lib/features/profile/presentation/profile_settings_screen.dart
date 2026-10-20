@@ -134,8 +134,6 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
             children: [
-              _buildProfileHeader(),
-              const SizedBox(height: 18),
               _buildAccountAndSettingsCard(),
               const SizedBox(height: 18),
               const Text(
@@ -155,17 +153,8 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final initial = name.isEmpty ? 'U' : name.characters.first.toUpperCase();
     final planColor = _planColor(_userPlan);
 
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.graphite700, AppColors.graphite900],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _surfaceBorder),
-      ),
       child: Row(
         children: [
           Container(
@@ -191,6 +180,16 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text(
+                  'USERNAME',
+                  style: TextStyle(
+                    color: _secondaryText,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 3),
                 Text(
                   name.isEmpty ? 'Your profile' : name,
                   maxLines: 1,
@@ -269,14 +268,9 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildProfileHeader(),
+            _buildCardDivider(),
             _buildSectionHeader('ACCOUNT DETAILS'),
-            _buildAccountRow(
-              icon: Icons.person_outline_rounded,
-              label: 'Username',
-              controller: _nameController,
-              hint: 'Name',
-            ),
-            _buildDivider(),
             _buildAccountRow(
               icon: Icons.alternate_email_rounded,
               label: 'Email address',
@@ -301,6 +295,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
               preferenceKey: 'gir_user_org',
               hint: 'Independent',
             ),
+            _buildCardDivider(),
             _buildSectionHeader('PREFERENCES & ABOUT'),
             _buildSettingsRow(
               icon: Icons.notifications_active_outlined,
@@ -319,7 +314,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             _buildSettingsRow(
               icon: Icons.phone_android_rounded,
               title: 'IcapsQ app',
-              subtitle: 'Version 2.1.22  ·  Build 27',
+              subtitle: 'Version 2.1.23  ·  Build 28',
               trailing: const SizedBox(width: 8),
             ),
             _buildDivider(),
@@ -457,6 +452,11 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Widget _buildDivider() => const Padding(
         padding: EdgeInsets.only(left: 65, right: 16),
+        child: Divider(height: 1, color: Color(0xFF55575D)),
+      );
+
+  Widget _buildCardDivider() => const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
         child: Divider(height: 1, color: Color(0xFF55575D)),
       );
 
