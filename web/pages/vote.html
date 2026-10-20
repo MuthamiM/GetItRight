@@ -273,9 +273,9 @@
     }
     .poll-vote-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      align-items: center;
-      gap: 14px;
+      grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.5fr);
+      align-items: start;
+      gap: 24px;
       margin-bottom: 18px;
     }
     .poll-vote-chart-column {
@@ -618,6 +618,12 @@
       }
       .poll-option-percent {
         font-size: 11px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .poll-vote-layout {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
