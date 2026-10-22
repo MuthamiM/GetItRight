@@ -156,6 +156,10 @@
       letter-spacing: 0.05em;
     }
 
+    .required-mark { color: #FF7078; font-weight: 900; margin-left: 3px; }
+    .field-error { display: none; margin-top: 5px; color: #FF7078; font-size: 11px; line-height: 1.4; }
+    .field-error.visible { display: block; }
+
     .form-input {
       width: 100%;
       padding: 13px 15px;
@@ -178,6 +182,8 @@
       border-color: var(--silver);
       background: rgba(229, 229, 229, 0.15);
     }
+
+    .form-input.field-invalid { border-color: #FF7078; }
 
     .btn-submit {
       width: 100%;
@@ -518,30 +524,35 @@
         <form id="signup-form" onsubmit="handleAccountSubmit(event)">
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Full Name</label>
+              <label class="form-label" for="full-name">Full Name<span class="required-mark">*</span></label>
               <input type="text" id="full-name" class="form-input" required placeholder="e.g. Grace Wanjiku">
+              <span class="field-error" id="full-name-error">Enter your full name.</span>
             </div>
 
             <div class="form-group">
-              <label class="form-label" id="email-label" for="email">Email Address</label>
+              <label class="form-label" id="email-label" for="email">Email Address<span class="required-mark">*</span></label>
               <input type="email" id="email" class="form-input" required autocomplete="email" placeholder="you@example.com">
+              <span class="field-error" id="email-error">Enter a valid email address.</span>
             </div>
           </div>
 
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Phone Number</label>
+              <label class="form-label" for="phone-number">Phone Number<span class="required-mark">*</span></label>
               <input type="tel" id="phone-number" class="form-input" required placeholder="+254 700 000 000">
+              <span class="field-error" id="phone-number-error">Enter your phone number.</span>
             </div>
 
             <div class="form-group">
-              <label class="form-label" id="org-name-label" for="org-name">Organization Name</label>
+              <label class="form-label" id="org-name-label" for="org-name">Organization Name<span class="required-mark" id="org-name-required" hidden>*</span></label>
               <input type="text" id="org-name" class="form-input" maxlength="200" autocomplete="organization" placeholder="e.g. Umoja Research Group">
+              <span class="field-error" id="org-name-error">Enter your organization name.</span>
             </div>
 
             <div class="form-group">
-              <label class="form-label" id="applying-as-label" for="applying-as">Applying As</label>
+              <label class="form-label" id="applying-as-label" for="applying-as">Applying As<span class="required-mark" id="applying-as-required" hidden>*</span></label>
               <input type="text" id="applying-as" class="form-input" maxlength="100" autocomplete="organization-title" placeholder="e.g. Director, Administrator, Research Lead">
+              <span class="field-error" id="applying-as-error">Enter your position in the organization.</span>
             </div>
           </div>
 
@@ -551,17 +562,19 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">Password</label>
+              <label class="form-label" for="password">Password<span class="required-mark">*</span></label>
               <input
                 type="password" id="password" class="form-input" required minlength="12"
                 pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{12,}"
                 title="Use at least 12 characters, including uppercase, lowercase, and a number."
                 autocomplete="new-password" placeholder="At least 12 characters">
+              <span class="field-error" id="password-error">Enter a password that meets the requirements.</span>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Confirm Password</label>
+              <label class="form-label" for="confirm-password">Confirm Password<span class="required-mark">*</span></label>
               <input type="password" id="confirm-password" class="form-input" required placeholder="Repeat password">
+              <span class="field-error" id="confirm-password-error">Confirm your password.</span>
             </div>
           </div>
 
@@ -775,10 +788,34 @@
       const emailInput = document.getElementById('email');
       const organizationLabel = document.getElementById('org-name-label');
       const applyingAsLabel = document.getElementById('applying-as-label');
-      if (emailLabel) emailLabel.textContent = isOrgPlan ? 'Business Email Address' : 'Email Address';
+      if (emailLabel?.firstChild) emailLabel.firstChild.nodeValue = isOrgPlan ? 'Business Email Address' : 'Email Address';
       if (emailInput) emailInput.placeholder = isOrgPlan ? 'name@organization.co.ke' : 'you@example.com';
-      if (organizationLabel) organizationLabel.textContent = isOrgPlan ? 'Organization Name *' : 'Organization Name';
-      if (applyingAsLabel) applyingAsLabel.textContent = isOrgPlan ? 'Applying As *' : 'Applying As';
+      if (organizationLabel?.firstChild) organizationLabel.firstChild.nodeValue = 'Organization Name';
+      if (applyingAsLabel?.firstChild) applyingAsLabel.firstChild.nodeValue = 'Applying As';
+      document.getElementById('org-name-required').hidden = !isOrgPlan;
+      document.getElementById('applying-as-required').hidden = !isOrgPlan;
+      document.getElementById('org-name').required = isOrgPlan;
+      document.getElementById('applying-as').required = isOrgPlan;
+      if (!isOrgPlan) {
+        clearFieldError(document.getElementById('org-name'));
+        clearFieldError(document.getElementById('applying-as'));
+      }
+    }
+
+    function showFieldError(input, message) {
+      if (!input) return;
+      input.classList.add('field-invalid');
+      const error = document.getElementById(`${input.id}-error`);
+      if (error) {
+        if (message) error.textContent = message;
+        error.classList.add('visible');
+      }
+    }
+
+    function clearFieldError(input) {
+      if (!input) return;
+      input.classList.remove('field-invalid');
+      document.getElementById(`${input.id}-error`)?.classList.remove('visible');
     }
 
     function returnToAccountDetails(fieldId) {
@@ -888,16 +925,19 @@
       if (selectedPlan === 'org') {
         if (!accountData.organization.trim()) {
           alert('Organization plan applications require an organization name.');
+          showFieldError(document.getElementById('org-name'));
           returnToAccountDetails('org-name');
           return;
         }
         if (!accountData.organizationContactRole.trim()) {
           alert('Organization plan applications require the position you are applying as.');
+          showFieldError(document.getElementById('applying-as'));
           returnToAccountDetails('applying-as');
           return;
         }
         if (isGmailAddress(accountData.email)) {
           alert('Organization plan applications require a business email address. Gmail addresses are not accepted.');
+          showFieldError(document.getElementById('email'), 'Use a business email address. Gmail is not accepted for the Organization plan.');
           returnToAccountDetails('email');
           return;
         }
@@ -999,6 +1039,17 @@
     }
 
     const requestedPlan = new URLSearchParams(window.location.search).get('plan');
+    document.querySelectorAll('#signup-form .form-input').forEach(input => {
+      input.addEventListener('invalid', () => {
+        const text = input.validity.valueMissing
+          ? `Enter your ${input.id === 'org-name' ? 'organization name' : input.id === 'applying-as' ? 'position in the organization' : input.id.replaceAll('-', ' ')}.`
+          : input.id === 'email' ? 'Enter a valid email address.' : 'Check this field and try again.';
+        showFieldError(input, text);
+      });
+      input.addEventListener('input', () => {
+        if (input.validity.valid) clearFieldError(input);
+      });
+    });
     if (['free', 'pro', 'org'].includes(requestedPlan)) selectPlan(requestedPlan, ['free', 'pro', 'org'].indexOf(requestedPlan));
     loadPlanCatalog();
   </script>
