@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="PollTrack Pricing — Free, Pro, Organisation, and Election Tiers. M-Pesa Daraja and Card payments.">
+  <meta name="description" content="IcapsQ pricing — Free, Pro, Organisation, and custom Election plans. Secure M-Pesa and card checkout.">
   <title>PollTrack — Pricing & Integrity Feature Matrix</title>
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -48,23 +48,7 @@
       Free users create simple polls. Everything that proves cryptographic integrity, observer device signing, and Merkle checkpoint verification is tiered and transparent.
     </p>
 
-    <!-- Controls: Billing Cycle + Currency -->
-    <div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap;">
-      <!-- Billing Toggle -->
-      <div style="display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-pill); padding:4px 8px;">
-        <button class="btn btn-ghost btn-sm active" id="billing-monthly" style="font-size:13px; font-weight:600; padding:6px 14px; border-radius:var(--radius-pill);">Monthly</button>
-        <button class="btn btn-ghost btn-sm" id="billing-annual" style="font-size:13px; font-weight:600; padding:6px 14px; border-radius:var(--radius-pill);">
-          Annual <span class="badge" style="background:rgba(74,92,255,0.15); color:var(--primary); font-size:10px; margin-left:4px;">2 Months Free</span>
-        </button>
-      </div>
-
-      <!-- Currency Toggle -->
-      <div style="display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-pill); padding:4px 8px;">
-        <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">Currency:</span>
-        <button class="btn btn-ghost btn-sm active" id="pricing-kes" style="font-size:12px; font-weight:700; padding:4px 10px;">KES</button>
-        <button class="btn btn-ghost btn-sm" id="pricing-usd" style="font-size:12px; font-weight:700; padding:4px 10px;">USD</button>
-      </div>
-    </div>
+    <div id="payment-status-note" role="status" style="font-size:13px; color:var(--text-muted);">Plans are prepaid for 30 days in KES. M-Pesa and card checkout status is loading.</div>
   </header>
 
   <!-- ====== MAIN TIER COMPARISON CARDS ====== -->
@@ -99,8 +83,8 @@
         <div>
           <h3 style="font-size:18px; font-weight:700; margin:0 0 6px 0;">Pro</h3>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">For researchers, journalists, and professionals</p>
-          <div style="font-size:32px; font-weight:800; color:var(--primary); margin-bottom:4px;" id="price-val-pro">KES 1,500<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/mo</span></div>
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">Approx. $12/month • Billed monthly</div>
+          <div style="font-size:32px; font-weight:800; color:var(--primary); margin-bottom:4px;" id="price-val-pro">KES 1,500<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/30 days</span></div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">30-day prepaid access • Renew manually</div>
 
           <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:12px;">Everything in Free, plus:</div>
           <ul style="list-style:none; padding:0; margin:0 0 24px 0; font-size:13px; color:var(--text); display:flex; flex-direction:column; gap:10px;">
@@ -113,7 +97,7 @@
             <li><span style="color:var(--primary);">&check;</span> Custom organization logo branding</li>
           </ul>
         </div>
-        <button class="btn btn-primary btn-pill" onclick="App.showToast('Redirecting to M-Pesa Daraja STK Push...', 'info')" style="width:100%; justify-content:center;">Upgrade to Pro</button>
+        <button class="btn btn-primary btn-pill" onclick="startPlanCheckout('pro')" style="width:100%; justify-content:center;">Choose Pro</button>
       </div>
 
       <!-- Organisation Plan -->
@@ -121,8 +105,8 @@
         <div>
           <h3 style="font-size:18px; font-weight:700; margin:0 0 6px 0;">Organisation</h3>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">For companies, universities, and advocacy groups</p>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-bottom:4px;" id="price-val-org">KES 6,500<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/mo</span></div>
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">Approx. $49/month • Billed monthly</div>
+          <div style="font-size:32px; font-weight:800; color:var(--text); margin-bottom:4px;" id="price-val-org">KES 6,500<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/30 days</span></div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">30-day prepaid access • Renew manually</div>
 
           <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:12px;">Everything in Pro, plus:</div>
           <ul style="list-style:none; padding:0; margin:0 0 24px 0; font-size:13px; color:var(--text-muted); display:flex; flex-direction:column; gap:10px;">
@@ -135,7 +119,7 @@
             <li>&bull; Custom domain whitelabeling</li>
           </ul>
         </div>
-        <button class="btn btn-secondary btn-pill" onclick="App.showToast('Redirecting to Checkout...', 'info')" style="width:100%; justify-content:center;">Choose Organisation</button>
+        <button class="btn btn-secondary btn-pill" onclick="startPlanCheckout('org')" style="width:100%; justify-content:center;">Choose Organisation</button>
       </div>
 
       <!-- Election / Enterprise Plan -->
@@ -144,8 +128,8 @@
           <span class="badge badge-locked" style="margin-bottom:10px;">ELECTION GRADE</span>
           <h3 style="font-size:18px; font-weight:700; margin:0 0 6px 0;">Election / Enterprise</h3>
           <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px 0;">For electoral bodies, parties, and election monitoring missions</p>
-          <div style="font-size:32px; font-weight:800; color:var(--text); margin-bottom:4px;">Custom</div>
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">Starts KES 150-400 / station + platform fee</div>
+          <div style="font-size:32px; font-weight:800; color:var(--text); margin-bottom:4px;" id="price-val-election">Custom</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">Contact us for a tailored quote</div>
 
           <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:12px;">Full Integrity & Hardware Engine:</div>
           <ul style="list-style:none; padding:0; margin:0 0 24px 0; font-size:13px; color:var(--text-muted); display:flex; flex-direction:column; gap:10px;">
@@ -159,7 +143,7 @@
             <li>&bull; Dedicated on-call election-day operations</li>
           </ul>
         </div>
-        <a href="#contact-sales" class="btn btn-secondary btn-pill" style="width:100%; justify-content:center;">Calculate & Contact</a>
+        <a class="btn btn-secondary btn-pill" href="mailto:info@mftechnologies.org?subject=IcapsQ%20Election%20Plan%20Quote" style="width:100%; justify-content:center;">Contact sales</a>
       </div>
 
     </div>
@@ -311,7 +295,7 @@
           <!-- Payment Marks -->
           <div style="display:flex; align-items:center; gap:16px; margin-top:20px;">
             <span style="font-size:12px; color:var(--text-muted);">Supported Payment Methods:</span>
-            <span class="badge" style="background:rgba(74,92,255,0.15); color:var(--primary); font-weight:700;">M-PESA (Daraja STK)</span>
+            <span class="badge" style="background:rgba(74,92,255,0.15); color:var(--primary); font-weight:700;">M-PESA</span>
             <span class="badge" style="background:var(--surface-alt); color:var(--text);">Visa / Mastercard</span>
           </div>
         </div>
@@ -319,30 +303,30 @@
         <!-- Contact Sales Form -->
         <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:16px; padding:28px;">
           <h4 style="font-size:18px; font-weight:700; margin:0 0 6px 0;">Request Official Election Body Quote</h4>
-          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Our mission team responds within 2 hours with customized provisioning.</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 20px 0;">Prepare an email with your organization details and quote requirements.</p>
 
           <form id="contact-sales-form">
-            <div class="form-group" style="margin-bottom:14px;">
+          <div class="form-group" style="margin-bottom:14px;">
               <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Organization / Commission Name</label>
-              <input type="text" class="form-input" required placeholder="e.g. Kenya Electoral Monitoring Mission" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);">
+              <input id="quote-org" type="text" class="form-input" required placeholder="e.g. Kenya Electoral Monitoring Mission" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);">
             </div>
 
             <div class="form-group" style="margin-bottom:14px;">
               <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Official Contact Email</label>
-              <input type="email" class="form-input" required placeholder="lead@mission.org" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);">
+              <input id="quote-email" type="email" class="form-input" required placeholder="lead@mission.org" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);">
             </div>
 
             <div class="form-group" style="margin-bottom:14px;">
               <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Direct Phone / M-Pesa Contact</label>
-              <input type="tel" class="form-input" required placeholder="+254 712 345 678" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);">
+              <input id="quote-phone" type="tel" class="form-input" required placeholder="+254 712 345 678" style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);">
             </div>
 
             <div class="form-group" style="margin-bottom:20px;">
               <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:4px;">Specific Requirements / Offline Needs</label>
-              <textarea class="form-input" rows="3" placeholder="Number of observers, target region, SMS fallback requirements..." style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);"></textarea>
+              <textarea id="quote-requirements" class="form-input" rows="3" placeholder="Number of observers, target region, SMS fallback requirements..." style="width:100%; padding:10px 14px; border-radius:8px; background:var(--surface); border:1px solid var(--border); color:var(--text);"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-pill" style="width:100%; justify-content:center;">Submit Custom Quote Request</button>
+            <button type="submit" class="btn btn-primary btn-pill" style="width:100%; justify-content:center;">Prepare Quote Request Email</button>
           </form>
         </div>
       </div>
@@ -368,9 +352,9 @@
         </div>
 
         <div class="card" style="padding:20px; border:1px solid var(--border);">
-          <h4 style="font-size:16px; font-weight:700; margin:0 0 8px 0; color:var(--text);">How do M-Pesa payments work on PollTrack?</h4>
+          <h4 style="font-size:16px; font-weight:700; margin:0 0 8px 0; color:var(--text);">How do M-Pesa and card payments work?</h4>
           <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin:0;">
-            We integrate with Safaricom Daraja STK Push. Enter your Kenyan mobile number, confirm the instant prompt on your phone with your M-Pesa PIN, and your subscription or station allocation is activated within seconds.
+            Paid plans open Flutterwave's hosted checkout, where available KES payment methods include M-Pesa and card. IcapsQ activates a plan only after the server verifies the payment with Flutterwave.
           </p>
         </div>
 
@@ -392,8 +376,58 @@
   <script src="js/core/i18n.js"></script>
   <script src="js/core/app.js"></script>
   <script>
+    async function loadPlanCatalog() {
+      const note = document.getElementById('payment-status-note');
+      const buttons = [...document.querySelectorAll('[onclick^="startPlanCheckout("]')];
+      try {
+        const response = await fetch(`${window.location.origin}/api/payments/plans`, { headers: { Accept: 'application/json' } });
+        const catalog = await response.json();
+        if (!response.ok || !Array.isArray(catalog.plans)) throw new Error('Plan pricing is unavailable.');
+        for (const plan of catalog.plans) {
+          const price = document.getElementById(`price-val-${plan.key}`);
+          if (price) price.innerHTML = `KES ${Number(plan.amount).toLocaleString()}<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/30 days</span>`;
+        }
+        if (catalog.checkoutEnabled) {
+          note.textContent = '30-day prepaid plans in KES. Pay securely with M-Pesa or card; renewals are manual.';
+          buttons.forEach(button => { button.disabled = false; });
+        } else {
+          note.textContent = 'M-Pesa and card checkout is being configured. Free accounts remain available.';
+          buttons.forEach(button => { button.disabled = true; button.textContent = 'Checkout unavailable'; });
+        }
+      } catch (_) {
+        note.textContent = 'Plan checkout is temporarily unavailable. Please try again later.';
+        buttons.forEach(button => { button.disabled = true; });
+      }
+    }
+
+    async function startPlanCheckout(plan) {
+      const token = localStorage.getItem('gir_token');
+      if (!token) {
+        window.location.assign(`/auth/signup.html?plan=${encodeURIComponent(plan)}`);
+        return;
+      }
+      try {
+        const response = await fetch(`${window.location.origin}/api/payments/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ plan }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.checkout_url) throw new Error(data.detail || 'Secure checkout could not be started.');
+        const checkout = new URL(data.checkout_url);
+        if (checkout.protocol !== 'https:' || checkout.hostname !== 'checkout.flutterwave.com') {
+          throw new Error('The payment provider returned an invalid checkout link.');
+        }
+        window.location.assign(checkout.href);
+      } catch (error) {
+        if (window.App?.showToast) App.showToast(error.message, 'error');
+        else alert(error.message);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       App.injectIcons();
+      loadPlanCatalog();
 
       // Station Calculator
       const slider = document.getElementById('station-slider');
@@ -417,33 +451,17 @@
       if (form) {
         form.addEventListener('submit', (e) => {
           e.preventDefault();
-          App.showToast('Custom quote request dispatched to mission team', 'success');
-          form.reset();
+          const body = [
+            `Organization: ${document.getElementById('quote-org').value.trim()}`,
+            `Contact email: ${document.getElementById('quote-email').value.trim()}`,
+            `Phone: ${document.getElementById('quote-phone').value.trim()}`,
+            `Estimated polling stations: ${slider ? slider.value : 'Not specified'}`,
+            `Requirements: ${document.getElementById('quote-requirements').value.trim() || 'Not specified'}`,
+          ].join('\n');
+          window.location.href = `mailto:info@mftechnologies.org?subject=${encodeURIComponent('IcapsQ Election Plan Quote')}&body=${encodeURIComponent(body)}`;
         });
       }
 
-      // Monthly / Annual toggle
-      const monthlyBtn = document.getElementById('billing-monthly');
-      const annualBtn = document.getElementById('billing-annual');
-      const proPrice = document.getElementById('price-val-pro');
-      const orgPrice = document.getElementById('price-val-org');
-
-      if (monthlyBtn && annualBtn) {
-        annualBtn.addEventListener('click', () => {
-          annualBtn.classList.add('active');
-          monthlyBtn.classList.remove('active');
-          if (proPrice) proPrice.innerHTML = 'KES 15,000<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/year</span>';
-          if (orgPrice) orgPrice.innerHTML = 'KES 65,000<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/year</span>';
-          App.showToast('Annual discount applied (2 months free)', 'info');
-        });
-
-        monthlyBtn.addEventListener('click', () => {
-          monthlyBtn.classList.add('active');
-          annualBtn.classList.remove('active');
-          if (proPrice) proPrice.innerHTML = 'KES 1,500<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/mo</span>';
-          if (orgPrice) orgPrice.innerHTML = 'KES 6,500<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/mo</span>';
-        });
-      }
     });
   </script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>

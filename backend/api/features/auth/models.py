@@ -17,6 +17,7 @@ class UserModel(Base):
     Role = Column(String, nullable=False, default="Customer")
     Plan = Column(String, nullable=False, default="free")
     PlanName = Column(String, nullable=False, default="Civic Starter")
+    PlanExpiresAt = Column(DateTime(timezone=True), nullable=True)
     Organization = Column(String, nullable=True, default="Independent")
     CreatedAt = Column(String, nullable=False)
     Status = Column(String, nullable=False, default="Active")

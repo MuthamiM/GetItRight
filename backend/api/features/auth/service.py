@@ -20,6 +20,7 @@ PLAN_META = {
     "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
     "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
     "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/user.html"},
+    "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/user.html"},
 }
 
 
@@ -48,6 +49,9 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
             detail="Invalid password provided."
         )
 
+    from backend.api.features.users.service import expire_user_plan_if_needed
+    user = expire_user_plan_if_needed(db, user)
+
     redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else "/console/user.html"
     if user.ConsoleUrl != redirect_url:
         user.ConsoleUrl = redirect_url
@@ -71,6 +75,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         role=user.Role,
         plan=None if is_admin else user.Plan,
         planName=None if is_admin else user.PlanName,
+        planExpiresAt=None if is_admin else user.PlanExpiresAt,
         organization=user.Organization,
         status=user.Status,
         voterQuota=None if is_admin else user.VoterQuota,
@@ -171,6 +176,7 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
         role=new_user.Role,
         plan=new_user.Plan,
         planName=new_user.PlanName,
+        planExpiresAt=new_user.PlanExpiresAt,
         organization=new_user.Organization,
         status=new_user.Status,
         voterQuota=new_user.VoterQuota,

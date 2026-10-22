@@ -19,6 +19,25 @@ PLAN_METADATA = {
 
 PLAN_TIER_RANK = {"free": 0, "pro": 1, "org": 2, "election": 3}
 
+def expire_user_plan_if_needed(db: Session, user: UserModel) -> UserModel:
+    """Return expired paid plans to Free when the account next makes an API request."""
+    expiry = user.PlanExpiresAt
+    if not expiry:
+        return user
+    if expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=timezone.utc)
+    if expiry > datetime.now(timezone.utc):
+        return user
+    free = PLAN_METADATA["free"]
+    user.Plan = "free"
+    user.PlanName = free["name"]
+    user.VoterQuota = free["voters"]
+    user.PollsQuota = free["polls"]
+    user.PlanExpiresAt = None
+    db.commit()
+    db.refresh(user)
+    return user
+
 # Map full plan names and common variants to canonical short keys
 _PLAN_NAME_TO_KEY = {
     "free": "free",
@@ -53,6 +72,7 @@ def map_user(u: UserModel) -> UserDetailOut:
         role=u.Role,
         plan=None if is_admin else u.Plan,
         planName=None if is_admin else u.PlanName,
+        planExpiresAt=None if is_admin else u.PlanExpiresAt,
         organization=u.Organization,
         createdAt=u.CreatedAt,
         status=u.Status,
@@ -182,6 +202,7 @@ def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest, is_a
     meta = PLAN_METADATA[plan_key]
     user.Plan = plan_key
     user.PlanName = meta["name"]
+    user.PlanExpiresAt = None
     user.ConsoleUrl = "/console/user.html" if user.Role == "Customer" else "/console/admin.html"
     user.VoterQuota = meta["voters"]
     user.PollsQuota = meta["polls"]

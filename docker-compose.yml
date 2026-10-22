@@ -14,6 +14,9 @@ services:
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - FLW_SECRET_KEY=${FLW_SECRET_KEY:-}
+      - FLW_SECRET_HASH=${FLW_SECRET_HASH:-}
+      - APP_PUBLIC_URL=${APP_PUBLIC_URL:-https://icapsq.mftechnologies.org}
       - CORS_ORIGINS=${CORS_ORIGINS:-https://icapsq.mftechnologies.org}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-info@mftechnologies.org}
@@ -42,6 +45,9 @@ services:
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - FLW_SECRET_KEY=${FLW_SECRET_KEY:-}
+      - FLW_SECRET_HASH=${FLW_SECRET_HASH:-}
+      - APP_PUBLIC_URL=${APP_PUBLIC_URL:-https://icapsq.mftechnologies.org}
       - CORS_ORIGINS=${CORS_ORIGINS:-https://icapsq.mftechnologies.org}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-info@mftechnologies.org}

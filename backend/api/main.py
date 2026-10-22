@@ -17,6 +17,7 @@ from backend.api.features.surveys.routes import router as surveys_router
 from backend.api.features.analytics.routes import router as analytics_router
 from backend.api.features.users.routes import router as users_router
 from backend.api.features.privacy.routes import router as privacy_router
+from backend.api.features.payments.routes import router as payments_router
 
 from backend.api.controllers import SystemController
 from backend.api.servers import ws_server, server_manager
@@ -102,6 +103,7 @@ for prefix in [settings.API_PREFIX, "/api/v1"]:
     app.include_router(analytics_router, prefix=prefix)
     app.include_router(users_router, prefix=prefix)
     app.include_router(privacy_router, prefix=prefix)
+    app.include_router(payments_router, prefix=prefix)
 
 # === SYSTEM CONTROLLER DIAGNOSTICS ===
 @app.get("/health")

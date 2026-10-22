@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, field_validator
@@ -55,6 +56,7 @@ class UserOut(BaseModel):
     role: str
     plan: Optional[str] = None
     planName: Optional[str] = None
+    planExpiresAt: Optional[datetime] = None
     organization: Optional[str] = "Independent"
     status: str
     voterQuota: Optional[int] = None

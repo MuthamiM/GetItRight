@@ -571,6 +571,7 @@
           <div class="phone-plan-header">
             <h3 id="welcome-user-heading">Welcome</h3>
             <p>Select the plan that best suits your organization's scale.</p>
+            <p id="payment-availability-note" role="status" style="font-size:12px; margin-top:8px;"></p>
           </div>
 
           <!-- Responsive Layout: 4 Columns on Desktop, Horizontal Scroll on Phone -->
@@ -609,8 +610,8 @@
                 <div class="plan-radio-circle"></div>
               </div>
               <div class="plan-price-box">
-                <div class="plan-price-num">499 KES</div>
-                <div class="plan-price-period">/ month</div>
+                <div class="plan-price-num" id="signup-price-pro">1,500 KES</div>
+                <div class="plan-price-period">/ 30 days</div>
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
@@ -632,8 +633,8 @@
                 <div class="plan-radio-circle"></div>
               </div>
               <div class="plan-price-box">
-                <div class="plan-price-num">899 KES</div>
-                <div class="plan-price-period">/ month</div>
+                <div class="plan-price-num" id="signup-price-org">6,500 KES</div>
+                <div class="plan-price-period">/ 30 days</div>
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
@@ -655,8 +656,8 @@
                 <div class="plan-radio-circle"></div>
               </div>
               <div class="plan-price-box">
-                <div class="plan-price-num">1,399 KES</div>
-                <div class="plan-price-period">/ month</div>
+                <div class="plan-price-num" id="signup-price-election">Custom</div>
+                <div class="plan-price-period">Contact sales</div>
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
@@ -700,6 +701,8 @@
     let accountData = null;
     let selectedPlan = 'free';
     let currentPlanIndex = 0;
+    let planCatalogLoaded = false;
+    let paidCheckoutEnabled = false;
     const planNames = {
       free: 'Starter (Free)',
       pro: 'Pro Plan',
@@ -853,6 +856,17 @@
     async function finalizeAccount() {
       if (!accountData) return;
 
+      if (selectedPlan === 'election') {
+        alert('Election plan pricing is customized. Email info@mftechnologies.org for a quote.');
+        return;
+      }
+
+      if (selectedPlan !== 'free' && !planCatalogLoaded) await loadPlanCatalog();
+      if (selectedPlan !== 'free' && !paidCheckoutEnabled) {
+        alert('M-Pesa and card checkout is not configured yet. No account was created. Choose Free or try again later.');
+        return;
+      }
+
       const proceedBtn = document.getElementById('proceed-btn');
       proceedBtn.disabled = true;
       proceedBtn.textContent = "Creating Account...";
@@ -877,8 +891,34 @@
         if (res.ok && data?.token && data?.user) {
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
-          alert('Account created successfully. Your account starts on the Free plan; upgrades require administrator approval.');
-          window.location.href = data.redirectUrl || '../pages/vote.html';
+          if (selectedPlan === 'free') {
+            alert('Account created successfully on the Free plan.');
+            window.location.href = data.redirectUrl || '../pages/vote.html';
+            return;
+          }
+
+          try {
+            const checkoutResponse = await fetch(`${API_BASE}/payments/checkout`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${data.token}`,
+              },
+              body: JSON.stringify({ plan: selectedPlan }),
+            });
+            const checkoutData = await checkoutResponse.json().catch(() => ({}));
+            if (!checkoutResponse.ok || !checkoutData.checkout_url) {
+              throw new Error(checkoutData.detail || 'Secure checkout could not be started.');
+            }
+            const checkoutUrl = new URL(checkoutData.checkout_url);
+            if (checkoutUrl.protocol !== 'https:' || checkoutUrl.hostname !== 'checkout.flutterwave.com') {
+              throw new Error('The payment provider returned an invalid checkout link.');
+            }
+            window.location.assign(checkoutUrl.href);
+          } catch (_) {
+            alert('Account created on the Free plan. No payment was taken and no paid plan was activated. Sign in later to retry checkout.');
+            window.location.href = data.redirectUrl || '../pages/vote.html';
+          }
         } else {
           throw new Error(getRegistrationErrorMessage(data, res.status));
         }
@@ -888,6 +928,33 @@
         proceedBtn.textContent = `Proceed with ${planNames[selectedPlan]} →`;
       }
     }
+
+    async function loadPlanCatalog() {
+      const note = document.getElementById('payment-availability-note');
+      try {
+        const response = await fetch(`${API_BASE}/payments/plans`, { headers: { Accept: 'application/json' } });
+        const catalog = await response.json();
+        if (!response.ok || !Array.isArray(catalog.plans)) throw new Error('Plan pricing is unavailable.');
+        paidCheckoutEnabled = catalog.checkoutEnabled === true;
+        for (const plan of catalog.plans) {
+          const price = document.getElementById(`signup-price-${plan.key}`);
+          if (price) price.textContent = `${Number(plan.amount).toLocaleString()} KES`;
+        }
+        note.textContent = paidCheckoutEnabled
+          ? 'Paid plans are prepaid for 30 days. Complete M-Pesa or card payment on secure checkout.'
+          : 'M-Pesa and card checkout is being configured. Free signup is available now.';
+      } catch (_) {
+        paidCheckoutEnabled = false;
+        note.textContent = 'Plan checkout is temporarily unavailable. Free signup remains available.';
+      } finally {
+        planCatalogLoaded = true;
+      }
+    }
+
+    const planOrder = ['free', 'pro', 'org', 'election'];
+    const requestedPlan = new URLSearchParams(window.location.search).get('plan');
+    if (planOrder.includes(requestedPlan)) selectPlan(requestedPlan, planOrder.indexOf(requestedPlan));
+    loadPlanCatalog();
   </script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>

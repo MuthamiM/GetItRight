@@ -24,6 +24,9 @@ def _authenticate(token: str, db: Session) -> dict:
     if payload.get("tokenVersion") != (user.TokenVersion or 0):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session has been revoked")
 
+    from backend.api.features.users.service import expire_user_plan_if_needed
+    user = expire_user_plan_if_needed(db, user)
+
     # Claims that can change are resolved from the database for every request.
     payload.update({"role": user.Role, "plan": user.Plan, "name": user.FullName})
     return payload

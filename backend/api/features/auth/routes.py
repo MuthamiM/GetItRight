@@ -83,6 +83,7 @@ def get_current_profile(token_data: dict = Depends(get_current_user_token), db: 
         role=user.Role,
         plan=user.Plan,
         planName=user.PlanName,
+        planExpiresAt=user.PlanExpiresAt,
         organization=user.Organization,
         status=user.Status,
         voterQuota=user.VoterQuota,

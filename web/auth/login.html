@@ -241,19 +241,6 @@
       }
     }
 
-    // Check if redirected after plan payment
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('upgraded') === '1') {
-        const planName = params.get('plan') || 'your new plan';
-        const successEl = document.getElementById('auth-success');
-        if (successEl) {
-          successEl.innerHTML = `<strong>Payment Confirmed!</strong> Upgraded to <strong>${planName}</strong>. Please sign in below to activate your new plan quota and cryptographic security tokens.`;
-          successEl.style.display = 'block';
-        }
-      }
-    } catch (_) {}
-
     async function handleLogin(e) {
       e.preventDefault();
       clearError();

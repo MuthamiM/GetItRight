@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Plan payment status | IcapsQ</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #17181c; color: #f4f5f7; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; }
+    main { width: min(100%, 520px); padding: 32px; border: 1px solid #3b3d44; border-radius: 20px; background: #24262b; box-shadow: 0 20px 60px #0006; }
+    h1 { margin: 0 0 12px; font-size: 25px; }
+    p { color: #c1c3c9; line-height: 1.6; }
+    #status { min-height: 56px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+    a, button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 18px; border: 1px solid #555862; border-radius: 999px; background: #f4f5f7; color: #24262b; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+    button.secondary, a.secondary { background: transparent; color: #f4f5f7; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .mark { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 20px; border-radius: 16px; background: #29b6f6; color: #101216; font-size: 25px; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark" aria-hidden="true">✓</div>
+    <h1 id="title">Checking your payment</h1>
+    <p id="status" role="status" aria-live="polite">We are confirming the transaction with the payment provider. Your plan changes only after server verification.</p>
+    <p id="plan-details"></p>
+    <div class="actions">
+      <button id="retry" class="secondary" type="button" hidden>Check again</button>
+      <a id="dashboard" href="../console/user.html">Go to account</a>
+      <a class="secondary" href="../pricing.html">View plans</a>
+    </div>
+  </main>
+  <script>
+    const api = `${window.location.origin}/api`;
+    const params = new URLSearchParams(window.location.search);
+    const txRef = params.get('tx_ref') || '';
+    const transactionId = params.get('transaction_id') || '';
+    const token = localStorage.getItem('gir_token') || '';
+    const title = document.getElementById('title');
+    const statusText = document.getElementById('status');
+    const details = document.getElementById('plan-details');
+    const retry = document.getElementById('retry');
+
+    async function checkPayment() {
+      retry.hidden = true;
+      retry.disabled = true;
+      if (!token) {
+        title.textContent = 'Sign in to verify this payment';
+        statusText.textContent = 'This browser has no active IcapsQ session. Sign in to check the transaction and activate the plan if payment is confirmed.';
+        document.getElementById('dashboard').href = '../auth/login.html';
+        retry.hidden = true;
+        retry.disabled = false;
+        return;
+      }
+      if (!txRef) {
+        title.textContent = 'Payment not completed';
+        statusText.textContent = 'The payment provider did not return a completed transaction. No paid plan was activated. You can retry from your account.';
+        retry.hidden = true;
+        retry.disabled = false;
+        return;
+      }
+      try {
+        const response = await fetch(`${api}/payments/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ tx_ref: txRef, transaction_id: transactionId || null }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.detail || 'Payment verification could not be completed.');
+        if (result.status === 'paid') {
+          title.textContent = 'Payment confirmed';
+          statusText.textContent = 'Your plan is active. IcapsQ verified the transaction directly with the payment provider.';
+          details.textContent = result.planName ? `Plan: ${result.planName}${result.expiresAt ? ` · Access until ${new Date(result.expiresAt).toLocaleDateString()}` : ''}` : '';
+          const profile = await fetch(`${api}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+          if (profile.ok) localStorage.setItem('gir_user', JSON.stringify(await profile.json()));
+          retry.hidden = true;
+          return;
+        }
+        if (result.status === 'failed') {
+          title.textContent = 'Payment not completed';
+          statusText.textContent = 'The provider did not confirm payment. No paid plan was activated. You can try again from your account.';
+          retry.hidden = true;
+          return;
+        }
+        title.textContent = 'Payment is still processing';
+        statusText.textContent = 'The provider has not confirmed the transaction yet. Check again shortly; your plan will activate only after verification.';
+        retry.hidden = false;
+      } catch (error) {
+        title.textContent = 'Could not verify payment yet';
+        statusText.textContent = error.message;
+        retry.hidden = false;
+      } finally {
+        retry.disabled = false;
+      }
+    }
+
+    retry.addEventListener('click', checkPayment);
+    checkPayment();
+  </script>
+</body>
+</html>

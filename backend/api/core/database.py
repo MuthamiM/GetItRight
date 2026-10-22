@@ -40,6 +40,7 @@ def sync_db_schema():
             import backend.api.features.analytics.models
             import backend.api.features.auth.models
             import backend.api.features.privacy.models
+            import backend.api.features.payments.models
         except Exception:
             pass
         Base.metadata.create_all(bind=engine)

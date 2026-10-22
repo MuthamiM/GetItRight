@@ -1687,7 +1687,7 @@
             </div>
 
             <h3 style="margin:24px 0 4px; font-size:15px; font-weight:700;">Available Plans</h3>
-            <p class="muted" style="margin:0 0 12px; font-size:12px;">You can only switch plans by upgrading to a higher tier.</p>
+            <p class="muted" style="margin:0 0 12px; font-size:12px;">Paid plans use secure M-Pesa or card checkout and provide 30 days of access. Renewals are manual.</p>
             <div class="upgrade-cards" id="upgrade-cards-container">
               <!-- Populated by JS -->
             </div>
@@ -3565,12 +3565,33 @@
 
     // === PLAN & UPGRADE LOGIC ===
         // === PLAN & UPGRADE LOGIC ===
+    let planCheckoutEnabled = false;
     const PLAN_TIERS = [
       { key: 'free', name: 'Civic Starter', price: 'Free', period: '', voters: 1000, polls: 5, rank: 0, features: ['Up to 5 polls & surveys', 'Up to 1,000 voter quota', 'Standard cryptographic receipts', 'CSV dataset exports'] },
-      { key: 'pro', name: 'Civic Pro', price: 'KSh 15,000', period: '/mo', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls & surveys', 'Up to 25,000 voter quota', 'Full audit trail access', 'All exports (CSV, JSON, PDF, Word)', 'Priority consensus tallying'] },
-      { key: 'org', name: 'Institutional Org', price: 'KSh 45,000', period: '/mo', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls & surveys', 'Up to 100,000 voter quota', 'Institutional role access control', 'Full raw JSON & PDF exports', 'Dedicated sovereign validator node'] },
-      { key: 'election', name: 'Sovereign Election Guard', price: 'Custom', period: '/cycle', voters: 10000000, polls: 1000, rank: 3, features: ['Unlimited polls & ballot referendums', 'Up to 10M voters capacity', 'Full state/county grade zero-knowledge ledger', 'Observer network audit integration', '24/7 sovereign mission engineering'] }
+      { key: 'pro', name: 'Civic Pro', price: 'KES 1,500', period: '/30 days', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls & surveys', 'Up to 25,000 voter quota', 'Full audit trail access', 'All exports (CSV, JSON, PDF, Word)', 'Priority consensus tallying'] },
+      { key: 'org', name: 'Institutional Org', price: 'KES 6,500', period: '/30 days', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls & surveys', 'Up to 100,000 voter quota', 'Institutional role access control', 'Full raw JSON & PDF exports', 'Dedicated sovereign validator node'] },
+      { key: 'election', name: 'Sovereign Election Guard', price: 'Custom', period: '', voters: 10000000, polls: 1000, rank: 3, features: ['Unlimited polls & ballot referendums', 'Up to 10M voters capacity', 'Full state/county grade zero-knowledge ledger', 'Observer network audit integration', '24/7 sovereign mission engineering'] }
     ];
+
+    async function loadPlanCheckoutCatalog() {
+      const notice = document.getElementById('upgrade-notice');
+      try {
+        const response = await fetch(`${API}/payments/plans`, { headers: { Accept: 'application/json' } });
+        const catalog = await response.json();
+        if (!response.ok || !Array.isArray(catalog.plans)) throw new Error('Plan pricing unavailable');
+        planCheckoutEnabled = catalog.checkoutEnabled === true;
+        for (const item of catalog.plans) {
+          const tier = PLAN_TIERS.find(value => value.key === item.key);
+          if (tier && Number.isFinite(Number(item.amount))) tier.price = `KES ${Number(item.amount).toLocaleString()}`;
+        }
+        if (notice) notice.textContent = planCheckoutEnabled
+          ? 'Secure checkout is available. Paid plans last 30 days and renew manually.'
+          : 'M-Pesa and card checkout is being configured. No plan can change until a payment is verified.';
+      } catch (_) {
+        planCheckoutEnabled = false;
+        if (notice) notice.textContent = 'Plan checkout is temporarily unavailable. No plan has been changed.';
+      }
+    }
 
     function renderPlanSection(user, totalVotes, totalPolls) {
       totalVotes = totalVotes || 0;
@@ -3604,6 +3625,19 @@
       container.innerHTML = PLAN_TIERS.map(t => {
         const isCurrent = t.key === plan;
         const canUpgrade = t.rank > tier.rank;
+        if (t.key === 'election') {
+          return `
+          <div class="upgrade-card">
+            <div>
+              <div class="uc-tier-tag">Custom quote</div>
+              <div class="uc-name">${esc(t.name)}</div>
+              <div class="uc-price">Custom</div>
+              <div class="uc-desc">Contact us to scope an election deployment.</div>
+              <ul class="uc-features">${t.features.map(f => `<li>${esc(f)}</li>`).join('')}</ul>
+            </div>
+            <div><a class="btn-upgrade" href="mailto:info@mftechnologies.org?subject=IcapsQ%20Election%20Plan%20Quote">Contact sales</a></div>
+          </div>`;
+        }
         return `
           <div class="upgrade-card ${isCurrent ? 'current' : ''}">
             <div>
@@ -3616,10 +3650,10 @@
               </ul>
             </div>
             <div>
-              ${isCurrent
+              ${isCurrent && t.key === 'free'
                 ? '<button class="btn-upgrade outline" disabled>Active Plan</button>'
-                : canUpgrade
-                  ? `<button class="btn-upgrade" onclick="openPlanPaymentModal('${t.key}', '${esc(user.id)}')">Upgrade to ${esc(t.name)} &rarr;</button>`
+                : (canUpgrade || isCurrent)
+                  ? `<button class="btn-upgrade" ${planCheckoutEnabled ? '' : 'disabled'} onclick="openPlanPaymentModal('${t.key}', '${esc(user.id)}')">${isCurrent ? 'Renew' : 'Upgrade to'} ${esc(t.name)} &rarr;</button>`
                   : '<button class="btn-upgrade outline" disabled>Included in Tier</button>'
               }
             </div>
@@ -3629,16 +3663,13 @@
     }
 
 
-    // === PLAN UPGRADE CHECKOUT & PAYMENT MODAL ===
+    // === SERVER-VERIFIED PLAN CHECKOUT ===
     let pendingUpgrade = null;
-    let selectedPayMethod = 'mpesa';
 
     function openPlanPaymentModal(planKey, userId) {
       const tier = PLAN_TIERS.find(t => t.key === planKey);
-      if (!tier) return;
+      if (!tier || !planCheckoutEnabled || planKey === 'free') return;
       pendingUpgrade = { planKey, userId, tier };
-      selectedPayMethod = 'mpesa';
-
       const modal = document.getElementById('planPaymentModal');
       const container = document.getElementById('paymentModalBody');
       if (!modal || !container) return;
@@ -3648,8 +3679,7 @@
     }
 
     function renderPaymentModalStep1() {
-      const { tier, userId } = pendingUpgrade;
-      const userPhone = currentUser?.phoneNumber || '';
+      const { tier } = pendingUpgrade;
 
       const container = document.getElementById('paymentModalBody');
       container.innerHTML = `
@@ -3669,160 +3699,56 @@
           </ul>
         </div>
 
-        <div style="font-size:12.5px; font-weight:800; color:var(--charcoal); margin-bottom:8px;">Select Payment Method:</div>
-        <div class="pay-methods-grid">
-          <div class="pay-method-pill ${selectedPayMethod === 'mpesa' ? 'active' : ''}" onclick="selectPaymentMethod('mpesa')">
-            <div class="pm-icon">📱</div>
-            <div class="pm-name">M-Pesa Express</div>
-          </div>
-          <div class="pay-method-pill ${selectedPayMethod === 'card' ? 'active' : ''}" onclick="selectPaymentMethod('card')">
-            <div class="pm-icon">💳</div>
-            <div class="pm-name">Card (Visa/MC)</div>
-          </div>
-          <div class="pay-method-pill ${selectedPayMethod === 'bank' ? 'active' : ''}" onclick="selectPaymentMethod('bank')">
-            <div class="pm-icon">🏦</div>
-            <div class="pm-name">Bank Wire</div>
-          </div>
-        </div>
-
-        <div id="paymentMethodForm">
-          ${renderPaymentMethodInput(selectedPayMethod, userPhone)}
+        <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px; color:var(--text-main); font-size:13px; line-height:1.5;">
+          Pay securely on Flutterwave using M-Pesa or a card. IcapsQ does not collect or store card numbers, PINs, or CVVs. Your plan activates only after the server verifies the completed payment.
         </div>
 
         <div id="payment-error-msg" style="color:var(--color-red); font-size:12.5px; font-weight:600; margin-top:10px; display:none;"></div>
 
         <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
           <button type="button" class="btn-outline" onclick="closePlanPaymentModal()">Cancel</button>
-          <button type="button" class="btn-create" id="btn-submit-payment" style="padding:11px 24px;" onclick="executeProcessPayment()">Pay ${tier.price} &amp; Upgrade &rarr;</button>
+          <button type="button" class="btn-create" id="btn-submit-payment" style="padding:11px 24px;" onclick="executeProcessPayment()">Continue to secure checkout &rarr;</button>
         </div>
       `;
     }
 
-    function renderPaymentMethodInput(method, phone) {
-      if (method === 'mpesa') {
-        return `
-          <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px;">
-            <label style="margin-top:0;">Safaricom M-Pesa Phone Number</label>
-            <input type="tel" id="pay-phone" placeholder="e.g. 0712345678 or 254712345678" value="${esc(phone)}" style="background:#FFFFFF;">
-            <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px;">An instant M-Pesa STK push PIN prompt will be sent to this phone.</div>
-          </div>
-        `;
-      } else if (method === 'card') {
-        return `
-          <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px;">
-            <label style="margin-top:0;">Card Number</label>
-            <input type="text" id="pay-card-num" placeholder="4520 •••• •••• 9812" value="4520 8912 3456 9812" style="background:#FFFFFF;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
-              <div>
-                <label>Expiry (MM/YY)</label>
-                <input type="text" id="pay-card-exp" placeholder="12/28" value="08/29" style="background:#FFFFFF;">
-              </div>
-              <div>
-                <label>CVC / CVV</label>
-                <input type="text" id="pay-card-cvv" placeholder="•••" value="842" style="background:#FFFFFF;">
-              </div>
-            </div>
-          </div>
-        `;
-      } else {
-        return `
-          <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px;">
-            <div style="font-size:12px; font-weight:700; color:var(--charcoal);">Standard Chartered Sovereign Settlement</div>
-            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">Account: <strong>0102 9845 2310 00</strong> · Paybill: <strong>894210</strong></div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Reference: <strong>GIR-${pendingUpgrade.userId}</strong></div>
-          </div>
-        `;
-      }
-    }
-
-    function selectPaymentMethod(method) {
-      selectedPayMethod = method;
-      const userPhone = currentUser?.phoneNumber || '';
-      document.querySelectorAll('.pay-method-pill').forEach(el => el.classList.remove('active'));
-      event.currentTarget?.classList.add('active');
-      const form = document.getElementById('paymentMethodForm');
-      if (form) form.innerHTML = renderPaymentMethodInput(method, userPhone);
-    }
-
     async function executeProcessPayment() {
       if (!pendingUpgrade) return;
-      const { planKey, userId, tier } = pendingUpgrade;
+      const { planKey, tier } = pendingUpgrade;
 
       const btn = document.getElementById('btn-submit-payment');
       const errMsg = document.getElementById('payment-error-msg');
       if (btn) {
         btn.disabled = true;
-        btn.textContent = 'Processing Payment...';
+        btn.textContent = 'Opening secure checkout...';
       }
       if (errMsg) errMsg.style.display = 'none';
 
-      // 1. Process simulated payment & verify receipt
-      playNotifBeep('info');
-      await new Promise(r => setTimeout(r, 1200));
-
       try {
-        // 2. Call backend upgrade API to update database and increment TokenVersion
-        const r = await request(`/users/${encodeURIComponent(userId)}/upgrade`, {
+        const r = await request('/payments/checkout', {
           method: 'POST',
           body: JSON.stringify({ plan: planKey }),
         });
         if (!r.ok) {
           const d = await r.json().catch(() => ({}));
-          throw new Error(d.detail || 'Plan upgrade failed.');
+          throw new Error(d.detail || 'Secure checkout could not be started.');
         }
-
-        playNotifBeep('success');
-
-        // 3. Show Payment Confirmed & Activation instructions
-        const txId = 'MPESA-' + Math.random().toString(36).substring(2, 9).toUpperCase();
-        const container = document.getElementById('paymentModalBody');
-        container.innerHTML = `
-          <div style="text-align:center; padding:16px 10px;">
-            <div style="width:58px; height:58px; border-radius:50%; background:#E8F5E9; color:#2E7D32; font-size:28px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px; font-weight:900;">✓</div>
-            <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0 0 6px; font-family:'Outfit',sans-serif;">Payment Confirmed!</h2>
-            <div style="font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:14px;">Upgraded to ${esc(tier.name)}</div>
-
-            <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:14px; text-align:left; margin-bottom:20px;">
-              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                <span style="color:var(--text-muted);">Transaction Receipt:</span>
-                <strong style="font-family:monospace; color:var(--charcoal);">${txId}</strong>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                <span style="color:var(--text-muted);">Amount Paid:</span>
-                <strong style="color:var(--charcoal);">${tier.price}</strong>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:12px;">
-                <span style="color:var(--text-muted);">Status:</span>
-                <span style="color:#2E7D32; font-weight:800;">Settled on Sovereign Ledger</span>
-              </div>
-            </div>
-
-            <div style="background:#FFF9C4; border:1px solid #FFE082; color:#5D4037; border-radius:12px; padding:12px 14px; font-size:12.5px; line-height:1.45; text-align:left; margin-bottom:22px;">
-              <strong>Important Next Step:</strong>
-              Your plan has been upgraded. To activate your increased voter quota (${tier.voters.toLocaleString()} voters) and update your cryptographic session tokens, please <strong>log back in</strong>.
-            </div>
-
-            <button type="button" class="btn-create" style="width:100%; padding:14px; font-size:14px;" onclick="logoutAndRelogin('${esc(tier.name)}')">
-              Log Out &amp; Sign Back In to Activate Plan &rarr;
-            </button>
-          </div>
-        `;
+        const data = await r.json();
+        const checkout = new URL(data.checkout_url);
+        if (checkout.protocol !== 'https:' || checkout.hostname !== 'checkout.flutterwave.com') {
+          throw new Error('The payment provider returned an invalid checkout link.');
+        }
+        window.location.assign(checkout.href);
       } catch (err) {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = `Pay ${tier.price} & Upgrade →`;
+          btn.textContent = 'Continue to secure checkout →';
         }
         if (errMsg) {
           errMsg.textContent = err.message;
           errMsg.style.display = 'block';
         }
-        playNotifBeep('error');
       }
-    }
-
-    function logoutAndRelogin(planName) {
-      localStorage.clear();
-      window.location.href = '../auth/login.html?upgraded=1&plan=' + encodeURIComponent(planName || 'Plan');
     }
 
     function closePlanPaymentModal() {
@@ -3831,29 +3757,8 @@
       pendingUpgrade = null;
     }
 
-    async function upgradePlan(planKey, userId) {
-      const notice = document.getElementById('upgrade-notice');
-      notice.textContent = 'Processing upgrade...';
-      notice.style.color = '#303030';
-      try {
-        const r = await request(`/users/${encodeURIComponent(userId)}/upgrade`, {
-          method: 'POST',
-          body: JSON.stringify({ plan: planKey }),
-        });
-        if (!r.ok) {
-          const d = await r.json().catch(() => ({}));
-          throw new Error(d.detail || 'Upgrade failed.');
-        }
-        const updated = await r.json();
-        notice.textContent = 'Plan upgraded successfully! Refreshing dashboard...';
-        notice.style.color = 'var(--silver)';
-        showTopRightToast('Plan Upgraded', `Successfully upgraded to ${updated.planName || planKey}!`, 'success');
-        setTimeout(() => loadDashboard(), 1200);
-      } catch (err) {
-        notice.textContent = err.message;
-        notice.style.color = 'var(--silver)';
-        showTopRightToast('Upgrade Failed', err.message, 'error');
-      }
+    function upgradePlan(planKey, userId) {
+      openPlanPaymentModal(planKey, userId);
     }
 
     async function logout() {
@@ -3869,7 +3774,7 @@
 
     bindNavigation();
     initClientWebSocket();
-    loadDashboard().catch(err => {
+    loadPlanCheckoutCatalog().then(() => loadDashboard()).catch(err => {
       console.error('Client dashboard load error:', err);
     });
 

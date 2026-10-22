@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     JWT_AUDIENCE: str = "getitright-clients"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     GOOGLE_OAUTH_CLIENT_ID: str = ""
+    FLW_SECRET_KEY: str = ""
+    FLW_SECRET_HASH: str = ""
+    APP_PUBLIC_URL: str = "https://icapsq.mftechnologies.org"
 
     # Comma-separated explicit origin allowlist.
     CORS_ORIGINS: str = "https://icapsq.mftechnologies.org"
@@ -53,6 +56,8 @@ class Settings(BaseSettings):
         ):
             raise ValueError("Production CORS origins must use HTTPS")
         if self.ENVIRONMENT.lower() == "production":
+            if not self.APP_PUBLIC_URL.startswith("https://"):
+                raise ValueError("APP_PUBLIC_URL must use HTTPS in production")
             if not self.PASSWORD_RESET_URL.startswith("https://"):
                 raise ValueError("PASSWORD_RESET_URL must use HTTPS in production")
             if self.RESEND_TEST_RECIPIENT:
