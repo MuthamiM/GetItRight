@@ -664,27 +664,22 @@ class ApiClient {
     return fallback;
   }
 
-  Future<bool> updatePlan(String userId, String plan,
-      {String? phoneNumber}) async {
+  Future<Map<String, dynamic>?> fetchPlanCatalog() async {
     for (final url in _orderedBaseUrls) {
       try {
-        final response = await http
-            .post(
-              Uri.parse('$url/users/${Uri.encodeComponent(userId)}/plan'),
-              headers: await _jsonHeaders(),
-              body: json.encode({
-                'plan': plan,
-                if (phoneNumber != null && phoneNumber.trim().isNotEmpty)
-                  'phoneNumber': phoneNumber.trim(),
-              }),
-            )
-            .timeout(const Duration(seconds: 4));
-        if (response.statusCode == 200) {
-          return true;
+        final response =
+            await http.get(Uri.parse('$url/payments/plans'), headers: {
+          'Accept': 'application/json',
+        }).timeout(const Duration(seconds: 4));
+        if (response.statusCode != 200) continue;
+        final decoded = json.decode(response.body);
+        if (decoded is Map<String, dynamic> && decoded['plans'] is List) {
+          _activeBaseUrl = url;
+          return decoded;
         }
       } catch (_) {}
     }
-    return false;
+    return null;
   }
 
   /// Request 6-digit OTP code sent to user email
@@ -912,7 +907,7 @@ class ApiClient {
         description:
             'Sovereign precinct study on public participation, capital project allocation, and voter audit confidence.',
         track: 'Civic Governance',
-        plan: 'election',
+        plan: 'org',
         status: 'Active',
         targetResponses: 2500,
         totalResponses: 1840,
@@ -962,7 +957,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.25';
+    const currentAppVersion = '2.1.26';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');
@@ -1022,7 +1017,7 @@ class ApiClient {
               'release_notes':
                   'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
               'download_url':
-                  'https://github.com/MuthamiM/GetItRight/releases/download/v2.1.25/IcapsQ-v2.1.25-build-31.apk',
+                  'https://github.com/MuthamiM/GetItRight/releases/download/v2.1.26/IcapsQ-v2.1.26-build-32.apk',
             };
           }
         } catch (_) {}
@@ -1034,7 +1029,7 @@ class ApiClient {
       'release_notes':
           'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
       'download_url':
-          'https://github.com/MuthamiM/GetItRight/releases/download/v2.1.25/IcapsQ-v2.1.25-build-31.apk',
+          'https://github.com/MuthamiM/GetItRight/releases/download/v2.1.26/IcapsQ-v2.1.26-build-32.apk',
     };
   }
 

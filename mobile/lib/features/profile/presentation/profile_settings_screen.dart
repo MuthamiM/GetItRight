@@ -307,7 +307,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           _buildSettingsRow(
             icon: Icons.phone_android_rounded,
             title: 'IcapsQ app',
-            subtitle: 'Version 2.1.25  ·  Build 31',
+            subtitle: 'Version 2.1.26  ·  Build 32',
             trailing: const SizedBox(width: 8),
           ),
           _buildDivider(),
@@ -460,7 +460,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
       case 'organization':
         return 'ORGANIZATION';
       case 'election':
-        return 'ELECTION';
+        return 'LEGACY PLAN';
       case 'free':
       case '':
         return 'FREE';

@@ -1663,7 +1663,7 @@
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
               <div>
                 <h2 style="margin:0 0 4px;">My Plan & Subscription</h2>
-                <p class="muted" style="margin:0;">View your current tier, quota allocations, and available upgrades.</p>
+      <p class="muted" style="margin:0;">All plans include the same tools. Compare poll publishing limits and participant targets per poll.</p>
               </div>
             </div>
 
@@ -1672,13 +1672,13 @@
               <div class="plan-tier-name" id="plan-tier-name">—</div>
               <div class="plan-quotas">
                 <div class="plan-quota-item">
-                  <div class="quota-label">Voter Quota</div>
+                  <div class="quota-label">Participant Target Per Poll</div>
                   <div class="quota-value" id="plan-voter-quota">—</div>
                   <div class="quota-used" id="plan-voter-used"></div>
                   <div class="plan-quota-bar"><div class="plan-quota-bar-fill" id="plan-voter-bar" style="width:0%"></div></div>
                 </div>
                 <div class="plan-quota-item">
-                  <div class="quota-label">Polls Quota</div>
+                  <div class="quota-label">Poll Publishing Limit</div>
                   <div class="quota-value" id="plan-polls-quota">—</div>
                   <div class="quota-used" id="plan-polls-used"></div>
                   <div class="plan-quota-bar"><div class="plan-quota-bar-fill" id="plan-polls-bar" style="width:0%"></div></div>
@@ -3568,10 +3568,9 @@
         // === PLAN & UPGRADE LOGIC ===
     let planCheckoutEnabled = false;
     const PLAN_TIERS = [
-      { key: 'free', name: 'Civic Starter', price: 'Free', period: '', voters: 1000, polls: 5, rank: 0, features: ['Up to 5 polls & surveys', 'Up to 1,000 voter quota', 'Standard cryptographic receipts', 'CSV dataset exports'] },
-      { key: 'pro', name: 'Civic Pro', price: 'KES 499', period: '/30 days', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls & surveys', 'Up to 25,000 voter quota', 'Full audit trail access', 'All exports (CSV, JSON, PDF, Word)', 'Priority consensus tallying'] },
-      { key: 'org', name: 'Institutional Org', price: 'KES 899', period: '/30 days', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls & surveys', 'Up to 100,000 voter quota', 'Institutional role access control', 'Full raw JSON & PDF exports', 'Dedicated sovereign validator node'] },
-      { key: 'election', name: 'Sovereign Election Guard', price: 'KES 1,399', period: '/30 days', voters: 10000000, polls: 1000, rank: 3, features: ['Unlimited polls & ballot referendums', 'Up to 10M voters capacity', 'Full state/county grade zero-knowledge ledger', 'Observer network audit integration', '24/7 sovereign mission engineering'] }
+      { key: 'free', name: 'Starter', price: 'Free', period: '', voters: 1000, polls: 5, rank: 0, features: ['Up to 5 polls', 'Participant target: 1,000 per poll', 'Poll and survey tools', 'Shareable links and results'] },
+      { key: 'pro', name: 'Pro', price: 'KES 499', period: '/30 days', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls', 'Participant target: 25,000 per poll', 'Poll and survey tools', 'Shareable links and results'] },
+      { key: 'org', name: 'Organization', price: 'KES 899', period: '/30 days', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls', 'Participant target: 100,000 per poll', 'Poll and survey tools', 'Shareable links and results'] }
     ];
 
     async function loadPlanCheckoutCatalog() {
@@ -3583,7 +3582,14 @@
         planCheckoutEnabled = catalog.checkoutEnabled === true;
         for (const item of catalog.plans) {
           const tier = PLAN_TIERS.find(value => value.key === item.key);
-          if (tier && Number.isFinite(Number(item.amount))) tier.price = `KES ${Number(item.amount).toLocaleString()}`;
+          if (!tier) continue;
+          if (item.key === 'free') {
+            tier.price = 'Free';
+          } else if (item.amount !== null && item.amount !== undefined && Number.isFinite(Number(item.amount))) {
+            tier.price = `KES ${Number(item.amount).toLocaleString()}`;
+          }
+          if (Number.isFinite(Number(item.pollsQuota))) tier.polls = Number(item.pollsQuota);
+          if (Number.isFinite(Number(item.voterQuota))) tier.voters = Number(item.voterQuota);
         }
         if (notice) notice.textContent = planCheckoutEnabled
           ? 'Secure checkout is available. Paid plans last 30 days and renew manually.'
@@ -3598,8 +3604,9 @@
       totalVotes = totalVotes || 0;
       totalPolls = totalPolls || 0;
       const plan = (user.plan || 'free').toLowerCase();
-      const planName = user.planName || PLAN_TIERS.find(t => t.key === plan)?.name || 'Civic Starter';
+      const planName = plan === 'election' ? 'Legacy plan' : (PLAN_TIERS.find(t => t.key === plan)?.name || 'Starter');
       const tier = PLAN_TIERS.find(t => t.key === plan) || PLAN_TIERS[0];
+      const legacyPlan = plan === 'election';
 
       // Overview badge
       const badge = document.getElementById('overview-plan-badge');
@@ -3612,8 +3619,9 @@
       const pollsQuota = user.pollsQuota || tier.polls;
 
       document.getElementById('plan-voter-quota').textContent = voterQuota.toLocaleString();
-      document.getElementById('plan-voter-used').textContent = `${totalVotes.toLocaleString()} used`;
-      const voterPct = Math.min(100, Math.round((totalVotes / voterQuota) * 100));
+      document.getElementById('plan-voter-used').textContent = `${totalVotes.toLocaleString()} used across ${totalPolls.toLocaleString()} polls`;
+      const voterTargetBaseline = voterQuota * Math.max(totalPolls, 1);
+      const voterPct = Math.min(100, Math.round((totalVotes / voterTargetBaseline) * 100));
       document.getElementById('plan-voter-bar').style.width = voterPct + '%';
 
       document.getElementById('plan-polls-quota').textContent = pollsQuota.toLocaleString();
@@ -3625,25 +3633,27 @@
       const container = document.getElementById('upgrade-cards-container');
       container.innerHTML = PLAN_TIERS.map(t => {
         const isCurrent = t.key === plan;
-        const canUpgrade = t.rank > tier.rank;
+        const canUpgrade = !legacyPlan && t.rank > tier.rank;
         return `
           <div class="upgrade-card ${isCurrent ? 'current' : ''}">
             <div>
-              <div class="uc-tier-tag">${isCurrent ? 'Current Plan' : (t.key === 'election' ? 'Flagship Tier' : 'Available Tier')}</div>
+              <div class="uc-tier-tag">${isCurrent ? 'Current Plan' : 'Available Plan'}</div>
               <div class="uc-name">${esc(t.name)}</div>
               <div class="uc-price">${t.price} <span style="font-size:12px;font-weight:500;color:var(--text-muted);">${t.period}</span></div>
-              <div class="uc-desc">${t.voters.toLocaleString()} voter quota · ${t.polls} polls/surveys included</div>
+              <div class="uc-desc">${t.polls} poll publishing limit · ${t.voters.toLocaleString()} participant target per poll</div>
               <ul class="uc-features">
                 ${t.features.map(f => `<li>${esc(f)}</li>`).join('')}
               </ul>
             </div>
             <div>
-              ${isCurrent && t.key === 'free'
+              ${legacyPlan
+                ? '<button class="btn-upgrade outline" disabled>Legacy plan unavailable</button>'
+                : (isCurrent && t.key === 'free'
                 ? '<button class="btn-upgrade outline" disabled>Active Plan</button>'
                 : (canUpgrade || isCurrent)
                   ? `<button class="btn-upgrade" ${planCheckoutEnabled ? '' : 'disabled'} onclick="openPlanPaymentModal('${t.key}', '${esc(user.id)}')">${isCurrent ? 'Renew' : 'Upgrade to'} ${esc(t.name)} &rarr;</button>`
                   : '<button class="btn-upgrade outline" disabled>Included in Tier</button>'
-              }
+              )}
             </div>
           </div>
         `;
@@ -3677,7 +3687,7 @@
             <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0; font-family:'Outfit', sans-serif;">${esc(tier.name)}</h2>
             <div style="font-size:22px; font-weight:900; color:var(--charcoal); font-family:'Outfit', sans-serif;">${tier.price} <span style="font-size:12px; font-weight:500; color:var(--text-muted);">${tier.period}</span></div>
           </div>
-          <div style="font-size:12.5px; color:var(--text-sub); margin-top:4px;">Includes ${tier.voters.toLocaleString()} voter quota · ${tier.polls} polls/surveys included</div>
+          <div style="font-size:12.5px; color:var(--text-sub); margin-top:4px;">${tier.polls} poll publishing limit · ${tier.voters.toLocaleString()} participant target per poll</div>
         </div>
 
         <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:14px; margin-bottom:18px;">

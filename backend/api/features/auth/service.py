@@ -17,9 +17,10 @@ from backend.api.core.security import verify_password, get_password_hash, create
 from backend.api.core.identity import normalize_email, normalize_phone
 
 PLAN_META = {
-    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
-    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
-    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/user.html"},
+    "free": {"name": "Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
+    "pro": {"name": "Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
+    "org": {"name": "Organization", "voters": 100000, "polls": 200, "url": "/console/user.html"},
+    # Legacy tier retained only to keep existing account records readable.
     "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/user.html"},
 }
 

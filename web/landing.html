@@ -302,7 +302,7 @@
       <div class="ln-plans-header reveal">
         <span class="ln-section-tag">Plans &amp; Pricing</span>
         <h2 class="ln-plans-headline">Choose the plan that fits your work.</h2>
-        <p class="ln-plans-desc">Clear 30-day pricing for every organization size. Paid plans are prepaid and renew manually.</p>
+        <p class="ln-plans-desc">The same core tools on every plan, with a poll publishing limit and participant target per poll that scale as you grow.</p>
       </div>
 
       <div class="ln-plans-grid">
@@ -312,10 +312,10 @@
           <div class="ln-plan-price">Free</div>
           <div class="ln-plan-period">No card required</div>
           <ul class="ln-plan-features">
-            <li>Up to 5 active polls</li>
-            <li>1,000 responses per poll</li>
-            <li>Basic results dashboard</li>
-            <li>Share via public link</li>
+            <li>Up to <span data-plan-polls="free">5</span> polls</li>
+            <li>Participant target per poll: <span data-plan-voters="free">1,000</span></li>
+            <li>Poll and survey tools</li>
+            <li>Shareable links and results</li>
           </ul>
           <a class="ln-plan-cta" href="auth/signup.html?plan=free">Get started free</a>
         </article>
@@ -327,10 +327,10 @@
           <div class="ln-plan-price" data-plan-price="pro">KES 499</div>
           <div class="ln-plan-period">/ 30 days</div>
           <ul class="ln-plan-features">
-            <li>Up to 50 active polls</li>
-            <li>25,000 responses per poll</li>
-            <li>Real-time analytics &amp; exports</li>
-            <li>Custom branding &amp; CSV export</li>
+            <li>Up to <span data-plan-polls="pro">50</span> polls</li>
+            <li>Participant target per poll: <span data-plan-voters="pro">25,000</span></li>
+            <li>Poll and survey tools</li>
+            <li>Shareable links and results</li>
           </ul>
           <a class="ln-plan-cta" href="auth/signup.html?plan=pro">Choose Pro</a>
         </article>
@@ -341,29 +341,16 @@
           <div class="ln-plan-price" data-plan-price="org">KES 899</div>
           <div class="ln-plan-period">/ 30 days</div>
           <ul class="ln-plan-features">
-            <li>Up to 200 active polls</li>
-            <li>100,000 responses per poll</li>
-            <li>Multi-admin team access</li>
-            <li>Audit trail &amp; compliance</li>
+            <li>Up to <span data-plan-polls="org">200</span> polls</li>
+            <li>Participant target per poll: <span data-plan-voters="org">100,000</span></li>
+            <li>Poll and survey tools</li>
+            <li>Shareable links and results</li>
           </ul>
           <a class="ln-plan-cta" href="auth/signup.html?plan=org">Choose Organization</a>
         </article>
 
-        <article class="ln-plan-card reveal">
-          <div class="ln-plan-name">Election</div>
-          <p class="ln-plan-audience">For high-capacity election campaigns</p>
-          <div class="ln-plan-price" data-plan-price="election">KES 1,399</div>
-          <div class="ln-plan-period">/ 30 days</div>
-          <ul class="ln-plan-features">
-            <li>Unlimited polls &amp; surveys</li>
-            <li>10M+ voter capacity</li>
-            <li>Voter verification &amp; ID checks</li>
-            <li>Full audit &amp; observer access</li>
-          </ul>
-          <a class="ln-plan-cta" href="auth/signup.html?plan=election">Choose Election</a>
-        </article>
       </div>
-      <p class="ln-plans-footnote" id="plan-price-note">Prices are shown in Kenyan shillings (KES) for 30 days.</p>
+      <p class="ln-plans-footnote" id="plan-price-note">Pro and Organization are prepaid for 30 days and renew manually. All plans include the same core tools.</p>
     </div>
   </section>
 
@@ -493,8 +480,14 @@
         if (!Array.isArray(catalog.plans)) return;
         catalog.plans.forEach(plan => {
           const price = document.querySelector(`[data-plan-price="${plan.key}"]`);
-          if (price && Number.isFinite(Number(plan.amount))) {
+          if (price && plan.amount !== null && plan.amount !== undefined && Number.isFinite(Number(plan.amount))) {
             price.textContent = `KES ${Number(plan.amount).toLocaleString()}`;
+          }
+          for (const node of document.querySelectorAll(`[data-plan-polls="${plan.key}"]`)) {
+            if (Number.isFinite(Number(plan.pollsQuota))) node.textContent = Number(plan.pollsQuota).toLocaleString();
+          }
+          for (const node of document.querySelectorAll(`[data-plan-voters="${plan.key}"]`)) {
+            if (Number.isFinite(Number(plan.voterQuota))) node.textContent = Number(plan.voterQuota).toLocaleString();
           }
         });
       })

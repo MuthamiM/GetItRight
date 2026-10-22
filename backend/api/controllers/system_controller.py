@@ -42,8 +42,8 @@ class SystemController:
             "update_available": update_available,
             "force_update": False,
             "title": f"IcapsQ v{settings.VERSION}",
-            "release_notes": "• Profile and settings now use a full-screen layout\n• Minor layout and usability improvements",
-            "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v2.1.25/IcapsQ-v2.1.25-build-31.apk",
+            "release_notes": "• Plan choices and quotas now match the server catalog\n• Election plan removed from new offers",
+            "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v2.1.26/IcapsQ-v2.1.26-build-32.apk",
         }
 
     @staticmethod

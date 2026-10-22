@@ -9,10 +9,10 @@ const MockData = {
   currentOrg: {
     id: "org-kenya-civic",
     name: "Civic Transparency Initiative",
-    plan: "election", // "free", "pro", "org", "election"
+    plan: "org", // "free", "pro", or "org"
     limits: {
-      activePolls: 9999,
-      responsesPerPoll: 500000,
+      activePolls: 200,
+      responsesPerPoll: 100000,
       stationsAllocated: 250,
       stationsReported: 242,
     },

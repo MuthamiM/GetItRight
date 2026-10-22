@@ -26,8 +26,8 @@ IPAY_SEARCH_URL = "https://apis.ipayafrica.com/payments/v2/transaction/search"
 IPAY_IPN_URL = "https://www.ipayafrica.com/ipn/"
 BILLING_DAYS = 30
 CHECKOUT_MINUTES = 30
-# Keep payment amounts aligned with the plan prices shown during signup.
-PLAN_PRICES_KES = {"pro": 499, "org": 899, "election": 1399}
+# Election is retained only for existing records; it is no longer an offered plan.
+PLAN_PRICES_KES = {"pro": 499, "org": 899}
 
 
 def _utc_iso(value: datetime | None) -> str | None:
@@ -59,11 +59,14 @@ def public_plan_catalog() -> dict:
             {
                 "key": key,
                 "name": PLAN_METADATA[key]["name"],
-                "amount": amount,
+                "amount": PLAN_PRICES_KES.get(key, 0),
                 "currency": "KES",
-                "billingDays": BILLING_DAYS,
+                "billingDays": BILLING_DAYS if key in PLAN_PRICES_KES else None,
+                "pollsQuota": PLAN_METADATA[key]["polls"],
+                "voterQuota": PLAN_METADATA[key]["voters"],
+                "checkoutRequired": key in PLAN_PRICES_KES,
             }
-            for key, amount in PLAN_PRICES_KES.items()
+            for key in ("free", "pro", "org")
         ],
     }
 
@@ -216,6 +219,8 @@ def _validate_checkout_link(value: object) -> str:
 
 
 def initiate_checkout(db: Session, user_id: str, plan_key: str) -> dict:
+    if plan_key == "election":
+        raise HTTPException(status_code=422, detail="That plan is no longer available.")
     if not payments_configured():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

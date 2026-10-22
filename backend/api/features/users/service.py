@@ -11,9 +11,10 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 PLAN_METADATA = {
-    "free": {"name": "Civic Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
-    "pro": {"name": "Civic Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
-    "org": {"name": "Institutional Org", "voters": 100000, "polls": 200, "url": "/console/user.html"},
+    "free": {"name": "Starter", "voters": 1000, "polls": 5, "url": "/console/user.html"},
+    "pro": {"name": "Pro", "voters": 25000, "polls": 50, "url": "/console/user.html"},
+    "org": {"name": "Organization", "voters": 100000, "polls": 200, "url": "/console/user.html"},
+    # Legacy tier retained only to keep existing account records readable.
     "election": {"name": "Sovereign Election Guard", "voters": 10000000, "polls": 1000, "url": "/console/user.html"},
 }
 
@@ -118,6 +119,8 @@ def create_user(db: Session, req: CreateUserRequest) -> UserDetailOut:
 
     plan_key = resolve_plan_key(req.plan or "free")
     meta = PLAN_METADATA[plan_key]
+    if plan_key == "election":
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="That plan is no longer available.")
     new_id = f"USR-{uuid.uuid4().hex[:6].upper()}"
 
     user = UserModel(
@@ -168,6 +171,8 @@ def update_user_plan(db: Session, user_id: str, req: UpdateUserPlanRequest, is_a
     plan_key = resolve_plan_key(req.plan)
     if plan_key not in PLAN_METADATA:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid plan '{req.plan}'. Available plans: free, pro, org")
+    if plan_key == "election" and (user.Plan or "").lower() != "election":
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="That plan is no longer available.")
 
     # If client is self-updating, enforce upgrade-only rule
     if not is_admin:

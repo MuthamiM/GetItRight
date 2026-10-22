@@ -16,7 +16,7 @@ class UserModel(Base):
     DeviceDetails = Column(String, nullable=True)
     Role = Column(String, nullable=False, default="Customer")
     Plan = Column(String, nullable=False, default="free")
-    PlanName = Column(String, nullable=False, default="Civic Starter")
+    PlanName = Column(String, nullable=False, default="Starter")
     PlanExpiresAt = Column(DateTime(timezone=True), nullable=True)
     Organization = Column(String, nullable=True, default="Independent")
     CreatedAt = Column(String, nullable=False)

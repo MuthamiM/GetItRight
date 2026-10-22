@@ -231,7 +231,7 @@
     /* DESKTOP / LARGE SCREEN GRID (FIT FULL SCREEN) */
     .plans-responsive-layout {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -565,7 +565,7 @@
       <!-- STEP 2: PLAN SELECTION VIEW (FULL SCREEN RESPONSIVE ON DESKTOP, HORIZONTAL CAROUSEL ON MOBILE) -->
       <div id="step2-view" style="display: none;">
         <h2>Select Your Plan</h2>
-        <div class="subtitle">Choose a plan for your organization. You can switch plans anytime.</div>
+        <div class="subtitle">All plans include the same tools. Paid upgrades use secure checkout and last 30 days.</div>
 
         <div class="phone-plan-wrapper">
           <div class="phone-plan-header">
@@ -592,10 +592,10 @@
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
-                <li>Up to 5 active polls</li>
-                <li>1,000 responses per poll</li>
-                <li>Basic results dashboard</li>
-                <li>Share via public link</li>
+                <li>Up to <span data-plan-polls="free">5</span> polls</li>
+                <li>Participant target per poll: <span data-plan-voters="free">1,000</span></li>
+                <li>Poll and survey tools</li>
+                <li>Shareable links and results</li>
               </ul>
             </div>
 
@@ -615,10 +615,10 @@
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
-                <li>Up to 50 active polls</li>
-                <li>25,000 responses per poll</li>
-                <li>Real-time analytics & exports</li>
-                <li>Custom branding & CSV export</li>
+                <li>Up to <span data-plan-polls="pro">50</span> polls</li>
+                <li>Participant target per poll: <span data-plan-voters="pro">25,000</span></li>
+                <li>Poll and survey tools</li>
+                <li>Shareable links and results</li>
               </ul>
             </div>
 
@@ -638,35 +638,13 @@
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
-                <li>Up to 200 active polls</li>
-                <li>100,000 responses per poll</li>
-                <li>Multi-admin team access</li>
-                <li>Audit trail & compliance</li>
+                <li>Up to <span data-plan-polls="org">200</span> polls</li>
+                <li>Participant target per poll: <span data-plan-voters="org">100,000</span></li>
+                <li>Poll and survey tools</li>
+                <li>Shareable links and results</li>
               </ul>
             </div>
 
-            <!-- Election Plan -->
-            <div class="plan-card-item" id="card-election" onclick="selectPlan('election', 3)">
-              <div class="plan-card-top">
-                <div class="plan-badge-icon">E</div>
-                <div class="plan-info-head">
-                  <div class="plan-info-title">Election</div>
-                  <div class="plan-info-tier">GOVERNANCE</div>
-                </div>
-                <div class="plan-radio-circle"></div>
-              </div>
-              <div class="plan-price-box">
-                <div class="plan-price-num" id="signup-price-election">1,399 KES</div>
-                <div class="plan-price-period">/ 30 days</div>
-              </div>
-              <div class="plan-divider"></div>
-              <ul class="plan-features-list">
-                <li>Unlimited polls & surveys</li>
-                <li>10M+ voter capacity</li>
-                <li>Voter verification & ID checks</li>
-                <li>Full audit & observer access</li>
-              </ul>
-            </div>
           </div>
 
           <!-- Phone Controls (Visible only on small screens) -->
@@ -675,7 +653,6 @@
               <div class="dot-item active" id="dot-0"></div>
               <div class="dot-item" id="dot-1"></div>
               <div class="dot-item" id="dot-2"></div>
-              <div class="dot-item" id="dot-3"></div>
             </div>
 
             <button type="button" class="btn-more-plans" onclick="scrollToNextPlan()">
@@ -708,7 +685,6 @@
       free: 'Starter (Free)',
       pro: 'Pro Plan',
       org: 'Organization Plan',
-      election: 'Election Plan'
     };
 
     function handleAccountSubmit(e) {
@@ -751,6 +727,7 @@
     }
 
     function selectPlan(planId, index) {
+      if (!['free', 'pro', 'org'].includes(planId)) return;
       selectedPlan = planId;
       currentPlanIndex = index;
 
@@ -764,7 +741,7 @@
     }
 
     function updateDots(activeIdx) {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         const dot = document.getElementById(`dot-${i}`);
         if (dot) {
           if (i === activeIdx) dot.classList.add('active');
@@ -774,8 +751,8 @@
     }
 
     function scrollToNextPlan() {
-      const nextIdx = (currentPlanIndex + 1) % 4;
-      const plans = ['free', 'pro', 'org', 'election'];
+      const plans = ['free', 'pro', 'org'];
+      const nextIdx = (currentPlanIndex + 1) % plans.length;
       selectPlan(plans[nextIdx], nextIdx);
 
       const slider = document.getElementById('plansSlider');
@@ -796,8 +773,8 @@
       const scrollPos = slider.scrollLeft;
       const index = Math.round(scrollPos / (cardWidth + 14));
 
-      if (index >= 0 && index < 4 && index !== currentPlanIndex) {
-        const plans = ['free', 'pro', 'org', 'election'];
+      if (index >= 0 && index < 3 && index !== currentPlanIndex) {
+        const plans = ['free', 'pro', 'org'];
         selectPlan(plans[index], index);
       }
     }
@@ -930,7 +907,15 @@
         paidCheckoutEnabled = catalog.checkoutEnabled === true;
         for (const plan of catalog.plans) {
           const price = document.getElementById(`signup-price-${plan.key}`);
-          if (price) price.textContent = `${Number(plan.amount).toLocaleString()} KES`;
+          if (price && plan.key !== 'free' && plan.amount !== null && plan.amount !== undefined && Number.isFinite(Number(plan.amount))) {
+            price.textContent = `${Number(plan.amount).toLocaleString()} KES`;
+          }
+          for (const node of document.querySelectorAll(`[data-plan-polls="${plan.key}"]`)) {
+            if (Number.isFinite(Number(plan.pollsQuota))) node.textContent = Number(plan.pollsQuota).toLocaleString();
+          }
+          for (const node of document.querySelectorAll(`[data-plan-voters="${plan.key}"]`)) {
+            if (Number.isFinite(Number(plan.voterQuota))) node.textContent = Number(plan.voterQuota).toLocaleString();
+          }
         }
         note.textContent = paidCheckoutEnabled
           ? 'Paid plans are prepaid for 30 days. Complete M-Pesa or card payment through iPay secure checkout.'
@@ -943,9 +928,8 @@
       }
     }
 
-    const planOrder = ['free', 'pro', 'org', 'election'];
     const requestedPlan = new URLSearchParams(window.location.search).get('plan');
-    if (planOrder.includes(requestedPlan)) selectPlan(requestedPlan, planOrder.indexOf(requestedPlan));
+    if (['free', 'pro', 'org'].includes(requestedPlan)) selectPlan(requestedPlan, ['free', 'pro', 'org'].indexOf(requestedPlan));
     loadPlanCatalog();
   </script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>

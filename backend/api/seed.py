@@ -35,21 +35,21 @@ def seed_users(db):
         return
 
     users = [
-        {"Id": "USR-001", "FullName": "Grace Wanjiku", "Email": "grace@getitright.io", "Password": _hash("pass1"), "Role": "Customer", "Plan": "free", "PlanName": "Civic Starter", "Organization": "Umoja Community Initiative", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 3, "TotalVotesReceived": 140},
-        {"Id": "USR-002", "FullName": "Marcus Kiprop", "Email": "marcus@getitright.io", "Password": _hash("pass2"), "Role": "Customer", "Plan": "pro", "PlanName": "Civic Pro", "Organization": "Kericho Youth Forum", "VoterQuota": 10000, "PollsQuota": 25, "TotalPollsCreated": 5, "TotalVotesReceived": 620},
+        {"Id": "USR-001", "FullName": "Grace Wanjiku", "Email": "grace@getitright.io", "Password": _hash("pass1"), "Role": "Customer", "Plan": "free", "PlanName": "Starter", "Organization": "Umoja Community Initiative", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 3, "TotalVotesReceived": 140},
+        {"Id": "USR-002", "FullName": "Marcus Kiprop", "Email": "marcus@getitright.io", "Password": _hash("pass2"), "Role": "Customer", "Plan": "pro", "PlanName": "Pro", "Organization": "Kericho Youth Forum", "VoterQuota": 25000, "PollsQuota": 50, "TotalPollsCreated": 5, "TotalVotesReceived": 620},
         {"Id": "USR-003", "FullName": "Faith Mwangi", "Email": "faith@getitright.io", "Password": _hash("pass3"), "Role": "Admin", "Plan": "org", "PlanName": "Organization", "Organization": "Civic Transparency Initiative", "VoterQuota": 100000, "PollsQuota": 500, "TotalPollsCreated": 12, "TotalVotesReceived": 4200},
-        {"Id": "USR-004", "FullName": "Brian Otieno", "Email": "brian@getitright.io", "Password": _hash("pass4"), "Role": "Analyst", "Plan": "org", "PlanName": "Organization", "Organization": "Data Insights Kenya", "VoterQuota": 50000, "PollsQuota": 100, "TotalPollsCreated": 2, "TotalVotesReceived": 310},
-        {"Id": "USR-005", "FullName": "Alice Njeri", "Email": "alice@getitright.io", "Password": _hash("pass5"), "Role": "Auditor", "Plan": "election", "PlanName": "Election Grade", "Organization": "Independent Electoral Board", "VoterQuota": 500000, "PollsQuota": 9999, "TotalPollsCreated": 0, "TotalVotesReceived": 0},
-        {"Id": "USR-006", "FullName": "Diana Wekesa", "Email": "diana@getitright.io", "Password": _hash("pass6"), "Role": "Customer", "Plan": "free", "PlanName": "Civic Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 1, "TotalVotesReceived": 45},
-        {"Id": "USR-007", "FullName": "Charles Mutua", "Email": "charles@getitright.io", "Password": _hash("pass7"), "Role": "Customer", "Plan": "pro", "PlanName": "Civic Pro", "Organization": "Mombasa Tech Hub", "VoterQuota": 10000, "PollsQuota": 25, "TotalPollsCreated": 4, "TotalVotesReceived": 890},
-        {"Id": "USR-008", "FullName": "Sarah Akinyi", "Email": "sarah@getitright.io", "Password": _hash("pass8"), "Role": "Customer", "Plan": "free", "PlanName": "Civic Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 2, "TotalVotesReceived": 78},
-        {"Id": "USR-009", "FullName": "Joseph Kamau", "Email": "joseph@getitright.io", "Password": _hash("pass9"), "Role": "Enterprise Publisher", "Plan": "org", "PlanName": "Organization", "Organization": "Kenya Corporate Council", "VoterQuota": 50000, "PollsQuota": 100, "TotalPollsCreated": 6, "TotalVotesReceived": 1500},
-        {"Id": "USR-010", "FullName": "Lucy Chebet", "Email": "lucy@getitright.io", "Password": _hash("pass10"), "Role": "Customer", "Plan": "free", "PlanName": "Civic Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 1, "TotalVotesReceived": 32},
-        {"Id": "USR-011", "FullName": "Peter Ochieng", "Email": "peter@getitright.io", "Password": _hash("pass11"), "Role": "Customer", "Plan": "pro", "PlanName": "Civic Pro", "Organization": "Kisumu Urban Council", "VoterQuota": 10000, "PollsQuota": 25, "TotalPollsCreated": 3, "TotalVotesReceived": 410},
-        {"Id": "USR-012", "FullName": "Rose Wambui", "Email": "rose@getitright.io", "Password": _hash("pass12"), "Role": "Customer", "Plan": "free", "PlanName": "Civic Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 0, "TotalVotesReceived": 0},
-        {"Id": "USR-013", "FullName": "James Maina", "Email": "james@getitright.io", "Password": _hash("pass13"), "Role": "Analyst", "Plan": "org", "PlanName": "Organization", "Organization": "National Statistics Bureau", "VoterQuota": 50000, "PollsQuota": 100, "TotalPollsCreated": 1, "TotalVotesReceived": 220},
-        {"Id": "USR-014", "FullName": "Esther Njoki", "Email": "esther@getitright.io", "Password": _hash("pass14"), "Role": "Customer", "Plan": "pro", "PlanName": "Civic Pro", "Organization": "Nairobi Women's Network", "VoterQuota": 10000, "PollsQuota": 25, "TotalPollsCreated": 2, "TotalVotesReceived": 350},
-        {"Id": "USR-015", "FullName": "Daniel Kiptoo", "Email": "daniel@getitright.io", "Password": _hash("pass15"), "Role": "Customer", "Plan": "free", "PlanName": "Civic Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 1, "TotalVotesReceived": 55},
+        {"Id": "USR-004", "FullName": "Brian Otieno", "Email": "brian@getitright.io", "Password": _hash("pass4"), "Role": "Analyst", "Plan": "org", "PlanName": "Organization", "Organization": "Data Insights Kenya", "VoterQuota": 100000, "PollsQuota": 200, "TotalPollsCreated": 2, "TotalVotesReceived": 310},
+        {"Id": "USR-005", "FullName": "Alice Njeri", "Email": "alice@getitright.io", "Password": _hash("pass5"), "Role": "Auditor", "Plan": "org", "PlanName": "Organization", "Organization": "Independent Electoral Board", "VoterQuota": 100000, "PollsQuota": 200, "TotalPollsCreated": 0, "TotalVotesReceived": 0},
+        {"Id": "USR-006", "FullName": "Diana Wekesa", "Email": "diana@getitright.io", "Password": _hash("pass6"), "Role": "Customer", "Plan": "free", "PlanName": "Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 1, "TotalVotesReceived": 45},
+        {"Id": "USR-007", "FullName": "Charles Mutua", "Email": "charles@getitright.io", "Password": _hash("pass7"), "Role": "Customer", "Plan": "pro", "PlanName": "Pro", "Organization": "Mombasa Tech Hub", "VoterQuota": 25000, "PollsQuota": 50, "TotalPollsCreated": 4, "TotalVotesReceived": 890},
+        {"Id": "USR-008", "FullName": "Sarah Akinyi", "Email": "sarah@getitright.io", "Password": _hash("pass8"), "Role": "Customer", "Plan": "free", "PlanName": "Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 2, "TotalVotesReceived": 78},
+        {"Id": "USR-009", "FullName": "Joseph Kamau", "Email": "joseph@getitright.io", "Password": _hash("pass9"), "Role": "Enterprise Publisher", "Plan": "org", "PlanName": "Organization", "Organization": "Kenya Corporate Council", "VoterQuota": 100000, "PollsQuota": 200, "TotalPollsCreated": 6, "TotalVotesReceived": 1500},
+        {"Id": "USR-010", "FullName": "Lucy Chebet", "Email": "lucy@getitright.io", "Password": _hash("pass10"), "Role": "Customer", "Plan": "free", "PlanName": "Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 1, "TotalVotesReceived": 32},
+        {"Id": "USR-011", "FullName": "Peter Ochieng", "Email": "peter@getitright.io", "Password": _hash("pass11"), "Role": "Customer", "Plan": "pro", "PlanName": "Pro", "Organization": "Kisumu Urban Council", "VoterQuota": 25000, "PollsQuota": 50, "TotalPollsCreated": 3, "TotalVotesReceived": 410},
+        {"Id": "USR-012", "FullName": "Rose Wambui", "Email": "rose@getitright.io", "Password": _hash("pass12"), "Role": "Customer", "Plan": "free", "PlanName": "Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 0, "TotalVotesReceived": 0},
+        {"Id": "USR-013", "FullName": "James Maina", "Email": "james@getitright.io", "Password": _hash("pass13"), "Role": "Analyst", "Plan": "org", "PlanName": "Organization", "Organization": "National Statistics Bureau", "VoterQuota": 100000, "PollsQuota": 200, "TotalPollsCreated": 1, "TotalVotesReceived": 220},
+        {"Id": "USR-014", "FullName": "Esther Njoki", "Email": "esther@getitright.io", "Password": _hash("pass14"), "Role": "Customer", "Plan": "pro", "PlanName": "Pro", "Organization": "Nairobi Women's Network", "VoterQuota": 25000, "PollsQuota": 50, "TotalPollsCreated": 2, "TotalVotesReceived": 350},
+        {"Id": "USR-015", "FullName": "Daniel Kiptoo", "Email": "daniel@getitright.io", "Password": _hash("pass15"), "Role": "Customer", "Plan": "free", "PlanName": "Starter", "Organization": "Independent", "VoterQuota": 1000, "PollsQuota": 5, "TotalPollsCreated": 1, "TotalVotesReceived": 55},
     ]
 
     ips = ["102.217.156.42", "197.232.12.89", "105.160.10.14", "41.89.228.100", "102.68.44.210",
@@ -91,7 +91,7 @@ def seed_polls(db):
             "Title": "Kitui East Constituency MP Aspirants Poll 2027",
             "Description": "Official 2027 opinion poll for Kitui East Constituency Member of Parliament (MP) aspirants.",
             "Category": "Constituency MP Election",
-            "Plan": "election",
+            "Plan": "org",
             "OwnerId": "USR-003",
             "Options": [
                 "Zak Syengo (Zacchaeus Syengo) - Wiper",
@@ -108,7 +108,7 @@ def seed_polls(db):
             "Title": "Voo / Kyamatu Ward MCA Aspirants Poll 2027 (Kitui East)",
             "Description": "Live opinion poll for Member of County Assembly (MCA) aspirants in Voo / Kyamatu Ward.",
             "Category": "Kitui County Wards",
-            "Plan": "election",
+            "Plan": "org",
             "OwnerId": "USR-003",
             "Options": [
                 "Hon. Boniface Kilaa Musyoka",
@@ -123,7 +123,7 @@ def seed_polls(db):
             "Title": "Kyangwithya West Ward MCA Aspirants Poll 2027 (Kitui Central)",
             "Description": "Live ward opinion poll for Kyangwithya West MCA aspirants.",
             "Category": "Kitui County Wards",
-            "Plan": "election",
+            "Plan": "org",
             "OwnerId": "USR-003",
             "Options": [
                 "Hon. Boniface Kanangalu",
@@ -138,7 +138,7 @@ def seed_polls(db):
             "Title": "Township Ward MCA Poll 2027 (Kitui Central)",
             "Description": "Township Ward civic election candidates opinion poll.",
             "Category": "Kitui County Wards",
-            "Plan": "election",
+            "Plan": "org",
             "OwnerId": "USR-003",
             "Options": [
                 "Hon. Daniel Kimanzi",
@@ -152,7 +152,7 @@ def seed_polls(db):
             "Title": "Mutomo Ward MCA Poll 2027 (Kitui South)",
             "Description": "Mutomo Ward Assembly election preference poll.",
             "Category": "Kitui County Wards",
-            "Plan": "election",
+            "Plan": "org",
             "OwnerId": "USR-003",
             "Options": [
                 "Hon. David Munyoki",
@@ -166,7 +166,7 @@ def seed_polls(db):
             "Title": "Ikutha Ward MCA Poll 2027 (Kitui South)",
             "Description": "Ikutha Ward Member of County Assembly poll.",
             "Category": "Kitui County Wards",
-            "Plan": "election",
+            "Plan": "org",
             "OwnerId": "USR-003",
             "Options": [
                 "Hon. Hussein Mwanzi",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/network/api_client.dart';
 
 class PlanSelectionScreen extends StatefulWidget {
@@ -18,12 +19,13 @@ class PlanSelectionScreen extends StatefulWidget {
 
 class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
   final ApiClient _apiClient = ApiClient();
-  final PageController _pageController = PageController(viewportFraction: 0.86);
+  late final PageController _pageController;
   late String _selectedPlan;
   int _currentPage = 0;
   bool _isSaving = false;
+  bool _legacyPlan = false;
 
-  static const _plans = <Map<String, dynamic>>[
+  static final _plans = <Map<String, dynamic>>[
     {
       'id': 'free',
       'name': 'Starter',
@@ -32,10 +34,10 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
       'period': 'No card required',
       'icon': Icons.bolt,
       'features': [
-        'Up to 5 active polls',
-        '1,000 responses per poll',
-        'Basic results dashboard',
-        'Share via public link',
+        'Up to 5 polls',
+        'Participant target per poll: 1,000',
+        'Poll and survey tools',
+        'Shareable links and results',
       ],
     },
     {
@@ -46,38 +48,24 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
       'period': 'per month',
       'icon': Icons.verified,
       'features': [
-        'Up to 50 active polls',
-        '25,000 responses per poll',
-        'Real-time analytics & exports',
-        'Custom branding & CSV export',
+        'Up to 50 polls',
+        'Participant target per poll: 25,000',
+        'Poll and survey tools',
+        'Shareable links and results',
       ],
     },
     {
       'id': 'org',
       'name': 'Organization',
-      'tier': 'ENTERPRISE',
+      'tier': 'ORGANIZATION',
       'price': '899 KES',
       'period': 'per month',
       'icon': Icons.business,
       'features': [
-        'Up to 200 active polls',
-        '100,000 responses per poll',
-        'Multi-admin team access',
-        'Audit trail & compliance',
-      ],
-    },
-    {
-      'id': 'election',
-      'name': 'Election',
-      'tier': 'GOVERNANCE',
-      'price': '1,399 KES',
-      'period': 'per month',
-      'icon': Icons.security,
-      'features': [
-        'Unlimited polls & surveys',
-        '10M+ voter capacity',
-        'Voter verification & ID checks',
-        'Full audit & observer access',
+        'Up to 200 polls',
+        'Participant target per poll: 100,000',
+        'Poll and survey tools',
+        'Shareable links and results',
       ],
     },
   ];
@@ -90,14 +78,51 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
     super.initState();
     _selectedPlan =
         (widget.userData['plan'] as String? ?? 'free').toLowerCase();
-    _loadExistingPhone();
     final initialIndex = _plans.indexWhere((p) => p['id'] == _selectedPlan);
     if (initialIndex != -1) {
       _currentPage = initialIndex;
     } else {
-      _selectedPlan = 'free';
+      _legacyPlan = _selectedPlan == 'election';
+      _selectedPlan = _legacyPlan ? '' : 'free';
       _currentPage = 0;
     }
+    _pageController =
+        PageController(viewportFraction: 0.86, initialPage: _currentPage);
+    _loadExistingPhone();
+    _loadPlanCatalog();
+  }
+
+  Future<void> _loadPlanCatalog() async {
+    final catalog = await _apiClient.fetchPlanCatalog();
+    if (!mounted || catalog == null) return;
+    final plans = catalog['plans'];
+    if (plans is! List) return;
+    for (final item in plans.whereType<Map<String, dynamic>>()) {
+      final key = item['key']?.toString();
+      final planIndex = _plans.indexWhere((entry) => entry['id'] == key);
+      if (planIndex < 0) continue;
+      final plan = _plans[planIndex];
+      final amount = item['amount'];
+      if (key != 'free' && amount is num) {
+        plan['price'] = '${amount.toStringAsFixed(0)} KES';
+      }
+      final billingDays = item['billingDays'];
+      if (billingDays is num)
+        plan['period'] = 'per ${billingDays.toInt()} days';
+      final polls = item['pollsQuota'];
+      final voters = item['voterQuota'];
+      if (polls is num) {
+        plan['features'] = [
+          'Up to ${polls.toInt()} polls',
+          (voters is num)
+              ? 'Participant target per poll: ${voters.toInt()}'
+              : 'Poll and survey tools',
+          'Poll and survey tools',
+          'Shareable links and results',
+        ];
+      }
+    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadExistingPhone() async {
@@ -123,23 +148,44 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
 
   Future<void> _handleConfirm() async {
     setState(() => _isSaving = true);
-    final userId = widget.userData['id']?.toString() ?? 'USR-001';
-    final phone = _phoneController.text.trim();
-
-    final planUpdated = await _apiClient.updatePlan(
-      userId,
-      _selectedPlan,
-      phoneNumber: phone,
-    );
-    if (!planUpdated) {
-      if (mounted) {
+    final userId = widget.userData['id']?.toString() ?? '';
+    if (userId.isEmpty) {
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign in again to continue.')),
+      );
+      return;
+    }
+    final currentPlan =
+        (widget.userData['plan'] as String? ?? 'free').toLowerCase();
+    if (!_legacyPlan && _selectedPlan != currentPlan) {
+      if (_selectedPlan == 'free') {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-                'Could not update your plan. Check your connection and try again.'),
-            backgroundColor: Color(0xFFE5E5E5),
-            duration: Duration(seconds: 4),
+              content: Text('Plan downgrades are not available here.')),
+        );
+        return;
+      }
+      final loginUrl = Uri.https(
+        'icapsq.mftechnologies.org',
+        '/auth/login.html',
+      );
+      var opened = false;
+      try {
+        opened = await launchUrl(
+          loginUrl,
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (_) {}
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(opened
+                ? 'Sign in on the website, then open Profile & Plan to complete secure checkout. Your plan changes after payment is verified.'
+                : 'Open the IcapsQ website and use Profile & Plan for secure checkout.'),
+            duration: const Duration(seconds: 6),
           ),
         );
       }
@@ -147,11 +193,31 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
     }
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('gir_user_plan', _selectedPlan);
-    await prefs.setString('gir_user_id', userId);
-    if (phone.isNotEmpty) {
+    final phone = _phoneController.text.trim();
+    final savedPhone =
+        (widget.userData['phoneNumber'] ?? widget.userData['phone'] ?? '')
+            .toString()
+            .trim();
+    if (phone.isNotEmpty && phone != savedPhone) {
+      final profileResult =
+          await _apiClient.updateUserProfile(phoneNumber: phone);
+      if (profileResult['success'] != true) {
+        if (mounted) {
+          setState(() => _isSaving = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(profileResult['error']?.toString() ??
+                  'Could not save your phone number. Try again.'),
+            ),
+          );
+        }
+        return;
+      }
       await prefs.setString('gir_user_phone', phone);
     }
+    await prefs.setString(
+        'gir_user_plan', _legacyPlan ? currentPlan : _selectedPlan);
+    await prefs.setString('gir_user_id', userId);
     await prefs.setString(
         'gir_user_name', widget.userData['fullName']?.toString() ?? 'User');
 
@@ -162,6 +228,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
   }
 
   void _scrollToNextPlan() {
+    if (_legacyPlan) return;
     if (_currentPage < _plans.length - 1) {
       _pageController.animateToPage(
         _currentPage + 1,
@@ -215,8 +282,8 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _phoneLinked
-                        ? 'Your phone is linked. Swipe to browse plans.'
-                        : 'Swipe to browse plans. Optionally link a phone number.',
+                        ? 'The same poll and survey tools are in every plan. Swipe to compare limits.'
+                        : 'Every plan includes the same tools. Swipe to compare limits or link a phone number.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withAlpha(140),
@@ -297,6 +364,7 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                 controller: _pageController,
                 itemCount: _plans.length,
                 onPageChanged: (index) {
+                  if (_legacyPlan) return;
                   setState(() {
                     _currentPage = index;
                     _selectedPlan = _plans[index]['id'] as String;
@@ -372,13 +440,15 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                                 ],
                               ),
                             ),
-
-                            // Selection Radio
                             GestureDetector(
-                              onTap: () {
-                                setState(
-                                    () => _selectedPlan = plan['id'] as String);
-                              },
+                              onTap: _legacyPlan
+                                  ? null
+                                  : () => _pageController.animateToPage(
+                                        index,
+                                        duration:
+                                            const Duration(milliseconds: 250),
+                                        curve: Curves.easeInOut,
+                                      ),
                               child: Container(
                                 width: 24,
                                 height: 24,
@@ -534,7 +604,15 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
                           ),
                         )
                       : Text(
-                          'Proceed with ${_plans[_currentPage]['name']}',
+                          _legacyPlan ||
+                                  _selectedPlan ==
+                                      (widget.userData['plan'] as String? ??
+                                              'free')
+                                          .toLowerCase()
+                              ? 'Continue with current plan'
+                              : _selectedPlan == 'free'
+                                  ? 'Plan downgrade unavailable'
+                                  : 'Secure upgrade options',
                           style: const TextStyle(
                             color: Color(0xFF2A2A2A),
                             fontSize: 16,

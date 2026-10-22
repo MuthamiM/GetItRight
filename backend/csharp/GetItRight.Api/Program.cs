@@ -1044,9 +1044,8 @@ app.MapGet("/api/geo/currency", (HttpContext ctx) =>
         pricing = new
         {
             free = isKenya ? "KES 0" : "$0",
-            pro = isKenya ? "KES 1,500" : "$12",
-            org = isKenya ? "KES 6,500" : "$49",
-            election = "Turnkey / Custom"
+            pro = isKenya ? "KES 499" : "$4",
+            org = isKenya ? "KES 899" : "$7"
         }
     });
 });
