@@ -543,7 +543,11 @@
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">Password</label>
-              <input type="password" id="password" class="form-input" required placeholder="Min 6 characters">
+              <input
+                type="password" id="password" class="form-input" required minlength="12"
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{12,}"
+                title="Use at least 12 characters, including uppercase, lowercase, and a number."
+                autocomplete="new-password" placeholder="At least 12 characters">
             </div>
 
             <div class="form-group">
@@ -717,6 +721,12 @@
         return;
       }
 
+      if (password.length < 12 || !/[a-z]/.test(password) ||
+          !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        alert('Password must be at least 12 characters and include uppercase, lowercase, and a number.');
+        return;
+      }
+
       accountData = {
         fullName: fullName,
         email: email,
@@ -788,6 +798,58 @@
       }
     }
 
+    function getRegistrationErrorMessage(data, status) {
+      const detail = data?.detail ?? data?.message ?? data?.error ?? data?.errors;
+      const fieldNames = {
+        password: 'Password',
+        email: 'Email address',
+        fullName: 'Full name',
+        phoneNumber: 'Phone number',
+        organization: 'Organization'
+      };
+
+      function formatDetail(value) {
+        if (typeof value === 'string') return value.trim();
+        if (Array.isArray(value)) {
+          return value.map(formatDetail).filter(Boolean).join('\n');
+        }
+        if (value && typeof value === 'object') {
+          const message = value.message ?? value.msg ?? value.detail ?? value.error;
+          if (message !== undefined) {
+            const location = Array.isArray(value.loc) ? value.loc : [];
+            const field = location
+              .filter(part => part !== 'body')
+              .map(part => fieldNames[part] || String(part))
+              .join(' ');
+            const cleanMessage = formatDetail(message)
+              .replace(/^Value error,\s*/i, '')
+              .replace(/^Value error:\s*/i, '');
+            if (!field) return cleanMessage;
+            const fieldRepeated = cleanMessage.toLowerCase().startsWith(field.toLowerCase());
+            const fieldMessage = fieldRepeated
+              ? cleanMessage.slice(field.length).replace(/^[:\s,-]+/, '').trim()
+              : cleanMessage;
+            const readableMessage = fieldMessage
+              ? fieldMessage[0].toUpperCase() + fieldMessage.slice(1)
+              : cleanMessage;
+            return `${field}: ${readableMessage}`;
+          }
+          if (value.errors !== undefined) return formatDetail(value.errors);
+        }
+        return '';
+      }
+
+      const message = formatDetail(detail);
+      if (message) return message;
+      if (status >= 200 && status < 300) {
+        return 'The server did not confirm account creation. Please try again.';
+      }
+      if (status === 409) return 'An account already exists with these details. Try signing in instead.';
+      if (status === 422) return 'Some account details are invalid. Check your name, email, phone number, and password.';
+      if (status >= 500) return 'The server could not create your account right now. Please try again shortly.';
+      return `Account creation failed (HTTP ${status || 'network error'}). Please check your details and try again.`;
+    }
+
     async function finalizeAccount() {
       if (!accountData) return;
 
@@ -811,14 +873,14 @@
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.token) {
+        const data = await res.json().catch(() => null);
+        if (res.ok && data?.token && data?.user) {
           localStorage.setItem('gir_token', data.token);
           localStorage.setItem('gir_user', JSON.stringify(data.user));
           alert('Account created successfully. Your account starts on the Free plan; upgrades require administrator approval.');
           window.location.href = data.redirectUrl || '../pages/vote.html';
         } else {
-          throw new Error(data.detail || 'Account creation failed.');
+          throw new Error(getRegistrationErrorMessage(data, res.status));
         }
       } catch (err) {
         alert(err.message || 'Account creation failed. Please try again.');
