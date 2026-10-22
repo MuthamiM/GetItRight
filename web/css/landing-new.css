@@ -831,6 +831,161 @@ body.landing-new {
   font-weight: 800;
 }
 
+/* ── PLAN PRICING ── */
+.ln-plans {
+  padding: var(--section-padding);
+  background: var(--silver);
+  color: var(--charcoal);
+  border-top: 2px solid var(--charcoal);
+}
+
+.ln-plans-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.ln-plans .ln-section-tag {
+  color: var(--charcoal);
+}
+
+.ln-plans-header {
+  max-width: 720px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.ln-plans-headline {
+  margin: 12px 0 14px;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--charcoal);
+}
+
+.ln-plans-desc {
+  color: var(--muted-gray);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.ln-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 18px;
+}
+
+.ln-plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px 24px;
+  border: 1px solid rgba(242, 242, 243, 0.28);
+  border-radius: 20px;
+  background: var(--charcoal);
+  color: var(--silver);
+  box-shadow: 0 12px 32px rgba(31, 32, 35, 0.12);
+}
+
+.ln-plan-card-featured {
+  border: 2px solid var(--charcoal);
+  box-shadow: 0 16px 36px rgba(31, 32, 35, 0.2);
+}
+
+.ln-plan-ribbon {
+  position: absolute;
+  top: -13px;
+  right: 18px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--silver);
+  color: var(--charcoal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ln-plan-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--silver);
+}
+
+.ln-plan-audience {
+  min-height: 44px;
+  margin: 5px 0 22px;
+  color: var(--graphite-300);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ln-plan-price {
+  color: var(--silver);
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.2vw, 36px);
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.ln-plan-period {
+  min-height: 23px;
+  margin-top: 5px;
+  color: var(--graphite-300);
+  font-size: 12px;
+}
+
+.ln-plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 22px 0 26px;
+  padding: 20px 0 0 18px;
+  border-top: 1px solid rgba(242, 242, 243, 0.2);
+  color: var(--silver);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ln-plan-features li::marker {
+  color: var(--graphite-300);
+}
+
+.ln-plan-cta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 46px;
+  margin-top: auto;
+  padding: 10px 14px;
+  border: 1px solid var(--silver);
+  border-radius: 999px;
+  background: var(--silver);
+  color: var(--charcoal);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  transition: transform var(--transition), background var(--transition), color var(--transition);
+}
+
+.ln-plan-cta:hover {
+  transform: translateY(-2px);
+  background: var(--charcoal);
+  color: var(--silver);
+}
+
+.ln-plans-footnote {
+  margin-top: 22px;
+  color: var(--muted-gray);
+  font-size: 12px;
+  text-align: center;
+}
+
 /* ── DISCOVER SECTION (FULL-WIDTH EDGE-TO-EDGE, SILVER BACKGROUND) ── */
 .ln-discover {
   padding: var(--section-padding);
@@ -1154,6 +1309,11 @@ body.landing-new {
   .ln-discover-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .ln-plans-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1253,6 +1413,17 @@ body.landing-new {
   .ln-discover-grid {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .ln-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .ln-plan-audience {
+    min-height: 0;
   }
 
   .ln-discover-cta-bar {

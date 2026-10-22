@@ -28,7 +28,7 @@
       <a href="pages/vote.html">Active Polls</a>
       <a href="pages/surveys.html">Active Surveys</a>
       <a href="pages/blog.html">Blog</a>
-      <a href="#compare">Compare</a>
+      <a href="#plans">Pricing</a>
       <a href="#how-it-works">How It Works</a>
       <a href="#contact">Contact</a>
     </div>
@@ -296,6 +296,77 @@
     </div>
   </section>
 
+  <!-- ====== PLAN PRICING ====== -->
+  <section class="ln-plans" id="plans">
+    <div class="ln-plans-inner">
+      <div class="ln-plans-header reveal">
+        <span class="ln-section-tag">Plans &amp; Pricing</span>
+        <h2 class="ln-plans-headline">Choose the plan that fits your work.</h2>
+        <p class="ln-plans-desc">Clear 30-day pricing for every organization size. Paid plans are prepaid and renew manually.</p>
+      </div>
+
+      <div class="ln-plans-grid">
+        <article class="ln-plan-card reveal">
+          <div class="ln-plan-name">Starter</div>
+          <p class="ln-plan-audience">For small groups getting started</p>
+          <div class="ln-plan-price">Free</div>
+          <div class="ln-plan-period">No card required</div>
+          <ul class="ln-plan-features">
+            <li>Up to 5 active polls</li>
+            <li>1,000 responses per poll</li>
+            <li>Basic results dashboard</li>
+            <li>Share via public link</li>
+          </ul>
+          <a class="ln-plan-cta" href="auth/signup.html?plan=free">Get started free</a>
+        </article>
+
+        <article class="ln-plan-card ln-plan-card-featured reveal">
+          <div class="ln-plan-ribbon">Most popular</div>
+          <div class="ln-plan-name">Pro</div>
+          <p class="ln-plan-audience">For researchers and professionals</p>
+          <div class="ln-plan-price" data-plan-price="pro">KES 499</div>
+          <div class="ln-plan-period">/ 30 days</div>
+          <ul class="ln-plan-features">
+            <li>Up to 50 active polls</li>
+            <li>25,000 responses per poll</li>
+            <li>Real-time analytics &amp; exports</li>
+            <li>Custom branding &amp; CSV export</li>
+          </ul>
+          <a class="ln-plan-cta" href="auth/signup.html?plan=pro">Choose Pro</a>
+        </article>
+
+        <article class="ln-plan-card reveal">
+          <div class="ln-plan-name">Organization</div>
+          <p class="ln-plan-audience">For teams managing multiple campaigns</p>
+          <div class="ln-plan-price" data-plan-price="org">KES 899</div>
+          <div class="ln-plan-period">/ 30 days</div>
+          <ul class="ln-plan-features">
+            <li>Up to 200 active polls</li>
+            <li>100,000 responses per poll</li>
+            <li>Multi-admin team access</li>
+            <li>Audit trail &amp; compliance</li>
+          </ul>
+          <a class="ln-plan-cta" href="auth/signup.html?plan=org">Choose Organization</a>
+        </article>
+
+        <article class="ln-plan-card reveal">
+          <div class="ln-plan-name">Election</div>
+          <p class="ln-plan-audience">For high-capacity election campaigns</p>
+          <div class="ln-plan-price" data-plan-price="election">KES 1,399</div>
+          <div class="ln-plan-period">/ 30 days</div>
+          <ul class="ln-plan-features">
+            <li>Unlimited polls &amp; surveys</li>
+            <li>10M+ voter capacity</li>
+            <li>Voter verification &amp; ID checks</li>
+            <li>Full audit &amp; observer access</li>
+          </ul>
+          <a class="ln-plan-cta" href="auth/signup.html?plan=election">Choose Election</a>
+        </article>
+      </div>
+      <p class="ln-plans-footnote" id="plan-price-note">Prices are shown in Kenyan shillings (KES) for 30 days.</p>
+    </div>
+  </section>
+
   <!-- ====== CTA / CONTACT SECTION ====== -->
   <section class="ln-cta-section" id="contact">
     <div class="ln-cta-inner reveal">
@@ -336,6 +407,7 @@
             <li><a href="pages/vote.html">Active Polls</a></li>
             <li><a href="pages/surveys.html">Active Surveys</a></li>
             <li><a href="pages/blog.html">Blog</a></li>
+            <li><a href="#plans">Plans &amp; Pricing</a></li>
             <li><a href="#compare">Compare</a></li>
           </ul>
         </div>
@@ -413,6 +485,20 @@
         navLinks.classList.remove('open');
       });
     });
+
+    /* Keep the public prices aligned with the signup plan catalog. */
+    fetch('/api/payments/plans', { headers: { Accept: 'application/json' } })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('Plan catalog unavailable')))
+      .then(catalog => {
+        if (!Array.isArray(catalog.plans)) return;
+        catalog.plans.forEach(plan => {
+          const price = document.querySelector(`[data-plan-price="${plan.key}"]`);
+          if (price && Number.isFinite(Number(plan.amount))) {
+            price.textContent = `KES ${Number(plan.amount).toLocaleString()}`;
+          }
+        });
+      })
+      .catch(() => { /* Keep the server-rendered signup prices visible if the catalog is temporarily unavailable. */ });
 
   </script>
 
