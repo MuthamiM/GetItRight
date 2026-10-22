@@ -78,6 +78,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
         planName=None if is_admin else user.PlanName,
         planExpiresAt=None if is_admin else user.PlanExpiresAt,
         organization=user.Organization,
+        organizationContactRole=user.OrganizationContactRole,
         status=user.Status,
         voterQuota=None if is_admin else user.VoterQuota,
         pollsQuota=None if is_admin else user.PollsQuota,
@@ -95,6 +96,12 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
 
 def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
     email = normalize_email(data.email)
+    organization_plan_application = (data.plan or "free").strip().lower() == "org"
+    organization = _plain_text(data.organization, "Organization name", 200, required=organization_plan_application)
+    organization_contact_role = _plain_text(data.organizationContactRole, "Applying as", 100, required=organization_plan_application)
+    email_domain = email.rsplit("@", 1)[-1].lower()
+    if organization_plan_application and (email_domain == "gmail.com" or email_domain.endswith(".gmail.com")):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Organization plan applications require a business email address. Gmail addresses are not accepted.")
     phone = _plain_text(data.phoneNumber, "Phone number", 30)
     phone_canonical = normalize_phone(phone)
     if phone and not phone_canonical:
@@ -134,7 +141,8 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
         Role="Customer",
         Plan=plan_key,
         PlanName=meta["name"],
-        Organization=_plain_text(data.organization, "Organization", 200) or "Independent",
+        Organization=organization or "Independent",
+        OrganizationContactRole=organization_contact_role,
         CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
         Status="Active",
         TotalPollsCreated=0,
@@ -179,6 +187,7 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
         planName=new_user.PlanName,
         planExpiresAt=new_user.PlanExpiresAt,
         organization=new_user.Organization,
+        organizationContactRole=new_user.OrganizationContactRole,
         status=new_user.Status,
         voterQuota=new_user.VoterQuota,
         pollsQuota=new_user.PollsQuota,
@@ -340,6 +349,7 @@ def update_user_profile(db: Session, user_id: str, full_name: Optional[str] = No
         plan=user.Plan,
         planName=user.PlanName,
         organization=user.Organization,
+        organizationContactRole=user.OrganizationContactRole,
         status=user.Status,
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,
@@ -370,6 +380,7 @@ def verify_user_token(db: Session, token_str: str) -> dict:
         plan=user.Plan,
         planName=user.PlanName,
         organization=user.Organization,
+        organizationContactRole=user.OrganizationContactRole,
         status=user.Status,
         voterQuota=user.VoterQuota,
         pollsQuota=user.PollsQuota,

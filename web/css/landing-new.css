@@ -528,13 +528,24 @@ body.landing-new {
 .ln-features-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
+  gap: 28px;
+  counter-reset: feature;
 }
 
 .ln-feature-card {
-  padding: 8px 0;
-  border-top: 2px solid var(--silver);
+  counter-increment: feature;
+  padding: 18px 0 0;
+  border-top: 1px solid rgba(242, 242, 243, 0.28);
   transition: transform var(--transition);
+}
+
+.ln-feature-card::before {
+  content: "0" counter(feature);
+  display: block;
+  margin: 0 0 22px;
+  color: #B8BAC0;
+  font: 700 12px/1 var(--font-body);
+  letter-spacing: 0.14em;
 }
 
 .ln-feature-card:hover {
@@ -542,14 +553,7 @@ body.landing-new {
 }
 
 .ln-feature-icon {
-  width: 44px;
-  height: 44px;
-  margin: 20px 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--silver);
-  border-radius: 12px;
+  display: none;
 }
 
 .ln-feature-icon svg {
@@ -563,15 +567,16 @@ body.landing-new {
 }
 
 .ln-feature-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 800;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
   color: var(--silver);
   margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 
 .ln-feature-desc {
+  font-family: var(--font-body);
   font-size: 14px;
   color: var(--silver);
   opacity: 0.7;

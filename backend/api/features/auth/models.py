@@ -19,6 +19,7 @@ class UserModel(Base):
     PlanName = Column(String, nullable=False, default="Starter")
     PlanExpiresAt = Column(DateTime(timezone=True), nullable=True)
     Organization = Column(String, nullable=True, default="Independent")
+    OrganizationContactRole = Column(String, nullable=True)
     CreatedAt = Column(String, nullable=False)
     Status = Column(String, nullable=False, default="Active")
     TotalPollsCreated = Column(Integer, default=0)

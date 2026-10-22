@@ -40,6 +40,7 @@ class RegisterRequest(BaseModel):
     nationalId: Optional[str] = None
     county: Optional[str] = None
     organization: Optional[str] = "Independent"
+    organizationContactRole: Optional[str] = None
     plan: Optional[str] = "free"
     ipAddress: Optional[str] = None
     latitude: Optional[float] = None
@@ -58,6 +59,7 @@ class UserOut(BaseModel):
     planName: Optional[str] = None
     planExpiresAt: Optional[datetime] = None
     organization: Optional[str] = "Independent"
+    organizationContactRole: Optional[str] = None
     status: str
     voterQuota: Optional[int] = None
     pollsQuota: Optional[int] = None

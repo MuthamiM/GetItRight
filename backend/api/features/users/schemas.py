@@ -12,6 +12,7 @@ class UserDetailOut(BaseModel):
     planName: Optional[str] = None
     planExpiresAt: Optional[datetime] = None
     organization: Optional[str] = "Independent"
+    organizationContactRole: Optional[str] = None
     createdAt: str
     status: str
     totalPollsCreated: int

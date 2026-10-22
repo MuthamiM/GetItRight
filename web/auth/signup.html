@@ -523,8 +523,8 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input type="email" id="email" class="form-input" required placeholder="you@example.com">
+              <label class="form-label" id="email-label" for="email">Email Address</label>
+              <input type="email" id="email" class="form-input" required autocomplete="email" placeholder="you@example.com">
             </div>
           </div>
 
@@ -535,10 +535,19 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Organization Name (Optional)</label>
-              <input type="text" id="org-name" class="form-input" placeholder="e.g. Umoja Research Group">
+              <label class="form-label" id="org-name-label" for="org-name">Organization Name</label>
+              <input type="text" id="org-name" class="form-input" maxlength="200" autocomplete="organization" placeholder="e.g. Umoja Research Group">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="applying-as-label" for="applying-as">Applying As</label>
+              <input type="text" id="applying-as" class="form-input" maxlength="100" autocomplete="organization-title" placeholder="e.g. Director, Administrator, Research Lead">
             </div>
           </div>
+
+          <p id="organization-plan-guidance" style="margin:-4px 0 16px;color:var(--silver);opacity:.72;font-size:12px;line-height:1.5;">
+            Organization plan applicants must provide their organization name, position, and a business email address. Gmail addresses are not accepted for this plan.
+          </p>
 
           <div class="form-grid">
             <div class="form-group">
@@ -693,6 +702,7 @@
       const email = document.getElementById('email').value.trim();
       const phoneNumber = document.getElementById('phone-number')?.value.trim() || "";
       const orgName = document.getElementById('org-name').value.trim();
+      const applyingAs = document.getElementById('applying-as').value.trim();
       const password = document.getElementById('password').value.trim();
       const confirmPassword = document.getElementById('confirm-password').value.trim();
 
@@ -707,11 +717,25 @@
         return;
       }
 
+      if (selectedPlan === 'org') {
+        if (!orgName || !applyingAs) {
+          alert('Organization plan applications require your organization name and the position you are applying as.');
+          document.getElementById(!orgName ? 'org-name' : 'applying-as').focus();
+          return;
+        }
+        if (isGmailAddress(email)) {
+          alert('Organization plan applications require a business email address. Gmail addresses are not accepted.');
+          document.getElementById('email').focus();
+          return;
+        }
+      }
+
       accountData = {
         fullName: fullName,
         email: email,
         phoneNumber: phoneNumber,
-        organization: orgName || 'Independent Organization',
+        organization: orgName,
+        organizationContactRole: applyingAs,
         password: password
       };
 
@@ -738,6 +762,32 @@
 
       const btn = document.getElementById('proceed-btn');
       btn.textContent = `Proceed with ${planNames[planId]} →`;
+      updateOrganizationPlanFields(planId === 'org');
+    }
+
+    function isGmailAddress(email) {
+      const domain = String(email || '').trim().toLowerCase().split('@').pop() || '';
+      return domain === 'gmail.com' || domain.endsWith('.gmail.com');
+    }
+
+    function updateOrganizationPlanFields(isOrgPlan) {
+      const emailLabel = document.getElementById('email-label');
+      const emailInput = document.getElementById('email');
+      const organizationLabel = document.getElementById('org-name-label');
+      const applyingAsLabel = document.getElementById('applying-as-label');
+      if (emailLabel) emailLabel.textContent = isOrgPlan ? 'Business Email Address' : 'Email Address';
+      if (emailInput) emailInput.placeholder = isOrgPlan ? 'name@organization.co.ke' : 'you@example.com';
+      if (organizationLabel) organizationLabel.textContent = isOrgPlan ? 'Organization Name *' : 'Organization Name';
+      if (applyingAsLabel) applyingAsLabel.textContent = isOrgPlan ? 'Applying As *' : 'Applying As';
+    }
+
+    function returnToAccountDetails(fieldId) {
+      document.getElementById('step2-view').style.display = 'none';
+      document.getElementById('step1-view').style.display = 'block';
+      document.getElementById('step2-pill').classList.remove('active');
+      document.getElementById('step1-pill').classList.add('active');
+      document.getElementById('authContainer').classList.remove('plan-step-active');
+      requestAnimationFrame(() => document.getElementById(fieldId)?.focus());
     }
 
     function updateDots(activeIdx) {
@@ -786,7 +836,8 @@
         email: 'Email address',
         fullName: 'Full name',
         phoneNumber: 'Phone number',
-        organization: 'Organization'
+        organization: 'Organization name',
+        organizationContactRole: 'Applying as'
       };
 
       function formatDetail(value) {
@@ -834,6 +885,24 @@
     async function finalizeAccount() {
       if (!accountData) return;
 
+      if (selectedPlan === 'org') {
+        if (!accountData.organization.trim()) {
+          alert('Organization plan applications require an organization name.');
+          returnToAccountDetails('org-name');
+          return;
+        }
+        if (!accountData.organizationContactRole.trim()) {
+          alert('Organization plan applications require the position you are applying as.');
+          returnToAccountDetails('applying-as');
+          return;
+        }
+        if (isGmailAddress(accountData.email)) {
+          alert('Organization plan applications require a business email address. Gmail addresses are not accepted.');
+          returnToAccountDetails('email');
+          return;
+        }
+      }
+
       if (selectedPlan !== 'free' && !planCatalogLoaded) await loadPlanCatalog();
       if (selectedPlan !== 'free' && !paidCheckoutEnabled) {
         alert('M-Pesa and card checkout is not configured yet. No account was created. Choose Free or try again later.');
@@ -850,7 +919,8 @@
           fullName: accountData.fullName,
           phoneNumber: accountData.phoneNumber,
           password: accountData.password,
-          organization: accountData.organization,
+          organization: accountData.organization || 'Independent Organization',
+          organizationContactRole: accountData.organizationContactRole,
           plan: selectedPlan
         };
 

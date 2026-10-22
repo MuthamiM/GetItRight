@@ -1305,8 +1305,8 @@
           <div class="bottom-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead><tr><th>ID</th><th>Full Name</th><th>Email</th><th>Assigned Role</th><th>Status</th><th>Plan</th><th>IP Address</th></tr></thead>
-                <tbody id="users-table-tbody"><tr><td colspan="7">Loading users...</td></tr></tbody>
+                <thead><tr><th>ID</th><th>Full Name</th><th>Email</th><th>Organization</th><th>Applying As</th><th>Assigned Role</th><th>Status</th><th>Plan</th><th>IP Address</th></tr></thead>
+                <tbody id="users-table-tbody"><tr><td colspan="9">Loading users...</td></tr></tbody>
               </table>
             </div>
             <div class="list-pagination-center" id="users-pagination"></div>
@@ -3597,7 +3597,7 @@
       if (!uTbody) return;
       const activeUsers = users.filter(u => !isVoterAccount(u));
       if (!activeUsers.length) {
-        uTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">No user accounts found.</td></tr>';
+        uTbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;">No user accounts found.</td></tr>';
         renderAdminPaginationControls({ containerId: 'users-pagination', totalItems: 0, currentPage: 1 });
         return;
       }
@@ -3620,6 +3620,8 @@
             <td style="font-family:monospace;font-weight:700;">${u.id}</td>
             <td style="font-weight:700;">${escapeHtml(u.fullName)}</td>
             <td>${escapeHtml(u.email)}</td>
+            <td>${escapeHtml(u.organization || '—')}</td>
+            <td>${escapeHtml(u.organizationContactRole || '—')}</td>
             <td>
               <select style="padding:4px 8px;border-radius:8px;border:1px solid var(--border-color);font-size:12px;font-weight:700;color:var(--text-main);" onchange="updateUserRole('${u.id}', this.value)">
                 <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>

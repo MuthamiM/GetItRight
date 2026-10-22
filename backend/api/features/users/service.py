@@ -75,6 +75,7 @@ def map_user(u: UserModel) -> UserDetailOut:
         planName=None if is_admin else u.PlanName,
         planExpiresAt=None if is_admin else u.PlanExpiresAt,
         organization=u.Organization,
+        organizationContactRole=u.OrganizationContactRole,
         createdAt=u.CreatedAt,
         status=u.Status,
         totalPollsCreated=u.TotalPollsCreated,
