@@ -42,8 +42,8 @@ class SystemController:
             "update_available": update_available,
             "force_update": False,
             "title": f"IcapsQ v{settings.VERSION}",
-            "release_notes": "• Web and Android now use the same database-backed API\n• Redundant API servers fail over behind the public gateway\n• Survey submission, location checks and duplicate-vote protection improved",
-            "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v2.1.24/IcapsQ-v2.1.24-build-30.apk",
+            "release_notes": "• Profile and settings now use a full-screen layout\n• Minor layout and usability improvements",
+            "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v2.1.25/IcapsQ-v2.1.25-build-31.apk",
         }
 
     @staticmethod

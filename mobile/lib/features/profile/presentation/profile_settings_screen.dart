@@ -15,7 +15,6 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  static const _background = AppColors.graphite900;
   static const _surface = AppColors.graphite700;
   static const _surfaceBorder = Color(0xFF565960);
   static const _primaryText = AppColors.graphite50;
@@ -123,23 +122,27 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _background,
+      color: _surface,
       child: SafeArea(
         top: false,
+        left: false,
+        right: false,
         child: RefreshIndicator(
           onRefresh: refreshProfile,
           color: _accent,
           backgroundColor: _surface,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+            padding: EdgeInsets.zero,
             children: [
               _buildAccountAndSettingsCard(),
-              const SizedBox(height: 18),
-              const Text(
-                '© 2026 IcapsQ. All rights reserved.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.graphite500, fontSize: 11),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 14),
+                child: Text(
+                  '© 2026 IcapsQ. All rights reserved.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.graphite500, fontSize: 11),
+                ),
               ),
             ],
           ),
@@ -254,88 +257,77 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Widget _buildAccountAndSettingsCard() {
     return Container(
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _surfaceBorder),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x26000000), blurRadius: 18, offset: Offset(0, 8)),
+      color: _surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildProfileHeader(),
+          _buildCardDivider(),
+          _buildSectionHeader('ACCOUNT DETAILS'),
+          _buildAccountRow(
+            icon: Icons.alternate_email_rounded,
+            label: 'Email address',
+            controller: _emailController,
+            hint: 'Email',
+            keyboardType: TextInputType.emailAddress,
+          ),
+          _buildDivider(),
+          _buildAccountRow(
+            icon: Icons.phone_outlined,
+            label: 'Linked phone number',
+            controller: _phoneController,
+            preferenceKey: 'gir_user_phone',
+            hint: '+254 700 000 000',
+            keyboardType: TextInputType.phone,
+          ),
+          _buildDivider(),
+          _buildAccountRow(
+            icon: Icons.apartment_rounded,
+            label: 'Organization',
+            controller: _orgController,
+            preferenceKey: 'gir_user_org',
+            hint: 'Independent',
+          ),
+          _buildCardDivider(),
+          _buildSectionHeader('PREFERENCES & ABOUT'),
+          _buildSettingsRow(
+            icon: Icons.notifications_active_outlined,
+            title: 'Push notifications',
+            subtitle: 'Poll updates and results',
+            trailing: Switch(
+              value: _notificationsEnabled,
+              activeColor: Colors.white,
+              activeTrackColor: _accent,
+              inactiveThumbColor: AppColors.graphite300,
+              inactiveTrackColor: const Color(0xFF4B4D53),
+              onChanged: _setNotifications,
+            ),
+          ),
+          _buildDivider(),
+          _buildSettingsRow(
+            icon: Icons.phone_android_rounded,
+            title: 'IcapsQ app',
+            subtitle: 'Version 2.1.25  ·  Build 31',
+            trailing: const SizedBox(width: 8),
+          ),
+          _buildDivider(),
+          _buildSettingsRow(
+            icon: Icons.description_outlined,
+            title: 'Terms of Service',
+            trailing: const Icon(Icons.chevron_right_rounded,
+                color: _secondaryText, size: 23),
+            onTap: () => LegalDialogs.showTermsOfService(context),
+          ),
+          _buildDivider(),
+          _buildSettingsRow(
+            icon: Icons.shield_outlined,
+            title: 'Privacy Policy',
+            trailing: const Icon(Icons.chevron_right_rounded,
+                color: _secondaryText, size: 23),
+            onTap: () => LegalDialogs.showPrivacyPolicy(context),
+          ),
+          const SizedBox(height: 8),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProfileHeader(),
-            _buildCardDivider(),
-            _buildSectionHeader('ACCOUNT DETAILS'),
-            _buildAccountRow(
-              icon: Icons.alternate_email_rounded,
-              label: 'Email address',
-              controller: _emailController,
-              hint: 'Email',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            _buildDivider(),
-            _buildAccountRow(
-              icon: Icons.phone_outlined,
-              label: 'Linked phone number',
-              controller: _phoneController,
-              preferenceKey: 'gir_user_phone',
-              hint: '+254 700 000 000',
-              keyboardType: TextInputType.phone,
-            ),
-            _buildDivider(),
-            _buildAccountRow(
-              icon: Icons.apartment_rounded,
-              label: 'Organization',
-              controller: _orgController,
-              preferenceKey: 'gir_user_org',
-              hint: 'Independent',
-            ),
-            _buildCardDivider(),
-            _buildSectionHeader('PREFERENCES & ABOUT'),
-            _buildSettingsRow(
-              icon: Icons.notifications_active_outlined,
-              title: 'Push notifications',
-              subtitle: 'Poll updates and results',
-              trailing: Switch(
-                value: _notificationsEnabled,
-                activeColor: Colors.white,
-                activeTrackColor: _accent,
-                inactiveThumbColor: AppColors.graphite300,
-                inactiveTrackColor: const Color(0xFF4B4D53),
-                onChanged: _setNotifications,
-              ),
-            ),
-            _buildDivider(),
-            _buildSettingsRow(
-              icon: Icons.phone_android_rounded,
-              title: 'IcapsQ app',
-              subtitle: 'Version 2.1.24  ·  Build 30',
-              trailing: const SizedBox(width: 8),
-            ),
-            _buildDivider(),
-            _buildSettingsRow(
-              icon: Icons.description_outlined,
-              title: 'Terms of Service',
-              trailing: const Icon(Icons.chevron_right_rounded,
-                  color: _secondaryText, size: 23),
-              onTap: () => LegalDialogs.showTermsOfService(context),
-            ),
-            _buildDivider(),
-            _buildSettingsRow(
-              icon: Icons.shield_outlined,
-              title: 'Privacy Policy',
-              trailing: const Icon(Icons.chevron_right_rounded,
-                  color: _secondaryText, size: 23),
-              onTap: () => LegalDialogs.showPrivacyPolicy(context),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
       ),
     );
   }
