@@ -534,8 +534,11 @@ body.landing-new {
 
 .ln-feature-card {
   counter-increment: feature;
-  padding: 18px 0 0;
-  border-top: 1px solid rgba(242, 242, 243, 0.28);
+  min-height: 220px;
+  padding: 22px;
+  border: 1px solid rgba(242, 242, 243, 0.18);
+  border-radius: 18px;
+  background: var(--charcoal-elevated);
   transition: transform var(--transition);
 }
 
@@ -887,16 +890,16 @@ body.landing-new {
   display: flex;
   flex-direction: column;
   padding: 28px 24px 24px;
-  border: 1px solid rgba(242, 242, 243, 0.28);
+  border: 1px solid rgba(242, 242, 243, 0.18);
   border-radius: 20px;
-  background: var(--charcoal);
+  background: var(--charcoal-elevated);
   color: var(--silver);
   box-shadow: 0 12px 32px rgba(31, 32, 35, 0.12);
 }
 
 .ln-plan-card-featured {
-  border: 2px solid var(--charcoal);
-  box-shadow: 0 16px 36px rgba(31, 32, 35, 0.2);
+  border: 1px solid rgba(242, 242, 243, 0.18);
+  box-shadow: 0 12px 32px rgba(31, 32, 35, 0.12);
 }
 
 .ln-plan-ribbon {
@@ -1041,7 +1044,8 @@ body.landing-new {
 }
 
 .ln-discover-card {
-  background: var(--charcoal);
+  background: var(--charcoal-elevated);
+  border: 1px solid rgba(242, 242, 243, 0.18);
   border-radius: 20px;
   padding: 28px 24px;
   transition: transform var(--transition);
