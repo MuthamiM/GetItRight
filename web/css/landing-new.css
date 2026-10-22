@@ -534,11 +534,8 @@ body.landing-new {
 
 .ln-feature-card {
   counter-increment: feature;
-  min-height: 220px;
-  padding: 22px;
-  border: 1px solid rgba(242, 242, 243, 0.18);
-  border-radius: 18px;
-  background: var(--charcoal-elevated);
+  padding: 18px 0 0;
+  border-top: 1px solid rgba(242, 242, 243, 0.28);
   transition: transform var(--transition);
 }
 
@@ -812,7 +809,6 @@ body.landing-new {
 
 .ln-table-x {
   color: var(--silver);
-  opacity: 0.4;
   font-size: 14px;
 }
 
@@ -822,14 +818,12 @@ body.landing-new {
   width: 10px;
   height: 2px;
   background: var(--silver);
-  opacity: 0.4;
   margin-right: 10px;
   vertical-align: middle;
 }
 
 .ln-table-partial {
   color: var(--silver);
-  opacity: 0.6;
   font-size: 14px;
 }
 
