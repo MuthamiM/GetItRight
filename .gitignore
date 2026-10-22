@@ -11,6 +11,11 @@ __pycache__/
 *.db-wal
 *.db-journal
 
+# Local databases and backups can contain account or participation data.
+*.db
+*.sqlite
+*.sqlite3
+
 # Logs & temp
 *.log
 .vscode/
