@@ -957,7 +957,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.26';
+    const currentAppVersion = '2.1.27';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');
@@ -1015,9 +1015,9 @@ class ApiClient {
               'update_available':
                   isNewerVersion(serverVersion, currentAppVersion),
               'release_notes':
-                  'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
+                  'Plan limits now match the server catalog. Profile colors now match polls and surveys.',
               'download_url':
-                  'https://github.com/MuthamiM/GetItRight/releases/download/v2.1.26/IcapsQ-v2.1.26-build-32.apk',
+                  'https://icapsq.mftechnologies.org/app-release.apk',
             };
           }
         } catch (_) {}
@@ -1027,9 +1027,8 @@ class ApiClient {
       'latest_version': currentAppVersion,
       'update_available': false,
       'release_notes':
-          'Strict silver & charcoal UI design, live countdown timers, verified voting & Merkle consensus.',
-      'download_url':
-          'https://github.com/MuthamiM/GetItRight/releases/download/v2.1.26/IcapsQ-v2.1.26-build-32.apk',
+          'Plan limits now match the server catalog. Profile colors now match polls and surveys.',
+      'download_url': 'https://icapsq.mftechnologies.org/app-release.apk',
     };
   }
 

@@ -6,8 +6,8 @@ class AppColors {
   static const Color graphite700 = Color(0xFF2E3035); // Brand primary
   static const Color graphite500 = Color(0xFF6B6E76); // Q on light, tagline
   static const Color graphite300 = Color(0xFFB8BAC0); // Q on dark, borders
-  static const Color graphite50  = Color(0xFFF2F2F3); // Light surfaces
-  static const Color white       = Color(0xFFFFFFFF);
+  static const Color graphite50 = Color(0xFFF2F2F3); // Light surfaces
+  static const Color white = Color(0xFFFFFFFF);
 
   static const Color bgPrimary = graphite900;
   static const Color bgCard = graphite700;
@@ -21,6 +21,16 @@ class AppColors {
   static const Color error = Color(0xFFFF6B6B);
   static const Color warning = graphite300;
   static const Color success = graphite50;
+
+  // Shared charcoal palette used by the poll and survey feeds.
+  static const Color feedBackground = Color(0xFF303030);
+  static const Color feedCard = Color(0xFF262626);
+  static const Color feedCardBorder = Color(0xFF3E3E3E);
+  static const Color feedControl = Color(0xFF404040);
+  static const Color feedControlBorder = Color(0xFF606060);
+  static const Color feedText = Color(0xFFE5E5E5);
+  static const Color feedMuted = Color(0xFFB8B8B8);
+  static const Color feedHint = Color(0xFF888888);
 }
 
 class AppRadius {

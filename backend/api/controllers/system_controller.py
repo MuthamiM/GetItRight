@@ -42,8 +42,8 @@ class SystemController:
             "update_available": update_available,
             "force_update": False,
             "title": f"IcapsQ v{settings.VERSION}",
-            "release_notes": "• Plan choices and quotas now match the server catalog\n• Election plan removed from new offers",
-            "download_url": "https://github.com/MuthamiM/GetItRight/releases/download/v2.1.26/IcapsQ-v2.1.26-build-32.apk",
+            "release_notes": "• Plan limits now match the server catalog\n• Profile colors now match polls and surveys",
+            "download_url": "https://icapsq.mftechnologies.org/app-release.apk",
         }
 
     @staticmethod

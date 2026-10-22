@@ -15,11 +15,12 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  static const _surface = AppColors.graphite700;
-  static const _surfaceBorder = Color(0xFF565960);
-  static const _primaryText = AppColors.graphite50;
-  static const _secondaryText = AppColors.graphite300;
-  static const _accent = AppColors.graphite50;
+  static const _pageBackground = AppColors.feedBackground;
+  static const _surface = AppColors.feedCard;
+  static const _surfaceBorder = AppColors.feedCardBorder;
+  static const _primaryText = AppColors.feedText;
+  static const _secondaryText = AppColors.feedMuted;
+  static const _accent = AppColors.feedText;
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -122,7 +123,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _surface,
+      color: _pageBackground,
       child: SafeArea(
         top: false,
         left: false,
@@ -141,7 +142,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 child: Text(
                   '© 2026 IcapsQ. All rights reserved.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.graphite500, fontSize: 11),
+                  style: TextStyle(color: AppColors.feedHint, fontSize: 11),
                 ),
               ),
             ],
@@ -164,15 +165,15 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             width: 62,
             height: 62,
             decoration: BoxDecoration(
-              color: AppColors.graphite50,
+              color: AppColors.feedText,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.2),
+              border: Border.all(color: AppColors.feedText, width: 1.2),
             ),
             alignment: Alignment.center,
             child: Text(
               initial,
               style: const TextStyle(
-                color: AppColors.graphite900,
+                color: AppColors.feedBackground,
                 fontSize: 25,
                 fontWeight: FontWeight.w700,
               ),
@@ -249,7 +250,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
           const SizedBox(width: 8),
           const Icon(Icons.verified_user_outlined,
-              color: AppColors.graphite50, size: 21),
+              color: AppColors.feedText, size: 21),
         ],
       ),
     );
@@ -296,10 +297,10 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             subtitle: 'Poll updates and results',
             trailing: Switch(
               value: _notificationsEnabled,
-              activeColor: Colors.white,
-              activeTrackColor: _accent,
-              inactiveThumbColor: AppColors.graphite300,
-              inactiveTrackColor: const Color(0xFF4B4D53),
+              activeColor: AppColors.feedText,
+              activeTrackColor: AppColors.feedControlBorder,
+              inactiveThumbColor: AppColors.feedMuted,
+              inactiveTrackColor: AppColors.feedControl,
               onChanged: _setNotifications,
             ),
           ),
@@ -307,7 +308,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           _buildSettingsRow(
             icon: Icons.phone_android_rounded,
             title: 'IcapsQ app',
-            subtitle: 'Version 2.1.26  ·  Build 32',
+            subtitle: 'Version 2.1.27  ·  Build 33',
             trailing: const SizedBox(width: 8),
           ),
           _buildDivider(),
@@ -337,7 +338,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         child: Text(
           title,
           style: const TextStyle(
-            color: AppColors.graphite300,
+            color: AppColors.feedMuted,
             fontSize: 10,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.15,
@@ -386,7 +387,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: controller.text.isEmpty
-                          ? AppColors.graphite300
+                          ? AppColors.feedMuted
                           : _primaryText,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -399,7 +400,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             Icon(
               editable ? Icons.edit_outlined : Icons.lock_outline_rounded,
               size: 17,
-              color: AppColors.graphite300,
+              color: AppColors.feedMuted,
             ),
           ],
         ),
@@ -435,7 +436,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: const Color(0xFF414349),
+          color: AppColors.feedControl,
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.center,
@@ -444,12 +445,12 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   Widget _buildDivider() => const Padding(
         padding: EdgeInsets.only(left: 65, right: 16),
-        child: Divider(height: 1, color: Color(0xFF55575D)),
+        child: Divider(height: 1, color: AppColors.feedCardBorder),
       );
 
   Widget _buildCardDivider() => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Divider(height: 1, color: Color(0xFF55575D)),
+        child: Divider(height: 1, color: AppColors.feedCardBorder),
       );
 
   String _planDisplayName(String plan) {
@@ -486,7 +487,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     final updatedValue = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.graphite900,
+        backgroundColor: AppColors.feedBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('Edit $label',
             style: const TextStyle(color: _primaryText, fontSize: 18)),
@@ -532,9 +533,12 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     if (response['success'] != true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response['error']?.toString() ??
-              'Could not save your profile changes. Try again.'),
-          backgroundColor: const Color(0xFFE5E5E5),
+          content: Text(
+            response['error']?.toString() ??
+                'Could not save your profile changes. Try again.',
+            style: const TextStyle(color: AppColors.feedText),
+          ),
+          backgroundColor: AppColors.feedControl,
           duration: const Duration(seconds: 4),
         ),
       );
