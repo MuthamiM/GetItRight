@@ -1698,6 +1698,7 @@
     </div>
   </div>
 
+  <script src="../js/core/payment-checkout.js"></script>
   <script>
     const API = `${window.location.origin}/api`;
     const token = () => localStorage.getItem('gir_token');
@@ -3687,7 +3688,7 @@
         </div>
 
         <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px; color:var(--text-main); font-size:13px; line-height:1.5;">
-          Pay securely on Flutterwave using M-Pesa or a card. IcapsQ does not collect or store card numbers, PINs, or CVVs. Your plan activates only after the server verifies the completed payment.
+          Pay securely on iPay using M-Pesa or a card. IcapsQ does not collect or store card numbers, PINs, or CVVs. Your plan activates only after the server verifies the completed payment.
         </div>
 
         <div id="payment-error-msg" style="color:var(--color-red); font-size:12.5px; font-weight:600; margin-top:10px; display:none;"></div>
@@ -3721,11 +3722,7 @@
           throw new Error(d.detail || 'Secure checkout could not be started.');
         }
         const data = await r.json();
-        const checkout = new URL(data.checkout_url);
-        if (checkout.protocol !== 'https:' || checkout.hostname !== 'checkout.flutterwave.com') {
-          throw new Error('The payment provider returned an invalid checkout link.');
-        }
-        window.location.assign(checkout.href);
+        IcapsPaymentCheckout.launch(data);
       } catch (err) {
         if (btn) {
           btn.disabled = false;

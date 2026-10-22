@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     JWT_AUDIENCE: str = "getitright-clients"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     GOOGLE_OAUTH_CLIENT_ID: str = ""
+    PAYMENT_PROVIDER: str = "ipay"
+    IPAY_VENDOR_ID: str = ""
+    IPAY_HASH_KEY: str = ""
+    IPAY_LIVE: str = "0"
     FLW_SECRET_KEY: str = ""
     FLW_SECRET_HASH: str = ""
     APP_PUBLIC_URL: str = "https://icapsq.mftechnologies.org"
@@ -47,6 +51,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_security_configuration(self):
+        if self.PAYMENT_PROVIDER.strip().lower() not in {"ipay", "flutterwave"}:
+            raise ValueError("PAYMENT_PROVIDER must be ipay or flutterwave")
+        if self.IPAY_LIVE not in {"0", "1"}:
+            raise ValueError("IPAY_LIVE must be 0 or 1")
         if not self.SECRET_KEY or self.SECRET_KEY.startswith("getitright_"):
             raise ValueError("SECRET_KEY must be a unique deployment secret of at least 32 characters")
         if not self.cors_origins or "*" in self.cors_origins:

@@ -354,7 +354,7 @@
         <div class="card" style="padding:20px; border:1px solid var(--border);">
           <h4 style="font-size:16px; font-weight:700; margin:0 0 8px 0; color:var(--text);">How do M-Pesa and card payments work?</h4>
           <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin:0;">
-            Paid plans open Flutterwave's hosted checkout, where available KES payment methods include M-Pesa and card. IcapsQ activates a plan only after the server verifies the payment with Flutterwave.
+            Paid plans open iPay's hosted checkout for M-Pesa and card payments. IcapsQ activates a plan only after the server verifies the transaction with iPay.
           </p>
         </div>
 
@@ -375,6 +375,7 @@
   <script src="js/core/icons.js"></script>
   <script src="js/core/i18n.js"></script>
   <script src="js/core/app.js"></script>
+  <script src="js/core/payment-checkout.js"></script>
   <script>
     async function loadPlanCatalog() {
       const note = document.getElementById('payment-status-note');
@@ -388,10 +389,10 @@
           if (price) price.innerHTML = `KES ${Number(plan.amount).toLocaleString()}<span style="font-size:14px; color:var(--text-muted); font-weight:400;">/30 days</span>`;
         }
         if (catalog.checkoutEnabled) {
-          note.textContent = '30-day prepaid plans in KES. Pay securely with M-Pesa or card; renewals are manual.';
+          note.textContent = '30-day prepaid plans in KES. Pay securely through iPay with M-Pesa or card; renewals are manual.';
           buttons.forEach(button => { button.disabled = false; });
         } else {
-          note.textContent = 'M-Pesa and card checkout is being configured. Free accounts remain available.';
+          note.textContent = 'iPay M-Pesa and card checkout is being configured. Free accounts remain available.';
           buttons.forEach(button => { button.disabled = true; button.textContent = 'Checkout unavailable'; });
         }
       } catch (_) {
@@ -414,11 +415,7 @@
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.checkout_url) throw new Error(data.detail || 'Secure checkout could not be started.');
-        const checkout = new URL(data.checkout_url);
-        if (checkout.protocol !== 'https:' || checkout.hostname !== 'checkout.flutterwave.com') {
-          throw new Error('The payment provider returned an invalid checkout link.');
-        }
-        window.location.assign(checkout.href);
+        IcapsPaymentCheckout.launch(data);
       } catch (error) {
         if (window.App?.showToast) App.showToast(error.message, 'error');
         else alert(error.message);

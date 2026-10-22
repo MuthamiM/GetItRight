@@ -14,6 +14,10 @@ services:
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - PAYMENT_PROVIDER=${PAYMENT_PROVIDER:-ipay}
+      - IPAY_VENDOR_ID=${IPAY_VENDOR_ID:-}
+      - IPAY_HASH_KEY=${IPAY_HASH_KEY:-}
+      - IPAY_LIVE=${IPAY_LIVE:-0}
       - FLW_SECRET_KEY=${FLW_SECRET_KEY:-}
       - FLW_SECRET_HASH=${FLW_SECRET_HASH:-}
       - APP_PUBLIC_URL=${APP_PUBLIC_URL:-https://icapsq.mftechnologies.org}
@@ -45,6 +49,10 @@ services:
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - PAYMENT_PROVIDER=${PAYMENT_PROVIDER:-ipay}
+      - IPAY_VENDOR_ID=${IPAY_VENDOR_ID:-}
+      - IPAY_HASH_KEY=${IPAY_HASH_KEY:-}
+      - IPAY_LIVE=${IPAY_LIVE:-0}
       - FLW_SECRET_KEY=${FLW_SECRET_KEY:-}
       - FLW_SECRET_HASH=${FLW_SECRET_HASH:-}
       - APP_PUBLIC_URL=${APP_PUBLIC_URL:-https://icapsq.mftechnologies.org}

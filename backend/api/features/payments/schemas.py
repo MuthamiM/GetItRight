@@ -1,4 +1,5 @@
 from typing import Optional
+import re
 from pydantic import BaseModel, field_validator
 
 
@@ -22,7 +23,7 @@ class VerifyPaymentRequest(BaseModel):
     @classmethod
     def validate_reference(cls, value: str) -> str:
         value = value.strip()
-        if not value or len(value) > 80 or not value.startswith("icapsq_"):
+        if not value or len(value) > 80 or not re.fullmatch(r"(?:icapsq_[a-f0-9]{32}|IC[A-F0-9]{24})", value):
             raise ValueError("Payment reference is invalid.")
         return value
 
@@ -32,6 +33,6 @@ class VerifyPaymentRequest(BaseModel):
         if value is None or not value.strip():
             return None
         value = value.strip()
-        if not value.isdigit() or len(value) > 24:
+        if not re.fullmatch(r"[A-Za-z0-9]{1,64}", value):
             raise ValueError("Payment transaction ID is invalid.")
         return value

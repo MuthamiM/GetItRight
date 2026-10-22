@@ -696,6 +696,7 @@
     </div>
   </div>
 
+  <script src="/js/core/payment-checkout.js"></script>
   <script>
     const API_BASE = window.location.origin + '/api';
     let accountData = null;
@@ -905,11 +906,7 @@
             if (!checkoutResponse.ok || !checkoutData.checkout_url) {
               throw new Error(checkoutData.detail || 'Secure checkout could not be started.');
             }
-            const checkoutUrl = new URL(checkoutData.checkout_url);
-            if (checkoutUrl.protocol !== 'https:' || checkoutUrl.hostname !== 'checkout.flutterwave.com') {
-              throw new Error('The payment provider returned an invalid checkout link.');
-            }
-            window.location.assign(checkoutUrl.href);
+            IcapsPaymentCheckout.launch(checkoutData);
           } catch (_) {
             alert('Account created on the Free plan. No payment was taken and no paid plan was activated. Sign in later to retry checkout.');
             window.location.href = data.redirectUrl || '../pages/vote.html';
@@ -936,8 +933,8 @@
           if (price) price.textContent = `${Number(plan.amount).toLocaleString()} KES`;
         }
         note.textContent = paidCheckoutEnabled
-          ? 'Paid plans are prepaid for 30 days. Complete M-Pesa or card payment on secure checkout.'
-          : 'M-Pesa and card checkout is being configured. Free signup is available now.';
+          ? 'Paid plans are prepaid for 30 days. Complete M-Pesa or card payment through iPay secure checkout.'
+          : 'iPay M-Pesa and card checkout is being configured. Free signup is available now.';
       } catch (_) {
         paidCheckoutEnabled = false;
         note.textContent = 'Plan checkout is temporarily unavailable. Free signup remains available.';
