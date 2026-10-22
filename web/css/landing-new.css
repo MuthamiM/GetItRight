@@ -1,30 +1,30 @@
 /* =============================================================
    ICAPSQ — Design System (Graphite Brand Spec)
    Tokens:
-   --graphite-900: #1F2023 (Darkest surfaces)
-   --graphite-700: #2E3035 (Brand primary, logo bubble, favicon bg)
-   --graphite-500: #6B6E76 ("Q" on light, tagline on light)
-   --graphite-300: #B8BAC0 ("Q" on dark, tagline on dark)
-   --graphite-50:  #F2F2F3 (Light surfaces)
-   --white:        #FFFFFF (Checkmark, reversed bubble)
+   --graphite-900: #303030 (App background)
+   --graphite-700: #303030 (App charcoal)
+   --graphite-500: #B8B8B8 (Muted app text)
+   --graphite-300: #B8B8B8 (Secondary app text)
+   --graphite-50:  #E5E5E5 (App silver)
+   --white:        #E5E5E5 (App silver)
    ============================================================= */
 
 @import url('tokens.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --graphite-900: #1F2023;
-  --graphite-700: #2E3035; /* brand primary */
-  --graphite-500: #6B6E76;
-  --graphite-300: #B8BAC0;
-  --graphite-50:  #F2F2F3;
-  --white: #FFFFFF;
+  --graphite-900: #303030;
+  --graphite-700: #303030;
+  --graphite-500: #B8B8B8;
+  --graphite-300: #B8B8B8;
+  --graphite-50: #E5E5E5;
+  --white: #E5E5E5;
 
   --charcoal: var(--graphite-700);
-  --charcoal-elevated: #2E3035;
+  --charcoal-elevated: #303030;
   --charcoal-dark: var(--graphite-900);
   --silver: var(--graphite-50);
-  --silver-border: var(--graphite-300);
+  --silver-border: #3E3E3E;
   --muted-gray: var(--graphite-500);
 
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -535,7 +535,7 @@ body.landing-new {
 .ln-feature-card {
   counter-increment: feature;
   padding: 18px 0 0;
-  border-top: 1px solid rgba(242, 242, 243, 0.28);
+  border-top: 1px solid rgba(229, 229, 229, 0.28);
   transition: transform var(--transition);
 }
 
@@ -543,7 +543,7 @@ body.landing-new {
   content: "0" counter(feature);
   display: block;
   margin: 0 0 22px;
-  color: #B8BAC0;
+  color: #B8B8B8;
   font: 700 12px/1 var(--font-body);
   letter-spacing: 0.14em;
 }
@@ -884,16 +884,16 @@ body.landing-new {
   display: flex;
   flex-direction: column;
   padding: 28px 24px 24px;
-  border: 1px solid rgba(242, 242, 243, 0.18);
+  border: 1px solid #3E3E3E;
   border-radius: 20px;
   background: var(--charcoal-elevated);
   color: var(--silver);
-  box-shadow: 0 12px 32px rgba(31, 32, 35, 0.12);
+  box-shadow: 0 12px 32px rgba(48, 48, 48, 0.12);
 }
 
 .ln-plan-card-featured {
-  border: 1px solid rgba(242, 242, 243, 0.18);
-  box-shadow: 0 12px 32px rgba(31, 32, 35, 0.12);
+  border: 1px solid #3E3E3E;
+  box-shadow: 0 12px 32px rgba(48, 48, 48, 0.12);
 }
 
 .ln-plan-ribbon {
@@ -947,7 +947,7 @@ body.landing-new {
   gap: 12px;
   margin: 22px 0 26px;
   padding: 20px 0 0 18px;
-  border-top: 1px solid rgba(242, 242, 243, 0.2);
+  border-top: 1px solid #3E3E3E;
   color: var(--silver);
   font-size: 13px;
   line-height: 1.45;
@@ -1039,7 +1039,7 @@ body.landing-new {
 
 .ln-discover-card {
   background: var(--charcoal-elevated);
-  border: 1px solid rgba(242, 242, 243, 0.18);
+  border: 1px solid #3E3E3E;
   border-radius: 20px;
   padding: 28px 24px;
   transition: transform var(--transition);
@@ -1448,4 +1448,130 @@ body.landing-new {
   .ln-discover-headline {
     font-size: 1.8rem;
   }
+}
+
+/* Landing page uses the same neutral graphite palette as the app feeds. */
+body.landing-new,
+body.landing-new .ln-nav,
+body.landing-new .ln-hero,
+body.landing-new .ln-trusted,
+body.landing-new .ln-features,
+body.landing-new .ln-bigpicture,
+body.landing-new .ln-compare,
+body.landing-new .ln-plans,
+body.landing-new .ln-discover,
+body.landing-new .ln-cta-section,
+body.landing-new .ln-footer {
+  background-color: #303030;
+  color: #E5E5E5;
+}
+
+body.landing-new .ln-nav,
+body.landing-new .ln-trusted,
+body.landing-new .ln-bigpicture,
+body.landing-new .ln-compare,
+body.landing-new .ln-plans,
+body.landing-new .ln-discover,
+body.landing-new .ln-cta-section,
+body.landing-new .ln-footer {
+  border-color: #3E3E3E;
+}
+
+body.landing-new .ln-nav-brand,
+body.landing-new .ln-nav-links a,
+body.landing-new .ln-hero-headline,
+body.landing-new .ln-hero-sub,
+body.landing-new .ln-trusted-label,
+body.landing-new .ln-trusted-logo,
+body.landing-new .ln-bigpicture-headline,
+body.landing-new .ln-bigpicture-desc,
+body.landing-new .ln-step-num,
+body.landing-new .ln-step-text,
+body.landing-new .ln-plans-headline,
+body.landing-new .ln-plans-desc,
+body.landing-new .ln-discover-headline,
+body.landing-new .ln-discover-desc,
+body.landing-new .ln-cta-headline,
+body.landing-new .ln-cta-desc {
+  color: #E5E5E5;
+}
+
+body.landing-new .ln-section-tag.light-theme,
+body.landing-new .ln-section-headline.light-theme,
+body.landing-new .ln-section-desc.light-theme,
+body.landing-new .ln-plans .ln-section-tag,
+body.landing-new .ln-plans-footnote,
+body.landing-new .ln-footer-brand-desc,
+body.landing-new .ln-footer-links a,
+body.landing-new .ln-footer-bottom {
+  color: #B8B8B8;
+}
+
+body.landing-new .ln-nav.scrolled {
+  background-color: #303030;
+}
+
+body.landing-new .ln-nav-links a::after,
+body.landing-new .ln-nav-toggle span,
+body.landing-new .ln-trusted-logo-shape {
+  background-color: #E5E5E5;
+}
+
+body.landing-new .ln-trusted-logo-shape svg {
+  fill: #303030;
+}
+
+body.landing-new .ln-nav-cta,
+body.landing-new .ln-compare-cta,
+body.landing-new .ln-plan-ribbon,
+body.landing-new .ln-plan-cta,
+body.landing-new .ln-discover-cta-bar .ln-btn-primary,
+body.landing-new .ln-cta-section .ln-btn-primary {
+  background-color: #E5E5E5;
+  color: #303030;
+}
+
+body.landing-new .ln-nav-signin,
+body.landing-new .ln-nav-signin:hover,
+body.landing-new .ln-btn-outline,
+body.landing-new .ln-btn-secondary,
+body.landing-new .ln-mobile-only {
+  border-color: #606060;
+  background-color: #404040;
+  color: #E5E5E5;
+}
+
+body.landing-new .ln-step,
+body.landing-new .ln-plan-card,
+body.landing-new .ln-plan-card-featured,
+body.landing-new .ln-discover-card,
+body.landing-new .ln-discover-cta-bar {
+  border-color: #606060;
+}
+
+body.landing-new .ln-plan-card,
+body.landing-new .ln-discover-card,
+body.landing-new .ln-bigpicture-visual {
+  background-color: #404040;
+}
+
+body.landing-new .ln-bigpicture-visual img {
+  filter: grayscale(1);
+}
+
+body.landing-new .ln-plan-audience,
+body.landing-new .ln-plan-period,
+body.landing-new .ln-plan-features li::marker,
+body.landing-new .ln-discover-cta-sub {
+  color: #B8B8B8;
+}
+
+body.landing-new .ln-plan-cta:hover {
+  background-color: #404040;
+  color: #E5E5E5;
+}
+
+body.landing-new .ln-mobile-only:hover {
+  background-color: #E5E5E5 !important;
+  color: #303030 !important;
 }
