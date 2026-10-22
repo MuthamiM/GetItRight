@@ -7,6 +7,7 @@ import json
 import uuid
 import hashlib
 import random
+import os
 from datetime import datetime, timezone, timedelta
 
 from backend.api.core.database import SessionLocal, engine, Base
@@ -17,10 +18,6 @@ from backend.api.features.analytics.models import (
     StationModel, AnomalyModel, DisputeModel, CheckpointModel,
     ObserverModel, LedgerBlockModel, AuditLogModel, StatModel
 )
-
-# Ensure tables exist
-Base.metadata.create_all(bind=engine)
-
 
 def _hash(val: str) -> str:
     return "0x" + hashlib.sha256(val.encode("utf-8")).hexdigest()[:16]
@@ -459,6 +456,11 @@ def seed_analytics(db):
 
 
 def run_seed():
+    if os.getenv("ENVIRONMENT", "production").lower() == "production":
+        raise RuntimeError("Demo seeding is disabled in production")
+    # Keep schema creation behind the non-production guard so importing this
+    # module cannot mutate the production database.
+    Base.metadata.create_all(bind=engine)
     print("=" * 60)
     print(" GetItRight — Database Seed Script")
     print("=" * 60)

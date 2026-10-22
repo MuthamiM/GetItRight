@@ -18,20 +18,19 @@ class Settings(BaseSettings):
     DATABASE_PATH: str = str(DEFAULT_DB_PATH)
     DATABASE_URL: str = f"sqlite:///{DEFAULT_DB_PATH}"
 
-    # A deployment secret must be supplied through the environment. A checked-in
-    # default is provided for local dev/testing.
-    SECRET_KEY: str = Field(default="[REDACTED]", min_length=32)
+    # Required at process startup; never fall back to a checked-in signing key.
+    SECRET_KEY: str = Field(min_length=32)
     JWT_ISSUER: str = "getitright-api"
     JWT_AUDIENCE: str = "getitright-clients"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     GOOGLE_OAUTH_CLIENT_ID: str = ""
 
     # Comma-separated explicit origin allowlist.
-    CORS_ORIGINS: str = "http://localhost:8888,http://localhost:8090,http://127.0.0.1:8888,http://127.0.0.1:8090"
+    CORS_ORIGINS: str = "https://icapsq.mftechnologies.org"
     RESEND_API_KEY: str = ""
-    RESEND_FROM_EMAIL: str = "onboarding@resend.dev"
+    RESEND_FROM_EMAIL: str = "info@mftechnologies.org"
     RESEND_TEST_RECIPIENT: str = ""
-    PASSWORD_RESET_URL: str = "http://127.0.0.1:8090/auth/forgot-password.html"
+    PASSWORD_RESET_URL: str = "https://icapsq.mftechnologies.org/auth/forgot-password.html"
 
     model_config = {
         "case_sensitive": True,
@@ -50,10 +49,16 @@ class Settings(BaseSettings):
         if not self.cors_origins or "*" in self.cors_origins:
             raise ValueError("CORS_ORIGINS must contain explicit trusted origins")
         if self.ENVIRONMENT.lower() == "production" and any(
-            origin.startswith("http://") and "localhost" not in origin and "127.0.0.1" not in origin
-            for origin in self.cors_origins
+            origin.startswith("http://") for origin in self.cors_origins
         ):
             raise ValueError("Production CORS origins must use HTTPS")
+        if self.ENVIRONMENT.lower() == "production":
+            if not self.PASSWORD_RESET_URL.startswith("https://"):
+                raise ValueError("PASSWORD_RESET_URL must use HTTPS in production")
+            if self.RESEND_TEST_RECIPIENT:
+                raise ValueError("RESEND_TEST_RECIPIENT must be empty in production")
+            if self.RESEND_API_KEY and self.RESEND_FROM_EMAIL.lower().endswith("@resend.dev"):
+                raise ValueError("Configure a verified sender domain for production email")
         return self
 
 settings = Settings()

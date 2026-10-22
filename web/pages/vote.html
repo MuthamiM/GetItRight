@@ -333,6 +333,9 @@
       background: var(--charcoal);
       border: 1px solid rgba(242, 242, 243, 0.2);
     }
+    .poll-vote-pie.has-selection::before {
+      border: 2px solid var(--option-accent);
+    }
     .poll-vote-pie-center {
       position: relative;
       z-index: 3;
@@ -369,7 +372,7 @@
       font-weight: 800;
     }
     .poll-pie-total.is-selection {
-      color: var(--silver);
+      color: var(--option-accent);
       font-size: 11px;
     }
     .poll-pie-selection-percent {
@@ -410,7 +413,7 @@
     }
     .poll-legend-item.selected {
       background: rgba(229, 229, 229, 0.08);
-      border-color: rgba(229, 229, 229, 0.3);
+      border-color: var(--option-accent);
     }
     .poll-legend-item:focus-visible {
       outline: 2px solid var(--silver);
@@ -423,6 +426,10 @@
       margin-top: 2px;
       border-radius: 50%;
       background: var(--graphite-300);
+    }
+    .poll-legend-item.selected .poll-legend-dot {
+      background: var(--option-accent);
+      box-shadow: 0 0 0 2px rgba(229, 229, 229, 0.18);
     }
     .poll-legend-label {
       overflow: hidden;
@@ -1397,12 +1404,45 @@
     let pollsCurrentPage = 1;
     const POLLS_PAGE_SIZE = 8;
 
+    function escapePollHtml(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[character]));
+    }
+
     function renderPollsFeed(polls, page = 1) {
       if (polls) currentFilteredPolls = polls;
       pollsCurrentPage = page;
       const container = document.getElementById('polls-feed-container');
       const pagContainer = document.getElementById('polls-pagination');
       if (!container) return;
+      if (!container.dataset.pollActionsBound) {
+        container.dataset.pollActionsBound = 'true';
+        container.addEventListener('click', event => {
+          const target = event.target instanceof Element ? event.target : null;
+          if (!target) return;
+          const voteButton = target.closest('[data-vote-poll-id]');
+          if (voteButton) {
+            submitPollVote(voteButton.dataset.votePollId, Number(voteButton.dataset.optionIndex), voteButton);
+            return;
+          }
+          const legendButton = target.closest('[data-select-poll-id]');
+          if (legendButton) {
+            setPollOptionSelection(legendButton.dataset.selectPollId, Number(legendButton.dataset.optionIndex));
+            return;
+          }
+          const pieButton = target.closest('[data-poll-pie-id]');
+          if (pieButton) {
+            handlePollPieClick(event, pieButton.dataset.pollPieId);
+            return;
+          }
+          const shareButton = target.closest('[data-share-poll-id]');
+          if (shareButton) {
+            const poll = currentFilteredPolls.find(item => String(item.id) === shareButton.dataset.sharePollId);
+            if (poll) copyPollLink(poll.id, poll.title);
+          }
+        });
+      }
 
       if (!currentFilteredPolls || currentFilteredPolls.length === 0) {
         container.innerHTML = `
@@ -1434,11 +1474,11 @@
           const percentage = getPollOptionPercent(p, opt);
           const optionColor = optionColors[index];
           return `
-            <button class="poll-opt-btn ${votedClass}" data-option-index="${optionIndex}" style="--option-accent:${optionColor};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''} onclick="submitPollVote('${p.id}', ${optionIndex}, this)">
+            <button class="poll-opt-btn ${votedClass}" data-vote-poll-id="${escapePollHtml(p.id)}" data-option-index="${Number(optionIndex)}" style="--option-accent:${optionColor};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''}>
               <div class="poll-option-content">
                 <span class="poll-option-name option-label">
                   <span class="poll-option-marker" aria-hidden="true"></span>
-                  <span>${opt.label}</span> ${isVotedChoice ? '<span style="font-size:11px;font-weight:800;">[Voted]</span>' : ''}
+                  <span>${escapePollHtml(opt.label)}</span> ${isVotedChoice ? '<span style="font-size:11px;font-weight:800;">[Voted]</span>' : ''}
                 </span>
                 <span class="poll-option-percent option-percent">
                   ${percentage.toFixed(1)}% (${votes.toLocaleString()})
@@ -1451,40 +1491,40 @@
           const votes = getPollOptionVoteCount(opt);
           const percentage = getPollOptionPercent(p, opt);
           return `
-            <button type="button" class="poll-legend-item" style="--option-accent:${optionColors[index]}" aria-pressed="false" onclick="setPollOptionSelection('${p.id}', ${index})">
+            <button type="button" class="poll-legend-item" data-select-poll-id="${escapePollHtml(p.id)}" data-option-index="${index}" style="--option-accent:${optionColors[index]}" aria-pressed="false">
               <span class="poll-legend-dot" aria-hidden="true"></span>
-              <span class="poll-legend-label">${opt.label}</span>
+              <span class="poll-legend-label">${escapePollHtml(opt.label)}</span>
               <span class="poll-legend-stats">${votes.toLocaleString()} votes (${percentage.toFixed(1)}%)</span>
             </button>
           `;
         }).join('');
 
         return `
-          <div class="poll-feed-card" id="poll-card-${p.id}">
+          <div class="poll-feed-card" id="poll-card-${escapePollHtml(p.id)}">
             <div class="poll-feed-header">
               <div style="min-width:0;">
                 <span style="font-size:11px; font-weight:800; color:var(--silver); text-transform:uppercase; background:rgba(229,229,229,0.12); border:1px solid rgba(229,229,229,0.22); padding:4px 10px; border-radius:6px; margin-right:8px;">
-                  ${p.category || 'Civic'}
+                  ${escapePollHtml(p.category || 'Civic')}
                 </span>
-                <span style="font-family:var(--font-mono); font-size:11px; color:var(--silver); opacity:0.6;">${p.id}</span>
+                <span style="font-family:var(--font-mono); font-size:11px; color:var(--silver); opacity:0.6;">${escapePollHtml(p.id)}</span>
               </div>
-              <span id="voted-status-${p.id}" class="poll-voted-text" aria-live="polite" aria-label="You voted in this poll" ${hasVoted ? '' : 'hidden'} style="display:${hasVoted ? 'inline-flex' : 'none'} !important;" aria-hidden="${!hasVoted}">
+              <span id="voted-status-${escapePollHtml(p.id)}" class="poll-voted-text" aria-live="polite" aria-label="You voted in this poll" ${hasVoted ? '' : 'hidden'} style="display:${hasVoted ? 'inline-flex' : 'none'} !important;" aria-hidden="${!hasVoted}">
                 <span aria-hidden="true">✓</span><span>VOTED</span>
               </span>
             </div>
 
             <!-- Title & Description -->
             <h2 style="font-family:var(--font-display); font-size:19px; font-weight:800; color:var(--silver); margin:0 0 8px 0; line-height:1.35; letter-spacing:-0.01em;">
-              ${p.title}
+              ${escapePollHtml(p.title)}
             </h2>
             <p style="font-size:13.5px; color:var(--silver); opacity:0.75; margin:0 0 20px 0; line-height:1.55;">
-              ${p.description}
+              ${escapePollHtml(p.description)}
             </p>
 
             <!-- Live database breakdown beside selectable ballot options -->
             <div class="poll-vote-layout">
               <div class="poll-vote-chart-column">
-                <button type="button" class="poll-vote-pie" id="poll-pie-${p.id}" aria-label="Live vote distribution for ${p.title}. Tap a slice to inspect its votes." onclick="handlePollPieClick(event, '${p.id}')" style="background:${getPollPieGradient(p)};">
+                <button type="button" class="poll-vote-pie" id="poll-pie-${escapePollHtml(p.id)}" data-poll-pie-id="${escapePollHtml(p.id)}" aria-label="Live vote distribution for ${escapePollHtml(p.title)}. Tap a slice to inspect its votes." style="background:${getPollPieGradient(p)};">
                   <svg class="poll-pie-selection-overlay" viewBox="0 0 168 168" aria-hidden="true"></svg>
                   <div class="poll-vote-pie-center">
                     <span class="poll-pie-selection-label" style="display:none;"></span>
@@ -1504,22 +1544,22 @@
             </div>
 
             <!-- Hidden Receipt Container (Clean, no awful extra button inside card) -->
-            <div id="receipt-container-${p.id}" style="display:none;"></div>
+            <div id="receipt-container-${escapePollHtml(p.id)}" style="display:none;"></div>
 
             <!-- Footer -->
             <div class="poll-card-footer" style="font-size:12.5px; opacity:0.9;">
               <div style="display:flex; flex-direction:column; align-items:flex-start; gap:7px;">
-                <div class="poll-turnout" aria-label="${p.totalVotes.toLocaleString()} votes cast">
+                <div class="poll-turnout" aria-label="${Number(p.totalVotes || 0).toLocaleString()} votes cast">
                   <span class="poll-turnout-label">Turnout</span>
-                  <strong class="vote-count">${p.totalVotes.toLocaleString()}</strong>
+                  <strong class="vote-count">${Number(p.totalVotes || 0).toLocaleString()}</strong>
                   <span class="poll-turnout-caption">votes cast</span>
                 </div>
-                <div id="countdown-${p.id}" class="poll-countdown-text" style="font-family:var(--font-mono); font-size:11.5px; color:var(--silver); opacity:0.75; font-weight:700; letter-spacing:0.02em;">
+                <div id="countdown-${escapePollHtml(p.id)}" class="poll-countdown-text" style="font-family:var(--font-mono); font-size:11.5px; color:var(--silver); opacity:0.75; font-weight:700; letter-spacing:0.02em;">
                   ${getCountdownDisplay(p)}
                 </div>
               </div>
               <div style="display:flex; gap:8px;">
-                <button class="btn-share-poll" onclick="copyPollLink('${p.id}', '${escape(p.title)}')">
+                <button class="btn-share-poll" data-share-poll-id="${escapePollHtml(p.id)}">
                   <span data-icon="share"></span> Share Poll
                 </button>
               </div>
@@ -1768,6 +1808,6 @@
       });
     }
   </script>
-  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
+  <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>
 </html>

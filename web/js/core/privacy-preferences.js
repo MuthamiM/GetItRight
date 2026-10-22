@@ -27,11 +27,12 @@
     }
   }
 
-  function savePreferences(analytics, adminReview) {
+  function savePreferences(adminReview) {
     var preferences = {
       version: VERSION,
       essential: true,
-      analytics: Boolean(analytics),
+      // Optional analytics are not currently enabled by this site.
+      analytics: false,
       adminReview: Boolean(adminReview),
       savedAt: new Date().toISOString()
     };
@@ -267,15 +268,15 @@
 
     var style = element('style', { id: 'icapsq-cookie-notice-styles' });
     style.textContent = [
-      '.icapsq-cookie-notice { position: fixed; z-index: 2147483000; left: max(84px, env(safe-area-inset-left)); right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); margin: 0 auto; max-width: 820px; padding: 22px; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; background: #202126; color: #fff; box-shadow: 0 20px 60px rgba(0,0,0,.34); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }',
+      '.icapsq-cookie-notice { position: fixed; z-index: 2147483000; left: max(66px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); width: min(360px, calc(100vw - 82px)); box-sizing: border-box; padding: 14px 16px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: #202126; color: #fff; box-shadow: 0 12px 32px rgba(0,0,0,.3); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }',
       '.icapsq-cookie-notice[hidden], .icapsq-cookie-dialog[hidden] { display: none !important; }',
-      '.icapsq-cookie-notice__title { margin: 0 0 8px; color: #fff; font-size: 16px; font-weight: 800; letter-spacing: -.01em; }',
-      '.icapsq-cookie-notice__copy { margin: 0; max-width: 680px; color: #e5e7eb; font-size: 13px; line-height: 1.55; }',
-      '.icapsq-cookie-notice__actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }',
-      '.icapsq-cookie-button { appearance: none; min-height: 38px; padding: 9px 14px; border: 1px solid transparent; border-radius: 999px; background: #fff; color: #202126; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }',
+      '.icapsq-cookie-notice__title { margin: 0 0 5px; color: #fff; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }',
+      '.icapsq-cookie-notice__copy { margin: 0; color: #e5e7eb; font-size: 12px; line-height: 1.45; }',
+      '.icapsq-cookie-notice__actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }',
+      '.icapsq-cookie-button { appearance: none; min-height: 34px; padding: 7px 11px; border: 1px solid transparent; border-radius: 999px; background: #fff; color: #202126; cursor: pointer; font: inherit; font-size: 11px; font-weight: 800; }',
       '.icapsq-cookie-button:hover, .icapsq-cookie-button:focus-visible { outline: 2px solid #a8c7ff; outline-offset: 2px; }',
       '.icapsq-cookie-button--secondary { border-color: rgba(255,255,255,.38); background: transparent; color: #fff; }',
-      '.icapsq-cookie-settings { position: fixed; z-index: 2147483647; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); display: grid; place-items: center; width: 46px; height: 46px; padding: 3px; border: 1px solid #303035; border-radius: 50%; background: #f5f5f6; box-shadow: 0 8px 24px rgba(0,0,0,.3); cursor: pointer; }',
+      '.icapsq-cookie-settings { position: fixed; z-index: 2147483647; left: max(12px, env(safe-area-inset-left)); bottom: max(12px, env(safe-area-inset-bottom)); display: grid; place-items: center; width: 38px; height: 38px; padding: 3px; border: 1px solid #303035; border-radius: 50%; background: #f5f5f6; box-shadow: 0 6px 18px rgba(0,0,0,.28); cursor: pointer; }',
       '.icapsq-cookie-settings img { display: block; width: 100%; height: 100%; object-fit: contain; }',
       '.icapsq-cookie-settings:hover, .icapsq-cookie-settings:focus-visible { outline: 2px solid #8b8d93; outline-offset: 3px; }',
       '.icapsq-cookie-dialog { position: fixed; z-index: 2147483001; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(15,16,18,.66); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }',
@@ -288,7 +289,7 @@
       '.icapsq-cookie-category span { display: block; margin-top: 3px; color: #686a72; font-size: 12px; line-height: 1.45; }',
       '.icapsq-cookie-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; margin-top: 20px; }',
       '.icapsq-cookie-dialog__actions .icapsq-cookie-button--secondary { border-color: #babcc4; color: #303136; }',
-      '@media (max-width: 560px) { .icapsq-cookie-notice { left: 66px; right: 12px; bottom: 12px; padding: 18px; } .icapsq-cookie-settings { left: max(10px, env(safe-area-inset-left)); bottom: max(12px, env(safe-area-inset-bottom)); width: 44px; height: 44px; } .icapsq-cookie-notice__actions .icapsq-cookie-button { flex: 1 1 100%; } .icapsq-cookie-dialog { padding: 12px; } .icapsq-cookie-dialog__panel { padding: 20px; } }'
+      '@media (max-width: 560px) { .icapsq-cookie-notice { left: max(58px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: calc(100vw - 72px); padding: 11px 12px; } .icapsq-cookie-settings { left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: 36px; height: 36px; } .icapsq-cookie-notice__actions { gap: 6px; margin-top: 8px; } .icapsq-cookie-notice__actions .icapsq-cookie-button { flex: 1 1 auto; min-height: 32px; padding: 6px 8px; } .icapsq-cookie-dialog { padding: 12px; } .icapsq-cookie-dialog__panel { padding: 20px; } }'
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -333,15 +334,11 @@
     });
     var panel = element('div', { class: 'icapsq-cookie-dialog__panel' });
     var title = element('h2', { id: 'icapsq-cookie-dialog-title', text: 'Cookie & storage settings' });
-    var copy = element('p', { text: 'IcapsQ uses browser storage for sign-in, language and vote or survey forms. If you enable admin review, saved verification and device details are encrypted in the platform database so administrators can review fraud signals. Passwords and sign-in tokens are never copied. Turning admin review off deletes this browser snapshot.' });
+    dialog.setAttribute('aria-describedby', 'icapsq-cookie-dialog-description');
+    var copy = element('p', { id: 'icapsq-cookie-dialog-description', text: 'IcapsQ uses browser storage for sign-in, language and vote or survey forms. If you enable admin review, saved verification and device details are encrypted in the platform database so administrators can review fraud signals. Passwords and sign-in tokens are never copied. Turning admin review off deletes this browser snapshot.' });
     var essential = element('div', { class: 'icapsq-cookie-category' });
     essential.appendChild(element('input', { type: 'checkbox', checked: 'checked', disabled: 'disabled', 'aria-label': 'Essential storage is always active' }));
     essential.appendChild(element('div', { html: '<strong>Essential storage</strong><span>Always active — supports account sessions, language and vote or survey forms. Forms may retain verification details and progress on this device; duplicate-vote checks are enforced by the server.</span>' }));
-    var optional = element('label', { class: 'icapsq-cookie-category' });
-    var analyticsInput = element('input', { id: 'icapsq-analytics-preference', type: 'checkbox' });
-    analyticsInput.checked = Boolean(current.analytics);
-    optional.appendChild(analyticsInput);
-    optional.appendChild(element('span', { html: '<strong>Optional analytics</strong><span>Off by default. This preference is ready for optional analytics only; no third-party analytics is currently loaded.</span>' }));
     var adminReview = element('label', { class: 'icapsq-cookie-category' });
     var adminReviewInput = element('input', { id: 'icapsq-admin-review-preference', type: 'checkbox' });
     adminReviewInput.checked = Boolean(current.adminReview);
@@ -353,7 +350,7 @@
 
     closeButton.addEventListener('click', closePreferences);
     saveButton.addEventListener('click', function () {
-      savePreferences(analyticsInput.checked, adminReviewInput.checked);
+      savePreferences(adminReviewInput.checked);
       removeNotice();
       showSettingsButton();
       closePreferences();
@@ -362,7 +359,22 @@
       if (event.target === dialog) closePreferences();
     });
     dialog.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') closePreferences();
+      if (event.key === 'Escape') {
+        closePreferences();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      var focusable = dialog.querySelectorAll('button:not([disabled]), input:not([disabled])');
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
     });
 
     actions.appendChild(closeButton);
@@ -370,7 +382,6 @@
     panel.appendChild(title);
     panel.appendChild(copy);
     panel.appendChild(essential);
-    panel.appendChild(optional);
     panel.appendChild(adminReview);
     panel.appendChild(actions);
     dialog.appendChild(panel);
@@ -385,30 +396,24 @@
       id: 'icapsq-cookie-notice',
       class: 'icapsq-cookie-notice',
       role: 'region',
-      'aria-label': 'Cookie and browser storage notice'
+      'aria-label': 'Cookie and browser storage notice',
+      'aria-live': 'polite'
     });
-    var title = element('h2', { class: 'icapsq-cookie-notice__title', text: 'Your privacy choices' });
-    var copy = element('p', { class: 'icapsq-cookie-notice__copy', text: 'IcapsQ uses browser storage for sign-in, language and vote or survey forms. Admin review of saved verification and device details is optional and can be enabled in Manage settings. Passwords and sign-in tokens are never copied.' });
+    var title = element('h2', { class: 'icapsq-cookie-notice__title', text: 'Privacy & storage' });
+    var copy = element('p', { class: 'icapsq-cookie-notice__copy', text: 'Essential browser storage keeps sign-in and poll or survey progress working. Optional data sharing stays off unless you enable it in settings.' });
     var actions = element('div', { class: 'icapsq-cookie-notice__actions' });
     var essentialOnly = element('button', { class: 'icapsq-cookie-button icapsq-cookie-button--secondary', type: 'button', text: 'Use essential only' });
-    var settings = element('button', { class: 'icapsq-cookie-button icapsq-cookie-button--secondary', type: 'button', text: 'Manage settings' });
-    var accept = element('button', { class: 'icapsq-cookie-button', type: 'button', text: 'Accept optional analytics' });
+    var settings = element('button', { class: 'icapsq-cookie-button', type: 'button', text: 'Settings' });
 
     essentialOnly.addEventListener('click', function () {
-      savePreferences(false, false);
+      savePreferences(false);
       removeNotice();
       showSettingsButton();
     });
     settings.addEventListener('click', openPreferences);
-    accept.addEventListener('click', function () {
-      savePreferences(true, false);
-      removeNotice();
-      showSettingsButton();
-    });
 
     actions.appendChild(essentialOnly);
     actions.appendChild(settings);
-    actions.appendChild(accept);
     notice.appendChild(title);
     notice.appendChild(copy);
     notice.appendChild(actions);
@@ -432,8 +437,8 @@
     var preferences = readPreferences();
     if (!isConsolePage) {
       addStyles();
-      showSettingsButton();
       if (!preferences) renderNotice();
+      else showSettingsButton();
     }
     if (preferences && preferences.adminReview && !isAdminConsole) syncBrowserStorage();
   }

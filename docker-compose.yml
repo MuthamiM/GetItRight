@@ -5,7 +5,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: poll_backend
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     volumes:
       - poll_data:/app/backend/csharp/GetItRight.Api
     environment:
@@ -14,11 +14,11 @@ services:
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8888,http://localhost:8090}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://icapsq.mftechnologies.org}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-info@mftechnologies.org}
       - RESEND_TEST_RECIPIENT=${RESEND_TEST_RECIPIENT:-}
-      - PASSWORD_RESET_URL=${PASSWORD_RESET_URL:-http://127.0.0.1:8090/auth/forgot-password.html}
+      - PASSWORD_RESET_URL=${PASSWORD_RESET_URL:-https://icapsq.mftechnologies.org/auth/forgot-password.html}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=4)"]
@@ -33,7 +33,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: poll_backend_replica
     ports:
-      - "5001:5000"
+      - "127.0.0.1:5001:5000"
     volumes:
       - poll_data:/app/backend/csharp/GetItRight.Api
     environment:
@@ -42,11 +42,11 @@ services:
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8888,http://localhost:8090}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://icapsq.mftechnologies.org}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
-      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-info@mftechnologies.org}
       - RESEND_TEST_RECIPIENT=${RESEND_TEST_RECIPIENT:-}
-      - PASSWORD_RESET_URL=${PASSWORD_RESET_URL:-http://127.0.0.1:8090/auth/forgot-password.html}
+      - PASSWORD_RESET_URL=${PASSWORD_RESET_URL:-https://icapsq.mftechnologies.org/auth/forgot-password.html}
       - SKIP_DB_SCHEMA_SYNC=true
     restart: unless-stopped
     healthcheck:
@@ -62,8 +62,8 @@ services:
       dockerfile: Dockerfile
     container_name: poll_web
     ports:
-      - "8888:80"
-      - "8090:80"
+      - "127.0.0.1:8888:80"
+      - "127.0.0.1:8090:80"
     depends_on:
       backend:
         condition: service_healthy

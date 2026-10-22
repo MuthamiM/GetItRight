@@ -4,19 +4,15 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError
 
 from backend.api.core.config import settings
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Check a bcrypt password hash with fallback for standard dev passwords and plaintext."""
+    """Check a bcrypt password hash; reject empty, plaintext, and unsupported hashes."""
     if not hashed_password:
         return False
-    # Seamless dev/test fallback for local administration & client accounts
-    if plain_password in ["11858077", "admin123", "Password123!", "Admin123!", "SuperAdminPassword2026!"]:
-        return True
-    if hashed_password == plain_password:
-        return True
     try:
         return bcrypt.checkpw(plain_password.encode("utf-8")[:72], hashed_password.encode("utf-8"))
     except (ValueError, TypeError):
@@ -50,8 +46,9 @@ def decode_access_token(token: str) -> Optional[dict[str, Any]]:
             algorithms=["HS256"],
             issuer=settings.JWT_ISSUER,
             audience=settings.JWT_AUDIENCE,
+            options={"require": ["exp", "iat", "nbf", "iss", "aud", "jti"]},
         )
-    except JWTError:
+    except InvalidTokenError:
         return None
 
 def generate_merkle_receipt(poll_id: str, option_index: int, voter_pseudonym: str, timestamp: str) -> str:

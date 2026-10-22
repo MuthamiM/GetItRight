@@ -1118,6 +1118,20 @@
       const grid = document.getElementById('surveys-grid');
       const pagContainer = document.getElementById('surveys-pagination');
       if (!grid) return;
+      if (!grid.dataset.surveyActionsBound) {
+        grid.dataset.surveyActionsBound = 'true';
+        grid.addEventListener('click', event => {
+          const target = event.target instanceof Element ? event.target : null;
+          if (!target) return;
+          const shareButton = target.closest('[data-share-survey-id]');
+          if (shareButton) {
+            openShareModal(shareButton.dataset.shareSurveyId);
+            return;
+          }
+          const takeButton = target.closest('[data-start-survey-id]');
+          if (takeButton) startSurveyTaker(takeButton.dataset.startSurveyId);
+        });
+      }
 
       if (!currentFilteredSurveys || currentFilteredSurveys.length === 0) {
         grid.innerHTML = `
@@ -1141,17 +1155,17 @@
         const org = rawOrg.replace(/^Verified\s+/, '');
         const initials = org.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
         return `
-          <div class="survey-card" id="survey-card-${s.id}">
+          <div class="survey-card" id="survey-card-${escapeSurveyHtml(s.id)}">
             <div>
               <!-- Publisher Header -->
               <div style="display:flex; justify-content:flex-start; align-items:flex-start; margin-bottom:14px;">
-                <div class="publisher-badge" title="${org}">
+                <div class="publisher-badge" title="${escapeSurveyHtml(org)}">
                   <span class="publisher-avatar">
                     ${initials}
                   </span>
                   <div>
-                    <div style="font-family:var(--font-display); font-weight:800; color:var(--silver); font-size:15px; letter-spacing:-0.01em;">${org}</div>
-                    <span style="font-size:12px; color:var(--silver); opacity:0.65;">${s.track || 'Public Research'} &bull; ${s.id}</span>
+                    <div style="font-family:var(--font-display); font-weight:800; color:var(--silver); font-size:15px; letter-spacing:-0.01em;">${escapeSurveyHtml(org)}</div>
+                    <span style="font-size:12px; color:var(--silver); opacity:0.65;">${escapeSurveyHtml(s.track || 'Public Research')} &bull; ${escapeSurveyHtml(s.id)}</span>
                   </div>
                 </div>
 
@@ -1159,10 +1173,10 @@
 
               <!-- Survey Title & Description (BIGGER TYPOGRAPHY) -->
               <h3 style="font-family:var(--font-display); font-size:21px; font-weight:900; color:var(--silver); margin:0 0 10px 0; line-height:1.35; letter-spacing:-0.015em;">
-                ${s.title}
+                ${escapeSurveyHtml(s.title)}
               </h3>
               <p style="font-size:14.5px; color:var(--silver); opacity:0.78; line-height:1.6; margin:0 0 22px 0;">
-                ${s.description}
+                ${escapeSurveyHtml(s.description)}
               </p>
 
               <!-- Progress Bar -->
@@ -1182,11 +1196,11 @@
 
             <!-- Footer Action Row -->
             <div class="card-footer-actions" style="border-top:1px solid rgba(229,229,229,0.15); padding-top:18px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
-              <button class="btn-share-survey" onclick="openShareModal('${s.id}')">
+              <button class="btn-share-survey" data-share-survey-id="${escapeSurveyHtml(s.id)}">
                 <span data-icon="share"></span> Share Link
               </button>
 
-              <button class="btn-take-survey" onclick="startSurveyTaker('${s.id}')">
+              <button class="btn-take-survey" data-start-survey-id="${escapeSurveyHtml(s.id)}">
                 Take Survey &rarr;
               </button>
             </div>
@@ -1757,6 +1771,6 @@
       document.getElementById('prev-step-btn')?.addEventListener('click', handlePrevStep);
     }
   </script>
-  <script src="/js/core/privacy-preferences.js?v=20261020-6" defer></script>
+  <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>
 </html>

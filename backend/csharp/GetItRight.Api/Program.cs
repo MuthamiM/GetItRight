@@ -7,20 +7,34 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (!builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException(
+        "The legacy C# API is development-only. Use the FastAPI service for production traffic.");
+}
+
 // Configure SQLite Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=getitright.db"));
 
-// Enable Cross-Origin Resource Sharing (CORS) for Frontend
+// Use an explicit origin allowlist. Production defaults to the canonical site;
+// development can add local origins through CORS_ORIGINS.
+var corsOrigins = (builder.Configuration["CORS_ORIGINS"] ??
+        (builder.Environment.IsDevelopment()
+            ? "https://icapsq.mftechnologies.org,http://localhost:8888,http://localhost:8090,http://127.0.0.1:8888,http://127.0.0.1:8090"
+            : "https://icapsq.mftechnologies.org"))
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+// Enable Cross-Origin Resource Sharing (CORS) only for trusted frontend origins.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", p =>
-        p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("Frontend", p =>
+        p.WithOrigins(corsOrigins).AllowAnyMethod().AllowAnyHeader());
 });
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
 
 // Initialize Redis Connection with resilient fallback
 IConnectionMultiplexer? redis = null;
@@ -103,7 +117,10 @@ using (var scope = app.Services.CreateScope())
             Timestamp TEXT
         );
     ");
-    DbSeeder.SeedDatabase(db);
+    if (app.Environment.IsDevelopment())
+    {
+        DbSeeder.SeedDatabase(db);
+    }
 }
 
 // =============================================================
@@ -644,6 +661,10 @@ app.MapPost("/api/users", async ([FromBody] CreateUserRequest req, AppDbContext 
     {
         return Results.BadRequest(new { error = "Email and Full Name are required." });
     }
+    if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 12)
+    {
+        return Results.BadRequest(new { error = "A password of at least 12 characters is required." });
+    }
 
     // Check if email already exists
     if (await db.Users.AnyAsync(u => u.Email.ToLower() == req.Email.ToLower()))
@@ -700,7 +721,7 @@ app.MapPost("/api/users", async ([FromBody] CreateUserRequest req, AppDbContext 
         Id = userId,
         FullName = req.FullName.Trim(),
         Email = req.Email.Trim().ToLower(),
-        Password = req.Password ?? "Secret2026!",
+        Password = req.Password.Trim(),
         Role = "Customer", // Always Customer; admin is unique and pre-seeded
         Plan = plan,
         PlanName = planName,

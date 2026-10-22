@@ -4,7 +4,9 @@ FROM nginx:alpine
 RUN rm /etc/nginx/conf.d/default.conf
 
 # Add our config
+RUN mkdir -p /etc/nginx/snippets
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
 
 # Copy web files
 COPY . /usr/share/nginx/html/
