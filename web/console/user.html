@@ -3568,9 +3568,9 @@
     let planCheckoutEnabled = false;
     const PLAN_TIERS = [
       { key: 'free', name: 'Civic Starter', price: 'Free', period: '', voters: 1000, polls: 5, rank: 0, features: ['Up to 5 polls & surveys', 'Up to 1,000 voter quota', 'Standard cryptographic receipts', 'CSV dataset exports'] },
-      { key: 'pro', name: 'Civic Pro', price: 'KES 1,500', period: '/30 days', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls & surveys', 'Up to 25,000 voter quota', 'Full audit trail access', 'All exports (CSV, JSON, PDF, Word)', 'Priority consensus tallying'] },
-      { key: 'org', name: 'Institutional Org', price: 'KES 6,500', period: '/30 days', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls & surveys', 'Up to 100,000 voter quota', 'Institutional role access control', 'Full raw JSON & PDF exports', 'Dedicated sovereign validator node'] },
-      { key: 'election', name: 'Sovereign Election Guard', price: 'Custom', period: '', voters: 10000000, polls: 1000, rank: 3, features: ['Unlimited polls & ballot referendums', 'Up to 10M voters capacity', 'Full state/county grade zero-knowledge ledger', 'Observer network audit integration', '24/7 sovereign mission engineering'] }
+      { key: 'pro', name: 'Civic Pro', price: 'KES 499', period: '/30 days', voters: 25000, polls: 50, rank: 1, features: ['Up to 50 polls & surveys', 'Up to 25,000 voter quota', 'Full audit trail access', 'All exports (CSV, JSON, PDF, Word)', 'Priority consensus tallying'] },
+      { key: 'org', name: 'Institutional Org', price: 'KES 899', period: '/30 days', voters: 100000, polls: 200, rank: 2, features: ['Up to 200 polls & surveys', 'Up to 100,000 voter quota', 'Institutional role access control', 'Full raw JSON & PDF exports', 'Dedicated sovereign validator node'] },
+      { key: 'election', name: 'Sovereign Election Guard', price: 'KES 1,399', period: '/30 days', voters: 10000000, polls: 1000, rank: 3, features: ['Unlimited polls & ballot referendums', 'Up to 10M voters capacity', 'Full state/county grade zero-knowledge ledger', 'Observer network audit integration', '24/7 sovereign mission engineering'] }
     ];
 
     async function loadPlanCheckoutCatalog() {
@@ -3625,19 +3625,6 @@
       container.innerHTML = PLAN_TIERS.map(t => {
         const isCurrent = t.key === plan;
         const canUpgrade = t.rank > tier.rank;
-        if (t.key === 'election') {
-          return `
-          <div class="upgrade-card">
-            <div>
-              <div class="uc-tier-tag">Custom quote</div>
-              <div class="uc-name">${esc(t.name)}</div>
-              <div class="uc-price">Custom</div>
-              <div class="uc-desc">Contact us to scope an election deployment.</div>
-              <ul class="uc-features">${t.features.map(f => `<li>${esc(f)}</li>`).join('')}</ul>
-            </div>
-            <div><a class="btn-upgrade" href="mailto:info@mftechnologies.org?subject=IcapsQ%20Election%20Plan%20Quote">Contact sales</a></div>
-          </div>`;
-        }
         return `
           <div class="upgrade-card ${isCurrent ? 'current' : ''}">
             <div>

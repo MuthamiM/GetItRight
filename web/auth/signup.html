@@ -610,7 +610,7 @@
                 <div class="plan-radio-circle"></div>
               </div>
               <div class="plan-price-box">
-                <div class="plan-price-num" id="signup-price-pro">1,500 KES</div>
+                <div class="plan-price-num" id="signup-price-pro">499 KES</div>
                 <div class="plan-price-period">/ 30 days</div>
               </div>
               <div class="plan-divider"></div>
@@ -633,7 +633,7 @@
                 <div class="plan-radio-circle"></div>
               </div>
               <div class="plan-price-box">
-                <div class="plan-price-num" id="signup-price-org">6,500 KES</div>
+                <div class="plan-price-num" id="signup-price-org">899 KES</div>
                 <div class="plan-price-period">/ 30 days</div>
               </div>
               <div class="plan-divider"></div>
@@ -656,8 +656,8 @@
                 <div class="plan-radio-circle"></div>
               </div>
               <div class="plan-price-box">
-                <div class="plan-price-num" id="signup-price-election">Custom</div>
-                <div class="plan-price-period">Contact sales</div>
+                <div class="plan-price-num" id="signup-price-election">1,399 KES</div>
+                <div class="plan-price-period">/ 30 days</div>
               </div>
               <div class="plan-divider"></div>
               <ul class="plan-features-list">
@@ -855,11 +855,6 @@
 
     async function finalizeAccount() {
       if (!accountData) return;
-
-      if (selectedPlan === 'election') {
-        alert('Election plan pricing is customized. Email info@mftechnologies.org for a quote.');
-        return;
-      }
 
       if (selectedPlan !== 'free' && !planCatalogLoaded) await loadPlanCatalog();
       if (selectedPlan !== 'free' && !paidCheckoutEnabled) {

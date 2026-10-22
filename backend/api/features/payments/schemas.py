@@ -9,7 +9,7 @@ class CheckoutRequest(BaseModel):
     @classmethod
     def normalize_plan(cls, value: str) -> str:
         plan = value.strip().lower()
-        if plan not in {"pro", "org"}:
+        if plan not in {"pro", "org", "election"}:
             raise ValueError("Choose a paid plan.")
         return plan
 

@@ -22,9 +22,8 @@ logger = logging.getLogger(__name__)
 FLUTTERWAVE_API = "https://api.flutterwave.com/v3"
 BILLING_DAYS = 30
 CHECKOUT_MINUTES = 30
-# Match the public pricing page. Election/enterprise remains custom-quoted and
-# must not be charged a guessed flat amount through self-service checkout.
-PLAN_PRICES_KES = {"pro": 1500, "org": 6500}
+# Keep payment amounts aligned with the plan prices shown during signup.
+PLAN_PRICES_KES = {"pro": 499, "org": 899, "election": 1399}
 
 
 def _utc_iso(value: datetime | None) -> str | None:

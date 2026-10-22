@@ -1,6 +1,6 @@
 # Paid plan checkout
 
-Paid plans use Flutterwave hosted checkout for KES card and M-Pesa payments. IcapsQ sends customers to Flutterwave; it does not collect card numbers, CVVs, or M-Pesa PINs. Self-service prices match the public pricing page: Pro is KES 1,500 and Organisation is KES 6,500 for 30 days. Election deployments remain custom-quoted and are not charged through self-service checkout.
+Paid plans use Flutterwave hosted checkout for KES card and M-Pesa payments. IcapsQ sends customers to Flutterwave; it does not collect card numbers, CVVs, or M-Pesa PINs. Self-service prices match signup: Pro is KES 499, Organisation is KES 899, and Election is KES 1,399 for 30 days.
 
 ## Server configuration
 
