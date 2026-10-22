@@ -18,57 +18,122 @@
     body {
       min-height: 100vh;
       margin: 0;
-      padding: 24px;
+      background: radial-gradient(ellipse at 72% 36%, rgba(255,255,255,.045), transparent 34%), #303030;
+    }
+    .site-header {
+      width: min(100% - 64px, 1080px);
+      height: 76px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(229,229,229,.1);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: #E5E5E5; text-decoration: none; }
+    .brand img { width: 34px; height: 34px; object-fit: contain; }
+    .brand-name { font-size: 18px; font-weight: 800; letter-spacing: -.4px; }
+    .back-link { color: #B8B8B8; font-size: 14px; text-decoration: none; }
+    .back-link:hover { color: #E5E5E5; }
+    .hero {
+      width: min(100% - 64px, 920px);
+      min-height: calc(100vh - 116px);
+      margin: 0 auto;
+      padding: 48px 0 56px;
       display: grid;
-      place-items: center;
-      background: #303030;
+      grid-template-columns: minmax(0, 1fr) 336px;
+      align-items: center;
+      gap: clamp(40px, 8vw, 100px);
     }
-    main {
-      width: min(100%, 460px);
-      padding: 32px 24px;
+    .eyebrow { margin: 0 0 16px; color: #B8B8B8; font-size: 11px; font-weight: 750; letter-spacing: 1.5px; }
+    h1 { max-width: 540px; margin: 0; color: #E5E5E5; font-size: clamp(36px, 5vw, 54px); line-height: 1.06; letter-spacing: -1.8px; }
+    .intro { max-width: 470px; margin: 18px 0 0; color: #B8B8B8; font-size: 16px; line-height: 1.65; }
+    .download-card {
+      width: 100%;
+      padding: 18px;
       border: 1px solid #3E3E3E;
-      border-radius: 24px;
+      border-radius: 20px;
       background: #262626;
-      text-align: center;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
+      box-shadow: 0 16px 38px rgba(0,0,0,.22);
     }
-    .logo { width: 68px; height: 68px; object-fit: contain; margin-bottom: 14px; }
-    h1 { margin: 0; font-size: clamp(24px, 6vw, 30px); line-height: 1.2; }
-    p { margin: 12px 0 24px; color: #B8B8B8; line-height: 1.55; }
+    .app-row { display: flex; align-items: center; gap: 12px; }
+    .app-logo { width: 44px; height: 44px; object-fit: contain; padding: 5px; border-radius: 13px; background: #303030; }
+    .app-label { margin: 0 0 3px; color: #888; font-size: 10px; font-weight: 750; letter-spacing: 1px; }
+    .app-title { margin: 0; color: #E5E5E5; font-size: 17px; font-weight: 750; }
+    .version { margin: 14px 0 15px; color: #B8B8B8; font-size: 12px; }
     .download {
       display: flex;
-      min-height: 52px;
+      min-height: 46px;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 12px 20px;
+      gap: 9px;
+      padding: 10px 16px;
       border: 1px solid #606060;
-      border-radius: 28px;
+      border-radius: 24px;
       background: #E5E5E5;
       color: #303030;
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 750;
       text-decoration: none;
       transition: background .15s ease, transform .15s ease;
     }
     .download:hover { background: #fff; transform: translateY(-1px); }
-    .download:focus-visible, .home:focus-visible { outline: 3px solid #B8B8B8; outline-offset: 3px; }
-    .version { margin: 14px 0 0; font-size: 12px; color: #888; }
-    .home { display: inline-block; margin-top: 24px; color: #B8B8B8; font-size: 14px; }
-    @media (max-width: 420px) { body { padding: 16px; } main { padding: 28px 20px; } }
+    .download:focus-visible, .back-link:focus-visible { outline: 3px solid #B8B8B8; outline-offset: 3px; }
+    .download svg { width: 17px; height: 17px; }
+    .page-note { margin: 13px 0 0; color: #888; font-size: 11px; line-height: 1.45; text-align: center; }
+    @media (max-width: 700px) {
+      .site-header { width: calc(100% - 36px); height: 64px; }
+      .brand img { width: 31px; height: 31px; }
+      .brand-name { font-size: 17px; }
+      .hero {
+        width: calc(100% - 36px);
+        min-height: calc(100svh - 64px);
+        padding: 42px 0 48px;
+        grid-template-columns: 1fr;
+        align-content: center;
+        gap: 28px;
+      }
+      .hero-copy { text-align: center; }
+      .eyebrow { margin-bottom: 12px; }
+      h1 { max-width: 440px; margin: 0 auto; font-size: clamp(34px, 9vw, 44px); letter-spacing: -1.3px; }
+      .intro { max-width: 390px; margin: 13px auto 0; font-size: 14px; }
+      .download-card { max-width: 336px; margin: 0 auto; padding: 16px; border-radius: 18px; }
+    }
+    @media (max-width: 380px) {
+      .site-header, .hero { width: calc(100% - 28px); }
+      .hero { padding-top: 32px; gap: 23px; }
+      .download-card { padding: 14px; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <img class="logo" src="assets/images/logo.png" alt="IcapsQ logo">
-    <h1>IcapsQ for Android</h1>
-    <p>Download the latest IcapsQ mobile app for Android.</p>
-    <a class="download" href="/app-release.apk" download="IcapsQ-v2.1.27-build-33.apk">
-      <span aria-hidden="true">↓</span>
-      Download IcapsQ APK
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="IcapsQ home">
+      <img src="assets/images/logo.png" alt="">
+      <span class="brand-name">IcapsQ</span>
     </a>
-    <div class="version">Version 2.1.27 · Build 33 · Android 8.0+</div>
-    <a class="home" href="/">Back to IcapsQ</a>
+    <a class="back-link" href="/">Back to home</a>
+  </header>
+  <main class="hero">
+    <section class="hero-copy" aria-labelledby="page-title">
+      <p class="eyebrow">ICAPSQ MOBILE APP</p>
+      <h1 id="page-title">IcapsQ on your Android device.</h1>
+      <p class="intro">Get the IcapsQ app to take part in polls and surveys from your phone.</p>
+    </section>
+    <section class="download-card" aria-label="Android app download">
+      <div class="app-row">
+        <img class="app-logo" src="assets/images/logo.png" alt="">
+        <div>
+          <p class="app-label">ANDROID APP</p>
+          <h2 class="app-title">IcapsQ APK</h2>
+        </div>
+      </div>
+      <p class="version">Version 2.1.27 · Build 33 · Android 8.0+</p>
+      <a class="download" href="/app-release.apk" download="IcapsQ-v2.1.27-build-33.apk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+        Download IcapsQ APK
+      </a>
+      <p class="page-note">The APK will download directly from icapsq.mftechnologies.org.</p>
+    </section>
   </main>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>
