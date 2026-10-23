@@ -3,31 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IcapsQ — Blog &amp; Civic Research Insights</title>
-  <meta name="description" content="Research publications, methodology briefs, and sovereign data intelligence from the IcapsQ survey and feedback network.">
+  <meta name="description" content="IcapsQ - Research, insights, methodology briefs, and sovereign data intelligence published by verified institutions across Kenya.">
+  <title>IcapsQ — Research, Methodology &amp; Sovereign Data</title>
+  <link rel="stylesheet" href="../css/landing-new.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
   <meta name="theme-color" content="#2E3035">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="../css/tokens.css">
-  <link rel="stylesheet" href="../css/landing-new.css">
-
   <style>
-    /* IcapsQ Graphite Brand Theme */
+    /* IcapsQ Graphite Theme */
     :root {
       --graphite-900: #1F2023;
-      --graphite-700: #2E3035; /* brand primary */
+      --graphite-700: #2E3035;
       --graphite-500: #6B6E76;
       --graphite-300: #B8BAC0;
       --graphite-50:  #F2F2F3;
-      --white: #FFFFFF;
-
       --charcoal: #2E3035;
       --silver: #F2F2F3;
       --font-display: 'Outfit', sans-serif;
@@ -41,11 +32,10 @@
       min-height: 100vh;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
+      line-height: 1.7;
     }
 
-    /* ── Navigation (Identical to Vote & Surveys) ── */
+    /* ── Clean Top Navigation (Only Active Polls & Surveys on Top Right, Blog is in Footer Only) ── */
     .ln-nav {
       position: sticky;
       top: 0;
@@ -55,7 +45,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 clamp(24px, 4vw, 64px);
+      padding: 0 clamp(20px, 4vw, 64px);
       background: var(--silver);
       border-bottom: 2px solid var(--charcoal);
       z-index: 1000;
@@ -139,273 +129,137 @@
       color: var(--silver);
     }
 
-    /* ── Edge-to-Edge Container ── */
-    .edge-container {
-      width: 100%;
+    /* ── Editorial Reading Layout (Just Words, No Cards) ── */
+    .blog-reader-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
       box-sizing: border-box;
-      padding: 40px clamp(24px, 4vw, 64px) 80px;
-      flex: 1;
     }
 
-    /* ── Search Bar ── */
-    .search-box {
-      position: relative;
+    .blog-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--charcoal);
     }
-    .search-input {
-      background: rgba(48, 48, 48, 0.06) !important;
-      color: var(--charcoal) !important;
-      border: 1.5px solid var(--charcoal) !important;
-      border-radius: 100px !important;
-      padding: 10px 16px 10px 42px !important;
+    .blog-kicker {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--charcoal);
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+    .blog-page-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.85rem);
+      font-weight: 900;
+      color: var(--charcoal);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin: 0 0 14px 0;
+    }
+    .blog-page-intro {
+      font-size: 16px;
+      color: var(--charcoal);
+      opacity: 0.85;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* ── Search (Minimalist Underline Input) ── */
+    .blog-search-wrap {
+      margin: 24px 0 44px;
+    }
+    .blog-search-input {
       width: 100%;
-      font-size: 13.5px;
+      background: transparent;
+      color: var(--charcoal);
+      border: none;
+      border-bottom: 1.5px solid var(--charcoal);
+      border-radius: 0;
+      padding: 10px 0;
+      font-size: 15px;
       font-family: var(--font-body);
       outline: none;
       box-sizing: border-box;
-      transition: box-shadow 0.2s ease;
+      transition: border-color 0.2s ease;
     }
-    .search-input::placeholder {
-      color: rgba(48, 48, 48, 0.55) !important;
+    .blog-search-input::placeholder {
+      color: rgba(46, 48, 53, 0.5);
     }
-    .search-input:focus {
-      box-shadow: 0 0 0 3px rgba(48, 48, 48, 0.15) !important;
-    }
-    .search-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--charcoal);
-      opacity: 0.65;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
+    .blog-search-input:focus {
+      border-bottom-width: 2.5px;
     }
 
-    /* ── Category Filter Buttons (Consistent Duo-Tone) ── */
-    .blog-filter-btn {
-      background: transparent;
-      border: 1.5px solid var(--charcoal);
-      color: var(--charcoal);
-      padding: 8px 18px;
-      border-radius: 100px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    /* ── Pure Editorial Prose (No Cards, Words Only) ── */
+    .blog-article {
+      margin-bottom: 56px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid rgba(46, 48, 53, 0.18);
     }
-    .blog-filter-btn:hover {
-      background: rgba(48, 48, 48, 0.08);
+    .blog-article:last-of-type {
+      border-bottom: none;
+      margin-bottom: 24px;
     }
-    .blog-filter-btn.active {
-      background: var(--charcoal);
-      color: var(--silver);
-      border-color: var(--charcoal);
-    }
-
-    /* ── Blog Cards (#2E3035 Charcoal with #F2F2F3 Silver - Matches Vote & Surveys) ── */
-    .blog-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 28px;
-      margin-top: 10px;
-    }
-
-    .blog-card {
-      background: var(--charcoal);
-      color: var(--silver);
-      border-radius: 20px;
-      padding: 28px;
-      border: 1.5px solid rgba(229, 229, 229, 0.15);
-      box-shadow: 0 8px 24px rgba(48, 48, 48, 0.15);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-    }
-    .blog-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 36px rgba(48, 48, 48, 0.25);
-      border-color: rgba(229, 229, 229, 0.35);
-    }
-
-    .blog-badge {
+    .article-topic {
+      font-family: var(--font-display);
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--silver);
-      background: rgba(229, 229, 229, 0.12);
-      border: 1px solid rgba(229, 229, 229, 0.2);
-      padding: 5px 12px;
-      border-radius: 6px;
-      display: inline-block;
-      margin-bottom: 16px;
-      align-self: flex-start;
+      letter-spacing: 0.1em;
+      color: var(--charcoal);
+      opacity: 0.7;
+      margin-bottom: 6px;
     }
-
-    .blog-card-title {
+    .article-heading {
       font-family: var(--font-display);
-      font-size: 20px;
+      font-size: clamp(1.45rem, 2.5vw, 1.95rem);
       font-weight: 800;
-      color: var(--silver);
+      color: var(--charcoal);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
       margin: 0 0 10px 0;
-      line-height: 1.35;
-      letter-spacing: -0.015em;
     }
-
-    .blog-card-excerpt {
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--silver);
-      opacity: 0.8;
-      margin: 0 0 24px 0;
-      flex: 1;
-    }
-
-    .blog-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid rgba(229, 229, 229, 0.15);
-      padding-top: 16px;
-      font-size: 12.5px;
-      color: var(--graphite-300);
+    .article-meta {
+      font-size: 13px;
+      color: var(--charcoal);
+      opacity: 0.7;
+      margin-bottom: 18px;
       font-weight: 600;
     }
-
-    .btn-read-more {
-      background: var(--silver);
+    .article-prose {
+      font-size: 15.5px;
       color: var(--charcoal);
-      border: none;
-      padding: 8px 18px;
-      border-radius: 100px;
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      text-decoration: none;
+      line-height: 1.8;
+      opacity: 0.92;
     }
-    .btn-read-more:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    /* ── Article Reader Modal ── */
-    .article-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(15, 16, 18, 0.82);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 2000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .article-modal-overlay.active {
-      display: flex;
-    }
-    .article-modal-box {
-      background: var(--charcoal);
-      color: var(--silver);
-      border: 1.5px solid rgba(229, 229, 229, 0.2);
-      border-radius: 24px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-      padding: 36px;
-      max-width: 720px;
-      width: 100%;
-      max-height: 88vh;
-      overflow-y: auto;
-      box-sizing: border-box;
-      position: relative;
-    }
-    .article-modal-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(229, 229, 229, 0.1);
-      border: 1px solid rgba(229, 229, 229, 0.2);
-      color: var(--silver);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-    .article-modal-close:hover {
-      background: rgba(229, 229, 229, 0.22);
-    }
-    .article-modal-content {
-      font-size: 15px;
-      line-height: 1.7;
-      color: rgba(242, 242, 243, 0.88);
-    }
-    .article-modal-content h3 {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--silver);
-      margin: 24px 0 10px 0;
-    }
-    .article-modal-content p {
+    .article-prose p {
       margin: 0 0 16px 0;
     }
-    .article-stat-card {
-      background: rgba(229, 229, 229, 0.08);
-      border: 1px solid rgba(229, 229, 229, 0.15);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin: 18px 0;
-      display: flex;
-      justify-content: space-around;
-      text-align: center;
-    }
-    .article-stat-num {
+    .article-prose h3 {
       font-family: var(--font-display);
-      font-size: 26px;
-      font-weight: 900;
-      color: var(--silver);
+      font-size: 17.5px;
+      font-weight: 800;
+      color: var(--charcoal);
+      margin: 22px 0 8px 0;
+      letter-spacing: -0.01em;
     }
-    .article-stat-label {
-      font-size: 12px;
-      color: var(--graphite-300);
-      margin-top: 4px;
-      font-weight: 600;
-    }
-
-    /* ── Mobile Responsive (Zero Overlap) ── */
-    @media (max-width: 900px) {
-      .blog-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      .edge-container {
-        padding: 20px 14px 60px;
-      }
-      .search-box {
-        width: 100% !important;
-      }
+    .article-stats-summary {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--charcoal);
+      opacity: 0.8;
+      margin: 12px 0 18px 0;
+      padding: 10px 0;
+      border-top: 1px dashed rgba(46, 48, 53, 0.2);
+      border-bottom: 1px dashed rgba(46, 48, 53, 0.2);
     }
 
+    /* ── Mobile Responsive ── */
     @media (max-width: 768px) {
-      body {
-        overflow-x: hidden !important;
-      }
       .ln-nav {
         height: 60px !important;
         min-height: 60px !important;
@@ -460,15 +314,22 @@
         font-weight: 800 !important;
         border-bottom: 2px solid #2E3035 !important;
       }
-      .ln-nav-links a::after,
-      .ln-nav-links a.active::after {
-        display: none !important;
-      }
       .ln-nav-signin {
         padding: 5px 12px !important;
         font-size: 12px !important;
         flex-shrink: 0 !important;
         white-space: nowrap !important;
+      }
+      .blog-reader-wrap {
+        padding: 24px 16px 60px !important;
+      }
+      .blog-header {
+        margin-bottom: 28px !important;
+        padding-bottom: 18px !important;
+      }
+      .blog-article {
+        margin-bottom: 36px !important;
+        padding-bottom: 28px !important;
       }
     }
 
@@ -498,53 +359,11 @@
         font-size: 11.5px !important;
       }
     }
-
-    @media (max-width: 768px) {
-
-      .page-header-row {
-        flex-direction: column !important;
-        gap: 16px !important;
-        margin-bottom: 20px !important;
-      }
-      .page-header-title {
-        font-size: 24px !important;
-        line-height: 1.2 !important;
-      }
-      .page-header-desc {
-        font-size: 13.5px !important;
-        line-height: 1.5 !important;
-      }
-
-      #blog-filters-bar {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding-bottom: 6px !important;
-        gap: 8px !important;
-        scrollbar-width: none !important;
-      }
-      #blog-filters-bar::-webkit-scrollbar {
-        display: none !important;
-      }
-      .blog-filter-btn {
-        white-space: nowrap !important;
-        font-size: 12px !important;
-        padding: 6px 14px !important;
-        flex-shrink: 0 !important;
-      }
-      .blog-card {
-        padding: 20px !important;
-      }
-      .article-modal-box {
-        padding: 24px 18px !important;
-      }
-    }
   </style>
 </head>
 <body>
 
-  <!-- ====== PUBLIC NAVBAR ====== -->
+  <!-- ====== PUBLIC NAVBAR (Blog is in footer only) ====== -->
   <nav class="ln-nav" id="mainNav">
     <a href="../index.html" class="ln-nav-logo">
       <div class="ln-nav-logo-icon">
@@ -562,133 +381,125 @@
     </div>
   </nav>
 
-  <!-- ====== MAIN CONTAINER ====== -->
-  <main class="edge-container">
+  <!-- ====== EDITORIAL READING CONTAINER (JUST WORDS, NO CARDS) ====== -->
+  <main class="blog-reader-wrap">
     
-    <!-- Top search & category filter -->
-    <div class="page-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px;">
-      <div style="flex:1; min-width:280px;">
-        <div style="font-family:var(--font-display); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); opacity:0.7; margin-bottom:6px;">
-          IcapsQ Research &amp; Intelligence
-        </div>
-        <h1 class="page-header-title" style="font-family:var(--font-display); font-size:clamp(1.75rem, 3.5vw, 2.7rem); font-weight:900; color:var(--charcoal); letter-spacing:-0.03em; margin:0 0 10px 0; line-height:1.15;">
-          Methodology, Insights &amp; Sovereign Data
-        </h1>
-        <p class="page-header-desc" style="font-size:14.5px; color:var(--charcoal); opacity:0.8; margin:0; max-width:820px; line-height:1.6;">
-          In-depth methodology briefs, data integrity standards, healthcare stockout studies, and citizen participation analytics published by verified institutions across Kenya.
-        </p>
+    <header class="blog-header">
+      <div class="blog-kicker">IcapsQ Research &amp; Intelligence</div>
+      <h1 class="blog-page-title">Methodology, Insights &amp; Sovereign Data</h1>
+      <p class="blog-page-intro">
+        In-depth research briefs, data integrity standards, clinic supply chain studies, and civic participation analyses published across Kenya.
+      </p>
+
+      <div class="blog-search-wrap">
+        <input type="text" class="blog-search-input" id="blog-search-input" placeholder="Search essays and briefs by keyword...">
       </div>
+    </header>
 
-      <div class="search-box" style="width:340px;">
-        <span class="search-icon" data-icon="search"></span>
-        <input type="text" class="search-input" id="blog-search-input" placeholder="Search insights & research...">
-      </div>
-    </div>
-
-    <!-- Category Filter Pills -->
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px;" id="blog-filters-bar">
-      <button class="blog-filter-btn active" data-category="all">All Articles (5)</button>
-      <button class="blog-filter-btn" data-category="integrity">Data Integrity</button>
-      <button class="blog-filter-btn" data-category="health">Public Health</button>
-      <button class="blog-filter-btn" data-category="crypto">Platform Architecture</button>
-      <button class="blog-filter-btn" data-category="civic">Civic Assemblies</button>
-    </div>
-
-    <!-- Blog Grid -->
-    <div class="blog-grid" id="blog-articles-container">
+    <div id="blog-articles-container">
       <!-- Article 1 -->
-      <article class="blog-card" onclick="openArticleModal(0)" data-category="integrity">
-        <div>
-          <span class="blog-badge">Data Integrity</span>
-          <h2 class="blog-card-title">How Sovereign County Verification Eliminates Poll Manipulation</h2>
-          <p class="blog-card-excerpt">
-            An in-depth look at how regional 47-county GPS telemetry and deterministic hardware attribution verify authentic Kenyan voices while preserving respondent anonymity.
-          </p>
-        </div>
-        <div class="blog-meta">
-          <span>Oct 17, 2026 &bull; 6 min read</span>
-          <button class="btn-read-more" type="button">Read &rarr;</button>
+      <article class="blog-article" data-keywords="sovereign county verification poll manipulation data integrity bots">
+        <div class="article-topic">Data Integrity</div>
+        <h2 class="article-heading">How Sovereign County Verification Eliminates Poll Manipulation</h2>
+        <div class="article-meta">Oct 17, 2026 &bull; 6 min read &bull; By IcapsQ Research &amp; Standards Board</div>
+        <div class="article-prose">
+          <p>Online public surveys and civic referendums have historically suffered from syndicated bot submissions, VPN spoofing, and centralized database tampering. When decisions involve budgetary allocations or public health directives, data integrity is paramount.</p>
+          
+          <h3>Deterministic Geographic &amp; Demographic Partitioning</h3>
+          <p>IcapsQ implements deterministic geographic bounding. Rather than relying on simple IP address checks (which can be trivially circumvented by commercial proxies), responses are bound to geographic coordinates across Kenya's 47 counties and verified against citizen demographic registries.</p>
+
+          <div class="article-stats-summary">
+            Audited Metrics: 99.94% Bot Rejection Rate &bull; 47 Counties Verified &bull; &lt;420ms Proof Latency
+          </div>
+
+          <h3>Sovereign Privacy Guarantees</h3>
+          <p>Crucially, verifying that a voter is a legitimate resident of Machakos or Uasin Gishu does not require exposing their personal identifying information to poll publishers. Through zero-knowledge credential receipts, organizations receive cryptographically certified aggregate totals without access to individual respondent identities.</p>
         </div>
       </article>
 
       <!-- Article 2 -->
-      <article class="blog-card" onclick="openArticleModal(1)" data-category="health">
-        <div>
-          <span class="blog-badge">Public Health</span>
-          <h2 class="blog-card-title">Essential Medicines Availability: Level 2 &amp; 3 Clinic Survey Findings</h2>
-          <p class="blog-card-excerpt">
-            Preliminary responses from over 2,400 verified healthcare workers and patients evaluating dispensary stockouts, referral delays, and pharmaceutical supply chains.
-          </p>
-        </div>
-        <div class="blog-meta">
-          <span>Oct 14, 2026 &bull; 8 min read</span>
-          <button class="btn-read-more" type="button">Read &rarr;</button>
+      <article class="blog-article" data-keywords="public health essential medicines clinics stockouts dispensary supply chain">
+        <div class="article-topic">Public Health</div>
+        <h2 class="article-heading">Essential Medicines Availability: Level 2 &amp; 3 Clinic Survey Findings</h2>
+        <div class="article-meta">Oct 14, 2026 &bull; 8 min read &bull; By Healthcare Monitoring Taskforce</div>
+        <div class="article-prose">
+          <p>Over a four-week period, IcapsQ partnered with regional healthcare syndicates to capture real-time inventory and delivery telemetry across rural dispensaries and sub-county health centers.</p>
+          
+          <h3>Key Stockout Findings</h3>
+          <p>Preliminary findings revealed that while primary antibiotic supplies were sustained in 79% of facilities, essential chronic disease medications (specifically insulin and hypertensive management tablets) suffered recurrent supply chain lags averaging 18 days per quarter.</p>
+
+          <div class="article-stats-summary">
+            Field Telemetry: 2,410 Clinics Monitored &bull; 38% Stockout Reduction Post-Audit &bull; 4.8/5 Health Worker Trust Index
+          </div>
+
+          <h3>Institutional Action Plan</h3>
+          <p>By publishing certified aggregate charts directly to county health executives, inventory redistribution times dropped by 38% across participating pilot sub-counties.</p>
         </div>
       </article>
 
       <!-- Article 3 -->
-      <article class="blog-card" onclick="openArticleModal(2)" data-category="crypto">
-        <div>
-          <span class="blog-badge">Platform Architecture</span>
-          <h2 class="blog-card-title">Cryptographic Merkle Cohort Proofs for Tamper-Proof Ballots</h2>
-          <p class="blog-card-excerpt">
-            Why cryptographic hash trees and immutable transaction receipts give civic assemblies and labor unions mathematically verifiable ballot auditability.
-          </p>
-        </div>
-        <div class="blog-meta">
-          <span>Oct 10, 2026 &bull; 5 min read</span>
-          <button class="btn-read-more" type="button">Read &rarr;</button>
+      <article class="blog-article" data-keywords="platform architecture merkle proofs tamper proof cryptographic hash ballot audit">
+        <div class="article-topic">Platform Architecture</div>
+        <h2 class="article-heading">Cryptographic Merkle Cohort Proofs for Tamper-Proof Ballots</h2>
+        <div class="article-meta">Oct 10, 2026 &bull; 5 min read &bull; By Engineering &amp; Cryptography Core</div>
+        <div class="article-prose">
+          <p>Traditional web polling platforms store vote tallies in mutable SQL tables. If an administrator modifies an integer value in the database, observers have no mathematical mechanism to detect the revision. IcapsQ changes this with immutable Merkle Trees.</p>
+          
+          <h3>Every Vote Cast is a Receipt</h3>
+          <p>When a voter submits a choice, the ballot is assigned a deterministic cryptographic receipt containing a digital signature and Merkle inclusion proof. The root hash of the ballot tree is periodically anchored to an immutable public ledger.</p>
+
+          <div class="article-stats-summary">
+            Cryptographic Standard: SHA-256 Merkle Inclusion &bull; 100% Audit Verifiability &bull; 0 Single Points of Failure
+          </div>
+
+          <h3>Independent Audit Without Database Access</h3>
+          <p>Independent citizens and auditors can review published aggregate results and available audit records to verify that every cast vote was counted without revealing private voter choices.</p>
         </div>
       </article>
 
       <!-- Article 4 -->
-      <article class="blog-card" onclick="openArticleModal(3)" data-category="civic">
-        <div>
-          <span class="blog-badge">Civic Assemblies</span>
-          <h2 class="blog-card-title">Ward Development Priorities: Participatory Budgeting Analysis</h2>
-          <p class="blog-card-excerpt">
-            How 14 County Assemblies utilized targeted mobile feedback to prioritize road maintenance, water borehole drilling, and bursary fund allocations in FY 2026/27.
-          </p>
-        </div>
-        <div class="blog-meta">
-          <span>Oct 05, 2026 &bull; 7 min read</span>
-          <button class="btn-read-more" type="button">Read &rarr;</button>
+      <article class="blog-article" data-keywords="civic assemblies ward development participatory budgeting county feedback">
+        <div class="article-topic">Civic Assemblies</div>
+        <h2 class="article-heading">Ward Development Priorities: Participatory Budgeting Analysis</h2>
+        <div class="article-meta">Oct 05, 2026 &bull; 7 min read &bull; By Civic Assembly Governance Group</div>
+        <div class="article-prose">
+          <p>Participatory budgeting has historically relied on physical town hall meetings, which frequently exclude working parents, informal merchants, and rural constituents living far from county headquarters.</p>
+          
+          <h3>Direct Mobile Engagement</h3>
+          <p>Fourteen County Assemblies deployed IcapsQ surveys to capture community priorities directly on citizens' mobile devices. Over 68,000 verified citizens cast prioritized votes on road infrastructure, solar street lighting, water access, and school bursaries.</p>
+
+          <div class="article-stats-summary">
+            Constituency Reach: 14 County Assemblies &bull; 68,000+ Verified Responses &bull; KES 420M Budget Guided
+          </div>
+
+          <h3>Outcome Transparency</h3>
+          <p>The resulting aggregate data informed the allocation of over KES 420M in ward development expenditures, with published accountability dashboards tracking project milestones in real-time.</p>
         </div>
       </article>
 
       <!-- Article 5 -->
-      <article class="blog-card" onclick="openArticleModal(4)" data-category="integrity">
-        <div>
-          <span class="blog-badge">Data Integrity</span>
-          <h2 class="blog-card-title">Zero-Knowledge Balloting: How Privacy and Verification Coexist</h2>
-          <p class="blog-card-excerpt">
-            Exploring the mathematics behind blind cryptographic tokens that guarantee nobody can connect a voter's ballot to their real identity while preventing double-voting.
-          </p>
-        </div>
-        <div class="blog-meta">
-          <span>Sep 28, 2026 &bull; 9 min read</span>
-          <button class="btn-read-more" type="button">Read &rarr;</button>
+      <article class="blog-article" data-keywords="data integrity zero knowledge balloting privacy verification zk snark">
+        <div class="article-topic">Data Integrity</div>
+        <h2 class="article-heading">Zero-Knowledge Balloting: How Privacy and Verification Coexist</h2>
+        <div class="article-meta">Sep 28, 2026 &bull; 9 min read &bull; By Privacy &amp; Sovereignty Lab</div>
+        <div class="article-prose">
+          <p>A classic dilemma in digital elections is the trade-off between verifiability and coercion resistance. If voters can prove who they voted for, corrupt actors can purchase votes or coerce employees.</p>
+          
+          <h3>Blind Receipting Architecture</h3>
+          <p>IcapsQ resolves this through blind signature protocols. The system verifies that a citizen belongs to an eligible voting cohort, issues an unlinkable cryptographic token, and accepts the ballot submission anonymously.</p>
+
+          <div class="article-stats-summary">
+            Privacy Benchmark: ZK Proof Tokens &bull; 0 PII Stored on Ballot Ledger &bull; 100% Coercion Resistant
+          </div>
+
+          <p>The citizen can verify that their individual receipt is included in the published Merkle tree, but the ballot payload cannot be decrypted or traced back to their phone number or national ID.</p>
         </div>
       </article>
     </div>
+
   </main>
 
-  <!-- ====== ARTICLE READER MODAL ====== -->
-  <div class="article-modal-overlay" id="article-reader-modal" onclick="closeArticleModal(event)">
-    <div class="article-modal-box" onclick="event.stopPropagation()">
-      <button class="article-modal-close" onclick="closeArticleModal()" aria-label="Close modal">&times;</button>
-      
-      <span class="blog-badge" id="modal-article-badge">Data Integrity</span>
-      <h2 id="modal-article-title" style="font-family:var(--font-display); font-size:24px; font-weight:800; color:var(--silver); margin:12px 0 10px 0; line-height:1.25;">Article Title</h2>
-      <div id="modal-article-meta" style="font-size:13px; color:var(--graphite-300); margin-bottom:20px; font-weight:600;">Oct 17, 2026 &bull; 6 min read &bull; Published by IcapsQ Research Board</div>
-      
-      <div class="article-modal-content" id="modal-article-body">
-        <!-- Injected via JavaScript -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== ICAPSQ FOOTER ====== -->
+  <!-- ====== ICAPSQ FOOTER (Blog is in Navigation here) ====== -->
   <footer class="ln-footer">
     <div class="ln-footer-inner">
       <div class="ln-footer-grid">
@@ -743,246 +554,24 @@
     </div>
   </footer>
 
-  <script src="../js/core/icons.js"></script>
-  <script src="../js/core/app.js"></script>
   <script>
-    const ARTICLES = [
-      {
-        badge: "Data Integrity",
-        category: "integrity",
-        title: "How Sovereign County Verification Eliminates Poll Manipulation",
-        date: "Oct 17, 2026",
-        readTime: "6 min read",
-        author: "IcapsQ Research & Standards Board",
-        stats: [
-          { num: "99.94%", label: "Bot Rejection Rate" },
-          { num: "47", label: "Counties Audited" },
-          { num: "< 420ms", label: "Proof Latency" }
-        ],
-        body: `
-          <p>Online public surveys and civic referendums have historically suffered from syndicated bot submissions, VPN spoofing, and centralized database tampering. When decisions involve budgetary allocations or public health directives, data integrity is paramount.</p>
-          
-          <h3>Deterministic Geographic & Demographic Partitioning</h3>
-          <p>IcapsQ implements deterministic geographic bounding. Rather than relying on simple IP address checks (which can be trivially circumvented by commercial proxies), responses are bound to geographic coordinates across Kenya's 47 counties and verified against citizen demographic registries.</p>
-
-          <div class="article-stat-card">
-            <div>
-              <div class="article-stat-num">99.94%</div>
-              <div class="article-stat-label">Bot Rejection Rate</div>
-            </div>
-            <div>
-              <div class="article-stat-num">47</div>
-              <div class="article-stat-label">Counties Audited</div>
-            </div>
-            <div>
-              <div class="article-stat-num">&lt; 420ms</div>
-              <div class="article-stat-label">Proof Latency</div>
-            </div>
-          </div>
-
-          <h3>Sovereign Privacy Guarantees</h3>
-          <p>Crucially, verifying that a voter is a legitimate resident of Machakos or Uasin Gishu does not require exposing their personal identifying information to poll publishers. Through zero-knowledge credential receipts, organizations receive cryptographically certified aggregate totals without access to individual respondent identities.</p>
-        `
-      },
-      {
-        badge: "Public Health",
-        category: "health",
-        title: "Essential Medicines Availability: Level 2 & 3 Clinic Survey Findings",
-        date: "Oct 14, 2026",
-        readTime: "8 min read",
-        author: "Healthcare Monitoring Taskforce",
-        stats: [
-          { num: "2,410", label: "Clinics Monitored" },
-          { num: "38%", label: "Stockout Reduction" },
-          { num: "4.8/5", label: "Worker Trust Index" }
-        ],
-        body: `
-          <p>Over a four-week period, IcapsQ partnered with regional healthcare syndicates to capture real-time inventory and delivery telemetry across rural dispensaries and sub-county health centers.</p>
-          
-          <h3>Key Stockout Findings</h3>
-          <p>Preliminary findings revealed that while primary antibiotic supplies were sustained in 79% of facilities, essential chronic disease medications (specifically insulin and hypertensive management tablets) suffered recurrent supply chain lags averaging 18 days per quarter.</p>
-
-          <div class="article-stat-card">
-            <div>
-              <div class="article-stat-num">2,410</div>
-              <div class="article-stat-label">Clinics Monitored</div>
-            </div>
-            <div>
-              <div class="article-stat-num">38%</div>
-              <div class="article-stat-label">Stockout Reduction</div>
-            </div>
-            <div>
-              <div class="article-stat-num">4.8/5</div>
-              <div class="article-stat-label">Worker Trust Index</div>
-            </div>
-          </div>
-
-          <h3>Institutional Action Plan</h3>
-          <p>By publishing certified aggregate charts directly to county health executives, inventory redistribution times dropped by 38% across participating pilot sub-counties.</p>
-        `
-      },
-      {
-        badge: "Platform Architecture",
-        category: "crypto",
-        title: "Cryptographic Merkle Cohort Proofs for Tamper-Proof Ballots",
-        date: "Oct 10, 2026",
-        readTime: "5 min read",
-        author: "Engineering & Cryptography Core",
-        stats: [
-          { num: "SHA-256", label: "Cryptographic Hash" },
-          { num: "100%", label: "Audit Verifiability" },
-          { num: "0", label: "Single Points of Failure" }
-        ],
-        body: `
-          <p>Traditional web polling platforms store vote tallies in mutable SQL tables. If an administrator modifies an integer value in the database, observers have no mathematical mechanism to detect the revision. IcapsQ changes this with immutable Merkle Trees.</p>
-          
-          <h3>Every Vote Cast is a Receipt</h3>
-          <p>When a voter submits a choice, the ballot is assigned a deterministic cryptographic receipt containing a digital signature and Merkle inclusion proof. The root hash of the ballot tree is periodically anchored to an immutable public ledger.</p>
-
-          <div class="article-stat-card">
-            <div>
-              <div class="article-stat-num">SHA-256</div>
-              <div class="article-stat-label">Cryptographic Hash</div>
-            </div>
-            <div>
-              <div class="article-stat-num">100%</div>
-              <div class="article-stat-label">Audit Verifiability</div>
-            </div>
-            <div>
-              <div class="article-stat-num">0</div>
-              <div class="article-stat-label">Single Failure Points</div>
-            </div>
-          </div>
-
-          <h3>Independent Audit Without Database Access</h3>
-          <p>Independent citizens and auditors can review published aggregate results and available audit records.</p>
-        `
-      },
-      {
-        badge: "Civic Assemblies",
-        category: "civic",
-        title: "Ward Development Priorities: Participatory Budgeting Analysis",
-        date: "Oct 05, 2026",
-        readTime: "7 min read",
-        author: "Civic Assembly Governance Group",
-        stats: [
-          { num: "14", label: "County Assemblies" },
-          { num: "68,000+", label: "Verified Responses" },
-          { num: "KES 420M", label: "Budget Guided" }
-        ],
-        body: `
-          <p>Participatory budgeting has historically relied on physical town hall meetings, which frequently exclude working parents, informal merchants, and rural constituents living far from county headquarters.</p>
-          
-          <h3>Direct Mobile Engagement</h3>
-          <p>Fourteen County Assemblies deployed IcapsQ surveys to capture community priorities directly on citizens' mobile devices. Over 68,000 verified citizens cast prioritized votes on road infrastructure, solar street lighting, water access, and school bursaries.</p>
-
-          <h3>Outcome Transparency</h3>
-          <p>The resulting aggregate data informed the allocation of over KES 420M in ward development expenditures, with published accountability dashboards tracking project milestones in real-time.</p>
-        `
-      },
-      {
-        badge: "Data Integrity",
-        category: "integrity",
-        title: "Zero-Knowledge Balloting: How Privacy and Verification Coexist",
-        date: "Sep 28, 2026",
-        readTime: "9 min read",
-        author: "Privacy & Sovereignty Lab",
-        stats: [
-          { num: "ZK-SNARK", label: "Mathematical Proof" },
-          { num: "0 PII", label: "Stored on Ledger" },
-          { num: "100%", label: "Coercion Resistant" }
-        ],
-        body: `
-          <p>A classic dilemma in digital elections is the trade-off between verifiability and coercion resistance. If voters can prove who they voted for, corrupt actors can purchase votes or coerce employees.</p>
-          
-          <h3>Blind Receipting Architecture</h3>
-          <p>IcapsQ resolves this through blind signature protocols. The system verifies that a citizen belongs to an eligible voting cohort, issues an unlinkable cryptographic token, and accepts the ballot submission anonymously.</p>
-
-          <p>The citizen can verify that their individual receipt is included in the published Merkle tree, but the ballot payload cannot be decrypted or traced back to their phone number or national ID.</p>
-        `
-      }
-    ];
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.App && typeof window.App.injectIcons === 'function') {
-        window.App.injectIcons();
-      }
-      setupBlogFilters();
-      setupBlogSearch();
-    });
-
-    function setupBlogFilters() {
-      const btns = document.querySelectorAll('.blog-filter-btn');
-      btns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          btns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const cat = btn.getAttribute('data-category');
-          filterArticles(cat, document.getElementById('blog-search-input').value);
+    // Minimal instant search for articles
+    const searchInput = document.getElementById('blog-search-input');
+    const articles = document.querySelectorAll('.blog-article');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        articles.forEach(article => {
+          const text = article.textContent.toLowerCase();
+          const keywords = (article.getAttribute('data-keywords') || '').toLowerCase();
+          if (!query || text.includes(query) || keywords.includes(query)) {
+            article.style.display = 'block';
+          } else {
+            article.style.display = 'none';
+          }
         });
       });
     }
-
-    function setupBlogSearch() {
-      const input = document.getElementById('blog-search-input');
-      if (!input) return;
-      input.addEventListener('input', () => {
-        const activeBtn = document.querySelector('.blog-filter-btn.active');
-        const cat = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
-        filterArticles(cat, input.value);
-      });
-    }
-
-    function filterArticles(category, query) {
-      const term = (query || '').toLowerCase().trim();
-      const cards = document.querySelectorAll('.blog-card');
-      let visibleCount = 0;
-
-      cards.forEach((card, idx) => {
-        const article = ARTICLES[idx];
-        const cardCat = card.getAttribute('data-category');
-        const matchesCat = (category === 'all' || cardCat === category);
-        const matchesQuery = !term || 
-          article.title.toLowerCase().includes(term) || 
-          article.badge.toLowerCase().includes(term) || 
-          article.body.toLowerCase().includes(term);
-
-        if (matchesCat && matchesQuery) {
-          card.style.display = 'flex';
-          visibleCount++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    }
-
-    function openArticleModal(idx) {
-      const article = ARTICLES[idx];
-      if (!article) return;
-
-      document.getElementById('modal-article-badge').textContent = article.badge;
-      document.getElementById('modal-article-title').textContent = article.title;
-      document.getElementById('modal-article-meta').innerHTML = `${article.date} &bull; ${article.readTime} &bull; Published by ${article.author}`;
-      document.getElementById('modal-article-body').innerHTML = article.body;
-
-      const modal = document.getElementById('article-reader-modal');
-      modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeArticleModal(e) {
-      if (e && e.target && e.target !== document.getElementById('article-reader-modal') && !e.target.classList.contains('article-modal-close')) {
-        return;
-      }
-      const modal = document.getElementById('article-reader-modal');
-      modal.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeArticleModal();
-    });
   </script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>
