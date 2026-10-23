@@ -59,4 +59,5 @@ class SurveyResponseModel(Base):
     Longitude = Column(Float, nullable=True)
     Accuracy = Column(Float, nullable=True)
     GpsCoordinates = Column(String, nullable=True)
+    IpAddress = Column(String, nullable=True)
 

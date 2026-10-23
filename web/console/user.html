@@ -1711,6 +1711,19 @@
       },
     });
     const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+    function formatLocalExactTimestamp(value) {
+      const text = String(value || '').trim();
+      if (!text) return 'Not recorded';
+      const hasSeconds = /^\d{4}-\d\d-\d\d[ T]\d\d:\d\d:\d\d/.test(text);
+      const parsed = new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(text) ? text : `${text.replace(' ', 'T')}Z`);
+      if (Number.isNaN(parsed.getTime())) return `${text} (time zone unknown)`;
+      const formatted = new Intl.DateTimeFormat('en-KE', {
+        timeZone: 'Africa/Nairobi', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: hasSeconds ? '2-digit' : undefined,
+        hourCycle: 'h23'
+      }).format(parsed);
+      return `${formatted} EAT${hasSeconds ? '' : ' (seconds unavailable)'}`;
+    }
     const setNotice = (id, text, error = false) => { const el = document.getElementById(id); el.textContent = text; el.style.color = '#303030'; };
 
     // === NOTIFICATION CHIME & TOP-RIGHT POPUP TOAST ===
@@ -1838,6 +1851,29 @@
         alert('Export failed: ' + err.message);
       }
     }
+
+    window.updatePollVisibility = async function(pollId, checkbox, channel = 'web') {
+      const poll = (cachedClientPolls || []).find(p => p.id === pollId);
+      if (!poll) return;
+      const field = channel === 'app' ? 'showOnApp' : 'showOnWeb';
+      const previous = Boolean(poll[field]);
+      poll[field] = checkbox.checked;
+      const statusEl = document.getElementById(`poll-visibility-status-${pollId}`);
+      if (statusEl) statusEl.textContent = 'Saving…';
+      try {
+        const response = await request(`/polls/${encodeURIComponent(pollId)}/visibility`, {
+          method: 'PATCH', body: JSON.stringify({ showOnWeb: Boolean(poll.showOnWeb), showOnApp: Boolean(poll.showOnApp) })
+        });
+        if (!response.ok) throw new Error((await response.json()).detail || 'Could not save visibility');
+        Object.assign(poll, await response.json());
+        if (statusEl) statusEl.textContent = 'Saved';
+        renderPollsList();
+      } catch (error) {
+        poll[field] = previous;
+        checkbox.checked = previous;
+        if (statusEl) statusEl.textContent = error.message || 'Could not save';
+      }
+    };
 
     async function exportSurvey(surveyId, title, format) {
       if (!format) return;
@@ -2428,7 +2464,7 @@
                 <td style="font-family:monospace; font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(t.voterIdNumber || '—')}</td>
                 <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(deviceDisplay)}</td>
                 <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(locationDisplay)}</td>
-                <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(t.timestamp || 'Recent')}</td>
+                <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(formatLocalExactTimestamp(t.timestamp))}</td>
               </tr>
             `;}).join('')}
           </tbody>
@@ -2500,7 +2536,7 @@
                 </td>
                 <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(deviceDisplay)}</td>
                 <td style="font-size:11.5px; color:var(--text-main); padding:10px 12px;">${esc(locationDisplay)}</td>
-                <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(r.timestamp || 'Recent')}</td>
+                <td style="color:var(--text-muted); font-size:12px; padding:10px 12px; white-space:nowrap;">${esc(formatLocalExactTimestamp(r.timestamp))}</td>
               </tr>
             `;}).join('')}
           </tbody>
@@ -2524,10 +2560,17 @@
         <p style="margin:6px 0 14px;font-size:13px;color:var(--text-sub);line-height:1.5;">${esc(poll.description || '')}</p>
         <div class="summary" style="margin-bottom:14px;gap:20px;font-size:12.5px;color:var(--text-muted);">
           <span>Status: <strong style="color:var(--charcoal);">${esc(poll.status || 'live')}</strong></span>
+          <span>Visible on: <strong style="color:var(--charcoal);">${poll.showOnWeb ? 'Website' : ''}${poll.showOnWeb && poll.showOnApp ? ' · ' : ''}${poll.showOnApp ? 'App' : ''}${!poll.showOnWeb && !poll.showOnApp ? 'Nowhere' : ''}</strong></span>
           <span>Total Votes: <strong style="color:var(--charcoal);">${totalVotes.toLocaleString()}</strong></span>
           <span>Ballots Cast: <strong style="color:var(--charcoal);">${txs.length}</strong></span>
           <span>Options: <strong style="color:var(--charcoal);">${(poll.options || []).length}</strong></span>
         </div>
+        <fieldset style="border:1px solid var(--border-color);border-radius:10px;padding:10px 12px;margin:0 0 12px;display:flex;gap:20px;flex-wrap:wrap;">
+          <legend style="font-size:12px;font-weight:700;padding:0 5px;">Display this poll</legend>
+          <label style="font-size:13px;display:flex;gap:7px;align-items:center;"><input type="checkbox" ${poll.showOnWeb ? 'checked' : ''} onchange="updatePollVisibility('${esc(poll.id)}', this)"> Website</label>
+          <label style="font-size:13px;display:flex;gap:7px;align-items:center;"><input type="checkbox" ${poll.showOnApp ? 'checked' : ''} onchange="updatePollVisibility('${esc(poll.id)}', this, 'app')"> Mobile app</label>
+          <span id="poll-visibility-status-${esc(poll.id)}" aria-live="polite" style="font-size:12px;color:var(--text-muted);"></span>
+        </fieldset>
         <div style="background:#F8F8F8;border:1px solid #EEEEEE;border-radius:12px;padding:14px;margin-bottom:14px;">
           ${(poll.options || []).map(opt => `
             <div style="display:flex;justify-content:space-between;font-size:12.5px;margin:6px 0;color:var(--text-main);">
@@ -2558,6 +2601,8 @@
           <td style="font-weight:700;">${(p.totalVotes || 0).toLocaleString()}</td>
           <td style="font-weight:700;">${txs.length}</td>
           <td style="text-align:right;">
+            <label title="Show on website" style="font-size:11px;margin-right:6px;"><input type="checkbox" ${p.showOnWeb ? 'checked' : ''} onchange="updatePollVisibility('${esc(p.id)}', this)"> Web</label>
+            <label title="Show in mobile app" style="font-size:11px;margin-right:6px;"><input type="checkbox" ${p.showOnApp ? 'checked' : ''} onchange="updatePollVisibility('${esc(p.id)}', this, 'app')"> App</label>
             <a href="../pages/vote.html?poll_id=${encodeURIComponent(p.id)}" target="_blank" class="action-btn" style="text-decoration:none;display:inline-block;">Open App</a>
           </td>
         </tr>
@@ -2864,7 +2909,7 @@
                     <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
                     <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'}</div>
                   </td>
-                  <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(item.timestamp || 'Recent')}</td>
+                  <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(formatLocalExactTimestamp(item.timestamp))}</td>
                   <td style="text-align:right; white-space:nowrap;">
                     <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
                   </td>
@@ -2928,7 +2973,7 @@
               <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
               <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'}</div>
             </td>
-            <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(item.timestamp || 'Recent')}</td>
+            <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(formatLocalExactTimestamp(item.timestamp))}</td>
             <td style="text-align:right; white-space:nowrap;">
               <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
             </td>
@@ -2941,7 +2986,7 @@
           <div class="response-card-grid-item">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
               <span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey'}</span>
-              <span style="font-size:11px; color:var(--text-muted);">${esc(item.timestamp || 'Recent')}</span>
+              <span style="font-size:11px; color:var(--text-muted);">${esc(formatLocalExactTimestamp(item.timestamp))}</span>
             </div>
             <div>
               <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:var(--text-main);">${esc(item.title)}</h4>
@@ -2999,8 +3044,8 @@
             <div style="font-weight:700; margin-top:4px;"><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey Submission'}</span></div>
           </div>
           <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Recorded Timestamp</div>
-            <div style="font-weight:700; font-size:12.5px; margin-top:4px; color:var(--text-main);">${esc(item.timestamp || 'Just now')}</div>
+          <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Recorded Timestamp (EAT)</div>
+            <div style="font-weight:700; font-size:12.5px; margin-top:4px; color:var(--text-main);">${esc(formatLocalExactTimestamp(item.timestamp))}</div>
           </div>
         </div>
 
@@ -3106,7 +3151,7 @@
       document.getElementById('organization').value = user.organization || '';
 
       const [pollsRes, surveysRes, notificationsRes, statsRes] = await Promise.all([
-        request('/polls'),
+        request('/polls/manage'),
         request('/surveys'),
         request('/notifications'),
         request(`/customer/dashboard-stats/${encodeURIComponent(user.id)}`),

@@ -130,9 +130,9 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
         Track=track,
         Plan=plan_key,
         Status="Active",
-        TargetResponses=data.targetResponses or 500,
+        TargetResponses=data.targetResponses if data.targetResponses is not None else 500,
         TotalResponses=0,
-        CreatedAt=now.strftime("%Y-%m-%d %H:%M"),
+        CreatedAt=now.strftime("%Y-%m-%d %H:%M:%S"),
         OwnerId=owner_id,
         MerkleCohortRoot=root,
         TargetAudience=_plain_text(data.targetAudience, "Target audience", 100) if data.targetAudience else "General Public",
@@ -157,7 +157,7 @@ def create_survey(db: Session, data: SurveyCreate) -> SurveyOut:
     db.refresh(new_survey)
     return map_survey_to_out(new_survey)
 
-def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmission) -> SurveySubmissionReceipt:
+def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmission, client_ip: Optional[str] = None) -> SurveySubmissionReceipt:
     survey = db.query(SurveyModel).filter(SurveyModel.Id == survey_id).first()
     if not survey:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Survey {survey_id} not found")
@@ -184,7 +184,7 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
             detail="Please provide correct details: answer every survey question before submitting.",
         )
 
-    voter_name, voter_id_num = validate_voter_details(
+    voter_name, voter_id_num, verified_county, county_classified = validate_voter_details(
         voter_name=sub.voterName,
         voter_id_number=sub.voterIdNumber,
         county=sub.county,
@@ -225,7 +225,7 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         )
 
     user_id = sub.userId.strip() if sub.userId and str(sub.userId).strip() else None
-    loc_tag = (sub.county or "LOCATION1").replace(" ", "").upper()
+    loc_tag = verified_county.replace(" ", "").upper()
     voter = (sub.voterPseudonym or f"USER@{loc_tag}-{uuid.uuid4().hex[:6].upper()}").strip()
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -264,11 +264,12 @@ def submit_survey_response(db: Session, survey_id: str, sub: SurveyResponseSubmi
         Dob=(sub.dob or "").strip(),
         DeviceName=(sub.deviceName or "Web Browser").strip() or None,
         DeviceOS=(sub.deviceOS or "").strip() or None,
-        County=(sub.county or "").strip() or None,
+        County=f"{verified_county} County" + (" (device location unclassified)" if not county_classified else ""),
         Latitude=sub.latitude,
         Longitude=sub.longitude,
         Accuracy=sub.accuracy,
-        GpsCoordinates=gps_coords
+        GpsCoordinates=gps_coords,
+        IpAddress=client_ip,
     )
     db.add(resp_record)
     try:

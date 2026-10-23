@@ -13,6 +13,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
+      - BROWSER_STORAGE_ENCRYPTION_KEY=${BROWSER_STORAGE_ENCRYPTION_KEY:?Set BROWSER_STORAGE_ENCRYPTION_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
       - PAYMENT_PROVIDER=${PAYMENT_PROVIDER:-ipay}
       - IPAY_VENDOR_ID=${IPAY_VENDOR_ID:-}
@@ -48,6 +49,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=sqlite:////app/backend/csharp/GetItRight.Api/getitright.db
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in .env before starting the stack}
+      - BROWSER_STORAGE_ENCRYPTION_KEY=${BROWSER_STORAGE_ENCRYPTION_KEY:?Set BROWSER_STORAGE_ENCRYPTION_KEY in .env before starting the stack}
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
       - PAYMENT_PROVIDER=${PAYMENT_PROVIDER:-ipay}
       - IPAY_VENDOR_ID=${IPAY_VENDOR_ID:-}

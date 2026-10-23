@@ -61,6 +61,13 @@ def sync_db_schema():
                                 print(f"[DB MIGRATION] Added missing column {col.name} to {table_name}")
                             except Exception as ex:
                                 print(f"[DB MIGRATION NOTICE] {ex}")
+            if "sqlite" in settings.DATABASE_URL and inspector.has_table("Polls"):
+                # Newly added display flags must preserve visibility of existing polls.
+                with engine.begin() as migration_conn:
+                    for visibility_column in ("ShowOnWeb", "ShowOnApp"):
+                        migration_conn.execute(text(
+                            f'UPDATE "Polls" SET "{visibility_column}" = 1 WHERE "{visibility_column}" IS NULL'
+                        ))
             if "sqlite" in settings.DATABASE_URL:
                 # Keep email and phone uniqueness enforced in the live database,
                 # including concurrent registration requests.

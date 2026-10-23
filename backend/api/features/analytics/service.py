@@ -334,7 +334,10 @@ def get_admin_dashboard_stats(db: Session):
         name = tx.VoterPseudonym.replace("Voter-", "").replace("-", " ").title() if tx.VoterPseudonym else "Anonymous"
         initials = "".join([w[0] for w in name.split()[:2]]).upper() if name != "Anonymous" else "AN"
         try:
-            ts = datetime.strptime(tx.Timestamp, "%Y-%m-%d %H:%M")
+            try:
+                ts = datetime.strptime(tx.Timestamp, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                ts = datetime.strptime(tx.Timestamp[:16], "%Y-%m-%d %H:%M")
             diff = (now - ts.replace(tzinfo=timezone.utc)).total_seconds() / 60
             time_ago = f"{int(diff)} min ago" if diff < 60 else f"{int(diff/60)}h ago"
         except Exception:
@@ -343,10 +346,12 @@ def get_admin_dashboard_stats(db: Session):
             name=name,
             initials=initials,
             time=time_ago,
-            ip=f"102.{(hash(name) % 250) + 1}.{(hash(name) % 200) + 10}.{(hash(name) % 240) + 1}",
-            device="Mobile App" if hash(name) % 2 == 0 else "Desktop Browser",
-            gps=f"-1.{(hash(name) % 9000) + 1000}, 36.{(hash(name) % 9000) + 1000}",
-            pollTitle=poll.Title if poll else "Unknown Poll"
+            ip=tx.IpAddress or None,
+            device=tx.Device or "Not recorded",
+            gps=None,
+            pollTitle=poll.Title if poll else "Unknown poll",
+            timestamp=tx.Timestamp,
+            county=tx.County
         ))
 
     # Anomaly stats

@@ -97,3 +97,11 @@ def county_for_point(latitude: float, longitude: float) -> str | None:
         if inside:
             return feature.get("properties", {}).get("shapeName")
     return None
+
+
+def canonical_county_name(value: str) -> str | None:
+    """Return the official county name when value is a known Kenya county."""
+    feature = _county_features().get(normalize_county(value))
+    if not feature:
+        return None
+    return feature.get("properties", {}).get("shapeName")

@@ -1,15 +1,15 @@
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from sqlalchemy.orm import Session
 from backend.api.core.database import get_db
 from backend.api.features.polls.schemas import (
     PollOut, PollCreate, VoteCastRequest, VoteCastResponse, VoteTransactionOut,
-    VoteStatusOut, VoteStatusRequest
+    VoteStatusOut, VoteStatusRequest, PollVisibilityUpdate
 )
 from backend.api.features.polls.service import (
-    list_polls, get_poll_by_id, create_poll, cast_vote, get_transactions_by_poll, reset_poll, get_vote_status
+    list_polls, list_managed_polls, update_poll_visibility, get_poll_by_id, create_poll, cast_vote, get_transactions_by_poll, reset_poll, get_vote_status
 )
 
 from backend.api.controllers.polls_controller import PollsController
@@ -17,6 +17,7 @@ from backend.api.middleware.auth_middleware import (
     get_current_user_token,
     get_optional_current_user_token,
 )
+from backend.api.core.client_ip import get_observed_client_ip
 
 router = APIRouter(prefix="/polls", tags=["Polls"])
 
@@ -107,10 +108,21 @@ def get_polls(
     plan: Optional[str] = Query(None, description="Filter polls by tier plan"),
     status: Optional[str] = Query(None, description="Filter polls by status"),
     include_all: Optional[bool] = Query(False, description="Include archived/disabled polls (admin)"),
+    surface: Optional[str] = Query(None, pattern="^(web|app)$", description="Public display surface"),
     db: Session = Depends(get_db)
 ):
     """Fetch real polls directly from database, optionally filtered by plan and status."""
-    return PollsController.get_polls(db, plan=plan, status=status, include_all=include_all)
+    return list_polls(db, plan=plan, status=status, include_all=include_all, surface=surface)
+
+@router.get("/manage", response_model=List[PollOut])
+def get_managed_polls(current_user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
+    """List polls owned by the current client, or every poll for administrators."""
+    return list_managed_polls(db, current_user)
+
+@router.patch("/{poll_id}/visibility", response_model=PollOut)
+def set_poll_visibility(poll_id: str, data: PollVisibilityUpdate, current_user: dict = Depends(get_current_user_token), db: Session = Depends(get_db)):
+    """Set independent website and mobile app visibility for a poll."""
+    return update_poll_visibility(db, poll_id, current_user, data.showOnWeb, data.showOnApp)
 
 
 @router.get("/exports/results")
@@ -255,6 +267,7 @@ def create_new_poll(
 def submit_vote(
     poll_id: str,
     vote_req: VoteCastRequest,
+    request: Request,
     current_user: dict = Depends(get_current_user_token),
     db: Session = Depends(get_db),
 ):
@@ -262,10 +275,11 @@ def submit_vote(
     # Account identity always comes from the verified server-side token.
     # Never accept a client-supplied account ID or downgrade to anonymous voting.
     vote_req.userId = current_user["sub"]
+    client_ip = get_observed_client_ip(request)
     if not (vote_req.voterKey and vote_req.voterKey.strip()):
         import uuid
         vote_req.voterKey = f"BALLOT-{uuid.uuid4().hex[:12].upper()}"
-    return PollsController.submit_vote(db, poll_id, vote_req)
+    return PollsController.submit_vote(db, poll_id, vote_req, client_ip=client_ip)
 
 @router.post("/{poll_id}/reset", response_model=PollOut)
 def reset_poll_endpoint(poll_id: str):
@@ -283,4 +297,4 @@ def get_poll_audit_transactions(
     is_admin = current_user.get("role") in ["Admin", "Super Admin"]
     if not is_admin and (poll.ownerId or "").lower() != (current_user.get("sub") or "").lower():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this poll")
-    return get_transactions_by_poll(db, poll_id)
+    return get_transactions_by_poll(db, poll_id, include_ip=is_admin)

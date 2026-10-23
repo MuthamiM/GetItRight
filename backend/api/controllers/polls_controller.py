@@ -26,8 +26,8 @@ class PollsController:
         return polls_service.create_poll(db, data)
 
     @staticmethod
-    def submit_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastResponse:
-        res = polls_service.cast_vote(db, poll_id, vote_req)
+    def submit_vote(db: Session, poll_id: str, vote_req: VoteCastRequest, client_ip: Optional[str] = None) -> VoteCastResponse:
+        res = polls_service.cast_vote(db, poll_id, vote_req, client_ip=client_ip)
 
         # Broadcast live vote update via WebSocket server
         poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()

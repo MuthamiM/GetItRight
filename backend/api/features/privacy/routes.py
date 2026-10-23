@@ -37,10 +37,34 @@ CATEGORY_FIELDS = {
 
 
 def _cipher() -> Fernet:
+    """Cipher for newly written data, independent of JWT/signing key rotation."""
+    return Fernet(settings.BROWSER_STORAGE_ENCRYPTION_KEY.encode("ascii"))
+
+
+def _legacy_cipher() -> Fernet:
+    """Read-only compatibility for records written before key versioning."""
     key = base64.urlsafe_b64encode(
         hashlib.sha256(("icapsq-browser-storage:" + settings.SECRET_KEY).encode("utf-8")).digest()
     )
     return Fernet(key)
+
+
+def _encrypt_json(value: dict) -> str:
+    payload = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return "v2:" + _cipher().encrypt(payload).decode("ascii")
+
+
+def _decrypt_json(encrypted_json: str) -> dict:
+    try:
+        if encrypted_json.startswith("v2:"):
+            cipher = _cipher()
+            token = encrypted_json[3:]
+        else:
+            cipher = _legacy_cipher()
+            token = encrypted_json
+        return json.loads(cipher.decrypt(token.encode("ascii")).decode("utf-8"))
+    except (InvalidToken, ValueError, UnicodeEncodeError, json.JSONDecodeError):
+        return {"unavailable": "Data key changed or stored data is unreadable"}
 
 
 def _clean_value(value: Any, depth: int = 0) -> Any:
@@ -196,9 +220,7 @@ def save_google_profile(
         ("google-profile:" + str(subject)).encode("utf-8"),
         hashlib.sha256,
     ).hexdigest()
-    encrypted = _cipher().encrypt(
-        json.dumps(profile, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    ).decode("ascii")
+    encrypted = _encrypt_json(profile)
 
     row = db.query(GoogleProfileConsentModel).filter(
         GoogleProfileConsentModel.GoogleSubjectHash == subject_hash
@@ -229,7 +251,6 @@ def save_browser_storage_snapshot(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Browser data collection consent is required")
 
     now = datetime.now(timezone.utc).isoformat()
-    cipher = _cipher()
     saved = 0
 
     try:
@@ -251,7 +272,7 @@ def save_browser_storage_snapshot(
                     db.delete(row)
                 continue
 
-            encrypted = cipher.encrypt(json.dumps(cleaned, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).decode("ascii")
+            encrypted = _encrypt_json(cleaned)
             if row:
                 row.UserId = (current_user or {}).get("sub")
                 row.EncryptedJson = encrypted
@@ -323,14 +344,10 @@ def list_browser_storage_snapshots(
     google_rows = google_query.order_by(
         GoogleProfileConsentModel.CapturedAt.desc()
     ).limit(fetch_count).all() if include_google else []
-    cipher = _cipher()
     records = []
 
     def decrypt_json(encrypted_json: str) -> dict:
-        try:
-            return json.loads(cipher.decrypt(encrypted_json.encode("ascii")).decode("utf-8"))
-        except (InvalidToken, ValueError, json.JSONDecodeError):
-            return {"unavailable": "Data key changed or stored data is unreadable"}
+        return _decrypt_json(encrypted_json)
 
     for row in snapshot_rows:
         records.append({

@@ -27,24 +27,27 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
   final List<String> _statusFilters = ['ALL', 'CLOSING', 'ENDED'];
   int _visibleCount = 5; // Show 5 polls on home screen by default
   bool _showingSsup = false;
-  late AnimationController _ssupController;
-  late Animation<Offset> _ssupSlide;
-  late Animation<double> _ssupOpacity;
+  bool _isRefreshing = false;
+  String? _voteErrorMessage;
+  late final AnimationController _ssupController;
+  late final Animation<Offset> _ssupSlide;
+  late final Animation<double> _ssupOpacity;
+  Timer? _voteErrorTimer;
 
   @override
   void initState() {
     super.initState();
     _ssupController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 220),
     );
     _ssupSlide = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _ssupController, curve: Curves.easeOut));
-    _ssupOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(parent: _ssupController, curve: Curves.easeOut));
-
+    _ssupOpacity = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _ssupController, curve: Curves.easeOut),
+    );
     scrollController.addListener(() {
       final show = scrollController.hasClients && scrollController.offset > 150;
       if (show != _showBackToTop && mounted) {
@@ -59,6 +62,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
   void dispose() {
     scrollController.dispose();
     _ssupController.dispose();
+    _voteErrorTimer?.cancel();
     super.dispose();
   }
 
@@ -159,6 +163,17 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     return arrayIndex == null ? null : poll.options[arrayIndex].id;
   }
 
+  String _existingVoteChannelMessage(Map<String, dynamic> status) {
+    switch (status['sourceChannel']?.toString()) {
+      case 'website':
+        return 'Already voted on web. App voting is disabled.';
+      case 'mobile_app':
+        return 'Already voted in app. Choice is locked.';
+      default:
+        return 'Already voted. Choice is locked.';
+    }
+  }
+
   /// Format countdown strictly as "Xd Xh XXmins left", no emojis, no Root, no 0x
   String _formatPollCountdown(Poll poll) {
     DateTime deadline;
@@ -184,6 +199,12 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
   Future<void> _loadPolls() async {
     final polls = await _apiClient.fetchPolls();
+    // A transient gateway failure currently comes back as an empty list.
+    // Keep the last successful feed visible instead of flashing "No polls".
+    if (polls.isEmpty && _polls.isNotEmpty) {
+      if (mounted && _isLoading) setState(() => _isLoading = false);
+      return;
+    }
     // Prioritize Zak Syengo / Kitui East poll at the very top, then newest
     polls.sort((a, b) {
       final isZakA = _isZakSyengoPoll(a);
@@ -221,6 +242,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
       if (serverStatus?['hasVoted'] == true) {
         p.selectedOptionId = _optionIdForStatus(p, serverStatus) ?? '__voted__';
+        p.voteSourceChannel = serverStatus?['sourceChannel']?.toString();
         await _cacheAccountVote(
           p,
           prefs,
@@ -252,9 +274,12 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       activePolls.add(p);
     }
 
+    final visiblePolls = activePolls.isNotEmpty ? activePolls : polls;
     if (mounted) {
       setState(() {
-        _polls = activePolls.isNotEmpty ? activePolls : polls;
+        _polls = visiblePolls;
+        // The feed should show every active poll after the first load/refresh.
+        _visibleCount = visiblePolls.length;
         _isLoading = false;
       });
     }
@@ -911,7 +936,11 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
       final savedOptionId = _optionIdForStatus(poll, priorVote);
       await _cacheAccountVote(poll, prefs, optionId: savedOptionId);
       if (mounted) {
-        setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+        setState(() {
+          poll.selectedOptionId = savedOptionId ?? '__voted__';
+          poll.voteSourceChannel = priorVote['sourceChannel']?.toString();
+        });
+        _showVoteError(_existingVoteChannelMessage(priorVote));
       }
       return;
     }
@@ -958,7 +987,12 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
         final savedOptionId = _optionIdForStatus(poll, identityStatus);
         await _cacheAccountVote(poll, prefs, optionId: savedOptionId);
         if (mounted) {
-          setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
+          setState(() {
+            poll.selectedOptionId = savedOptionId ?? '__voted__';
+            poll.voteSourceChannel =
+                identityStatus['sourceChannel']?.toString();
+          });
+          _showVoteError(_existingVoteChannelMessage(identityStatus));
         }
         return;
       }
@@ -1006,8 +1040,14 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
             : null;
         await _cacheAccountVote(poll, prefs, optionId: savedOptionId);
         if (mounted) {
-          setState(() => poll.selectedOptionId = savedOptionId ?? '__voted__');
-          _showVoteError('This poll already has a recorded vote.');
+          setState(() {
+            poll.selectedOptionId = savedOptionId ?? '__voted__';
+            poll.voteSourceChannel =
+                duplicateStatus?['sourceChannel']?.toString();
+          });
+          _showVoteError(duplicateStatus?['hasVoted'] == true
+              ? _existingVoteChannelMessage(duplicateStatus!)
+              : 'This poll already has a recorded vote.');
         }
         return;
       }
@@ -1023,6 +1063,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
     setState(() {
       poll.selectedOptionId = optionId;
+      poll.voteSourceChannel = 'mobile_app';
       final serverTotal = result['totalVotes'];
       poll.totalVotes =
           serverTotal is num ? serverTotal.toInt() : poll.totalVotes + 1;
@@ -1038,15 +1079,15 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
             children: [
               Icon(Icons.check_circle, color: Color(0xFF2A2A2A), size: 18),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Vote recorded! (Votes cannot be changed)',
-                  style: TextStyle(
+                  "Vote recorded for ${result['recordedCounty'] ?? 'the detected county'}. Your choice cannot be changed.",
+                  style: const TextStyle(
                     color: Color(0xFF2A2A2A),
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -1055,8 +1096,8 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
               ),
             ],
           ),
-          backgroundColor: Color(0xFFE5E5E5),
-          duration: Duration(seconds: 2),
+          backgroundColor: const Color(0xFFE5E5E5),
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -1064,27 +1105,48 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 
   void _showVoteError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFFE5E5E5),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    _voteErrorTimer?.cancel();
+    setState(() => _voteErrorMessage = message);
+    _voteErrorTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _voteErrorMessage = null);
+    });
   }
 
   Future<void> _handleRefresh() async {
-    if (mounted) {
-      setState(() => _showingSsup = true);
-      _ssupController.forward(from: 0);
+    _isRefreshing = true;
+    _hideSsup();
+    try {
+      // RefreshIndicator invokes this after the user releases the pull.
+      await _loadPolls();
+    } finally {
+      _isRefreshing = false;
+      _hideSsup();
     }
-    await _loadPolls();
-    await Future.delayed(const Duration(milliseconds: 1200));
-    if (mounted) {
-      await _ssupController.reverse();
-      setState(() => _showingSsup = false);
+  }
+
+  void _showSsup() {
+    if (!mounted || _showingSsup) return;
+    setState(() => _showingSsup = true);
+    _ssupController.forward(from: 0);
+  }
+
+  void _hideSsup() {
+    if (!mounted || !_showingSsup) return;
+    _ssupController.reverse().whenComplete(() {
+      if (mounted) setState(() => _showingSsup = false);
+    });
+  }
+
+  bool _handlePollScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    if (notification is OverscrollNotification &&
+        notification.overscroll < 0 &&
+        notification.metrics.extentBefore == 0) {
+      _showSsup();
+    } else if (notification is ScrollEndNotification && !_isRefreshing) {
+      _hideSsup();
     }
+    return false;
   }
 
   @override
@@ -1109,6 +1171,35 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
           children: [
             Column(
               children: [
+                if (_voteErrorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 440),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Color(0xFFEF5350), size: 19),
+                            const SizedBox(width: 7),
+                            Flexible(
+                              child: Text(
+                                _voteErrorMessage!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFFF2F2F3),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 // Status Dropdown Filter (ALL, CLOSING, ENDED)
                 Padding(
                   padding:
@@ -1194,594 +1285,649 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                               child: CircularProgressIndicator(
                                   color: Colors.white, strokeWidth: 2),
                             )
-                          : RefreshIndicator(
-                              color: const Color(0xFF303030),
-                              backgroundColor: const Color(0xFFE5E5E5),
-                              onRefresh: _handleRefresh,
-                              child: filteredPolls.isEmpty
-                                  ? ListView(
-                                      controller: scrollController,
-                                      physics:
-                                          const AlwaysScrollableScrollPhysics(),
-                                      children: const [
-                                        SizedBox(height: 120),
-                                        Center(
-                                          child: Text(
-                                            'No polls available',
-                                            style: TextStyle(
-                                                color: Color(0xFFB8B8B8)),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : ListView.builder(
-                                      controller: scrollController,
-                                      physics:
-                                          const AlwaysScrollableScrollPhysics(),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 14),
-                                      // Displayed polls + optional "Next Poll" words button
-                                      itemCount: displayedPolls.length +
-                                          (hasMorePolls ||
-                                                  (_visibleCount > 5 &&
-                                                      filteredPolls.length > 5)
-                                              ? 1
-                                              : 0),
-                                      itemBuilder: (context, index) {
-                                        // "Next Poll" underlined link at bottom of 5 polls
-                                        if (index >= displayedPolls.length) {
-                                          if (hasMorePolls) {
-                                            final remaining =
-                                                filteredPolls.length -
-                                                    displayedPolls.length;
-                                            return InkWell(
-                                              onTap: () {
-                                                setState(() {
-                                                  _visibleCount += 5;
-                                                });
-                                              },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 24,
-                                                        horizontal: 16),
-                                                child: Center(
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Text(
-                                                        'Next Poll ($remaining remaining) →',
-                                                        style: const TextStyle(
-                                                          color:
-                                                              Color(0xFF64B5F6),
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          decoration:
-                                                              TextDecoration
-                                                                  .underline,
-                                                          decorationColor:
-                                                              Color(0xFF64B5F6),
-                                                          decorationThickness:
-                                                              2.0,
-                                                          letterSpacing: 0.5,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 6),
-                                                      const Text(
-                                                        'Tap to view next available poll',
-                                                        style: TextStyle(
-                                                          color:
-                                                              Color(0xFF9E9E9E),
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          } else {
-                                            // Option to collapse back to 5
-                                            return InkWell(
-                                              onTap: () {
-                                                setState(() {
-                                                  _visibleCount = 5;
-                                                });
-                                                scrollToTop();
-                                              },
-                                              child: const Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 20),
-                                                child: Center(
+                          : NotificationListener<ScrollNotification>(
+                              onNotification: _handlePollScrollNotification,
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: RefreshIndicator(
+                                      // Keep the refresh spinner at the very top of
+                                      // the poll viewport, clearly visible on graphite.
+                                      color: const Color(0xFFE5E5E5),
+                                      backgroundColor: const Color(0xFF505050),
+                                      displacement: 18,
+                                      triggerMode:
+                                          RefreshIndicatorTriggerMode.onEdge,
+                                      edgeOffset: 2,
+                                      onRefresh: _handleRefresh,
+                                      child: filteredPolls.isEmpty
+                                          ? ListView(
+                                              controller: scrollController,
+                                              physics:
+                                                  const AlwaysScrollableScrollPhysics(),
+                                              children: const [
+                                                SizedBox(height: 120),
+                                                Center(
                                                   child: Text(
-                                                    'Show 5 in Home ↑',
+                                                    'No polls available',
                                                     style: TextStyle(
-                                                      color: Color(0xFF64B5F6),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      decoration: TextDecoration
-                                                          .underline,
-                                                      decorationColor:
-                                                          Color(0xFF64B5F6),
-                                                    ),
+                                                        color:
+                                                            Color(0xFFB8B8B8)),
                                                   ),
                                                 ),
-                                              ),
-                                            );
-                                          }
-                                        }
-
-                                        final poll = displayedPolls[index];
-                                        final isZak = _isZakSyengoPoll(poll);
-                                        final shareUrl =
-                                            _apiClient.generateShareLink(
-                                                type: 'poll', id: poll.id);
-
-                                        // NOT A CARD: Pure words and typography layout!
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 12),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              // Header Text Words & Status
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      if (isZak) ...[
-                                                        const Text(
-                                                          'FEATURED • ',
-                                                          style: TextStyle(
-                                                            color: Color(
-                                                                0xFFE5E5E5),
-                                                            fontSize: 11,
-                                                            fontWeight:
-                                                                FontWeight.w900,
-                                                            letterSpacing: 0.8,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                      Text(
-                                                        poll.trackName
-                                                            .toUpperCase(),
-                                                        style: const TextStyle(
-                                                          color:
-                                                              Color(0xFFB0B0B0),
-                                                          fontSize: 11,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          letterSpacing: 0.8,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      if (poll.selectedOptionId !=
-                                                          null) ...[
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal: 9,
-                                                                  vertical: 5),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: const Color(
-                                                                0xFFF2F2F3),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        30),
-                                                          ),
-                                                          child: const Row(
+                                              ],
+                                            )
+                                          : ListView.builder(
+                                              controller: scrollController,
+                                              physics:
+                                                  const AlwaysScrollableScrollPhysics(),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 14),
+                                              // Displayed polls + optional "Next Poll" words button
+                                              itemCount: displayedPolls.length +
+                                                  (hasMorePolls ||
+                                                          (_visibleCount > 5 &&
+                                                              filteredPolls
+                                                                      .length >
+                                                                  5)
+                                                      ? 1
+                                                      : 0),
+                                              itemBuilder: (context, index) {
+                                                // "Next Poll" underlined link at bottom of 5 polls
+                                                if (index >=
+                                                    displayedPolls.length) {
+                                                  if (hasMorePolls) {
+                                                    final remaining =
+                                                        filteredPolls.length -
+                                                            displayedPolls
+                                                                .length;
+                                                    return InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          _visibleCount += 5;
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 24,
+                                                                horizontal: 16),
+                                                        child: Center(
+                                                          child: Column(
                                                             mainAxisSize:
                                                                 MainAxisSize
                                                                     .min,
                                                             children: [
-                                                              Icon(Icons.check,
-                                                                  size: 12,
-                                                                  color: Color(
-                                                                      0xFF2E3035)),
-                                                              SizedBox(
-                                                                  width: 4),
                                                               Text(
-                                                                'VOTED',
+                                                                'Next Poll ($remaining remaining) →',
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Color(
+                                                                      0xFF64B5F6),
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  decoration:
+                                                                      TextDecoration
+                                                                          .underline,
+                                                                  decorationColor:
+                                                                      Color(
+                                                                          0xFF64B5F6),
+                                                                  decorationThickness:
+                                                                      2.0,
+                                                                  letterSpacing:
+                                                                      0.5,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 6),
+                                                              const Text(
+                                                                'Tap to view next available poll',
                                                                 style:
                                                                     TextStyle(
                                                                   color: Color(
-                                                                      0xFF2E3035),
-                                                                  fontSize: 9,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w900,
-                                                                  letterSpacing:
-                                                                      0.6,
+                                                                      0xFF9E9E9E),
+                                                                  fontSize: 12,
                                                                 ),
                                                               ),
                                                             ],
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            width: 8),
-                                                      ],
-                                                      InkWell(
-                                                        onTap: () =>
-                                                            _sharePoll(poll),
-                                                        child: const Row(
-                                                          children: [
-                                                            Icon(Icons.share,
-                                                                size: 12,
-                                                                color: Colors
-                                                                    .white70),
-                                                            SizedBox(width: 4),
-                                                            Text(
-                                                              'Share',
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .white70,
-                                                                fontSize: 11,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
                                                       ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 8),
-
-                                              // Poll Question Title (Pure words, bold and clear)
-                                              Text(
-                                                poll.title,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 17,
-                                                  fontWeight: FontWeight.w800,
-                                                  height: 1.3,
-                                                ),
-                                              ),
-
-                                              // Description Words
-                                              if (poll
-                                                  .description.isNotEmpty) ...[
-                                                const SizedBox(height: 5),
-                                                Text(
-                                                  poll.description,
-                                                  style: const TextStyle(
-                                                    color: Color(0xFFB8B8B8),
-                                                    fontSize: 12.5,
-                                                    height: 1.35,
-                                                  ),
-                                                ),
-                                              ],
-
-                                              const SizedBox(height: 14),
-
-                                              // Interactive Pie Chart Breakdown
-                                              InteractivePieChartWidget(
-                                                  key: ValueKey(
-                                                      '${poll.id}:${poll.selectedOptionId ?? ''}'),
-                                                  poll: poll),
-
-                                              const SizedBox(height: 14),
-
-                                              // Candidate Options — PURE WORDS! NOT IN A CARD!
-                                              ...poll.options
-                                                  .asMap()
-                                                  .entries
-                                                  .map((entry) {
-                                                final i = entry.key;
-                                                final opt = entry.value;
-                                                final isSelected =
-                                                    poll.selectedOptionId ==
-                                                        opt.id;
-                                                final sliceColor =
-                                                    InteractivePieChartWidget
-                                                            .sliceColors[
-                                                        i %
-                                                            InteractivePieChartWidget
-                                                                .sliceColors
-                                                                .length];
-
-                                                return InkWell(
-                                                  onTap:
-                                                      poll.selectedOptionId ==
-                                                              null
-                                                          ? () => _handleVote(
-                                                              poll, opt.id,
-                                                              optionIndex: i)
-                                                          : null,
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 8,
-                                                        horizontal: 2),
-                                                    child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        // Selection indicator circle / checkmark
-                                                        Container(
-                                                          width: 18,
-                                                          height: 18,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: isSelected
-                                                                ? sliceColor
-                                                                : Colors
-                                                                    .transparent,
-                                                            shape:
-                                                                BoxShape.circle,
-                                                            border: Border.all(
-                                                              color: isSelected
-                                                                  ? sliceColor
-                                                                  : sliceColor
-                                                                      .withOpacity(
-                                                                          0.6),
-                                                              width: 1.8,
-                                                            ),
-                                                          ),
-                                                          child: isSelected
-                                                              ? const Icon(
-                                                                  Icons.check,
-                                                                  size: 12,
-                                                                  color: Color(
-                                                                      0xFF1E1E1E))
-                                                              : null,
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 12),
-
-                                                        // Candidate name words
-                                                        Expanded(
+                                                    );
+                                                  } else {
+                                                    // Option to collapse back to 5
+                                                    return InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          _visibleCount = 5;
+                                                        });
+                                                        scrollToTop();
+                                                      },
+                                                      child: const Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                vertical: 20),
+                                                        child: Center(
                                                           child: Text(
-                                                            opt.text,
+                                                            'Show 5 in Home ↑',
                                                             style: TextStyle(
-                                                              color: isSelected
-                                                                  ? Colors.white
-                                                                  : const Color(
-                                                                      0xFFECECEC),
+                                                              color: Color(
+                                                                  0xFF64B5F6),
                                                               fontSize: 14,
-                                                              fontWeight: isSelected
-                                                                  ? FontWeight
-                                                                      .bold
-                                                                  : FontWeight
-                                                                      .w500,
-                                                              height: 1.3,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              decoration:
+                                                                  TextDecoration
+                                                                      .underline,
+                                                              decorationColor:
+                                                                  Color(
+                                                                      0xFF64B5F6),
                                                             ),
                                                           ),
                                                         ),
-
-                                                        const SizedBox(
-                                                            width: 8),
-
-                                                        // Votes & percentage words
-                                                        Text(
-                                                          '${opt.votes} votes (${opt.percentage.toStringAsFixed(1)}%)',
-                                                          style: TextStyle(
-                                                            color: sliceColor,
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                );
-                                              }),
-
-                                              const SizedBox(height: 10),
-
-                                              // CLICKABLE SHARED LINK (Directly tappable on screen)
-                                              InkWell(
-                                                onTap: () => _openUrl(shareUrl),
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 4),
-                                                  child: Row(
-                                                    children: [
-                                                      const Icon(Icons.link,
-                                                          size: 14,
-                                                          color: Color(
-                                                              0xFF64B5F6)),
-                                                      const SizedBox(width: 6),
-                                                      Expanded(
-                                                        child: Text(
-                                                          shareUrl,
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Color(
-                                                                0xFF64B5F6),
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .underline,
-                                                            decorationColor:
-                                                                Color(
-                                                                    0xFF64B5F6),
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
                                                       ),
-                                                      const SizedBox(width: 4),
-                                                      const Icon(
-                                                          Icons.open_in_new,
-                                                          size: 13,
-                                                          color: Color(
-                                                              0xFF64B5F6)),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
+                                                    );
+                                                  }
+                                                }
 
-                                              const SizedBox(height: 8),
+                                                final poll =
+                                                    displayedPolls[index];
+                                                final isZak =
+                                                    _isZakSyengoPoll(poll);
+                                                final shareUrl = _apiClient
+                                                    .generateShareLink(
+                                                        type: 'poll',
+                                                        id: poll.id);
 
-                                              // Total votes & countdown
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  // Left column: total votes + countdown below
-                                                  Column(
+                                                // NOT A CARD: Pure words and typography layout!
+                                                return Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 12),
+                                                  child: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
+                                                      // Header Text Words & Status
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              if (isZak) ...[
+                                                                const Text(
+                                                                  'FEATURED • ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Color(
+                                                                        0xFFE5E5E5),
+                                                                    fontSize:
+                                                                        11,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w900,
+                                                                    letterSpacing:
+                                                                        0.8,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                              Text(
+                                                                poll.trackName
+                                                                    .toUpperCase(),
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Color(
+                                                                      0xFFB0B0B0),
+                                                                  fontSize: 11,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  letterSpacing:
+                                                                      0.8,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              InkWell(
+                                                                onTap: () =>
+                                                                    _sharePoll(
+                                                                        poll),
+                                                                child:
+                                                                    const Row(
+                                                                  children: [
+                                                                    Icon(
+                                                                        Icons
+                                                                            .share,
+                                                                        size:
+                                                                            12,
+                                                                        color: Colors
+                                                                            .white70),
+                                                                    SizedBox(
+                                                                        width:
+                                                                            4),
+                                                                    Text(
+                                                                      'Share',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color: Colors
+                                                                            .white70,
+                                                                        fontSize:
+                                                                            11,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 8),
+
+                                                      // Poll Question Title (Pure words, bold and clear)
                                                       Text(
-                                                        '${poll.totalVotes} total votes',
+                                                        poll.title,
                                                         style: const TextStyle(
-                                                          color:
-                                                              Color(0xFFAAAAAA),
-                                                          fontSize: 12,
+                                                          color: Colors.white,
+                                                          fontSize: 17,
                                                           fontWeight:
-                                                              FontWeight.w500,
+                                                              FontWeight.w800,
+                                                          height: 1.3,
                                                         ),
                                                       ),
-                                                      const SizedBox(height: 3),
-                                                      Text(
-                                                        _formatPollCountdown(
-                                                            poll),
-                                                        style: const TextStyle(
-                                                          color:
-                                                              Color(0xFFE5E5E5),
-                                                          fontSize: 11,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          letterSpacing: 0.02,
-                                                          fontFamily:
-                                                              'monospace',
+
+                                                      // Description Words
+                                                      if (poll.description
+                                                          .isNotEmpty) ...[
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          poll.description,
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Color(
+                                                                0xFFB8B8B8),
+                                                            fontSize: 12.5,
+                                                            height: 1.35,
+                                                          ),
+                                                        ),
+                                                      ],
+
+                                                      const SizedBox(
+                                                          height: 14),
+
+                                                      // Interactive Pie Chart Breakdown
+                                                      InteractivePieChartWidget(
+                                                          key: ValueKey(
+                                                              '${poll.id}:${poll.selectedOptionId ?? ''}'),
+                                                          poll: poll,
+                                                          onAlreadyVotedTap: () =>
+                                                              _showVoteError(
+                                                                  _existingVoteChannelMessage({
+                                                                'sourceChannel':
+                                                                    poll.voteSourceChannel,
+                                                              }))),
+
+                                                      const SizedBox(
+                                                          height: 14),
+
+                                                      // Candidate Options — PURE WORDS! NOT IN A CARD!
+                                                      ...poll.options
+                                                          .asMap()
+                                                          .entries
+                                                          .map((entry) {
+                                                        final i = entry.key;
+                                                        final opt = entry.value;
+                                                        final isSelected =
+                                                            poll.selectedOptionId ==
+                                                                opt.id;
+                                                        final sliceColor =
+                                                            InteractivePieChartWidget
+                                                                    .sliceColors[
+                                                                i %
+                                                                    InteractivePieChartWidget
+                                                                        .sliceColors
+                                                                        .length];
+
+                                                        return InkWell(
+                                                          onTap: () {
+                                                            if (poll.selectedOptionId !=
+                                                                null) {
+                                                              _showVoteError(
+                                                                  _existingVoteChannelMessage({
+                                                                'sourceChannel':
+                                                                    poll.voteSourceChannel,
+                                                              }));
+                                                              return;
+                                                            }
+                                                            _handleVote(
+                                                                poll, opt.id,
+                                                                optionIndex: i);
+                                                          },
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical: 8,
+                                                                    horizontal:
+                                                                        2),
+                                                            child: Row(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                // Selection indicator circle / checkmark
+                                                                Container(
+                                                                  width: 18,
+                                                                  height: 18,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    color: isSelected
+                                                                        ? sliceColor
+                                                                        : Colors
+                                                                            .transparent,
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                    border:
+                                                                        Border
+                                                                            .all(
+                                                                      color: isSelected
+                                                                          ? sliceColor
+                                                                          : sliceColor
+                                                                              .withOpacity(0.6),
+                                                                      width:
+                                                                          1.8,
+                                                                    ),
+                                                                  ),
+                                                                  child: isSelected
+                                                                      ? const Icon(
+                                                                          Icons
+                                                                              .check,
+                                                                          size:
+                                                                              12,
+                                                                          color:
+                                                                              Color(0xFF1E1E1E))
+                                                                      : null,
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 12),
+
+                                                                // Candidate name words
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    opt.text,
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: isSelected
+                                                                          ? Colors
+                                                                              .white
+                                                                          : const Color(
+                                                                              0xFFECECEC),
+                                                                      fontSize:
+                                                                          14,
+                                                                      fontWeight: isSelected
+                                                                          ? FontWeight
+                                                                              .bold
+                                                                          : FontWeight
+                                                                              .w500,
+                                                                      height:
+                                                                          1.3,
+                                                                    ),
+                                                                  ),
+                                                                ),
+
+                                                                const SizedBox(
+                                                                    width: 8),
+
+                                                                // Votes & percentage words
+                                                                Text(
+                                                                  '${opt.votes} votes (${opt.percentage.toStringAsFixed(1)}%)',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color:
+                                                                        sliceColor,
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }),
+
+                                                      const SizedBox(
+                                                          height: 10),
+
+                                                      // CLICKABLE SHARED LINK (Directly tappable on screen)
+                                                      InkWell(
+                                                        onTap: () =>
+                                                            _openUrl(shareUrl),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 4),
+                                                          child: Row(
+                                                            children: [
+                                                              const Icon(
+                                                                  Icons.link,
+                                                                  size: 14,
+                                                                  color: Color(
+                                                                      0xFF64B5F6)),
+                                                              const SizedBox(
+                                                                  width: 6),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  shareUrl,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    color: Color(
+                                                                        0xFF64B5F6),
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    decoration:
+                                                                        TextDecoration
+                                                                            .underline,
+                                                                    decorationColor:
+                                                                        Color(
+                                                                            0xFF64B5F6),
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  width: 4),
+                                                              const Icon(
+                                                                  Icons
+                                                                      .open_in_new,
+                                                                  size: 13,
+                                                                  color: Color(
+                                                                      0xFF64B5F6)),
+                                                            ],
+                                                          ),
                                                         ),
                                                       ),
+
+                                                      const SizedBox(height: 8),
+
+                                                      // Total votes & countdown
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .end,
+                                                        children: [
+                                                          // Left column: total votes + countdown below
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                '${poll.totalVotes} total votes',
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Color(
+                                                                      0xFFAAAAAA),
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 3),
+                                                              Text(
+                                                                _formatPollCountdown(
+                                                                    poll),
+                                                                style:
+                                                                    const TextStyle(
+                                                                  color: Color(
+                                                                      0xFFE5E5E5),
+                                                                  fontSize: 11,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700,
+                                                                  letterSpacing:
+                                                                      0.02,
+                                                                  fontFamily:
+                                                                      'monospace',
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          ElevatedButton.icon(
+                                                            onPressed: () =>
+                                                                _sharePoll(
+                                                                    poll),
+                                                            icon: const Icon(
+                                                                Icons.share,
+                                                                size: 13,
+                                                                color: Color(
+                                                                    0xFF2A2A2A)),
+                                                            label: const Text(
+                                                              'Share Poll',
+                                                              style: TextStyle(
+                                                                color: Color(
+                                                                    0xFF2A2A2A),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 12,
+                                                              ),
+                                                            ),
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              backgroundColor:
+                                                                  const Color(
+                                                                      0xFFE5E5E5),
+                                                              foregroundColor:
+                                                                  const Color(
+                                                                      0xFF2A2A2A),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          14,
+                                                                      vertical:
+                                                                          6),
+                                                              minimumSize:
+                                                                  Size.zero,
+                                                              tapTargetSize:
+                                                                  MaterialTapTargetSize
+                                                                      .shrinkWrap,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            16),
+                                                              ),
+                                                              elevation: 0,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+
+                                                      const SizedBox(
+                                                          height: 14),
+                                                      // Subtle line divider between polls
+                                                      const Divider(
+                                                          color:
+                                                              Color(0xFF383838),
+                                                          height: 24,
+                                                          thickness: 1.0),
                                                     ],
                                                   ),
-                                                  ElevatedButton.icon(
-                                                    onPressed: () =>
-                                                        _sharePoll(poll),
-                                                    icon: const Icon(
-                                                        Icons.share,
-                                                        size: 13,
-                                                        color:
-                                                            Color(0xFF2A2A2A)),
-                                                    label: const Text(
-                                                      'Share Poll',
-                                                      style: TextStyle(
-                                                        color:
-                                                            Color(0xFF2A2A2A),
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          const Color(
-                                                              0xFFE5E5E5),
-                                                      foregroundColor:
-                                                          const Color(
-                                                              0xFF2A2A2A),
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 14,
-                                                          vertical: 6),
-                                                      minimumSize: Size.zero,
-                                                      tapTargetSize:
-                                                          MaterialTapTargetSize
-                                                              .shrinkWrap,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(16),
-                                                      ),
-                                                      elevation: 0,
-                                                    ),
-                                                  ),
+                                                );
+                                              },
+                                            ),
+                                    ),
+                                  ),
+                                  if (_showingSsup)
+                                    Positioned(
+                                      top: 8,
+                                      left: 0,
+                                      right: 0,
+                                      child: SlideTransition(
+                                        position: _ssupSlide,
+                                        child: FadeTransition(
+                                          opacity: _ssupOpacity,
+                                          child: const Center(
+                                            child: Text(
+                                              'ssup!',
+                                              style: TextStyle(
+                                                color: Color(0xFFE5E5E5),
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 16,
+                                                letterSpacing: 1.2,
+                                                shadows: [
+                                                  Shadow(
+                                                      color: Color(0x99000000),
+                                                      blurRadius: 5),
                                                 ],
                                               ),
-
-                                              const SizedBox(height: 14),
-                                              // Subtle line divider between polls
-                                              const Divider(
-                                                  color: Color(0xFF383838),
-                                                  height: 24,
-                                                  thickness: 1.0),
-                                            ],
+                                            ),
                                           ),
-                                        );
-                                      },
+                                        ),
+                                      ),
                                     ),
+                                ],
+                              ),
                             ),
                     ),
                   ),
                 ),
               ],
             ),
-
-            // "ssup!" top overlay — slides down from top on pull-to-refresh
-            if (_showingSsup)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SlideTransition(
-                  position: _ssupSlide,
-                  child: FadeTransition(
-                    opacity: _ssupOpacity,
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE5E5E5),
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(16),
-                          bottomRight: Radius.circular(16),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Text(
-                        'ssup!',
-                        style: TextStyle(
-                          color: Color(0xFF2A2A2A),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -1803,6 +1949,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 // ──────────────────────────────────────────────
 class InteractivePieChartWidget extends StatefulWidget {
   final Poll poll;
+  final VoidCallback? onAlreadyVotedTap;
 
   static const List<Color> sliceColors = [
     Color(0xFF29B6F6), // Light Blue
@@ -1815,7 +1962,8 @@ class InteractivePieChartWidget extends StatefulWidget {
     Color(0xFF8D6E63), // Brown
   ];
 
-  const InteractivePieChartWidget({super.key, required this.poll});
+  const InteractivePieChartWidget(
+      {super.key, required this.poll, this.onAlreadyVotedTap});
 
   @override
   State<InteractivePieChartWidget> createState() =>
@@ -1936,6 +2084,14 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapUp: (details) {
+            // Once the server has confirmed a ballot, keep the chart pinned to
+            // that choice. Chart taps are for exploring results before voting.
+            if (widget.poll.selectedOptionId != null) {
+              setState(() => _selectedIndex = _votedArrayIndex(widget.poll));
+              widget.onAlreadyVotedTap?.call();
+              return;
+            }
+
             const size = Size(160, 160);
             final center = Offset(size.width / 2, size.height / 2);
             final dx = details.localPosition.dx - center.dx;
@@ -2100,6 +2256,11 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
 
     return GestureDetector(
       onTap: () {
+        if (widget.poll.selectedOptionId != null) {
+          setState(() => _selectedIndex = _votedArrayIndex(widget.poll));
+          widget.onAlreadyVotedTap?.call();
+          return;
+        }
         setState(() {
           _selectedIndex = (isSelected) ? null : index;
         });

@@ -280,6 +280,10 @@
       text-align: left;
       box-sizing: border-box;
     }
+    .poll-opt-btn:disabled {
+      cursor: not-allowed;
+      opacity: 1;
+    }
     .poll-vote-layout {
       display: grid;
       grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.5fr);
@@ -855,6 +859,56 @@
       opacity: 0.3 !important;
       cursor: not-allowed !important;
     }
+
+    /* Compact centered vote feedback for desktop and mobile. */
+    #toast-container.toast-container {
+      position: fixed !important;
+      top: max(16px, env(safe-area-inset-top)) !important;
+      left: 50% !important;
+      right: auto !important;
+      bottom: auto !important;
+      z-index: 10000 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 10px !important;
+      width: min(420px, calc(100vw - 32px)) !important;
+      transform: translateX(-50%) !important;
+      pointer-events: none !important;
+    }
+    #toast-container .toast {
+      box-sizing: border-box !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      padding: 13px 15px !important;
+      border-radius: 12px !important;
+      background: #2e3035 !important;
+      color: #f2f2f3 !important;
+      border: 1px solid rgba(242, 242, 243, 0.2) !important;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28) !important;
+      line-height: 1.45 !important;
+      overflow-wrap: anywhere !important;
+      pointer-events: auto !important;
+    }
+    #toast-container .toast-error {
+      border-left: 1px solid rgba(242, 242, 243, 0.2) !important;
+    }
+    #toast-container .toast-error .toast-icon {
+      color: #ef5350 !important;
+      flex: 0 0 auto !important;
+    }
+    #toast-container .toast-message {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      color: inherit !important;
+    }
+    @media (max-width: 768px) {
+      #toast-container.toast-container {
+        top: max(12px, env(safe-area-inset-top)) !important;
+        width: min(380px, calc(100vw - 24px)) !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1035,11 +1089,14 @@
       setupFilters();
       setupSearch();
     });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') loadActivePolls();
+    });
 
     async function loadActivePolls() {
       const container = document.getElementById('polls-feed-container');
       try {
-        const res = await fetch(`${API_BASE}/polls?live_refresh=20261019`, { cache: 'no-store' });
+        const res = await fetch(`${API_BASE}/polls?surface=web&live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load polls");
         allPolls = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
         await syncAccountPollStatuses();
@@ -1057,6 +1114,9 @@
     async function syncAccountPollStatuses() {
       const token = localStorage.getItem('gir_token');
       if (!token) return;
+      // Treat ballot history as unknown until the server confirms it. A failed
+      // status lookup must never leave an already-voted ballot editable.
+      allPolls.forEach(poll => serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true }));
       const voterIdNumber = localStorage.getItem('gir_voter_id_number') ||
         localStorage.getItem('gir_user_national_id') || '';
       await Promise.all(allPolls.map(async poll => {
@@ -1073,7 +1133,10 @@
             } : {}),
             cache: 'no-store'
           });
-          if (!response.ok) return;
+          if (!response.ok) {
+            serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true });
+            return;
+          }
           const status = await response.json();
           serverVotedPolls.set(poll.id, status);
           if (status.hasVoted) {
@@ -1084,12 +1147,13 @@
             // and could incorrectly make this poll appear already voted.
             localStorage.removeItem('gir_voted_poll_' + poll.id);
           }
-        } catch (_) {}
+        } catch (_) {
+          serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true });
+        }
       }));
     }
 
     function lockPollOptions(pollId, optionIndex) {
-      setPollVotedBadge(pollId, true);
       const hasOptionIndex = optionIndex !== null && optionIndex !== undefined && optionIndex !== '' &&
         Number.isInteger(Number(optionIndex)) && Number(optionIndex) >= 0;
       const card = document.getElementById(`poll-card-${pollId}`);
@@ -1098,6 +1162,8 @@
         const buttonOptionIndex = Number(button.dataset.optionIndex ?? index);
         const isVotedChoice = hasOptionIndex && buttonOptionIndex === Number(optionIndex);
         button.disabled = true;
+        button.setAttribute('aria-disabled', 'true');
+        button.title = 'You have already voted in this poll.';
         button.style.cursor = 'not-allowed';
         button.classList.toggle('voted', isVotedChoice);
         if (isVotedChoice) {
@@ -1119,14 +1185,6 @@
     function getPollOptionArrayIndex(poll, apiIndex) {
       if (!poll || apiIndex === null || apiIndex === undefined || apiIndex === '' || !Number.isInteger(Number(apiIndex))) return -1;
       return (poll.options || []).findIndex((option, index) => getPollOptionApiIndex(option, index) === Number(apiIndex));
-    }
-
-    function setPollVotedBadge(pollId, hasVoted) {
-      const statusEl = document.getElementById(`voted-status-${pollId}`);
-      if (!statusEl) return;
-      statusEl.hidden = !hasVoted;
-      statusEl.style.setProperty('display', hasVoted ? 'inline-flex' : 'none', 'important');
-      statusEl.setAttribute('aria-hidden', String(!hasVoted));
     }
 
     function getPollDeadlineDate(p) {
@@ -1219,6 +1277,22 @@
     }
 
     function setPollOptionSelection(pollId, optionIndex, toggle = true) {
+      const poll = allPolls.find(item => item.id === pollId) || currentFilteredPolls.find(item => item.id === pollId);
+      const serverStatus = serverVotedPolls.get(pollId);
+      if (localStorage.getItem('gir_token') && serverStatus?.hasVoted !== true && serverStatus?.hasVoted !== false) {
+        App.showToast('Unable to verify ballot history. Refresh and try again before selecting an option.', 'error');
+        return;
+      }
+      if (serverStatus?.hasVoted) {
+        const votedIndex = poll && serverStatus.optionIndex !== null && serverStatus.optionIndex !== undefined
+          ? getPollOptionArrayIndex(poll, serverStatus.optionIndex)
+          : -1;
+        if (votedIndex >= 0) pollOptionSelections.set(pollId, votedIndex);
+        else pollOptionSelections.delete(pollId);
+        if (poll) renderPollOptionSelection(poll, votedIndex >= 0 ? votedIndex : null);
+        return;
+      }
+
       const selectedIndex = pollOptionSelections.get(pollId);
       if (optionIndex === null || optionIndex === undefined ||
           (toggle && selectedIndex === optionIndex)) {
@@ -1227,7 +1301,6 @@
         pollOptionSelections.set(pollId, optionIndex);
       }
 
-      const poll = allPolls.find(item => item.id === pollId) || currentFilteredPolls.find(item => item.id === pollId);
       if (poll) renderPollOptionSelection(poll, pollOptionSelections.has(pollId) ? pollOptionSelections.get(pollId) : null);
     }
 
@@ -1395,6 +1468,20 @@
       }[character]));
     }
 
+    function existingBallotMessage(status, currentChannel = 'website') {
+      if (status?.sourceChannel === 'mobile_app' && currentChannel !== 'mobile_app') {
+        return 'This poll already has a saved vote from the IcapsQ mobile app. Use the app to view your recorded choice; you cannot vote again here.';
+      }
+      if (status?.sourceChannel === 'website' && currentChannel !== 'website') {
+        return 'This poll already has a saved vote from the website. Use the website to view your recorded choice; you cannot vote again here.';
+      }
+      return status?.sourceChannel === 'mobile_app'
+        ? 'Your vote is already recorded in the IcapsQ mobile app. The recorded choice cannot be changed.'
+        : status?.sourceChannel === 'website'
+          ? 'Your vote is already recorded on the website. The recorded choice cannot be changed.'
+          : 'This poll already has a recorded vote. A second vote is not allowed.';
+    }
+
     function renderPollsFeed(polls, page = 1) {
       if (polls) currentFilteredPolls = polls;
       pollsCurrentPage = page;
@@ -1448,9 +1535,14 @@
         // Only a server-confirmed ballot for the signed-in identity locks options.
         // Old local markers were device-wide and blocked other accounts.
         const hasVoted = serverStatus?.hasVoted === true;
+        const statusUnavailable = Boolean(localStorage.getItem('gir_token')) &&
+          serverStatus?.hasVoted !== true && serverStatus?.hasVoted !== false;
 
         const optionColors = (p.options || []).map((_, index) => pollOptionColors[index % pollOptionColors.length]);
-        const optionsHtml = (p.options || []).map((opt, index) => {
+        const optionsHtml = (statusUnavailable ? `
+          <div role="status" style="margin:0 0 10px;padding:9px 12px;border-radius:8px;background:rgba(229,229,229,.1);color:var(--silver);font-size:12px;">
+            Ballot history could not be confirmed. Choices are locked to prevent a duplicate. Refresh to retry.
+          </div>` : '') + (p.options || []).map((opt, index) => {
           const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : null;
           const optionIndex = getPollOptionApiIndex(opt, index);
           const isVotedChoice = hasVoted && selectedVote !== 'locked' && String(optionIndex) === String(selectedVote);
@@ -1459,7 +1551,7 @@
           const percentage = getPollOptionPercent(p, opt);
           const optionColor = optionColors[index];
           return `
-            <button class="poll-opt-btn ${votedClass}" data-vote-poll-id="${escapePollHtml(p.id)}" data-option-index="${Number(optionIndex)}" style="--option-accent:${optionColor};${hasVoted ? 'cursor:not-allowed;' : ''}" ${hasVoted ? 'disabled' : ''}>
+            <button type="button" class="poll-opt-btn ${votedClass}" data-vote-poll-id="${escapePollHtml(p.id)}" data-option-index="${Number(optionIndex)}" aria-disabled="${hasVoted || statusUnavailable}" title="${statusUnavailable ? 'Ballot history is unavailable. Refresh to retry.' : hasVoted ? 'You have already voted in this poll.' : ''}" style="--option-accent:${optionColor};${hasVoted || statusUnavailable ? 'cursor:not-allowed;' : ''}" ${hasVoted || statusUnavailable ? 'disabled' : ''}>
               <div class="poll-option-content">
                 <span class="poll-option-name option-label">
                   <span class="poll-option-marker" aria-hidden="true"></span>
@@ -1493,9 +1585,6 @@
                 </span>
                 <span style="font-family:var(--font-mono); font-size:11px; color:var(--silver); opacity:0.6;">${escapePollHtml(p.id)}</span>
               </div>
-              <span id="voted-status-${escapePollHtml(p.id)}" class="poll-voted-text" aria-live="polite" aria-label="You voted in this poll" ${hasVoted ? '' : 'hidden'} style="display:${hasVoted ? 'inline-flex' : 'none'} !important;" aria-hidden="${!hasVoted}">
-                <span aria-hidden="true">✓</span><span>VOTED</span>
-              </span>
             </div>
 
             <!-- Title & Description -->
@@ -1598,6 +1687,17 @@
 
     async function submitPollVote(pollId, optionIndex, btnEl) {
       const poll = allPolls.find(item => item.id === pollId);
+      const savedStatus = serverVotedPolls.get(pollId);
+      if (!localStorage.getItem('gir_token')) {
+        pollOptionSelections.delete(pollId);
+        if (poll) renderPollOptionSelection(poll, null);
+        App.showToast('Sign in to vote. Each account can vote once in each poll.', 'error');
+        return;
+      }
+      if (savedStatus?.hasVoted === true) {
+        App.showToast(existingBallotMessage(savedStatus), 'error');
+        return;
+      }
       const selectedArrayIndex = getPollOptionArrayIndex(poll, optionIndex);
       if (selectedArrayIndex >= 0) setPollOptionSelection(pollId, selectedArrayIndex, false);
 
@@ -1647,6 +1747,9 @@
 
         const sessionToken = localStorage.getItem('gir_token');
         if (!sessionToken) {
+          pollOptionSelections.delete(pollId);
+          const currentPoll = allPolls.find(item => item.id === pollId);
+          if (currentPoll) renderPollOptionSelection(currentPoll, null);
           App.showToast('Sign in to vote. Each account can vote once in each poll.', 'error');
           return;
         }
@@ -1672,6 +1775,7 @@
           lockPollOptions(pollId, priorVote.optionIndex);
           const votedArrayIndex = getPollOptionArrayIndex(allPolls.find(poll => poll.id === pollId), priorVote.optionIndex);
           if (votedArrayIndex >= 0) setPollOptionSelection(pollId, votedArrayIndex, false);
+          App.showToast(existingBallotMessage(priorVote), 'error');
           return;
         }
 
@@ -1687,11 +1791,16 @@
         });
         if (res.ok) {
           const data = await res.json();
-          serverVotedPolls.set(pollId, { hasVoted: true, optionIndex });
+          serverVotedPolls.set(pollId, { hasVoted: true, optionIndex, sourceChannel: 'website' });
           lockPollOptions(pollId, optionIndex);
           const selectedArrayIndex = getPollOptionArrayIndex(allPolls.find(poll => poll.id === pollId), optionIndex);
           if (selectedArrayIndex >= 0) setPollOptionSelection(pollId, selectedArrayIndex, false);
-          App.showToast('Submitted!', 'success');
+          App.showToast(
+            String(data.recordedCounty || '').includes('unclassified')
+              ? 'Vote recorded. Device location saved; county boundary could not classify the point.'
+              : `Vote recorded for ${data.recordedCounty || 'the detected county'}.`,
+            'success'
+          );
 
           // Refresh polls data
           const refreshRes = await fetch(`${API_BASE}/polls/${pollId}`);
@@ -1706,11 +1815,27 @@
         } else {
           const errData = await res.json().catch(() => ({}));
           if (res.status === 409 && /already voted/i.test(String(errData.detail || ''))) {
-            serverVotedPolls.set(pollId, { hasVoted: true, optionIndex: null });
-            lockPollOptions(pollId, null);
+            const statusRes = await fetch(`${API_BASE}/polls/${encodeURIComponent(pollId)}/vote-status`, {
+              method: 'POST',
+              headers: voteRequestHeaders(),
+              body: JSON.stringify({ voterIdNumber, voterKey: verified.voterKey || assignedUserId }),
+              cache: 'no-store'
+            }).catch(() => null);
+            const recordedVote = statusRes?.ok ? await statusRes.json().catch(() => null) : null;
+            const finalStatus = recordedVote?.hasVoted
+              ? recordedVote
+              : { hasVoted: true, optionIndex: null };
+            serverVotedPolls.set(pollId, finalStatus);
+            lockPollOptions(pollId, finalStatus.optionIndex);
+            const recordedIndex = finalStatus.optionIndex !== null && finalStatus.optionIndex !== undefined
+              ? getPollOptionArrayIndex(allPolls.find(p => p.id === pollId), finalStatus.optionIndex)
+              : -1;
+            if (recordedIndex >= 0) setPollOptionSelection(pollId, recordedIndex, false);
+            App.showToast(recordedVote?.hasVoted ? existingBallotMessage(recordedVote) : 'This poll already has a recorded vote.', 'error');
             return;
           }
-          App.showToast(errData.detail || 'Could not record vote', 'error');
+          const detail = String(errData.detail || 'Could not record vote');
+          App.showToast(`Vote not recorded. ${detail}`, 'error');
           if (btnEl) btnEl.disabled = false;
         }
       } catch (err) {

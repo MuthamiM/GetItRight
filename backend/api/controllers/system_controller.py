@@ -42,7 +42,7 @@ class SystemController:
             "update_available": update_available,
             "force_update": False,
             "title": f"IcapsQ v{settings.VERSION}",
-            "release_notes": "• Plan limits now match the server catalog\n• Profile colors now match polls and surveys",
+            "release_notes": "• Poll refresh keeps the active list visible\n• Compact vote errors and larger first-name greeting",
             "download_url": "https://icapsq.mftechnologies.org/app-release.apk",
         }
 

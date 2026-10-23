@@ -18,6 +18,8 @@ class PollModel(Base):
     MerkleRoot = Column(String, nullable=False)
     IsEncryptedBallot = Column(Integer, default=1)
     EndDate = Column(String, nullable=True)
+    ShowOnWeb = Column(Integer, nullable=False, default=1, server_default="1")
+    ShowOnApp = Column(Integer, nullable=False, default=1, server_default="1")
 
     options = relationship("PollOptionModel", back_populates="poll", cascade="all, delete-orphan", lazy="joined")
 

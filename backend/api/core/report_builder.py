@@ -181,7 +181,7 @@ def build_poll_xlsx(poll, votes) -> bytes:
 
     sector = poll.Category or "Civic Priority"
     status_str = (poll.Status or "Active").upper()
-    ts_now = datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC")
+    ts_now = datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC")
     ws1["C4"] = f"Sector: {sector}   |   Status: {status_str}   |   Generated: {ts_now}"
     ws1["C4"].font = Font(name="Segoe UI", size=9, italic=True, color="64748B")
 
@@ -485,7 +485,7 @@ def build_poll_docx(poll, votes) -> bytes:
         ("Sector / Category", poll.Category or "Civic Priority"),
         ("Consensus Status", (poll.Status or "Active").upper()),
         ("Total Verified Ballots", f"{len(votes):,} Authenticated Citizen Submissions"),
-        ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC")),
+        ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC")),
     ]
     for idx, (k, v) in enumerate(meta_data):
         c_k = meta_table.cell(idx, 0)
@@ -637,7 +637,7 @@ def build_poll_pdf(poll, votes) -> bytes:
         [Paragraph("<b>Sector / Track:</b>", styles['Normal']), Paragraph(poll.Category or "Civic Priority", styles['Normal'])],
         [Paragraph("<b>Consensus Status:</b>", styles['Normal']), Paragraph((poll.Status or "Active").upper(), styles['Normal'])],
         [Paragraph("<b>Total Verified Ballots:</b>", styles['Normal']), Paragraph(f"{total_votes:,} Authenticated Citizen Ballots", styles['Normal'])],
-        [Paragraph("<b>Date Generated:</b>", styles['Normal']), Paragraph(datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC"), styles['Normal'])],
+        [Paragraph("<b>Date Generated:</b>", styles['Normal']), Paragraph(datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC"), styles['Normal'])],
     ]
     t_meta = Table(meta_table_data, colWidths=[140, 400])
     t_meta.setStyle(TableStyle([
@@ -753,7 +753,7 @@ def build_survey_xlsx(survey, responses) -> bytes:
     ws1["C3"].font = Font(name="Segoe UI", size=11, bold=True, color="1E293B")
 
     track = survey.Track or "Public Policy"
-    ws1["C4"] = f"Track: {track}  |  Total Responses: {len(responses):,}  |  Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC')}"
+    ws1["C4"] = f"Track: {track}  |  Total Responses: {len(responses):,}  |  Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M:%S UTC')}"
     ws1["C4"].font = Font(name="Segoe UI", size=9, italic=True, color="64748B")
 
     # Top KPI Cards
@@ -992,7 +992,7 @@ def build_survey_docx(survey, responses) -> bytes:
         ("Track / Domain", survey.Track or "Public Policy"),
         ("Current Status", (survey.Status or "Active").upper()),
         ("Target / Recorded Responses", f"{len(responses):,} Submissions (Target: {getattr(survey, 'TargetResponses', 500) or 500:,})"),
-        ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC")),
+        ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC")),
     ]
     for idx, (k, v) in enumerate(meta_data):
         c_k = meta_table.cell(idx, 0)
@@ -1116,7 +1116,7 @@ def build_survey_pdf(survey, responses) -> bytes:
         [Paragraph("<b>Status</b>", styles["Normal"]), Paragraph(safe(getattr(survey, "Status", None), "Active").upper(), styles["Normal"])],
         [Paragraph("<b>Recorded responses</b>", styles["Normal"]), Paragraph(f"{len(responses):,}", styles["Normal"])],
         [Paragraph("<b>Target responses</b>", styles["Normal"]), Paragraph(f"{getattr(survey, 'TargetResponses', 500) or 500:,}", styles["Normal"])],
-        [Paragraph("<b>Generated</b>", styles["Normal"]), Paragraph(datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC"), styles["Normal"])],
+        [Paragraph("<b>Generated</b>", styles["Normal"]), Paragraph(datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC"), styles["Normal"])],
     ]
     meta_table = Table(meta_data, colWidths=[135, 405])
     meta_table.setStyle(TableStyle([
@@ -1250,7 +1250,7 @@ def build_turnout_xlsx(polls, surveys, transactions_by_poll, responses_by_survey
     total_activity = total_poll_votes + total_survey_resp
     overall_turnout_pct = (total_activity / total_registered_baseline * 100) if total_registered_baseline > 0 else None
 
-    ws1["C4"] = f"Total Campaigns: {len(polls) + len(surveys)}  |  Total Ballots Cast: {total_activity:,}  |  Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M UTC')}"
+    ws1["C4"] = f"Total Campaigns: {len(polls) + len(surveys)}  |  Total Ballots Cast: {total_activity:,}  |  Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %H:%M:%S UTC')}"
     ws1["C4"].font = Font(name="Segoe UI", size=9, italic=True, color="64748B")
 
     # 5 KPI Cards
@@ -1464,7 +1464,7 @@ def build_turnout_docx(polls, surveys, transactions_by_poll, responses_by_survey
         ("Overall Platform Turnout", f"{overall_turnout_pct:.1f}% ({total_activity:,} of {total_registered_baseline:,} baseline)" if overall_turnout_pct is not None else f"Unavailable: no target quotas set ({total_activity:,} recorded)"),
         ("Active Sovereign Campaigns", f"{len(polls)} Polls, {len(surveys)} Surveys"),
         ("Verification Integrity", "100% Cryptographically Validated Ballots"),
-        ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC")),
+        ("Report Timestamp", datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M:%S UTC")),
     ]
     for idx, (k, v) in enumerate(meta_data):
         c_k = meta_table.cell(idx, 0)

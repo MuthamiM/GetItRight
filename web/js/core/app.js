@@ -158,6 +158,10 @@ const App = {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
+    // Keep feedback readable on small screens: replace the current toast
+    // instead of stacking duplicate notices over the page.
+    container.replaceChildren();
+
     const iconMap = {
       success: Icons.checkCircle,
       error: Icons.alertCircle,
@@ -169,15 +173,7 @@ const App = {
     toast.innerHTML = `
       <span class="toast-icon">${iconMap[type] || iconMap.info}</span>
       <span class="toast-message">${message}</span>
-      <button class="toast-dismiss btn btn-ghost btn-icon" style="width:28px;height:28px;">${Icons.close}</button>
     `;
-
-    const dismiss = toast.querySelector('.toast-dismiss');
-    dismiss.addEventListener('click', () => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(100%)';
-      setTimeout(() => toast.remove(), 200);
-    });
 
     container.appendChild(toast);
 

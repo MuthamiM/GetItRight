@@ -67,8 +67,10 @@ class ApiClient {
     for (final url in _orderedBaseUrls) {
       try {
         final response = await http
-            .get(Uri.parse('$url/polls?live_refresh=20261019'))
-            .timeout(const Duration(seconds: 2));
+            .get(Uri.parse('$url/polls?surface=app&live_refresh=20261019'))
+            // The public gateway may need more than two seconds on the first
+            // request; don't turn a slow response into an empty poll feed.
+            .timeout(const Duration(seconds: 8));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           final List<dynamic> data =
@@ -957,7 +959,7 @@ class ApiClient {
 
   /// Check if an app update is available
   Future<Map<String, dynamic>> checkAppUpdate() async {
-    const currentAppVersion = '2.1.27';
+    const currentAppVersion = '2.1.34';
     bool isNewerVersion(String candidate, String current) {
       List<int>? parse(String version) {
         final normalized = version.trim().replaceFirst(RegExp(r'^v'), '');
@@ -1015,7 +1017,7 @@ class ApiClient {
               'update_available':
                   isNewerVersion(serverVersion, currentAppVersion),
               'release_notes':
-                  'Plan limits now match the server catalog. Profile colors now match polls and surveys.',
+                  'Vote errors now appear at the top of the screen, and pull-to-refresh feedback stays clear of poll content.',
               'download_url':
                   'https://icapsq.mftechnologies.org/app-release.apk',
             };
@@ -1027,7 +1029,7 @@ class ApiClient {
       'latest_version': currentAppVersion,
       'update_available': false,
       'release_notes':
-          'Plan limits now match the server catalog. Profile colors now match polls and surveys.',
+          'Vote errors now appear at the top of the screen, and pull-to-refresh feedback stays clear of poll content.',
       'download_url': 'https://icapsq.mftechnologies.org/app-release.apk',
     };
   }

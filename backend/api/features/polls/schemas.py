@@ -29,6 +29,12 @@ class PollOut(BaseModel):
     total_votes: Optional[int] = None
     created_at: Optional[str] = None
     is_multiple_choice: bool = False
+    showOnWeb: bool = True
+    showOnApp: bool = True
+
+class PollVisibilityUpdate(BaseModel):
+    showOnWeb: bool
+    showOnApp: bool
 
 class PollOptionCreate(BaseModel):
     label: str
@@ -70,6 +76,7 @@ class VoteCastResponse(BaseModel):
     optionIndex: int
     totalVotes: int
     timestamp: str
+    recordedCounty: str
 
 class VoteStatusRequest(BaseModel):
     voterIdNumber: Optional[str] = None
@@ -94,6 +101,7 @@ class VoteTransactionOut(BaseModel):
     longitude: Optional[float] = None
     accuracy: Optional[float] = None
     gpsCoordinates: Optional[str] = None
+    ipAddress: Optional[str] = None
 
 class VoteStatusOut(BaseModel):
     hasVoted: bool
@@ -104,5 +112,6 @@ class VoteStatusOut(BaseModel):
     optionLabel: Optional[str] = None
     merkleLeafIndex: Optional[int] = None
     timestamp: Optional[str] = None
+    sourceChannel: Optional[str] = None
 
 

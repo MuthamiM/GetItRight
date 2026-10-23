@@ -308,7 +308,7 @@ class ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           _buildSettingsRow(
             icon: Icons.phone_android_rounded,
             title: 'IcapsQ app',
-            subtitle: 'Version 2.1.27  ·  Build 33',
+            subtitle: 'Version 2.1.34  ·  Build 40',
             trailing: const SizedBox(width: 8),
           ),
           _buildDivider(),

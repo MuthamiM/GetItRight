@@ -743,7 +743,9 @@
             <option value="Enterprise Feedback">Enterprise Feedback</option>
             <option value="Product Roadmap">Product Roadmap</option>
             <option value="Civic Priority">Civic Priority</option>
+            <option value="__custom__">Other category…</option>
           </select>
+          <input type="text" class="form-input" id="wizard-track-custom" placeholder="Enter your category" maxlength="100" aria-label="Custom category" style="display:none;margin-top:10px;">
           <input type="hidden" id="wizard-plan" value="pro">
         </div>
 
@@ -851,9 +853,10 @@
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Target Verified Responses</label>
-            <input type="number" class="form-input" id="wizard-target" value="500" min="10">
+          <div class="form-group" id="target-goal-group" style="margin-bottom:0;">
+            <label class="form-label">Target response goal (optional)</label>
+            <input type="number" class="form-input" id="wizard-target" min="1" placeholder="Leave blank if unknown">
+            <div class="panel-desc" style="margin:6px 0 0;">Set an expected number of responses if you know it. You do not need to estimate your audience size.</div>
           </div>
           <div class="form-group" style="margin-bottom:0;">
             <label class="form-label">Active Duration (Hours)</label>
@@ -958,8 +961,10 @@
       try {
         const title = (document.getElementById('wizard-title')?.value || '').trim();
         const desc = (document.getElementById('wizard-desc')?.value || '').trim();
-        const track = document.getElementById('wizard-track')?.value || 'Constituency MP Election';
-        const target = parseInt(document.getElementById('wizard-target')?.value) || 500;
+        const trackSelect = document.getElementById('wizard-track');
+        const track = getWizardTrack();
+        const targetInput = document.getElementById('wizard-target')?.value;
+        const target = targetInput ? parseInt(targetInput, 10) : 0;
         const durationHours = parseInt(document.getElementById('wizard-duration')?.value) || 168;
 
         // Only save if there is some progress
@@ -976,6 +981,7 @@
           title,
           desc,
           track,
+          customTrack: trackSelect?.value === '__custom__',
           target,
           durationHours,
           selectedTemplate: selectedTemplate ? selectedTemplate.id : null,
@@ -1024,10 +1030,18 @@
           document.getElementById('wizard-desc').value = draft.desc;
         }
         if (draft.track && document.getElementById('wizard-track')) {
-          document.getElementById('wizard-track').value = draft.track;
+          const trackSelect = document.getElementById('wizard-track');
+          const knownTrack = Array.from(trackSelect.options).some(option => option.value === draft.track);
+          if (knownTrack) {
+            trackSelect.value = draft.track;
+          } else {
+            trackSelect.value = '__custom__';
+            document.getElementById('wizard-track-custom').value = draft.track;
+          }
+          updateCustomTrackVisibility();
         }
-        if (draft.target && document.getElementById('wizard-target')) {
-          document.getElementById('wizard-target').value = draft.target;
+        if (document.getElementById('wizard-target')) {
+          document.getElementById('wizard-target').value = draft.target > 0 ? draft.target : '';
         }
         if (draft.durationHours && document.getElementById('wizard-duration')) {
           document.getElementById('wizard-duration').value = draft.durationHours;
@@ -1122,6 +1136,7 @@
     function isStep1Valid() {
       const title = (document.getElementById('wizard-title')?.value || '').trim();
       const desc = (document.getElementById('wizard-desc')?.value || '').trim();
+      if (!getWizardTrack()) return { valid: false, msg: 'Enter a category to continue' };
       if (!title) return { valid: false, msg: 'Title is required (min 3 chars)' };
       if (title.length < 3) return { valid: false, msg: `Title requires at least 3 characters (${title.length}/3)` };
       if (title.length > 200) return { valid: false, msg: `Title exceeds maximum 200 characters (${title.length}/200)` };
@@ -1129,6 +1144,25 @@
       if (desc.length < 5) return { valid: false, msg: `Description requires at least 5 characters (${desc.length}/5)` };
       if (desc.length > 2000) return { valid: false, msg: `Description exceeds maximum 2000 characters (${desc.length}/2000)` };
       return { valid: true, msg: 'Ready to continue' };
+    }
+
+    function getWizardTrack() {
+      const select = document.getElementById('wizard-track');
+      if (!select) return '';
+      return select.value === '__custom__'
+        ? (document.getElementById('wizard-track-custom')?.value || '').trim()
+        : select.value;
+    }
+
+    function updateCustomTrackVisibility() {
+      const select = document.getElementById('wizard-track');
+      const customInput = document.getElementById('wizard-track-custom');
+      if (!select || !customInput) return;
+      const custom = select.value === '__custom__';
+      customInput.style.display = custom ? 'block' : 'none';
+      customInput.required = custom;
+      if (!custom) customInput.value = '';
+      validateStep1();
     }
 
     function validateStep1() {
@@ -1278,6 +1312,7 @@
       document.getElementById('type-poll').classList.toggle('selected', type === 'poll');
 
       document.getElementById('template-gallery-section').style.display = type === 'survey' ? 'block' : 'none';
+      document.getElementById('target-goal-group').style.display = type === 'survey' ? 'block' : 'none';
 
       if (type === 'poll') {
         questions = [{ id: 1, text: 'Cast your verifiable ballot:', type: 'choice', choices: ['Candidate A', 'Candidate B', 'Undecided'], required: true }];
@@ -1595,7 +1630,11 @@
     // === REVIEW SUMMARY ===
     function renderReview() {
       const title = document.getElementById('wizard-title').value || 'Untitled';
-      const track = document.getElementById('wizard-track').value;
+      const track = getWizardTrack();
+      const targetValue = parseInt(document.getElementById('wizard-target').value, 10);
+      const targetLabel = selectedType !== 'survey'
+        ? 'Not applicable to polls'
+        : (Number.isFinite(targetValue) && targetValue > 0 ? targetValue.toLocaleString() : 'Not set');
       const desc = document.getElementById('wizard-desc').value || 'No description provided';
 
       const choiceCount = questions.filter(q => q.type === 'choice').length;
@@ -1604,22 +1643,23 @@
 
       document.getElementById('review-summary').innerHTML = `
         <div class="summary-row"><span class="summary-label">Format Type</span><span class="summary-value">${selectedType === 'survey' ? 'Multi-Step Survey' : 'Single Poll Ballot'}</span></div>
-        <div class="summary-row"><span class="summary-label">Campaign Title</span><span class="summary-value">${title}</span></div>
-        <div class="summary-row"><span class="summary-label">Track / Classification</span><span class="summary-value">${track}</span></div>
-        <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:440px;text-align:right;">${desc}</span></div>
+        <div class="summary-row"><span class="summary-label">Campaign Title</span><span class="summary-value">${escapeHtml(title)}</span></div>
+        <div class="summary-row"><span class="summary-label">Track / Classification</span><span class="summary-value">${escapeHtml(track)}</span></div>
+        <div class="summary-row"><span class="summary-label">Description</span><span class="summary-value" style="max-width:440px;text-align:right;">${escapeHtml(desc)}</span></div>
         <div class="summary-row"><span class="summary-label">Total Inquiries</span><span class="summary-value">${questions.length}</span></div>
         <div class="summary-row"><span class="summary-label">Breakdown</span><span class="summary-value">${choiceCount} Choice · ${textCount} Text Field · ${ratingCount} Rating</span></div>
+        <div class="summary-row"><span class="summary-label">Target response goal</span><span class="summary-value">${targetLabel}</span></div>
         ${selectedTemplate ? `<div class="summary-row"><span class="summary-label">Institutional Template</span><span class="summary-value">${selectedTemplate.name}</span></div>` : ''}
 
         <div style="margin-top:24px;">
           <div style="font-size:13px;font-weight:800;color:var(--silver);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em;">Questions Structure</div>
           ${questions.map((q, i) => `
             <div style="background:rgba(229,229,229,0.06);border:1.5px solid rgba(229,229,229,0.15);border-radius:12px;padding:14px;margin-bottom:10px;">
-              <div style="font-weight:700;font-size:13.5px;color:var(--silver);">Q${i+1}: ${q.text || 'Untitled Question'}</div>
+              <div style="font-weight:700;font-size:13.5px;color:var(--silver);">Q${i+1}: ${escapeHtml(q.text || 'Untitled Question')}</div>
               <div style="font-size:11.5px;color:var(--text-sub);margin-top:4px;font-family:var(--font-mono);">
                 Format: ${q.type.toUpperCase()}${q.type === 'choice' ? ` · ${q.choices.length} options` : ''}${q.required ? ' · Mandatory' : ''}
               </div>
-              ${q.type === 'choice' ? `<div style="font-size:12px;color:var(--text-main);margin-top:6px;">${q.choices.join(' • ')}</div>` : ''}
+              ${q.type === 'choice' ? `<div style="font-size:12px;color:var(--text-main);margin-top:6px;">${q.choices.map(escapeHtml).join(' • ')}</div>` : ''}
             </div>
           `).join('')}
         </div>
@@ -1630,10 +1670,11 @@
     async function publishWizard() {
       const btn = document.getElementById('btn-publish');
       const title = document.getElementById('wizard-title').value.trim();
-      const track = document.getElementById('wizard-track').value;
+      const track = getWizardTrack();
       const plan = document.getElementById('wizard-plan')?.value || 'free';
       const desc = document.getElementById('wizard-desc').value.trim();
-      const target = parseInt(document.getElementById('wizard-target').value) || 500;
+      const targetValue = parseInt(document.getElementById('wizard-target').value, 10);
+      const target = Number.isFinite(targetValue) && targetValue > 0 ? targetValue : 0;
       const durationHours = parseInt(document.getElementById('wizard-duration').value) || 168;
 
       const v1 = isStep1Valid();
@@ -1770,7 +1811,16 @@
           queueAutoSaveDraft();
         });
       }
-      if (trackEl) trackEl.addEventListener('change', queueAutoSaveDraft);
+      const customTrackEl = document.getElementById('wizard-track-custom');
+      if (trackEl) trackEl.addEventListener('change', () => {
+        updateCustomTrackVisibility();
+        validateStep1();
+        queueAutoSaveDraft();
+      });
+      if (customTrackEl) customTrackEl.addEventListener('input', () => {
+        validateStep1();
+        queueAutoSaveDraft();
+      });
       if (targetEl) targetEl.addEventListener('input', queueAutoSaveDraft);
       if (durationEl) durationEl.addEventListener('change', queueAutoSaveDraft);
 

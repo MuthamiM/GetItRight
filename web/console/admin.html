@@ -1106,8 +1106,8 @@
           <div class="bottom-card">
             <div class="table-responsive">
               <table class="data-table">
-                <thead><tr><th>Type</th><th>Campaign / Title</th><th>Voter Details</th><th>Recorded Choice / Response</th><th>County</th><th>Timestamp</th><th>Actions</th></tr></thead>
-                <tbody id="admin-responses-tbody"><tr><td colspan="7">Loading responses...</td></tr></tbody>
+                <thead><tr><th>Type</th><th>Campaign / Title</th><th>Voter Details</th><th>Recorded Choice / Response</th><th>County</th><th>IP Address</th><th>Timestamp (EAT)</th><th>Actions</th></tr></thead>
+                <tbody id="admin-responses-tbody"><tr><td colspan="8">Loading responses...</td></tr></tbody>
               </table>
             </div>
             <div class="list-pagination-center" id="admin-responses-pagination"></div>
@@ -2284,7 +2284,7 @@
     async function loadAllData() {
       try {
         const [pRes, sRes, uRes, cRes, rRes, dsRes, oRes] = await Promise.all([
-          fetch(`${API}/polls`),
+          fetch(`${API}/polls/manage`),
           fetch(`${API}/surveys`),
           fetch(`${API}/users`),
           fetch(`${API}/checkpoints`),
@@ -2517,16 +2517,16 @@
       container.innerHTML = recentVoters.map((v, i) => `
         <div class="ticket-box">
           <div class="ticket-user">
-            <div class="ticket-avatar" style="background:${colors[i % colors.length]};color:#FFFFFF;">${v.initials}</div>
+            <div class="ticket-avatar" style="background:${colors[i % colors.length]};color:#FFFFFF;">${escapeHtml(v.initials || '?')}</div>
             <div>
-              <div class="ticket-name">${v.name}</div>
-              <div class="ticket-time">${v.time}</div>
+              <div class="ticket-name">${escapeHtml(v.name || 'Voter')}</div>
+              <div class="ticket-time">${escapeHtml(v.time || 'Recent')} · ${escapeHtml(formatLocalExactTimestamp(v.timestamp))}</div>
             </div>
           </div>
-          <div class="ticket-row"><strong>Location:</strong> ${v.county || 'Verified county'}</div>
-          <div class="ticket-row"><strong>IP:</strong> ${v.ip}</div>
-          <div class="ticket-row"><strong>Device:</strong> ${v.device}</div>
-          <div class="ticket-row" style="color:var(--charcoal);font-weight:700;">${v.pollTitle}</div>
+          <div class="ticket-row"><strong>Location:</strong> ${escapeHtml(v.county || 'Not recorded')}</div>
+          <div class="ticket-row"><strong>IP:</strong> ${escapeHtml(v.ip || 'Not recorded')}</div>
+          <div class="ticket-row"><strong>Device:</strong> ${escapeHtml(v.device || 'Not recorded')}</div>
+          <div class="ticket-row" style="color:var(--charcoal);font-weight:700;">${escapeHtml(v.pollTitle || 'Unknown poll')}</div>
           <button class="btn-outline-sm" style="width:100%;margin-top:8px;" onclick="openVoterDetailsModal(${i})">See vote details</button>
         </div>
       `).join('');
@@ -2649,46 +2649,45 @@
 
       const voters = (dashStats && dashStats.recentVoters) ? dashStats.recentVoters : [];
       const v = voters[idx] || voters[0] || {
-        name: 'Voter 16690',
-        initials: '1',
-        time: '12 min ago',
-        ip: '102.66.75.106',
-        device: 'Mobile App',
-        county: 'Kitui',
-        pollTitle: 'Ikutha Ward MCA Poll 2027 (Kitui South)'
+        name: 'Voter',
+        initials: 'V',
+        time: 'Not recorded',
+        timestamp: '',
+        ip: null,
+        device: 'Not recorded',
+        county: null,
+        pollTitle: 'Unknown poll'
       };
 
       modal.style.display = 'flex';
       content.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border-color);padding-bottom:14px;">
           <div>
-            <h2 style="font-size:18px;font-weight:800;color:var(--charcoal);">Cryptographic Ballot Submission Receipt</h2>
-            <div style="font-size:12px;color:var(--text-sub);margin-top:2px;">Zero-Knowledge verified ballot record from live database</div>
+            <h2 style="font-size:18px;font-weight:800;color:var(--charcoal);">Recorded Ballot Details</h2>
+            <div style="font-size:12px;color:var(--text-sub);margin-top:2px;">Submission details loaded from the database</div>
           </div>
           <button style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);" onclick="closeDetailsModal()">&times;</button>
         </div>
 
         <div style="display:flex;align-items:center;gap:16px;background:#F5F5F5;border:1px solid var(--border-color);border-radius:14px;padding:16px;margin-bottom:20px;">
-          <div style="width:48px;height:48px;border-radius:50%;background:#303030;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;font-family:'Outfit',sans-serif;">${v.initials}</div>
+          <div style="width:48px;height:48px;border-radius:50%;background:#303030;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;font-family:'Outfit',sans-serif;">${escapeHtml(v.initials || 'V')}</div>
           <div>
-            <div style="font-size:16px;font-weight:800;color:var(--text-main);">${v.name}</div>
-            <div style="font-size:12px;color:var(--text-sub);">${v.pollTitle}</div>
+            <div style="font-size:16px;font-weight:800;color:var(--text-main);">${escapeHtml(v.name || 'Voter')}</div>
+            <div style="font-size:12px;color:var(--text-sub);">${escapeHtml(v.pollTitle || 'Unknown poll')}</div>
           </div>
           <div style="margin-left:auto;">
-            <span class="badge-pill">Verified on-chain</span>
+            <span class="badge-pill">Database record</span>
           </div>
         </div>
 
         <div class="table-responsive">
         <table class="data-table" style="margin-bottom:20px;">
           <tbody>
-            <tr><td style="font-weight:700;width:180px;">Submission Time</td><td>${v.time} (Realtime Ingest)</td></tr>
-            <tr><td style="font-weight:700;">IP Address</td><td style="font-family:monospace;font-weight:700;">${v.ip}</td></tr>
-            <tr><td style="font-weight:700;">Location Verification</td><td>${v.county || 'Kitui'} County verified; exact coordinates hidden.</td></tr>
-            <tr><td style="font-weight:700;">Client Hardware</td><td>${v.device} (Secure Hardware Keystore)</td></tr>
-            <tr><td style="font-weight:700;">Zero-Knowledge Seal</td><td><span style="font-family:monospace;font-size:11px;background:#E5E5E5;padding:2px 8px;border-radius:6px;font-weight:700;">zk-SNARK Groth16 Verified</span></td></tr>
-            <tr><td style="font-weight:700;">Record Status</td><td><span class="badge-pill" style="background:#E8F5E9;color:#2E7D32;border:none;">✓ Verified &amp; Confirmed</span></td></tr>
-            <tr><td style="font-weight:700;">Integrity Guarantee</td><td>Sealed by Ephemeral Salt. No voter personal identity is decrypted or logged.</td></tr>
+            <tr><td style="font-weight:700;width:180px;">Submission Time (EAT)</td><td>${escapeHtml(formatLocalExactTimestamp(v.timestamp))}</td></tr>
+            <tr><td style="font-weight:700;">IP Address</td><td style="font-family:monospace;font-weight:700;">${escapeHtml(v.ip || 'Not recorded')}</td></tr>
+            <tr><td style="font-weight:700;">Location Verification</td><td>${escapeHtml(v.county || 'Not recorded')}; exact coordinates hidden.</td></tr>
+            <tr><td style="font-weight:700;">Device</td><td>${escapeHtml(v.device || 'Not recorded')}</td></tr>
+            <tr><td style="font-weight:700;">Record Status</td><td><span class="badge-pill" style="background:#E8F5E9;color:#2E7D32;border:none;">Stored</span></td></tr>
           </tbody>
         </table>
         </div>
@@ -3439,12 +3438,43 @@
             <span style="font-size:12px; color:var(--text-sub); font-weight:600;">Total Ballots Cast</span>
             <strong style="font-size:16px; color:var(--charcoal);">${(p.totalVotes || 0).toLocaleString()}</strong>
           </div>
+          <fieldset style="border:1px solid var(--border-color);border-radius:10px;padding:9px 12px;display:flex;gap:18px;flex-wrap:wrap;">
+            <legend style="font-size:11px;font-weight:700;padding:0 5px;">Display this poll</legend>
+            <label style="font-size:12px;display:flex;gap:6px;align-items:center;"><input type="checkbox" ${p.showOnWeb ? 'checked' : ''} onchange="updateAdminPollVisibility('${escapeHtml(p.id)}', this)"> Website</label>
+            <label style="font-size:12px;display:flex;gap:6px;align-items:center;"><input type="checkbox" ${p.showOnApp ? 'checked' : ''} onchange="updateAdminPollVisibility('${escapeHtml(p.id)}', this, 'app')"> Mobile app</label>
+            <span id="admin-poll-visibility-status-${escapeHtml(p.id)}" aria-live="polite" style="font-size:11px;color:var(--text-sub);"></span>
+          </fieldset>
           <div style="display:flex; justify-content:flex-end;">
             <a href="../pages/vote.html?poll_id=${encodeURIComponent(p.id)}" target="_blank" class="action-btn" style="text-decoration:none; padding:6px 14px; font-size:12px; border-radius:100px;">Open Vote Page &rarr;</a>
           </div>
         </div>
       `;
     }
+
+    window.updateAdminPollVisibility = async function(pollId, checkbox, channel = 'web') {
+      const poll = polls.find(item => item.id === pollId);
+      if (!poll) return;
+      const field = channel === 'app' ? 'showOnApp' : 'showOnWeb';
+      const previous = Boolean(poll[field]);
+      poll[field] = checkbox.checked;
+      const statusEl = document.getElementById(`admin-poll-visibility-status-${pollId}`);
+      if (statusEl) statusEl.textContent = 'Saving…';
+      try {
+        const response = await fetch(`${API}/polls/${encodeURIComponent(pollId)}/visibility`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ showOnWeb: Boolean(poll.showOnWeb), showOnApp: Boolean(poll.showOnApp) })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || 'Could not save visibility');
+        Object.assign(poll, result);
+        if (statusEl) statusEl.textContent = 'Saved';
+        renderAdminPolls();
+      } catch (error) {
+        poll[field] = previous;
+        checkbox.checked = previous;
+        if (statusEl) statusEl.textContent = error.message || 'Could not save';
+      }
+    };
 
     function renderAdminSurveyCard(s) {
       const hasInput = (s.questions || []).some(q => !q.options || q.options.length === 0 || q.questionType === 'text');
@@ -3511,7 +3541,7 @@
               <td>${escapeHtml(p.category || 'General')}</td>
               <td>${escapeHtml(p.plan || 'Default')}</td>
               <td style="font-weight:700;">${(p.totalVotes || 0).toLocaleString()}</td>
-              <td><span class="badge-pill" style="${badgeStyle}">${badgeLabel}</span></td>
+              <td><span class="badge-pill" style="${badgeStyle}">${badgeLabel}</span><div style="display:flex;gap:8px;margin-top:6px;"><label style="font-size:10px;"><input type="checkbox" ${p.showOnWeb ? 'checked' : ''} onchange="updateAdminPollVisibility('${escapeHtml(p.id)}', this)"> Web</label><label style="font-size:10px;"><input type="checkbox" ${p.showOnApp ? 'checked' : ''} onchange="updateAdminPollVisibility('${escapeHtml(p.id)}', this, 'app')"> App</label></div></td>
             </tr>
           `;
         }).join('');
@@ -3774,13 +3804,27 @@
     let adminAllResponses = [];
     let adminResponseFilter = 'all';
 
+    function formatLocalExactTimestamp(value) {
+      const text = String(value || '').trim();
+      if (!text) return 'Not recorded';
+      const hasSeconds = /^\d{4}-\d\d-\d\d[ T]\d\d:\d\d:\d\d/.test(text);
+      const parsed = new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(text) ? text : `${text.replace(' ', 'T')}Z`);
+      if (Number.isNaN(parsed.getTime())) return `${text} (time zone unknown)`;
+      const formatted = new Intl.DateTimeFormat('en-KE', {
+        timeZone: 'Africa/Nairobi', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: hasSeconds ? '2-digit' : undefined,
+        hourCycle: 'h23'
+      }).format(parsed);
+      return `${formatted} EAT${hasSeconds ? '' : ' (seconds unavailable)'}`;
+    }
+
     async function loadAdminResponses() {
       adminAllResponses = [];
       try {
         const token = localStorage.getItem('gir_token') || '';
         const headers = { Authorization: 'Bearer ' + token };
         const [pollsRes, surveysRes] = await Promise.all([
-          fetch(`${API}/polls`, { headers }),
+          fetch(`${API}/polls/manage`, { headers }),
           fetch(`${API}/surveys`, { headers })
         ]);
         const allPolls = pollsRes.ok ? await pollsRes.json() : [];
@@ -3803,6 +3847,7 @@
               voterName: t.voterName || 'Voter',
               county: t.county || 'Unknown',
               choice: t.optionLabel || 'Selected Option',
+              ipAddress: t.ipAddress || '',
               timestamp: t.timestamp || ''
             });
           });
@@ -3826,6 +3871,7 @@
               voterName: r.respondentName || 'Respondent',
               county: r.county || 'Unknown',
               choice: answerSummary || 'Submitted',
+              ipAddress: r.ipAddress || '',
               timestamp: r.timestamp || r.submittedAt || ''
             });
           });
@@ -3868,11 +3914,12 @@
         (r.title || '').toLowerCase().includes(search) ||
         (r.respondent || '').toLowerCase().includes(search) ||
         (r.choice || '').toLowerCase().includes(search) ||
-        (r.county || '').toLowerCase().includes(search)
+        (r.county || '').toLowerCase().includes(search) ||
+        (r.ipAddress || '').toLowerCase().includes(search)
       );
 
       if (!items.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No responses found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted);">No responses found.</td></tr>';
         renderAdminPaginationControls({ containerId: 'admin-responses-pagination', totalItems: 0, currentPage: 1, onPageChange: 'changeAdminResponsesPage' });
         return;
       }
@@ -3891,7 +3938,8 @@
           <td style="font-size:12px;">${escapeHtml(r.respondent)}<br><span style="color:var(--text-muted);">${escapeHtml(r.voterName)}</span></td>
           <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(r.choice)}</td>
           <td>${escapeHtml(r.county)}</td>
-          <td style="font-size:12px;white-space:nowrap;">${r.timestamp ? new Date(r.timestamp).toLocaleString() : '-'}</td>
+          <td style="font-size:12px;font-family:monospace;">${escapeHtml(r.ipAddress || 'Not recorded')}</td>
+          <td style="font-size:12px;white-space:nowrap;">${escapeHtml(formatLocalExactTimestamp(r.timestamp))}</td>
           <td>
             <select onchange="exportAdminSingleResponse('${r.type}', '${escapeHtml(r.parentId)}', '${escapeHtml(r.title)}', this.value); this.value='';" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border-color);">
               <option value="">Export...</option>

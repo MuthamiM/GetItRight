@@ -46,6 +46,7 @@ class Poll {
   final bool isMultipleChoice;
   final DateTime createdAt;
   String? selectedOptionId;
+  String? voteSourceChannel;
   final DateTime? endDate;
 
   final String status;

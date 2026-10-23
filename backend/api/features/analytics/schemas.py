@@ -124,10 +124,12 @@ class RecentVoterOut(BaseModel):
     name: str
     initials: str
     time: str
-    ip: str
+    ip: Optional[str] = None
     device: str
-    gps: str
+    gps: Optional[str] = None
     pollTitle: str
+    timestamp: Optional[str] = None
+    county: Optional[str] = None
 
 class HourlyVelocityOut(BaseModel):
     hour: str

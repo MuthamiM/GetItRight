@@ -6,7 +6,7 @@ from datetime import date
 
 from fastapi import HTTPException, status
 
-from backend.api.core.kenya_counties import county_for_point, point_is_in_county
+from backend.api.core.kenya_counties import canonical_county_name, county_for_point
 
 
 def validate_voter_details(
@@ -18,8 +18,8 @@ def validate_voter_details(
     latitude: float | None,
     longitude: float | None,
     accuracy: float | None,
-) -> tuple[str, str]:
-    """Require complete details and verify the reported GPS point matches county."""
+) -> tuple[str, str, str, bool]:
+    """Validate identity/location and report whether county lookup was conclusive."""
     name = (voter_name or "").strip()
     if len(name) < 3 or len(name) > 100:
         raise HTTPException(
@@ -34,11 +34,11 @@ def validate_voter_details(
             detail="Please provide correct details: National ID must contain 5–12 numbers only.",
         )
 
-    selected_county = (county or "").strip()
+    selected_county = canonical_county_name((county or "").strip())
     if not selected_county:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Please provide correct details: select your county.",
+            detail="Please provide correct details: select a valid county in Kenya.",
         )
 
     birth_date_text = (dob or "").strip()
@@ -72,21 +72,23 @@ def validate_voter_details(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Please provide correct details: device location is invalid.",
         )
+    if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Please provide correct details: device coordinates are outside valid ranges.",
+        )
     if accuracy <= 0 or accuracy > 500:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Please provide correct details: device location must be precise (within 500 metres).",
         )
-    if not point_is_in_county(latitude, longitude, selected_county):
-        detected_county = county_for_point(latitude, longitude)
-        location_detail = (
-            f" Detected location: {detected_county} County. Select the correct county or try again from {selected_county} County."
-            if detected_county
-            else " Device location must be within the selected county in Kenya."
-        )
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Please provide correct details: your device location does not match {selected_county} County.{location_detail}",
-        )
+    detected_county = county_for_point(latitude, longitude)
+    if detected_county:
+        # When the boundary lookup succeeds, retain the county established by
+        # the device coordinates, even if the voter selected a different one.
+        return name, national_id, detected_county, True
 
-    return name, national_id
+    # Keep a ballot from being lost solely because the device point is outside
+    # Kenya or simplified county polygons omit it. Store the actual device
+    # coordinates and accuracy, and mark the selected county as unclassified.
+    return name, national_id, selected_county, False

@@ -11,7 +11,7 @@ if not DEFAULT_DB_PATH.exists():
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IcapsQ API"
-    VERSION: str = "2.1.27"
+    VERSION: str = "2.1.34"
     API_PREFIX: str = "/api"
     ENVIRONMENT: str = "production"
 
@@ -20,6 +20,8 @@ class Settings(BaseSettings):
 
     # Required at process startup; never fall back to a checked-in signing key.
     SECRET_KEY: str = Field(min_length=32)
+    # Dedicated persistent key for encrypted browser snapshots and consented profiles.
+    BROWSER_STORAGE_ENCRYPTION_KEY: str = Field(default="", repr=False)
     JWT_ISSUER: str = "getitright-api"
     JWT_AUDIENCE: str = "getitright-clients"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -57,6 +59,14 @@ class Settings(BaseSettings):
             raise ValueError("IPAY_LIVE must be 0 or 1")
         if not self.SECRET_KEY or self.SECRET_KEY.startswith("getitright_"):
             raise ValueError("SECRET_KEY must be a unique deployment secret of at least 32 characters")
+        if self.ENVIRONMENT.lower() == "production":
+            if not self.BROWSER_STORAGE_ENCRYPTION_KEY:
+                raise ValueError("BROWSER_STORAGE_ENCRYPTION_KEY must be configured in production")
+            try:
+                from cryptography.fernet import Fernet
+                Fernet(self.BROWSER_STORAGE_ENCRYPTION_KEY.encode("ascii"))
+            except (UnicodeEncodeError, ValueError):
+                raise ValueError("BROWSER_STORAGE_ENCRYPTION_KEY must be a valid Fernet key") from None
         if not self.cors_origins or "*" in self.cors_origins:
             raise ValueError("CORS_ORIGINS must contain explicit trusted origins")
         if self.ENVIRONMENT.lower() == "production" and any(

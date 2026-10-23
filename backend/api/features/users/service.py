@@ -133,7 +133,7 @@ def create_user(db: Session, req: CreateUserRequest) -> UserDetailOut:
         Plan=plan_key,
         PlanName=meta["name"],
         Organization=req.organization.strip() if req.organization else "Independent",
-        CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         Status="Active",
         TotalPollsCreated=0,
         TotalVotesReceived=0,

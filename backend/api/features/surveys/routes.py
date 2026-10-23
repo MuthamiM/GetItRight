@@ -1,6 +1,6 @@
 from typing import Optional, List
 import re
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from backend.api.middleware.auth_middleware import (
     get_current_user_token,
     get_optional_current_user_token,
 )
+from backend.api.core.client_ip import get_observed_client_ip
 
 router = APIRouter(prefix="/surveys", tags=["Surveys"])
 
@@ -194,6 +195,7 @@ def get_survey_responses(
         "deviceName": getattr(response, "DeviceName", None),
         "deviceOS": getattr(response, "DeviceOS", None),
         "county": getattr(response, "County", None),
+        "ipAddress": getattr(response, "IpAddress", None) if is_admin else None,
         # Keep precise coordinates available to internal validation only.
         "latitude": None,
         "longitude": None,
@@ -321,6 +323,7 @@ def check_survey_user_status_by_identity(
 def answer_survey(
     survey_id: str,
     sub: SurveyResponseSubmission,
+    request: Request,
     current_user: Optional[dict] = Depends(get_optional_current_user_token),
     db: Session = Depends(get_db),
 ):
@@ -334,4 +337,4 @@ def answer_survey(
     if not sub.voterPseudonym:
         import uuid
         sub.voterPseudonym = f"VISITOR-{uuid.uuid4().hex}"
-    return submit_survey_response(db, survey_id, sub)
+    return submit_survey_response(db, survey_id, sub, client_ip=get_observed_client_ip(request))

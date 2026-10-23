@@ -143,7 +143,7 @@ def register_user(db: Session, data: RegisterRequest) -> AuthResponse:
         PlanName=meta["name"],
         Organization=organization or "Independent",
         OrganizationContactRole=organization_contact_role,
-        CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        CreatedAt=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         Status="Active",
         TotalPollsCreated=0,
         TotalVotesReceived=0,

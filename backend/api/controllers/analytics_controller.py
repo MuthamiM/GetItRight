@@ -87,28 +87,29 @@ class AnalyticsController:
             name = raw_name.replace("Voter-", "").replace("-", " ").title() if "Voter-" in raw_name else raw_name
             initials = "".join([w[0] for w in name.split()[:2]]).upper() if name != "Anonymous" else "AN"
             try:
-                ts = datetime.strptime(tx.Timestamp[:16], "%Y-%m-%d %H:%M")
+                try:
+                    ts = datetime.strptime(tx.Timestamp, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    ts = datetime.strptime(tx.Timestamp[:16], "%Y-%m-%d %H:%M")
                 diff = (now - ts.replace(tzinfo=timezone.utc)).total_seconds() / 60
                 time_ago = f"{int(diff)} min ago" if diff < 60 else f"{int(diff/60)}h ago"
             except Exception:
                 time_ago = "recently"
 
             # Assign device and GPS from real transaction records if available
-            h = abs(hash(raw_name))
-            dev = tx.Device if (hasattr(tx, 'Device') and tx.Device) else ("Mobile App" if h % 3 == 0 else ("Desktop Web" if h % 3 == 1 else "Tablet"))
+            dev = tx.Device if (hasattr(tx, 'Device') and tx.Device) else "Not recorded"
             device_counts[dev] += 1
-
-            gps_val = tx.GpsCoordinates if (hasattr(tx, 'GpsCoordinates') and tx.GpsCoordinates) else f"-1.{(h % 9000) + 1000}, 36.{(h % 9000) + 1000}"
-            ip_val = tx.IpAddress if (hasattr(tx, 'IpAddress') and tx.IpAddress) else f"102.{(h % 250) + 1}.{(h % 200) + 10}.{(h % 240) + 1}"
 
             recent_voters.append(RecentVoterOut(
                 name=name,
                 initials=initials,
                 time=time_ago,
-                ip=ip_val,
+                ip=tx.IpAddress or None,
                 device=dev,
-                gps=gps_val,
-                pollTitle=poll.Title if poll else "General Assembly Poll"
+                gps=None,
+                pollTitle=poll.Title if poll else "Unknown poll",
+                timestamp=tx.Timestamp,
+                county=tx.County,
             ))
 
         # Real Device Breakdown combined with live tracker

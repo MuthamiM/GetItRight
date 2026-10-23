@@ -1,4 +1,5 @@
 import hashlib
+import re
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
@@ -56,10 +57,12 @@ def map_poll_to_out(p: PollModel) -> PollOut:
         author_name=p.OwnerId or "GetItRight Sovereign",
         total_votes=p.TotalVotes or 0,
         created_at=p.CreatedAt or "",
-        is_multiple_choice=False
+        is_multiple_choice=False,
+        showOnWeb=bool(getattr(p, "ShowOnWeb", 1)),
+        showOnApp=bool(getattr(p, "ShowOnApp", 1)),
     )
 
-def list_polls(db: Session, plan: Optional[str] = None, status: Optional[str] = None, include_all: bool = False) -> List[PollOut]:
+def list_polls(db: Session, plan: Optional[str] = None, status: Optional[str] = None, include_all: bool = False, surface: Optional[str] = None) -> List[PollOut]:
     query = db.query(PollModel)
     if not include_all:
         if status:
@@ -70,9 +73,32 @@ def list_polls(db: Session, plan: Optional[str] = None, status: Optional[str] = 
         query = query.filter(PollModel.Status.ilike(status))
     if plan:
         query = query.filter(PollModel.Plan.ilike(plan))
+    if surface == "web":
+        query = query.filter(PollModel.ShowOnWeb == 1)
+    else:
+        # Default untagged legacy/mobile clients to app visibility.
+        query = query.filter(PollModel.ShowOnApp == 1)
     polls = query.all()
     polls_sorted = sorted(polls, key=lambda p: (1 if str(p.Status).lower() in ["live", "active"] else 0, p.CreatedAt or ""), reverse=True)
     return [map_poll_to_out(p) for p in polls_sorted]
+
+def list_managed_polls(db: Session, user: dict) -> List[PollOut]:
+    query = db.query(PollModel)
+    if user.get("role") not in {"Admin", "Super Admin"}:
+        query = query.filter(PollModel.OwnerId == user.get("sub"))
+    return [map_poll_to_out(p) for p in sorted(query.all(), key=lambda p: (p.CreatedAt or ""), reverse=True)]
+
+def update_poll_visibility(db: Session, poll_id: str, user: dict, show_on_web: bool, show_on_app: bool) -> PollOut:
+    poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()
+    if not poll:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Poll not found")
+    if user.get("role") not in {"Admin", "Super Admin"} and poll.OwnerId != user.get("sub"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this poll")
+    poll.ShowOnWeb = int(show_on_web)
+    poll.ShowOnApp = int(show_on_app)
+    db.commit()
+    db.refresh(poll)
+    return map_poll_to_out(poll)
 
 def get_poll_by_id(db: Session, poll_id: str) -> PollOut:
     poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()
@@ -122,7 +148,7 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
         Category=category,
         Plan=plan_key,
         OwnerId=owner_id,
-        CreatedAt=now.strftime("%Y-%m-%d %H:%M"),
+        CreatedAt=now.strftime("%Y-%m-%d %H:%M:%S"),
         Status="live",
         TotalVotes=0,
         MerkleRoot=initial_root,
@@ -148,7 +174,7 @@ def create_poll(db: Session, data: PollCreate) -> PollOut:
     db.commit()
     return map_poll_to_out(new_poll)
 
-def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastResponse:
+def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest, client_ip: Optional[str] = None) -> VoteCastResponse:
     poll = db.query(PollModel).filter(PollModel.Id == poll_id).first()
     if not poll:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Poll {poll_id} not found")
@@ -162,17 +188,17 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         except ValueError:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This poll has an invalid closing time")
 
-    voter_name, voter_id_num = validate_voter_details(
-        voter_name=vote_req.voterName,
-        voter_id_number=vote_req.voterIdNumber,
-        county=vote_req.county,
-        dob=vote_req.dob,
-        latitude=vote_req.latitude,
-        longitude=vote_req.longitude,
-        accuracy=vote_req.accuracy,
-    )
+    # A recorded ballot must remain visible/locked even if this retry carries
+    # changed or stale location data. Validate the submitted ID format first,
+    # then resolve an existing ballot before enforcing new-ballot KYC checks.
+    submitted_id = (vote_req.voterIdNumber or "").strip()
+    if not re.fullmatch(r"[0-9]{5,12}", submitted_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Please provide correct details: National ID must contain 5–12 numbers only.",
+        )
     duplicate_identity_filters = [
-        VoteTransactionModel.VoterIdNumber == voter_id_num,
+        VoteTransactionModel.VoterIdNumber == submitted_id,
         VoteTransactionModel.VoterPseudonym == (vote_req.voterKey or "").strip(),
     ]
     if vote_req.userId and vote_req.userId.strip():
@@ -184,9 +210,18 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     if existing_ballot:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="You have already voted in this poll. Each National ID may submit one ballot.",
+            detail="You have already voted in this poll. Your recorded choice cannot be changed.",
         )
 
+    voter_name, voter_id_num, verified_county, county_classified = validate_voter_details(
+        voter_name=vote_req.voterName,
+        voter_id_number=vote_req.voterIdNumber,
+        county=vote_req.county,
+        dob=vote_req.dob,
+        latitude=vote_req.latitude,
+        longitude=vote_req.longitude,
+        accuracy=vote_req.accuracy,
+    )
     try:
         reserve_ballot_identities(
             db,
@@ -233,7 +268,7 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
     user_id = vote_req.userId.strip() if vote_req.userId and str(vote_req.userId).strip() else None
 
     # Voter identity and telemetry resolution
-    loc_tag = (vote_req.county or "LOCATION1").replace(" ", "").upper()
+    loc_tag = verified_county.replace(" ", "").upper()
     if vote_req.voterKey and vote_req.voterKey.strip():
         voter_key = vote_req.voterKey.strip()
     else:
@@ -256,7 +291,7 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
 
     device_str = vote_req.deviceName or ("Mobile App" if "mobile" in (vote_req.platform or "").lower() else "Web Browser")
     os_str = vote_req.deviceOS or ""
-    county_str = (vote_req.county or "").strip() or None
+    county_str = f"{verified_county} County" + (" (device location unclassified)" if not county_classified else "")
     gps_str = None
     lat_val = vote_req.latitude
     lng_val = vote_req.longitude
@@ -282,7 +317,8 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         VoterName=voter_name,
         VoterIdNumber=voter_id_num,
         DeviceName=device_str,
-        DeviceOS=os_str or None
+        DeviceOS=os_str or None,
+        IpAddress=client_ip,
     )
     db.add(tx)
     try:
@@ -301,13 +337,14 @@ def cast_vote(db: Session, poll_id: str, vote_req: VoteCastRequest) -> VoteCastR
         pollId=poll.Id,
         optionIndex=target_option.Index,
         totalVotes=poll.TotalVotes,
-        timestamp=timestamp
+        timestamp=timestamp,
+        recordedCounty=county_str,
     )
 
 def reset_poll(db: Session, poll_id: str) -> PollOut:
     raise HTTPException(status_code=status.HTTP_410_GONE, detail="Poll resets are disabled. Publish a correction poll instead.")
 
-def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionOut]:
+def get_transactions_by_poll(db: Session, poll_id: str, include_ip: bool = False) -> List[VoteTransactionOut]:
     txs = db.query(VoteTransactionModel).filter(
         VoteTransactionModel.PollId == poll_id
     ).order_by(VoteTransactionModel.Id.desc()).limit(100).all()
@@ -333,7 +370,8 @@ def get_transactions_by_poll(db: Session, poll_id: str) -> List[VoteTransactionO
             latitude=None,
             longitude=None,
             accuracy=getattr(t, 'Accuracy', None),
-            gpsCoordinates=None
+            gpsCoordinates=None,
+            ipAddress=getattr(t, "IpAddress", None) if include_ip else None,
         )
         for t in txs
     ]
@@ -346,6 +384,15 @@ def get_vote_status(
     voter_id_number: Optional[str] = None,
 ):
     from backend.api.features.polls.schemas import VoteStatusOut
+
+    def ballot_source(transaction: VoteTransactionModel) -> Optional[str]:
+        platform_value = (getattr(transaction, "Device", None) or getattr(transaction, "DeviceName", None) or "").casefold()
+        if any(marker in platform_value for marker in ("mobile", "android", "ios", "flutter")):
+            return "mobile_app"
+        if any(marker in platform_value for marker in ("web", "browser", "desktop")):
+            return "website"
+        return None
+
     tx = None
     if user_id and str(user_id).strip():
         account_claim = db.execute(text('''
@@ -373,7 +420,7 @@ def get_vote_status(
     if not tx and voter_key and str(voter_key).strip():
         tx = db.query(VoteTransactionModel).filter(
             VoteTransactionModel.PollId == poll_id,
-            VoteTransactionModel.VoterPseudonym == str(voter_key).strip()
+            func.lower(VoteTransactionModel.VoterPseudonym) == str(voter_key).strip().casefold()
         ).first()
 
     if not tx and voter_id_number and str(voter_id_number).strip():
@@ -391,7 +438,8 @@ def get_vote_status(
             optionIndex=tx.OptionIndex,
             optionLabel=tx.OptionLabel,
             merkleLeafIndex=tx.MerkleLeafIndex,
-            timestamp=tx.Timestamp
+            timestamp=tx.Timestamp,
+            sourceChannel=ballot_source(tx),
         )
 
     return VoteStatusOut(

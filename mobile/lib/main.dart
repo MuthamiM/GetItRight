@@ -245,6 +245,10 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
     }
 
     final bool isOrgAdmin = (_userRole == 'admin' || _userRole == 'org');
+    final savedUserName = _userName.trim();
+    final greetingName = savedUserName.isEmpty
+        ? 'there'
+        : savedUserName.split(RegExp(r'\s+')).first;
 
     final List<Widget> screens = isOrgAdmin
         ? [
@@ -274,9 +278,9 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${_getGreeting()}, $_userName!',
+                    '${_getGreeting()}, $greetingName',
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
                       color: Colors.white,
@@ -285,7 +289,8 @@ class _RootNavigationCoordinatorState extends State<RootNavigationCoordinator> {
                   const Text(
                     'Welcome back',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                       color: Color(0xFFB8B8B8),
                     ),
                   ),
