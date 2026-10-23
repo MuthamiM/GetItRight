@@ -88,32 +88,40 @@
       color: var(--charcoal);
       letter-spacing: -0.03em;
     }
+    .ln-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
     .ln-nav-links {
       display: flex;
       align-items: center;
-      gap: 32px;
+      gap: 20px;
     }
     .ln-nav-links a {
       font-size: 14px;
       font-weight: 700;
-      color: var(--charcoal);
+      color: #2E3035 !important;
       text-decoration: none;
-      opacity: 0.75;
-      transition: opacity 0.2s ease;
+      opacity: 0.8 !important;
+      transition: opacity 0.2s ease, border-color 0.2s ease;
       position: relative;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
     }
-    .ln-nav-links a:hover,
+    .ln-nav-links a:hover {
+      opacity: 1 !important;
+    }
     .ln-nav-links a.active {
-      opacity: 1;
+      opacity: 1 !important;
+      font-weight: 800;
+      color: #2E3035 !important;
+      border-bottom: 2px solid #2E3035 !important;
     }
+    .ln-nav-links a::after,
     .ln-nav-links a.active::after {
-      content: '';
-      position: absolute;
-      bottom: -6px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--charcoal);
+      display: none !important;
     }
     .ln-nav-signin {
       font-size: 14px;
@@ -124,6 +132,8 @@
       border-radius: 100px;
       border: 1.5px solid var(--charcoal);
       transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .ln-nav-signin:hover {
       background: var(--charcoal);
@@ -644,10 +654,6 @@
       }
     }
 
-    .ln-nav-top-row {
-      display: contents;
-    }
-
     /* ── Mobile Responsive ── */
     @media (max-width: 900px) {
       .polls-grid-layout {
@@ -669,65 +675,99 @@
         overflow-x: hidden !important;
       }
       .ln-nav {
-        height: auto !important;
-        min-height: 56px !important;
-        padding: 10px 14px 8px !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-        box-shadow: 0 4px 12px rgba(48, 48, 48, 0.05);
-      }
-      .ln-nav-top-row {
-        display: flex !important;
+        height: 60px !important;
+        min-height: 60px !important;
+        padding: 0 14px !important;
+        flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
-        width: 100% !important;
+        gap: 8px !important;
+        box-shadow: 0 2px 8px rgba(48, 48, 48, 0.06);
+      }
+      .ln-nav-logo {
+        gap: 8px !important;
+        flex-shrink: 0 !important;
       }
       .ln-nav-brand {
-        font-size: 19px !important;
+        font-size: 18px !important;
       }
       .ln-nav-logo-icon {
         width: 28px !important;
         height: 28px !important;
       }
-      .nav-live-pill {
-        display: none !important;
+      .ln-nav-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
       }
       .ln-nav-links {
         display: flex !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        width: 100% !important;
-        padding-top: 6px !important;
-        border-top: 1px solid rgba(48, 48, 48, 0.12) !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 0 !important;
+        border: none !important;
       }
       .ln-nav-links a {
-        font-size: 13px !important;
-        padding: 4px 2px !important;
+        font-size: 12.5px !important;
+        padding: 3px 0 !important;
         border-radius: 0 !important;
         color: #2E3035 !important;
-        opacity: 1 !important;
+        opacity: 0.8 !important;
         background: none !important;
         font-weight: 600 !important;
         text-decoration: none !important;
         border-bottom: 2px solid transparent !important;
+        white-space: nowrap !important;
       }
+      .ln-nav-links a:hover,
       .ln-nav-links a.active {
         opacity: 1 !important;
         color: #2E3035 !important;
-        background: none !important;
+      }
+      .ln-nav-links a.active {
         font-weight: 800 !important;
         border-bottom: 2px solid #2E3035 !important;
       }
+      .ln-nav-links a::after,
       .ln-nav-links a.active::after {
         display: none !important;
       }
       .ln-nav-signin {
-        padding: 5px 14px !important;
+        padding: 5px 12px !important;
         font-size: 12px !important;
         flex-shrink: 0 !important;
+        white-space: nowrap !important;
       }
+    }
 
+    @media (max-width: 420px) {
+      .ln-nav {
+        padding: 0 10px !important;
+        gap: 6px !important;
+      }
+      .ln-nav-right {
+        gap: 8px !important;
+      }
+      .ln-nav-links {
+        gap: 8px !important;
+      }
+      .ln-nav-links a {
+        font-size: 11.5px !important;
+      }
+      .ln-nav-brand {
+        font-size: 17px !important;
+      }
+      .ln-nav-logo-icon {
+        width: 24px !important;
+        height: 24px !important;
+      }
+      .ln-nav-signin {
+        padding: 4px 9px !important;
+        font-size: 11.5px !important;
+      }
+    }
+
+    @media (max-width: 768px) {
       .page-header-row {
         flex-direction: column !important;
         gap: 16px !important;
@@ -923,27 +963,19 @@
 
   <!-- ====== PUBLIC NAVBAR ====== -->
   <nav class="ln-nav" id="mainNav">
-    <div class="ln-nav-top-row">
-      <a href="../index.html" class="ln-nav-logo">
-        <div class="ln-nav-logo-icon">
-          <img src="../assets/images/logo.png" alt="IcapsQ Logo">
-        </div>
-        <span class="ln-nav-brand">Icaps<span class="brand-q">Q</span></span>
-      </a>
-
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div class="nav-live-pill">
-          <span class="nav-live-dot"></span>
-          <span>Survey &amp; Feedback</span>
-        </div>
-        <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
+    <a href="../index.html" class="ln-nav-logo">
+      <div class="ln-nav-logo-icon">
+        <img src="../assets/images/logo.png" alt="IcapsQ Logo">
       </div>
-    </div>
+      <span class="ln-nav-brand">Icaps<span class="brand-q">Q</span></span>
+    </a>
 
-    <div class="ln-nav-links">
-      <a href="vote.html" class="active">Active Polls</a>
-      <a href="surveys.html">Active Surveys</a>
-      <a href="blog.html">Blog</a>
+    <div class="ln-nav-right">
+      <div class="ln-nav-links">
+        <a href="vote.html" class="active">Active Polls</a>
+        <a href="surveys.html">Active Surveys</a>
+      </div>
+      <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
     </div>
   </nav>
 
