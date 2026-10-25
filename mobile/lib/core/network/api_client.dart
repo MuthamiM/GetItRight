@@ -687,8 +687,9 @@ class ApiClient {
   /// Request 6-digit OTP code sent to user email
   Future<Map<String, dynamic>> sendOTP(String email) async {
     final payload = {'email': email.trim()};
+    String lastError = 'Could not send recovery code. Check your connection.';
 
-    for (final url in baseUrls) {
+    for (final url in _orderedBaseUrls) {
       try {
         final response = await http
             .post(
@@ -696,18 +697,26 @@ class ApiClient {
               headers: {'Content-Type': 'application/json'},
               body: json.encode(payload),
             )
-            .timeout(const Duration(seconds: 5));
+            .timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
           return json.decode(response.body) as Map<String, dynamic>;
+        }
+        if (response.statusCode >= 400 && response.statusCode < 500) {
+          try {
+            final decoded = json.decode(response.body);
+            if (decoded is Map<String, dynamic> && decoded['detail'] != null) {
+              lastError = decoded['detail'].toString();
+            }
+          } catch (_) {}
+          return {'success': false, 'error': lastError};
         }
       } catch (_) {}
     }
 
     return {
-      'success': true,
-      'otp': '123456',
-      'message': '6-digit OTP code and reset link sent to ${email.trim()}.',
+      'success': false,
+      'error': lastError,
     };
   }
 
@@ -722,8 +731,9 @@ class ApiClient {
       'otp': otp.trim(),
       'newPassword': newPassword,
     };
+    String lastError = 'Invalid or expired recovery code.';
 
-    for (final url in baseUrls) {
+    for (final url in _orderedBaseUrls) {
       try {
         final response = await http
             .post(
@@ -731,18 +741,27 @@ class ApiClient {
               headers: {'Content-Type': 'application/json'},
               body: json.encode(payload),
             )
-            .timeout(const Duration(seconds: 5));
+            .timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           _activeBaseUrl = url;
-          return json.decode(response.body) as Map<String, dynamic>;
+          final decoded = json.decode(response.body);
+          return decoded is Map<String, dynamic> ? decoded : {'success': true};
+        }
+        if (response.statusCode >= 400 && response.statusCode < 500) {
+          try {
+            final decoded = json.decode(response.body);
+            if (decoded is Map<String, dynamic> && decoded['detail'] != null) {
+              lastError = decoded['detail'].toString();
+            }
+          } catch (_) {}
+          return {'success': false, 'error': lastError};
         }
       } catch (_) {}
     }
 
     return {
-      'success': true,
-      'message':
-          'Email confirmed! Password for ${email.trim()} has been successfully reset.',
+      'success': false,
+      'error': lastError,
     };
   }
 

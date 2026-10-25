@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     APP_PUBLIC_URL: str = "https://icapsq.mftechnologies.org"
 
     # Comma-separated explicit origin allowlist.
-    CORS_ORIGINS: str = "https://icapsq.mftechnologies.org"
+    CORS_ORIGINS: str = "https://icapsq.mftechnologies.org,https://getitright.mftechnologies.org"
     RESEND_API_KEY: str = ""
     RESEND_FROM_EMAIL: str = "info@mftechnologies.org"
     RESEND_TEST_RECIPIENT: str = ""

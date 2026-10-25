@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
 import 'plan_selection_screen.dart';
+import 'password_recovery_screen.dart';
 import '../../legal/presentation/legal_dialogs.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -411,231 +412,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showForgotPasswordDialog() {
-    final resetEmailController =
-        TextEditingController(text: _emailController.text.trim());
-    final otpController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    bool otpSent = false;
-    bool isSubmitting = false;
-    String? statusNotice;
-    String? resetError;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: const Color(0xFF424242),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              title: const Row(
-                children: [
-                  Icon(Icons.mark_email_read_outlined,
-                      color: Colors.white, size: 24),
-                  SizedBox(width: 10),
-                  Text(
-                    'Reset Password',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
-                  ),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      otpSent
-                          ? 'A 6-digit OTP code and password reset link have been sent to your email. Enter the OTP code below to confirm your identity and set a new password.'
-                          : 'Enter your registered account email below. We will send a 6-digit OTP code and reset link to confirm your email.',
-                      style: const TextStyle(
-                          color: Color(0xFFB8B8B8), fontSize: 13),
-                    ),
-                    const SizedBox(height: 14),
-                    if (resetError != null) ...[
-                      Text(
-                        resetError!,
-                        style: const TextStyle(
-                            color: Color(0xFFFF6B6B),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                    if (statusNotice != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF505050),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFF666666)),
-                        ),
-                        child: Text(
-                          statusNotice!,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                    ],
-                    const Text('Account Email',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    _buildPillInput(
-                      controller: resetEmailController,
-                      hint: 'user@example.com',
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    if (otpSent) ...[
-                      const SizedBox(height: 14),
-                      const Text('6-Digit OTP Code',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 6),
-                      _buildPillInput(
-                        controller: otpController,
-                        hint: 'e.g. 583921',
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 14),
-                      const Text('New Password',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 6),
-                      _buildPillInput(
-                        controller: newPasswordController,
-                        hint: 'Enter new password',
-                        obscureText: true,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed:
-                      isSubmitting ? null : () => Navigator.of(context).pop(),
-                  child: const Text('Cancel',
-                      style: TextStyle(color: Color(0xFFB8B8B8))),
-                ),
-                ElevatedButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final email = resetEmailController.text.trim();
-
-                          if (email.isEmpty || !email.contains('@')) {
-                            setDialogState(() =>
-                                resetError = 'Valid email address required');
-                            return;
-                          }
-
-                          if (!otpSent) {
-                            // Step 1: Send OTP to Email
-                            setDialogState(() {
-                              isSubmitting = true;
-                              resetError = null;
-                            });
-
-                            final res = await _apiClient.sendOTP(email);
-
-                            setDialogState(() {
-                              isSubmitting = false;
-                              otpSent = true;
-                              if (res['otp'] != null) {
-                                otpController.text = res['otp'].toString();
-                              }
-                              statusNotice = res['message'] ??
-                                  'OTP code and reset link sent to $email';
-                            });
-                          } else {
-                            // Step 2: Verify OTP & Reset Password
-                            final otp = otpController.text.trim();
-                            final newPass = newPasswordController.text;
-
-                            if (otp.length < 4) {
-                              setDialogState(() => resetError =
-                                  'Please enter the 6-digit OTP code');
-                              return;
-                            }
-                            if (newPass.length < 4) {
-                              setDialogState(() => resetError =
-                                  'New password must be at least 4 characters');
-                              return;
-                            }
-
-                            final navigator = Navigator.of(context);
-                            final messenger = ScaffoldMessenger.of(context);
-
-                            setDialogState(() {
-                              isSubmitting = true;
-                              resetError = null;
-                            });
-
-                            final res =
-                                await _apiClient.verifyOTPAndResetPassword(
-                              email: email,
-                              otp: otp,
-                              newPassword: newPass,
-                            );
-
-                            if (mounted) {
-                              navigator.pop();
-                              _emailController.text = email;
-                              _passwordController.text = newPass;
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    res['message'] ??
-                                        'Email confirmed with OTP! Password reset successfully.',
-                                    style: const TextStyle(
-                                        color: Color(0xFF2A2A2A),
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  backgroundColor: const Color(0xFFE5E5E5),
-                                  duration: const Duration(seconds: 4),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE5E5E5),
-                    foregroundColor: const Color(0xFF2A2A2A),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Color(0xFF2A2A2A)),
-                        )
-                      : Text(
-                          otpSent ? 'Confirm OTP & Reset' : 'Send OTP to Email',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+  void _openForgotPasswordScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PasswordRecoveryScreen(
+          initialEmail: _emailController.text.trim(),
+        ),
+      ),
     );
   }
 
@@ -778,7 +561,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Forgot Password text link (Only on login)
                 if (!_isSignUp) ...[
                   GestureDetector(
-                    onTap: _showForgotPasswordDialog,
+                    onTap: _openForgotPasswordScreen,
                     child: const Text(
                       'Forgot password?',
                       style: TextStyle(
