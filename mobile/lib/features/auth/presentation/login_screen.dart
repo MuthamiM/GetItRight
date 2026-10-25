@@ -279,6 +279,17 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _errorMessage = 'County required');
         return;
       }
+      // Enforce 12-char password with uppercase, lowercase, and number
+      if (password.length < 12) {
+        setState(() => _errorMessage = 'Password must be at least 12 characters.');
+        return;
+      }
+      if (!RegExp(r'[A-Z]').hasMatch(password) ||
+          !RegExp(r'[a-z]').hasMatch(password) ||
+          !RegExp(r'[0-9]').hasMatch(password)) {
+        setState(() => _errorMessage = 'Password must include uppercase, lowercase, and a number.');
+        return;
+      }
     }
 
     setState(() {

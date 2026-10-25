@@ -616,17 +616,37 @@ class ApiClient {
             .join(' ')
         : detail?.toString() ?? '';
     final message = raw.toLowerCase();
+    if (message.contains('invalid') || message.contains('expired')) {
+      return 'Invalid or expired recovery code. Check your code or request a new one.';
+    }
+    if (message.contains('password') ||
+        message.contains('12 characters') ||
+        message.contains('upper-case') ||
+        message.contains('uppercase') ||
+        message.contains('lower-case') ||
+        message.contains('lowercase') ||
+        message.contains('numeric') ||
+        message.contains('digit')) {
+      if (message.contains('12') ||
+          message.contains('upper') ||
+          message.contains('lower') ||
+          message.contains('numeric') ||
+          message.contains('digit') ||
+          message.contains('character') ||
+          message.contains('short') ||
+          message.contains('strength') ||
+          message.contains('least') ||
+          message.contains('match') ||
+          message.contains('requirement') ||
+          statusCode == 422) {
+        return 'Password must be at least 12 characters and include uppercase, lowercase, and a number.';
+      }
+    }
     if (statusCode == 409 ||
         message.contains('already registered') ||
         message.contains('already exists') ||
         message.contains('already exist')) {
       return 'An account with this email already exists. Sign in or reset your password.';
-    }
-    if (message.contains('password') &&
-        (message.contains('12 characters') ||
-            message.contains('upper-case') ||
-            message.contains('uppercase'))) {
-      return 'Choose a password with at least 12 characters, including uppercase, lowercase, and a number.';
     }
     if (message.contains('email') &&
         (message.contains('valid') ||
@@ -658,11 +678,25 @@ class ApiClient {
     if (message.contains('password') && message.contains('required')) {
       return 'Enter your password to continue.';
     }
-    if (statusCode >= 500)
+    if (statusCode >= 500) {
       return 'The service is temporarily unavailable. Please try again shortly.';
+    }
     if (raw.isNotEmpty &&
         !message.contains('value error') &&
-        !message.contains('field required')) return raw;
+        !message.contains('field required') &&
+        !raw.contains('[{') &&
+        !raw.contains('......')) {
+      final sanitized = raw
+          .replaceAll(RegExp(r"\[input_value=.*?\]"), '')
+          .replaceAll(RegExp(r"input:?\s*['\w\.\-]+"), '')
+          .replaceAll('......', '')
+          .replaceAll('Value error, ', '')
+          .replaceAll('Value error:', '')
+          .trim();
+      if (sanitized.isNotEmpty) {
+        return sanitized;
+      }
+    }
     return fallback;
   }
 
@@ -703,12 +737,7 @@ class ApiClient {
           return json.decode(response.body) as Map<String, dynamic>;
         }
         if (response.statusCode >= 400 && response.statusCode < 500) {
-          try {
-            final decoded = json.decode(response.body);
-            if (decoded is Map<String, dynamic> && decoded['detail'] != null) {
-              lastError = decoded['detail'].toString();
-            }
-          } catch (_) {}
+          lastError = _friendlyAuthError(response.body, response.statusCode, lastError);
           return {'success': false, 'error': lastError};
         }
       } catch (_) {}
@@ -731,7 +760,7 @@ class ApiClient {
       'otp': otp.trim(),
       'newPassword': newPassword,
     };
-    String lastError = 'Invalid or expired recovery code.';
+    String lastError = 'Password must be at least 12 characters and include uppercase, lowercase, and a number.';
 
     for (final url in _orderedBaseUrls) {
       try {
@@ -748,12 +777,7 @@ class ApiClient {
           return decoded is Map<String, dynamic> ? decoded : {'success': true};
         }
         if (response.statusCode >= 400 && response.statusCode < 500) {
-          try {
-            final decoded = json.decode(response.body);
-            if (decoded is Map<String, dynamic> && decoded['detail'] != null) {
-              lastError = decoded['detail'].toString();
-            }
-          } catch (_) {}
+          lastError = _friendlyAuthError(response.body, response.statusCode, lastError);
           return {'success': false, 'error': lastError};
         }
       } catch (_) {}
