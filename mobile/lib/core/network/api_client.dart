@@ -616,54 +616,85 @@ class ApiClient {
             .join(' ')
         : detail?.toString() ?? '';
     final message = raw.toLowerCase();
-    if (message.contains('invalid') || message.contains('expired')) {
+
+    // 1. Wrong / incorrect / invalid password on login or auth
+    if (message.contains('invalid password') ||
+        message.contains('incorrect password') ||
+        message.contains('wrong password') ||
+        (statusCode == 401 && message.contains('password'))) {
+      return 'Incorrect password. Check your password or reset it.';
+    }
+
+    // 2. Account not found
+    if (message.contains('no account') ||
+        message.contains('user not found') ||
+        (statusCode == 401 &&
+            (message.contains('account') || message.contains('not found')))) {
+      return 'No account found with this email. Check your address or sign up.';
+    }
+
+    // 3. Inactive account
+    if (statusCode == 403 ||
+        message.contains('not active') ||
+        message.contains('inactive') ||
+        message.contains('suspended')) {
+      return 'This account is not active. Please contact support.';
+    }
+
+    // 4. Invalid or expired recovery code (only when code/otp is mentioned)
+    if ((message.contains('code') ||
+            message.contains('otp') ||
+            message.contains('recovery')) &&
+        (message.contains('invalid') || message.contains('expired'))) {
       return 'Invalid or expired recovery code. Check your code or request a new one.';
     }
-    if (message.contains('password') ||
-        message.contains('12 characters') ||
+    if (message.contains('invalid code') || message.contains('expired code')) {
+      return 'Invalid or expired recovery code. Check your code or request a new one.';
+    }
+
+    // 5. Password complexity requirements
+    if (message.contains('12 characters') ||
         message.contains('upper-case') ||
         message.contains('uppercase') ||
         message.contains('lower-case') ||
         message.contains('lowercase') ||
         message.contains('numeric') ||
-        message.contains('digit')) {
-      if (message.contains('12') ||
-          message.contains('upper') ||
-          message.contains('lower') ||
-          message.contains('numeric') ||
-          message.contains('digit') ||
-          message.contains('character') ||
-          message.contains('short') ||
-          message.contains('strength') ||
-          message.contains('least') ||
-          message.contains('match') ||
-          message.contains('requirement') ||
-          statusCode == 422) {
-        return 'Password must be at least 12 characters and include uppercase, lowercase, and a number.';
-      }
+        message.contains('digit') ||
+        (message.contains('password') &&
+            (statusCode == 422 ||
+                message.contains('requirement') ||
+                message.contains('match') ||
+                message.contains('least') ||
+                message.contains('short') ||
+                message.contains('strength')))) {
+      return 'Password must be at least 12 characters and include uppercase, lowercase, and a number.';
     }
+
+    // 6. Duplicate account
     if (statusCode == 409 ||
         message.contains('already registered') ||
         message.contains('already exists') ||
         message.contains('already exist')) {
       return 'An account with this email already exists. Sign in or reset your password.';
     }
+
+    // 7. Invalid email
     if (message.contains('email') &&
         (message.contains('valid') ||
             message.contains('@-sign') ||
             message.contains('value error'))) {
       return 'Enter a valid email address.';
     }
-    if (message.contains('password') &&
-        (message.contains('incorrect') || statusCode == 401)) {
-      return 'That password does not match this account. Try again or reset your password.';
+
+    // 8. Required fields
+    if (message.contains('email') && message.contains('required')) {
+      return 'Enter your email address to continue.';
     }
-    if (statusCode == 401 ||
-        message.contains('no account') ||
-        message.contains('user not found') ||
-        message.contains('not found')) {
-      return 'We could not find an account for that email. Check the address or create an account.';
+    if (message.contains('password') && message.contains('required')) {
+      return 'Enter your password to continue.';
     }
+
+    // 9. ID / Location / Demographics
     if (message.contains('national') ||
         message.contains('identity') ||
         message.contains('id number')) {
@@ -672,12 +703,13 @@ class ApiClient {
     if (message.contains('county') || message.contains('location')) {
       return 'Check your county selection and try again.';
     }
-    if (message.contains('email') && message.contains('required')) {
-      return 'Enter your email address to continue.';
+
+    // 10. General 401 fallback
+    if (statusCode == 401) {
+      return 'Email or password is incorrect. Check your details and try again.';
     }
-    if (message.contains('password') && message.contains('required')) {
-      return 'Enter your password to continue.';
-    }
+
+    // 11. Server errors
     if (statusCode >= 500) {
       return 'The service is temporarily unavailable. Please try again shortly.';
     }

@@ -18,7 +18,6 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   final ApiClient _apiClient = ApiClient();
   late final TextEditingController _emailController;
   bool _isLoading = false;
-  bool _codeSentSuccess = false;
   String? _errorMessage;
 
   @override
@@ -50,16 +49,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
       if (!mounted) return;
 
       if (res['success'] == true) {
-        // Brief tick indicator, then automatically navigate to Enter Code
-        setState(() {
-          _isLoading = false;
-          _codeSentSuccess = true;
-        });
-
-        await Future.delayed(const Duration(milliseconds: 1100));
-        if (!mounted) return;
-
-        setState(() => _codeSentSuccess = false);
+        setState(() => _isLoading = false);
 
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -102,47 +92,23 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (_codeSentSuccess) ...[
-                  // Brief circular tick indicator (Real circle, app colors only)
-                  Container(
-                    width: 76,
-                    height: 76,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF2E3035),
-                      border: Border.all(color: const Color(0xFFF2F2F3), width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Color(0xFFF2F2F3),
-                      size: 40,
-                    ),
+                // App Logo with curved corners container
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E3035),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFF3F4249), width: 1.5),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Code Sent',
-                    style: TextStyle(
-                      color: Color(0xFFF2F2F3),
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Check ${_emailController.text.trim()}',
-                    style: const TextStyle(
-                      color: Color(0xFFB8BAC0),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                ] else ...[
-                  SvgPicture.asset(
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(
                     'assets/images/icapsq-mark-white.svg',
-                    width: 64,
-                    height: 72,
+                    width: 44,
+                    height: 50,
                     fit: BoxFit.contain,
                   ),
+                ),
                   const SizedBox(height: 28),
                   const Text(
                     'Password Recovery',
@@ -236,136 +202,137 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Screen 2: Enter 6-digit recovery code (Full Screen)
-class RecoveryCodeInputScreen extends StatefulWidget {
-  final String email;
-
-  const RecoveryCodeInputScreen({super.key, required this.email});
-
-  @override
-  State<RecoveryCodeInputScreen> createState() => _RecoveryCodeInputScreenState();
-}
-
-class _RecoveryCodeInputScreenState extends State<RecoveryCodeInputScreen> {
-  final ApiClient _apiClient = ApiClient();
-  final TextEditingController _codeController = TextEditingController();
-  bool _isResending = false;
-  String? _errorMessage;
-  int _cooldown = 60;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _startCooldown();
-  }
-
-  void _startCooldown() {
-    setState(() => _cooldown = 60);
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_cooldown <= 1) {
-        timer.cancel();
-        if (mounted) setState(() => _cooldown = 0);
-      } else {
-        if (mounted) setState(() => _cooldown--);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _codeController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleResend() async {
-    if (_cooldown > 0 || _isResending) return;
-    setState(() {
-      _isResending = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final res = await _apiClient.sendOTP(widget.email);
-      if (!mounted) return;
-      if (res['success'] == true) {
-        _startCooldown();
-      } else {
-        setState(() {
-          _errorMessage = res['error']?.toString() ?? 'Could not resend code.';
-        });
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _errorMessage = 'Could not resend code. Check connection.');
-    } finally {
-      if (mounted) setState(() => _isResending = false);
+      );
     }
   }
 
-  void _handleContinue() {
-    final code = _codeController.text.trim();
-    if (code.length != 6) {
-      setState(() => _errorMessage = 'Enter the 6-digit code.');
-      return;
-    }
+  /// Screen 2: Enter 6-digit recovery code (Full Screen)
+  class RecoveryCodeInputScreen extends StatefulWidget {
+    final String email;
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SetNewPasswordScreen(
-          email: widget.email,
-          otp: code,
-        ),
-      ),
-    );
+    const RecoveryCodeInputScreen({super.key, required this.email});
+
+    @override
+    State<RecoveryCodeInputScreen> createState() => _RecoveryCodeInputScreenState();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1F2023),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-          tooltip: 'Back',
+  class _RecoveryCodeInputScreenState extends State<RecoveryCodeInputScreen> {
+    final ApiClient _apiClient = ApiClient();
+    final TextEditingController _codeController = TextEditingController();
+    bool _isResending = false;
+    String? _errorMessage;
+    int _cooldown = 60;
+    Timer? _timer;
+
+    @override
+    void initState() {
+      super.initState();
+      _startCooldown();
+    }
+
+    void _startCooldown() {
+      setState(() => _cooldown = 60);
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_cooldown <= 1) {
+          timer.cancel();
+          if (mounted) setState(() => _cooldown = 0);
+        } else {
+          if (mounted) setState(() => _cooldown--);
+        }
+      });
+    }
+
+    @override
+    void dispose() {
+      _timer?.cancel();
+      _codeController.dispose();
+      super.dispose();
+    }
+
+    Future<void> _handleResend() async {
+      if (_cooldown > 0 || _isResending) return;
+      setState(() {
+        _isResending = true;
+        _errorMessage = null;
+      });
+
+      try {
+        final res = await _apiClient.sendOTP(widget.email);
+        if (!mounted) return;
+        if (res['success'] == true) {
+          _startCooldown();
+        } else {
+          setState(() {
+            _errorMessage = res['error']?.toString() ?? 'Could not resend code.';
+          });
+        }
+      } catch (_) {
+        if (!mounted) return;
+        setState(() => _errorMessage = 'Could not resend code. Check connection.');
+      } finally {
+        if (mounted) setState(() => _isResending = false);
+      }
+    }
+
+    void _handleContinue() {
+      final code = _codeController.text.trim();
+      if (code.length != 6) {
+        setState(() => _errorMessage = 'Enter the 6-digit code.');
+        return;
+      }
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => SetNewPasswordScreen(
+            email: widget.email,
+            otp: code,
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Real circle container (No moon/cutout)
-                Container(
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF2E3035),
-                    border: Border.all(color: const Color(0xFFF2F2F3), width: 2),
+      );
+    }
+
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF1F2023),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+            onPressed: () => Navigator.of(context).pop(),
+            tooltip: 'Back',
+          ),
+        ),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App Logo with curved corners container
+                  Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E3035),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFF3F4249), width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: SvgPicture.asset(
+                      'assets/images/icapsq-mark-white.svg',
+                      width: 44,
+                      height: 50,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: Color(0xFFF2F2F3),
-                    size: 38,
-                  ),
-                ),
                 const SizedBox(height: 24),
                 const Text(
                   'Enter Code',
@@ -655,19 +622,21 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Real circle container (No moon/cutout)
+                // App Logo with curved corners container
                 Container(
                   width: 76,
                   height: 76,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
                     color: const Color(0xFF2E3035),
-                    border: Border.all(color: const Color(0xFFF2F2F3), width: 2),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFF3F4249), width: 1.5),
                   ),
-                  child: const Icon(
-                    Icons.lock_outline,
-                    color: Color(0xFFF2F2F3),
-                    size: 38,
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(
+                    'assets/images/icapsq-mark-white.svg',
+                    width: 44,
+                    height: 50,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 24),
