@@ -230,14 +230,14 @@ def generate_email_otp(db: Session, email: str) -> dict:
     payload = json.dumps({
         "from": settings.RESEND_FROM_EMAIL,
         "to": [settings.RESEND_TEST_RECIPIENT or user.Email],
-        "subject": "GetItRight password recovery code",
+        "subject": "IcapsQ password recovery code",
         "text": (
-            "Use this link to update your GetItRight password:\n\n"
+            "Use this link to update your IcapsQ password:\n\n"
             f"{reset_link}\n\n"
             f"If the link does not open, use recovery code {code}. It expires in 10 minutes."
         ),
         "html": (
-            "<p>Use the button below to update your GetItRight password.</p>"
+            "<p>Use the button below to update your IcapsQ password.</p>"
             f'<p><a href="{reset_link}">Update your password</a></p>'
             f"<p>This link expires in 10 minutes. Your recovery code is {code}.</p>"
         ),
@@ -248,7 +248,7 @@ def generate_email_otp(db: Session, email: str) -> dict:
         headers={
             "Authorization": f"Bearer {settings.RESEND_API_KEY}",
             "Content-Type": "application/json",
-            "User-Agent": "GetItRight/1.0",
+            "User-Agent": "IcapsQ/1.0",
         },
         method="POST",
     )
