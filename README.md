@@ -4,7 +4,7 @@
 
 ---
 
-## 🌟 Key Features & Highlights
+## Key Features & Highlights
 
 - **Real-Time Polls & Surveys (Mobile & Web)**:
   - Interactive voting with real-time percentage breakdowns, animated pie charts, and status filtering (`ALL`, `CLOSING`, `ENDED`).
@@ -25,7 +25,7 @@
 
 ---
 
-## 🏗️ Project Architecture & Repository Structure
+## Project Architecture & Repository Structure
 
 ```
 POLL/
@@ -55,7 +55,7 @@ POLL/
 
 ---
 
-## 🚀 Quick Start & Installation
+## Quick Start & Installation
 
 ### Prerequisites
 - **Flutter SDK**: 3.x or higher (for mobile development)
@@ -107,7 +107,7 @@ flutter build apk --release
 
 ---
 
-## 🔒 Security & Privacy Commitments
+## Security & Privacy Commitments
 
 1. **Zero Raw Photo Transmission**: Observer photos in evidence workflows are hashed locally in the browser/client; raw images are never sent to third-party endpoints.
 2. **Immutability Rules**: Ledger entries cannot be updated or deleted in place. Corrections create new superseding records backed by mandatory cryptographic signatures and justifications.
@@ -115,6 +115,6 @@ flutter build apk --release
 
 ---
 
-## 📜 License & Compliance
+## License & Compliance
 
 All rights reserved. GetItRight / PollTrack platform code adheres to production-grade engineering standards with strict zero-emoji, high-contrast, accessible UI standards.
