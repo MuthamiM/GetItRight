@@ -444,12 +444,22 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Clean Brand Logo without rectangle container
-                SvgPicture.asset(
-                  'assets/images/icapsq-mark-white.svg',
-                  width: 72,
-                  height: 80,
-                  fit: BoxFit.contain,
+                // Brand Logo with curved corners container
+                Container(
+                  width: 82,
+                  height: 82,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E3035),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF3F4249), width: 1.5),
+                  ),
+                  alignment: Alignment.center,
+                  child: SvgPicture.asset(
+                    'assets/images/icapsq-mark-white.svg',
+                    width: 48,
+                    height: 54,
+                    fit: BoxFit.contain,
+                  ),
                 ),
 
                 const SizedBox(height: 36),
