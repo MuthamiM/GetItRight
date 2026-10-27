@@ -48,6 +48,9 @@
     </p>
 
     <div id="payment-status-note" role="status" style="font-size:13px; color:var(--text-muted);">Paid plans are prepaid for 30 days in KES. iPay checkout status is loading.</div>
+    <div id="upgrade-required-banner" style="display:none; margin:16px auto 0; max-width:640px; padding:14px 18px; background:rgba(235,87,87,0.15); border:1.5px solid #EB5757; border-radius:12px; color:#F2F2F3; font-size:14px; line-height:1.45; text-align:center;">
+      <strong style="color:#FF8A8A;">⚠️ Console Access Restricted:</strong> Free plan accounts cannot access the client web console. Choose an active plan below (Pro or Organization) to upgrade your account and unlock the console.
+    </div>
   </header>
 
   <!-- ====== MAIN TIER COMPARISON CARDS ====== -->
@@ -56,18 +59,19 @@
       <section class="card" style="padding:28px; border:1px solid var(--border); display:flex; flex-direction:column; justify-content:space-between;">
         <div>
           <h2 style="font-size:20px; font-weight:700; margin:0 0 6px;">Starter</h2>
-          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">For small groups and first campaigns</p>
+          <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">For individual voters and community participation</p>
           <div style="font-size:32px; font-weight:800; color:var(--text); margin-bottom:4px;">Free</div>
-          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">No payment required</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:24px;">No payment required • Mobile app</div>
           <ul style="list-style:none; padding:0; margin:0 0 24px; font-size:14px; color:var(--text-muted); display:flex; flex-direction:column; gap:12px;">
-            <li>Up to <strong><span data-plan-polls="free">5</span> polls</strong></li>
-            <li>Participant target per poll: <strong><span data-plan-voters="free">1,000</span></strong></li>
-            <li>Poll and survey tools</li>
-            <li>Shareable links and results</li>
+            <li>Vote in sovereign polls</li>
+            <li>Participate in community surveys</li>
+            <li>Cryptographic vote verification</li>
+            <li>Free mobile app access</li>
           </ul>
         </div>
-        <a href="console/polls.html?action=new-free" class="btn btn-secondary btn-pill" style="width:100%; justify-content:center;">Get started free</a>
+        <a href="mobile-app.html" class="btn btn-secondary btn-pill" style="width:100%; justify-content:center;">Download Mobile App</a>
       </section>
+
 
       <section class="card" style="padding:28px; border:1px solid var(--primary); background:linear-gradient(180deg, rgba(74,92,255,0.06) 0%, var(--surface) 100%); display:flex; flex-direction:column; justify-content:space-between; position:relative;">
         <span class="badge" style="position:absolute; top:-10px; right:20px; background:var(--primary); color:#000; font-size:10px; font-weight:800; padding:3px 8px; border-radius:12px;">POPULAR</span>
@@ -210,8 +214,13 @@
       App.injectIcons();
       loadPlanCatalog();
 
-
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('reason') === 'upgrade_required' || params.get('error') === 'upgrade_required') {
+        const banner = document.getElementById('upgrade-required-banner');
+        if (banner) banner.style.display = 'block';
+      }
     });
+
   </script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>

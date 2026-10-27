@@ -561,6 +561,7 @@ class ApiClient {
     String? county,
     String plan = 'free',
     String organization = 'Independent',
+    String? organizationContactRole,
   }) async {
     String lastError =
         'Could not create your account. Check your connection and try again.';
@@ -579,6 +580,9 @@ class ApiClient {
                 'county': county,
                 'plan': plan,
                 'organization': organization,
+                if (organizationContactRole != null &&
+                    organizationContactRole.trim().isNotEmpty)
+                  'organizationContactRole': organizationContactRole.trim(),
                 'role': 'Customer',
               }),
             )

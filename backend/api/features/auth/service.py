@@ -53,10 +53,20 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
     from backend.api.features.users.service import expire_user_plan_if_needed
     user = expire_user_plan_if_needed(db, user)
 
-    redirect_url = "/console/admin.html" if user.Role in ["Admin", "Super Admin"] else "/console/user.html"
+    is_admin = (user.Role in ["Admin", "Super Admin"])
+    is_free = (not user.Plan or user.Plan.lower() == "free")
+
+    if getattr(creds, "surface", None) == "web_console" and not is_admin and is_free:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Free plan accounts cannot access the client web console. Please upgrade to a paid plan."
+        )
+
+    redirect_url = "/console/admin.html" if is_admin else ("/pricing.html" if is_free else "/console/user.html")
     if user.ConsoleUrl != redirect_url:
         user.ConsoleUrl = redirect_url
         db.commit()
+
 
     token = create_access_token({
         "sub": user.Id,

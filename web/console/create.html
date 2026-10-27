@@ -1123,10 +1123,15 @@
           if (res.ok) {
             const u = await res.json();
             localStorage.setItem('gir_user', JSON.stringify(u));
+            if (!u.isAdmin && (!u.plan || u.plan.toLowerCase() === 'free')) {
+              alert('Free plan accounts cannot create polls or surveys in the client web console. Please upgrade to a paid plan.');
+              return location.replace('../pricing.html?reason=upgrade_required');
+            }
             if (u.plan) plan = u.plan.toLowerCase();
           }
         } catch (_) {}
       }
+
 
       const planInput = document.getElementById('wizard-plan');
       if (planInput) planInput.value = plan;

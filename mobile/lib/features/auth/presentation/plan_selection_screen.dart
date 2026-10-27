@@ -167,14 +167,15 @@ class _PlanSelectionScreenState extends State<PlanSelectionScreen> {
         );
         return;
       }
-      final loginUrl = Uri.https(
+      final pricingUrl = Uri.https(
         'icapsq.mftechnologies.org',
-        '/auth/login.html',
+        '/pricing.html',
+        {'plan': _selectedPlan},
       );
       var opened = false;
       try {
         opened = await launchUrl(
-          loginUrl,
+          pricingUrl,
           mode: LaunchMode.externalApplication,
         );
       } catch (_) {}

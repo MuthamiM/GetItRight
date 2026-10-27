@@ -251,6 +251,11 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    if (!email.contains('@') || !email.contains('.')) {
+      setState(() => _errorMessage = 'Please enter a valid email address');
+      return;
+    }
+
     if (_isSignUp) {
       if (_fullNameController.text.trim().isEmpty) {
         setState(() => _errorMessage = 'Full name required');
@@ -301,6 +306,10 @@ class _LoginScreenState extends State<LoginScreen> {
       Map<String, dynamic>? userData;
       String? sessionToken;
 
+      final orgName = _orgController.text.trim();
+      final position = _roleController.text.trim();
+      final hasOrgAndPosition = orgName.isNotEmpty && position.isNotEmpty;
+
       if (_isSignUp) {
         final regRes = await _apiClient.register(
           fullName: _fullNameController.text.trim(),
@@ -309,9 +318,8 @@ class _LoginScreenState extends State<LoginScreen> {
           dob: _dobController.text.trim(),
           nationalId: _nationalIdController.text.trim(),
           county: _countyController.text.trim(),
-          organization: _orgController.text.trim().isNotEmpty
-              ? _orgController.text.trim()
-              : 'Independent',
+          organization: orgName.isNotEmpty ? orgName : 'Independent',
+          organizationContactRole: position.isNotEmpty ? position : null,
         );
 
         if (regRes != null && regRes['user'] != null) {
@@ -371,12 +379,19 @@ class _LoginScreenState extends State<LoginScreen> {
           serverPlan != null && serverPlan.isNotEmpty ? serverPlan : cachedPlan;
 
       if (mounted) {
-        // If signing in (not newly signing up) or if plan is already present, proceed straight to app
+        // Only ask for plan if during creating account they gave org name and position.
+        // Otherwise (regular voter/user without org and position, or sign-in, or plan chosen), proceed straight to app.
         if (!_isSignUp ||
+            !hasOrgAndPosition ||
             planChosen ||
-            (savedPlan != null && savedPlan.isNotEmpty)) {
+            (savedPlan != null &&
+                savedPlan.isNotEmpty &&
+                savedPlan.toLowerCase() != 'free')) {
           if (savedPlan != null && savedPlan.isNotEmpty) {
             await prefs.setString('gir_user_plan', savedPlan);
+            await prefs.setBool('gir_plan_chosen', true);
+          } else {
+            await prefs.setString('gir_user_plan', 'free');
             await prefs.setBool('gir_plan_chosen', true);
           }
           widget.onLoginSuccess(
@@ -400,6 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       }
+
     } catch (e) {
       if (!mounted) return;
       var message = e.toString().replaceFirst('Exception: ', '').trim();
@@ -491,7 +507,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Email Input
                 _buildPillInput(
                   controller: _emailController,
-                  hint: 'Email / Username',
+                  hint: 'Email address',
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: const Icon(Icons.mail_outline,
                       color: Color(0xFFB8BAC0), size: 20),

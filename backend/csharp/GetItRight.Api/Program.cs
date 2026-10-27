@@ -837,7 +837,7 @@ app.MapPost("/api/auth/login", async ([FromBody] LoginRequest req, AppDbContext 
             user.ConsoleUrl,
             isAdmin = user.Role == "Admin"
         },
-        redirectUrl = user.Role == "Admin" ? "/console/dashboard.html" : user.ConsoleUrl
+        redirectUrl = user.Role == "Admin" ? "/console/dashboard.html" : ((string.IsNullOrEmpty(user.Plan) || user.Plan.ToLower() == "free") ? "/pricing.html" : user.ConsoleUrl)
     });
 });
 

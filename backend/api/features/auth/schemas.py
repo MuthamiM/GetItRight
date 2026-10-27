@@ -16,6 +16,8 @@ class LoginRequest(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     deviceDetails: Optional[str] = None
+    surface: Optional[str] = None
+
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr

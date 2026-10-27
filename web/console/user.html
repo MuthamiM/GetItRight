@@ -3140,9 +3140,15 @@
       const user = await me.json();
       if (user.isAdmin) return location.replace('admin.html');
 
+      if (!user.isAdmin && (!user.plan || user.plan.toLowerCase() === 'free')) {
+        alert('Free plan accounts cannot access the client web console. Please upgrade to a paid plan.');
+        return location.replace('../pricing.html?reason=upgrade_required');
+      }
+
       // Store user in localStorage for session plan resolution
       localStorage.setItem('gir_user', JSON.stringify(user));
       currentUser = user;
+
       populateAllExportDropdowns();
 
       document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`;
