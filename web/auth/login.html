@@ -196,15 +196,6 @@
 
       <div id="auth-success" style="display:none; padding:13px 16px; background:rgba(46, 125, 50, 0.25); border:1.5px solid #81C784; border-radius:12px; font-size:13px; color:#C8E6C9; margin-bottom:18px; line-height:1.45;"></div>
       <div id="auth-error" style="display:none; padding:12px 14px; background:rgba(229, 229, 229, 0.12); border:1.5px solid rgba(229, 229, 229, 0.35); border-radius:12px; font-size:13px; color:var(--silver); margin-bottom:18px; line-height:1.4;"></div>
-      <div id="auth-upgrade-prompt" style="display:none; padding:16px; background:rgba(235, 87, 87, 0.15); border:1.5px solid #EB5757; border-radius:14px; margin-bottom:18px; text-align:center;">
-        <div style="font-weight:800; font-size:14px; color:#FF8A8A; margin-bottom:6px;">Console Access Restricted</div>
-        <div id="auth-upgrade-msg" style="font-size:13px; color:var(--silver); line-height:1.45; margin-bottom:14px;">
-          Free plan accounts cannot access the client web console. Please upgrade to an active paid plan.
-        </div>
-        <a href="../pricing.html?reason=upgrade_required" id="auth-upgrade-link" class="btn-submit" style="display:inline-block; width:auto; padding:10px 22px; font-size:13.5px; text-decoration:none; margin-top:0;">
-          Upgrade to Paid Plan &rarr;
-        </a>
-      </div>
 
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
@@ -234,10 +225,14 @@
   <script>
     const API_BASE = window.location.origin + '/api';
 
-    function showError(msg) {
+    function showError(msg, isHtml = false) {
       const el = document.getElementById('auth-error');
       if (el) {
-        el.textContent = msg;
+        if (isHtml) {
+          el.innerHTML = msg;
+        } else {
+          el.textContent = msg;
+        }
         el.style.display = 'block';
       }
     }
@@ -250,25 +245,9 @@
       }
     }
 
-    function showUpgradePrompt(msg) {
-      clearError();
-      const promptEl = document.getElementById('auth-upgrade-prompt');
-      const msgEl = document.getElementById('auth-upgrade-msg');
-      if (promptEl) {
-        if (msgEl && msg) msgEl.textContent = msg;
-        promptEl.style.display = 'block';
-      }
-    }
-
-    function hideUpgradePrompt() {
-      const promptEl = document.getElementById('auth-upgrade-prompt');
-      if (promptEl) promptEl.style.display = 'none';
-    }
-
     async function handleLogin(e) {
       e.preventDefault();
       clearError();
-      hideUpgradePrompt();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
       const btn = document.getElementById('login-btn');
@@ -295,10 +274,9 @@
           const isFree = !user.isAdmin && user.role !== 'Admin' && user.role !== 'Super Admin' && (!user.plan || user.plan.toLowerCase() === 'free');
 
           if (isFree) {
-            // Keep token and user in localStorage so if they click Upgrade to Paid Plan, they can checkout without re-entering credentials
             localStorage.setItem('gir_token', data.token);
             localStorage.setItem('gir_user', JSON.stringify(user));
-            showUpgradePrompt('Free plan accounts cannot access the client web console. Please upgrade to a paid plan (Civic Pro or Organization) to access the console.');
+            showError('Free plan cannot access web console. <a href="../pricing.html?reason=upgrade_required" style="color:var(--silver);font-weight:700;text-decoration:underline;margin-left:4px;">Upgrade &rarr;</a>', true);
             btn.disabled = false;
             btn.textContent = 'Sign In →';
             return;
@@ -311,7 +289,7 @@
           if (res.status === 403) {
             const d = (data.detail || '').toLowerCase();
             if (d.includes('free plan') || d.includes('console') || d.includes('upgrade')) {
-              showUpgradePrompt(data.detail || 'Free plan accounts cannot access the client web console. Please upgrade to a paid plan.');
+              showError('Free plan cannot access web console. <a href="../pricing.html?reason=upgrade_required" style="color:var(--silver);font-weight:700;text-decoration:underline;margin-left:4px;">Upgrade &rarr;</a>', true);
               btn.disabled = false;
               btn.textContent = 'Sign In →';
               return;
@@ -336,6 +314,7 @@
         btn.textContent = 'Sign In →';
       }
     }
+
 
   </script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>

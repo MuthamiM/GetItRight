@@ -59,7 +59,7 @@ def authenticate_user(db: Session, creds: LoginRequest) -> AuthResponse:
     if getattr(creds, "surface", None) == "web_console" and not is_admin and is_free:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Free plan accounts cannot access the client web console. Please upgrade to a paid plan."
+            detail="Free plan cannot access web console. Please upgrade."
         )
 
     redirect_url = "/console/admin.html" if is_admin else ("/pricing.html" if is_free else "/console/user.html")
