@@ -11,11 +11,16 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
   <meta name="theme-color" content="#2E3035">
+  <meta name="color-scheme" content="only light">
+  <meta name="supported-color-schemes" content="light">
   <style>
     /* IcapsQ Graphite Brand Theme */
     :root {
-      --graphite-900: #1F2023;
-      --graphite-700: #2E3035; /* brand primary */
+      color-scheme: only light;
+      --graphite-950: #18191B;
+      --graphite-900: #1E1F22;
+      --graphite-800: #25262A;
+      --graphite-700: #2E3035;
       --graphite-500: #6B6E76;
       --graphite-300: #B8BAC0;
       --graphite-50:  #F2F2F3;
@@ -35,6 +40,12 @@
       --poll-slice-5: #EF5350;
       --poll-slice-6: #26C6DA;
       --poll-slice-7: #8D6E63;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root, html, body {
+        color-scheme: only light !important;
+      }
     }
 
     body {
@@ -57,8 +68,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 clamp(24px, 4vw, 64px);
-      background: var(--silver);
-      border-bottom: 2px solid var(--charcoal);
+      background: var(--silver) !important;
+      border-bottom: 2px solid var(--charcoal) !important;
       z-index: 1000;
     }
     .ln-nav-logo {
@@ -85,8 +96,11 @@
       font-family: var(--font-display);
       font-size: 22px;
       font-weight: 800;
-      color: var(--charcoal);
+      color: var(--charcoal) !important;
       letter-spacing: -0.03em;
+    }
+    .ln-nav-brand .brand-q {
+      color: var(--graphite-500) !important;
     }
     .ln-nav-right {
       display: flex;
@@ -110,13 +124,13 @@
       border-bottom: 2px solid transparent;
       white-space: nowrap;
     }
-    .ln-nav-links a:hover {
-      opacity: 1 !important;
-    }
+    .ln-nav-links a:hover,
     .ln-nav-links a.active {
       opacity: 1 !important;
-      font-weight: 800;
       color: #2E3035 !important;
+    }
+    .ln-nav-links a.active {
+      font-weight: 800 !important;
       border-bottom: 2px solid #2E3035 !important;
     }
     .ln-nav-links a::after,
@@ -124,21 +138,24 @@
       display: none !important;
     }
     .ln-nav-signin {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
-      color: var(--charcoal);
+      color: var(--charcoal) !important;
       text-decoration: none;
-      padding: 8px 20px;
+      padding: 8px 18px;
       border-radius: 100px;
-      border: 1.5px solid var(--charcoal);
+      border: 1.5px solid var(--charcoal) !important;
+      background: transparent !important;
       transition: background 0.2s, color 0.2s;
       white-space: nowrap;
       flex-shrink: 0;
     }
     .ln-nav-signin:hover {
-      background: var(--charcoal);
-      color: var(--silver);
+      background: var(--charcoal) !important;
+      color: var(--silver) !important;
     }
+    .signin-text-desktop { display: inline; }
+    .signin-text-mobile { display: none; }
 
     /* ── Edge-to-Edge Layout ── */
     .edge-container {
@@ -166,6 +183,7 @@
       background: var(--charcoal);
       color: var(--silver);
       border-color: var(--charcoal);
+      font-weight: 800;
     }
 
     /* ── Search Bar ── */
@@ -203,7 +221,7 @@
       align-items: center;
     }
 
-    /* ── Poll Feed Card (#303030 Charcoal with #E5E5E5 Silver) ── */
+    /* ── Poll Feed Card (#2E3035 Charcoal with #F2F2F3 Silver) ── */
     .poll-feed-card {
       background: var(--charcoal);
       color: var(--silver);
@@ -214,7 +232,7 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .poll-feed-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       box-shadow: 0 16px 36px rgba(48, 48, 48, 0.25);
     }
     .poll-feed-header {
@@ -734,7 +752,9 @@
         align-items: center !important;
         justify-content: space-between !important;
         gap: 8px !important;
-        box-shadow: 0 2px 8px rgba(48, 48, 48, 0.06);
+        background: var(--silver) !important;
+        border-bottom: 2px solid var(--charcoal) !important;
+        box-shadow: 0 2px 8px rgba(48, 48, 48, 0.08);
       }
       .ln-nav-logo {
         gap: 8px !important;
@@ -742,6 +762,7 @@
       }
       .ln-nav-brand {
         font-size: 18px !important;
+        color: var(--charcoal) !important;
       }
       .ln-nav-logo-icon {
         width: 28px !important;
@@ -750,7 +771,7 @@
       .ln-nav-right {
         display: flex !important;
         align-items: center !important;
-        gap: 12px !important;
+        gap: 10px !important;
       }
       .ln-nav-links {
         display: flex !important;
@@ -763,7 +784,7 @@
         font-size: 12.5px !important;
         padding: 3px 0 !important;
         border-radius: 0 !important;
-        color: #2E3035 !important;
+        color: var(--charcoal) !important;
         opacity: 0.8 !important;
         background: none !important;
         font-weight: 600 !important;
@@ -774,22 +795,27 @@
       .ln-nav-links a:hover,
       .ln-nav-links a.active {
         opacity: 1 !important;
-        color: #2E3035 !important;
+        color: var(--charcoal) !important;
       }
       .ln-nav-links a.active {
         font-weight: 800 !important;
-        border-bottom: 2px solid #2E3035 !important;
+        border-bottom: 2px solid var(--charcoal) !important;
       }
       .ln-nav-links a::after,
       .ln-nav-links a.active::after {
         display: none !important;
       }
       .ln-nav-signin {
-        padding: 5px 12px !important;
-        font-size: 12px !important;
+        padding: 6px 12px !important;
+        font-size: 11.5px !important;
         flex-shrink: 0 !important;
         white-space: nowrap !important;
+        background: transparent !important;
+        border: 1.5px solid var(--charcoal) !important;
+        color: var(--charcoal) !important;
       }
+      .signin-text-desktop { display: none !important; }
+      .signin-text-mobile { display: inline !important; }
     }
 
     @media (max-width: 420px) {
@@ -807,15 +833,15 @@
         font-size: 11.5px !important;
       }
       .ln-nav-brand {
-        font-size: 17px !important;
+        font-size: 16px !important;
       }
       .ln-nav-logo-icon {
         width: 24px !important;
         height: 24px !important;
       }
       .ln-nav-signin {
-        padding: 4px 9px !important;
-        font-size: 11.5px !important;
+        padding: 5px 9px !important;
+        font-size: 11px !important;
       }
     }
 
@@ -828,10 +854,12 @@
       .page-header-title {
         font-size: 24px !important;
         line-height: 1.2 !important;
+        color: var(--charcoal) !important;
       }
       .page-header-desc {
         font-size: 13.5px !important;
         line-height: 1.5 !important;
+        color: var(--graphite-500) !important;
       }
 
       #poll-filters-bar {
@@ -853,8 +881,8 @@
         flex-shrink: 0 !important;
       }
       .poll-feed-card {
-        padding: 17px 15px !important;
-        border-radius: 17px !important;
+        padding: 20px 16px !important;
+        border-radius: 16px !important;
       }
       .poll-feed-header {
         gap: 8px !important;
@@ -900,8 +928,7 @@
     }
     .pagination-info-text {
       font-size: 13px;
-      color: var(--charcoal);
-      opacity: 0.85;
+      color: #B8B8B8 !important;
       font-weight: 600;
     }
     .pagination-actions-row {
@@ -912,35 +939,46 @@
       flex-wrap: wrap;
     }
     .btn-next-remaining {
-      background: var(--charcoal) !important;
-      color: var(--silver) !important;
-      border: 1.5px solid var(--charcoal) !important;
+      background: #E5E5E5 !important;
+      color: #303030 !important;
+      border: none !important;
       border-radius: 100px !important;
       padding: 10px 24px !important;
       font-size: 13px !important;
-      font-weight: 700 !important;
+      font-weight: 800 !important;
       cursor: pointer !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       gap: 8px !important;
       transition: all 0.2s ease !important;
-      box-shadow: 0 4px 12px rgba(48,48,48,0.15) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     }
     .btn-next-remaining:hover:not(:disabled) {
       opacity: 0.9 !important;
       transform: translateY(-1px) !important;
     }
     .btn-next-remaining:disabled {
-      opacity: 0.4 !important;
+      opacity: 0.3 !important;
       cursor: not-allowed !important;
       transform: none !important;
       box-shadow: none !important;
     }
     .btn-pagination-nav {
-      background: transparent !important;
-      color: var(--charcoal) !important;
-      border: 1.5px solid var(--charcoal) !important;
+      background: #25262A !important;
+      color: #E5E5E5 !important;
+      border: 1.5px solid #3E3E3E !important;
+      border-radius: 100px !important;
+      padding: 10px 20px !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      transition: all 0.2s ease !important;
+    }
       border-radius: 100px !important;
       padding: 10px 20px !important;
       font-size: 13px !important;
@@ -1011,7 +1049,7 @@
     }
   </style>
 </head>
-<body>
+<body class="landing-new">
 
   <!-- ====== PUBLIC NAVBAR ====== -->
   <nav class="ln-nav" id="mainNav">
@@ -1027,7 +1065,7 @@
         <a href="vote.html" class="active">Active Polls</a>
         <a href="surveys.html">Active Surveys</a>
       </div>
-      <a href="../auth/login.html" class="ln-nav-signin">Sign In</a>
+      <a href="../auth/login.html" class="ln-nav-signin"><span class="signin-text-desktop">Organization Sign In</span><span class="signin-text-mobile">Org Sign In</span></a>
     </div>
   </nav>
 
@@ -1037,13 +1075,13 @@
     <!-- Top search & category filter -->
     <div class="page-header-row" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; margin-bottom:32px;">
       <div style="flex:1; min-width:280px;">
-        <div style="font-family:var(--font-display); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--charcoal); opacity:0.7; margin-bottom:6px;">
+        <div style="font-family:var(--font-display); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:#29B6F6; margin-bottom:6px;">
           Public &amp; Community Directory
         </div>
         <h1 class="page-header-title" style="font-family:var(--font-display); font-size:clamp(1.75rem, 3.5vw, 2.7rem); font-weight:900; color:var(--charcoal); letter-spacing:-0.03em; margin:0 0 10px 0; line-height:1.15;">
           Active Public Polls &amp; Referendums
         </h1>
-        <p class="page-header-desc" style="font-size:14.5px; color:var(--charcoal); opacity:0.8; margin:0; max-width:820px; line-height:1.6;">
+        <p class="page-header-desc" style="font-size:14.5px; color:var(--graphite-500); opacity:0.95; margin:0; max-width:820px; line-height:1.6;">
           Browse published community referendums, organizational polls, and civic inquiries. Vote directly to express your perspective and view verified real-time aggregate totals.
         </p>
       </div>
@@ -1205,32 +1243,30 @@
 
     async function syncAccountPollStatuses() {
       const token = localStorage.getItem('gir_token');
-      if (!token) return;
-      // Treat ballot history as unknown until the server confirms it. A failed
-      // status lookup must never leave an already-voted ballot editable.
-      allPolls.forEach(poll => serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true }));
       const voterIdNumber = localStorage.getItem('gir_voter_id_number') ||
         localStorage.getItem('gir_user_national_id') || '';
+      const voterKey = localStorage.getItem('gir_assigned_user_id') ||
+        localStorage.getItem('gir_voter_key') || '';
+      if (!token && !voterIdNumber && !voterKey) return;
+
       await Promise.all(allPolls.map(async poll => {
         try {
-          const hasVerificationIdentity = Boolean(voterIdNumber);
+          const hasIdentity = Boolean(voterIdNumber || voterKey);
           const response = await fetch(`${API_BASE}/polls/${encodeURIComponent(poll.id)}/vote-status`, {
-            method: hasVerificationIdentity ? 'POST' : 'GET',
+            method: hasIdentity ? 'POST' : 'GET',
             headers: {
-              ...(hasVerificationIdentity ? { 'Content-Type': 'application/json' } : {}),
-              'Authorization': `Bearer ${token}`
+              ...(hasIdentity ? { 'Content-Type': 'application/json' } : {}),
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
             },
-            ...(hasVerificationIdentity ? {
-              body: JSON.stringify({ voterIdNumber })
+            ...(hasIdentity ? {
+              body: JSON.stringify({ voterIdNumber, voterKey })
             } : {}),
             cache: 'no-store'
           });
           if (!response.ok) {
-            if (response.status === 401) {
+            if (response.status === 401 && token) {
               localStorage.removeItem('gir_token');
               serverVotedPolls.delete(poll.id);
-            } else {
-              serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true });
             }
             return;
           }
@@ -1238,14 +1274,14 @@
           serverVotedPolls.set(poll.id, status);
           if (status.hasVoted) {
             const selectedIndex = getPollOptionArrayIndex(poll, status.optionIndex);
-            if (selectedIndex >= 0) pollOptionSelections.set(poll.id, selectedIndex);
-          } else {
-            // Clear legacy device-wide markers. They were shared across accounts
-            // and could incorrectly make this poll appear already voted.
-            localStorage.removeItem('gir_voted_poll_' + poll.id);
+            if (selectedIndex >= 0) {
+              pollOptionSelections.set(poll.id, selectedIndex);
+              lockPollOptions(poll.id, status.optionIndex);
+              renderPollCardVisuals(poll);
+            }
           }
         } catch (_) {
-          serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true });
+          // ignore network failure
         }
       }));
     }
@@ -1260,13 +1296,14 @@
         const isVotedChoice = hasOptionIndex && buttonOptionIndex === Number(optionIndex);
         button.disabled = true;
         button.setAttribute('aria-disabled', 'true');
-        button.title = 'You have already voted in this poll.';
-        button.style.cursor = 'not-allowed';
+        button.title = isVotedChoice ? 'Your verified ballot' : 'You have already voted in this poll.';
+        button.style.cursor = 'default';
         button.classList.toggle('voted', isVotedChoice);
+        button.classList.toggle('selected', isVotedChoice);
         if (isVotedChoice) {
           const label = button.querySelector('.option-label');
           if (label && !label.innerHTML.includes('[Voted]')) {
-            label.innerHTML += ' <span style="color:var(--silver); opacity:0.95; font-size:12px; margin-left:8px; font-weight:800;">[Voted]</span>';
+            label.innerHTML += ' <span style="font-size:11px; margin-left:8px; font-weight:800; color:var(--option-accent, #29B6F6);">[Voted]</span>';
           }
         }
       });
@@ -1399,20 +1436,18 @@
       return 'conic-gradient(' + stops.join(', ') + ')';
     }
 
+    const inspectedPieSlice = new Map();
+
     function setPollOptionSelection(pollId, optionIndex, toggle = true) {
       const poll = allPolls.find(item => item.id === pollId) || currentFilteredPolls.find(item => item.id === pollId);
       const serverStatus = serverVotedPolls.get(pollId);
-      if (serverStatus?.statusUnavailable === true && localStorage.getItem('gir_token')) {
-        App.showToast('Unable to verify ballot history. Refresh and try again before selecting an option.', 'error');
-        return;
-      }
       if (serverStatus?.hasVoted) {
+        // WHAT ONE VOTED FOR ALWAYS SELECTED IN LIST
         const votedIndex = poll && serverStatus.optionIndex !== null && serverStatus.optionIndex !== undefined
           ? getPollOptionArrayIndex(poll, serverStatus.optionIndex)
           : -1;
         if (votedIndex >= 0) pollOptionSelections.set(pollId, votedIndex);
-        else pollOptionSelections.delete(pollId);
-        if (poll) renderPollOptionSelection(poll, votedIndex >= 0 ? votedIndex : null);
+        if (poll) renderPollCardVisuals(poll);
         return;
       }
 
@@ -1424,7 +1459,7 @@
         pollOptionSelections.set(pollId, optionIndex);
       }
 
-      if (poll) renderPollOptionSelection(poll, pollOptionSelections.has(pollId) ? pollOptionSelections.get(pollId) : null);
+      if (poll) renderPollCardVisuals(poll);
     }
 
     function handlePollPieClick(event, pollId, pieEl) {
@@ -1434,13 +1469,6 @@
       const options = poll.options || [];
       if (!options.length) return;
 
-      if (event.detail === 0) {
-        const selected = pollOptionSelections.get(pollId);
-        const next = selected === undefined ? 0 : selected + 1;
-        setPollOptionSelection(pollId, next < options.length ? next : null, false);
-        return;
-      }
-
       const pieButton = pieEl ||
         (event.target instanceof Element ? event.target.closest('[data-poll-pie-id]') : null) ||
         document.getElementById(`poll-pie-${pollId}`);
@@ -1449,8 +1477,11 @@
       const bounds = pieButton.getBoundingClientRect();
       const dx = event.clientX - (bounds.left + bounds.width / 2);
       const dy = event.clientY - (bounds.top + bounds.height / 2);
-      if (Math.hypot(dx, dy) < bounds.width * 0.24) {
-        setPollOptionSelection(pollId, null, false);
+
+      // Center donut tap clears inspected slice and shows total votes
+      if (Math.hypot(dx, dy) < bounds.width * 0.26) {
+        inspectedPieSlice.delete(pollId);
+        renderPollCardVisuals(poll);
         return;
       }
 
@@ -1461,14 +1492,20 @@
         const sweep = sliceAngles[index] || (360 / options.length);
         const end = cursor + sweep;
         if (angle >= cursor && angle < end) {
-          setPollOptionSelection(pollId, index);
+          const current = inspectedPieSlice.get(pollId);
+          if (current === index) {
+            inspectedPieSlice.delete(pollId);
+          } else {
+            inspectedPieSlice.set(pollId, index);
+          }
+          renderPollCardVisuals(poll);
           return;
         }
         cursor = end;
       }
     }
 
-    function renderPollOptionSelection(poll, selectedIndex) {
+    function renderPollCardVisuals(poll) {
       const card = document.getElementById(`poll-card-${poll.id}`);
       if (!card) return;
       const pie = card.querySelector('.poll-vote-pie');
@@ -1477,28 +1514,22 @@
       const instructionEl = card.querySelector('.poll-pie-instruction');
       const labelEl = card.querySelector('.poll-pie-selection-label');
       const percentEl = card.querySelector('.poll-pie-selection-percent');
-      const selectedOption = Number.isInteger(selectedIndex) ? poll.options[selectedIndex] : null;
-      const color = selectedOption ? pollOptionColors[selectedIndex % pollOptionColors.length] : null;
+      const overlay = pie ? pie.querySelector('.poll-pie-selection-overlay') : null;
 
-      card.querySelectorAll('.poll-legend-item').forEach((item, index) => {
-        const isSelected = index === selectedIndex;
-        item.classList.toggle('selected', isSelected);
-        item.setAttribute('aria-pressed', String(isSelected));
-      });
-      card.querySelectorAll('.poll-opt-btn').forEach((item, index) => {
-        item.classList.toggle('selected', index === selectedIndex);
-      });
+      // 1. UPDATE PIE CHART (SHOW ONLY VOTE COUNT FOR CLICKED PIE)
+      const inspectedIndex = inspectedPieSlice.get(poll.id);
+      const inspectedOption = Number.isInteger(inspectedIndex) ? poll.options[inspectedIndex] : null;
 
-      if (!pie) return;
-      if (!selectedOption) {
-        pie.classList.remove('has-selection');
-        pie.style.removeProperty('--option-accent');
-        const overlay = pie.querySelector('.poll-pie-selection-overlay');
+      if (!inspectedOption) {
+        if (pie) {
+          pie.classList.remove('has-selection');
+          pie.style.removeProperty('--option-accent');
+        }
         if (overlay) overlay.replaceChildren();
-        pie.setAttribute('aria-label', `Live vote distribution for ${poll.title}. Tap a slice to inspect its votes.`);
         if (totalEl) {
           totalEl.textContent = Number(poll.totalVotes || 0).toLocaleString();
           totalEl.classList.remove('is-selection');
+          totalEl.style.removeProperty('color');
         }
         if (captionEl) {
           captionEl.textContent = 'Total Votes';
@@ -1507,56 +1538,54 @@
         if (instructionEl) instructionEl.style.display = '';
         if (labelEl) labelEl.style.display = 'none';
         if (percentEl) percentEl.style.display = 'none';
-        return;
+      } else {
+        const count = getPollOptionVoteCount(inspectedOption);
+        const color = pollOptionColors[inspectedIndex % pollOptionColors.length];
+        if (pie) {
+          pie.classList.remove('has-selection');
+          pie.style.removeProperty('--option-accent');
+        }
+        // Pie section highlight disabled — just show vote counts in center when clicked
+        if (overlay) overlay.replaceChildren();
+        if (totalEl) {
+          totalEl.textContent = count.toLocaleString();
+          totalEl.classList.add('is-selection');
+          totalEl.style.color = color;
+        }
+        if (captionEl) {
+          captionEl.textContent = count === 1 ? 'Vote' : 'Votes';
+          captionEl.style.display = '';
+        }
+        if (instructionEl) instructionEl.style.display = 'none';
+        if (labelEl) labelEl.style.display = 'none';
+        if (percentEl) percentEl.style.display = 'none';
       }
 
-      const percentage = getPollOptionPercent(poll, selectedOption);
-      pie.classList.add('has-selection');
-      pie.style.setProperty('--option-accent', color);
-      const overlay = pie.querySelector('.poll-pie-selection-overlay');
-      if (overlay) {
-        const sliceAngles = getPollSliceAngles(poll);
-        let startAngle = 0;
-        for (let i = 0; i < selectedIndex; i++) {
-          startAngle += sliceAngles[i] || 0;
-        }
-        const sweep = sliceAngles[selectedIndex] || (360 / Math.max(1, (poll.options || []).length));
-        const radius = 84;
-        const center = 84;
-        const startRadians = (startAngle - 90) * Math.PI / 180;
-        const endRadians = (startAngle + sweep - 90) * Math.PI / 180;
-        const startX = center + radius * Math.cos(startRadians);
-        const startY = center + radius * Math.sin(startRadians);
-        const endX = center + radius * Math.cos(endRadians);
-        const endY = center + radius * Math.sin(endRadians);
-        const largeArc = sweep > 180 ? 1 : 0;
-        const pathData = sweep >= 359.999
-          ? `M ${center} ${center - radius} A ${radius} ${radius} 0 1 1 ${center} ${center + radius} A ${radius} ${radius} 0 1 1 ${center} ${center - radius} Z`
-          : `M ${center} ${center} L ${startX.toFixed(3)} ${startY.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} 1 ${endX.toFixed(3)} ${endY.toFixed(3)} Z`;
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', pathData);
-        path.setAttribute('fill', color);
-        path.setAttribute('stroke', '#fff');
-        path.setAttribute('stroke-width', '2.5');
-        path.setAttribute('stroke-linejoin', 'round');
-        path.setAttribute('vector-effect', 'non-scaling-stroke');
-        overlay.replaceChildren(path);
-      }
-      pie.setAttribute('aria-label', `${selectedOption.label}: ${getPollOptionVoteCount(selectedOption).toLocaleString()} votes, ${percentage.toFixed(1)} percent`);
-      if (totalEl) {
-        totalEl.textContent = `${getPollOptionVoteCount(selectedOption).toLocaleString()} votes`;
-        totalEl.classList.add('is-selection');
-      }
-      if (captionEl) captionEl.style.display = 'none';
-      if (instructionEl) instructionEl.style.display = 'none';
-      if (labelEl) {
-        labelEl.textContent = selectedOption.label;
-        labelEl.style.display = '';
-      }
-      if (percentEl) {
-        percentEl.textContent = `(${percentage.toFixed(1)}%)`;
-        percentEl.style.display = '';
-      }
+      // 2. UPDATE LIST (WHAT ONE VOTED FOR ALWAYS SELECTED IN LIST)
+      const serverStatus = serverVotedPolls.get(poll.id);
+      const hasVoted = serverStatus?.hasVoted === true;
+      const votedIndex = hasVoted && serverStatus.optionIndex !== null && serverStatus.optionIndex !== undefined
+        ? getPollOptionArrayIndex(poll, serverStatus.optionIndex)
+        : -1;
+      const unvotedSelected = pollOptionSelections.get(poll.id);
+
+      card.querySelectorAll('.poll-opt-btn').forEach((btn, index) => {
+        const isVotedChoice = hasVoted && index === votedIndex;
+        const isSelected = hasVoted ? isVotedChoice : (index === unvotedSelected);
+        btn.classList.toggle('voted', isVotedChoice);
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-pressed', String(isSelected));
+      });
+
+      card.querySelectorAll('.poll-legend-item').forEach((item, index) => {
+        const isSelected = hasVoted ? (index === votedIndex) : (index === unvotedSelected);
+        item.classList.toggle('selected', isSelected);
+        item.setAttribute('aria-pressed', String(isSelected));
+      });
+    }
+
+    function renderPollOptionSelection(poll, selectedIndex) {
+      renderPollCardVisuals(poll);
     }
 
     let currentFilteredPolls = [];
@@ -1619,7 +1648,7 @@
 
       if (!currentFilteredPolls || currentFilteredPolls.length === 0) {
         container.innerHTML = `
-          <div style="padding:60px 20px; text-align:center; color:var(--charcoal); opacity:0.75; font-size:15px; font-weight:600;">
+          <div style="padding:60px 20px; text-align:center; color:var(--silver-muted); opacity:0.85; font-size:15px; font-weight:600;">
             No active polls found matching this filter.
           </div>
         `;

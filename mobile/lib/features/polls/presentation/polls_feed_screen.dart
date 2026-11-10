@@ -164,14 +164,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
   }
 
   String _existingVoteChannelMessage(Map<String, dynamic> status) {
-    switch (status['sourceChannel']?.toString()) {
-      case 'website':
-        return 'Already voted on web. App voting is disabled.';
-      case 'mobile_app':
-        return 'Already voted in app. Choice is locked.';
-      default:
-        return 'Already voted. Choice is locked.';
-    }
+    return 'Already voted.';
   }
 
   /// Format countdown strictly as "Xd Xh XXmins left", no emojis, no Root, no 0x
@@ -1107,7 +1100,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
     if (!mounted) return;
     _voteErrorTimer?.cancel();
     setState(() => _voteErrorMessage = message);
-    _voteErrorTimer = Timer(const Duration(seconds: 4), () {
+    _voteErrorTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) setState(() => _voteErrorMessage = null);
     });
   }
@@ -1572,13 +1565,7 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                       InteractivePieChartWidget(
                                                           key: ValueKey(
                                                               '${poll.id}:${poll.selectedOptionId ?? ''}'),
-                                                          poll: poll,
-                                                          onAlreadyVotedTap: () =>
-                                                              _showVoteError(
-                                                                  _existingVoteChannelMessage({
-                                                                'sourceChannel':
-                                                                    poll.voteSourceChannel,
-                                                              }))),
+                                                          poll: poll),
 
                                                       const SizedBox(
                                                           height: 14),
@@ -1605,11 +1592,11 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                           onTap: () {
                                                             if (poll.selectedOptionId !=
                                                                 null) {
-                                                              _showVoteError(
-                                                                  _existingVoteChannelMessage({
-                                                                'sourceChannel':
-                                                                    poll.voteSourceChannel,
-                                                              }));
+                                                              if (poll.selectedOptionId == opt.id) {
+                                                                // Tapped own voted option — silently ignore
+                                                                return;
+                                                              }
+                                                              _showVoteError('Already voted.');
                                                               return;
                                                             }
                                                             _handleVote(
@@ -1957,7 +1944,6 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
 // ──────────────────────────────────────────────
 class InteractivePieChartWidget extends StatefulWidget {
   final Poll poll;
-  final VoidCallback? onAlreadyVotedTap;
 
   static const List<Color> sliceColors = [
     Color(0xFF29B6F6), // Light Blue
@@ -1971,7 +1957,7 @@ class InteractivePieChartWidget extends StatefulWidget {
   ];
 
   const InteractivePieChartWidget(
-      {super.key, required this.poll, this.onAlreadyVotedTap});
+      {super.key, required this.poll});
 
   @override
   State<InteractivePieChartWidget> createState() =>
@@ -1985,7 +1971,7 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = _votedArrayIndex(widget.poll);
+    _selectedIndex = null; // Do not highlight or select slice unless clicked
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -2004,10 +1990,7 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
   void didUpdateWidget(covariant InteractivePieChartWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.poll.id != widget.poll.id) {
-      _selectedIndex = _votedArrayIndex(widget.poll);
-    } else if (oldWidget.poll.selectedOptionId !=
-        widget.poll.selectedOptionId) {
-      _selectedIndex = _votedArrayIndex(widget.poll);
+      _selectedIndex = null;
     }
   }
 
@@ -2085,22 +2068,14 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapUp: (details) {
-            // Once the server has confirmed a ballot, keep the chart pinned to
-            // that choice. Chart taps are for exploring results before voting.
-            if (widget.poll.selectedOptionId != null) {
-              setState(() => _selectedIndex = _votedArrayIndex(widget.poll));
-              widget.onAlreadyVotedTap?.call();
-              return;
-            }
-
             const size = Size(160, 160);
             final center = Offset(size.width / 2, size.height / 2);
             final dx = details.localPosition.dx - center.dx;
             final dy = details.localPosition.dy - center.dy;
 
-            // Center donut tap clears selection
+            // Center donut tap clears inspected slice and returns to total votes
             if (math.sqrt(dx * dx + dy * dy) < 32) {
-              setState(() => _selectedIndex = _votedArrayIndex(widget.poll));
+              setState(() => _selectedIndex = null);
               return;
             }
 
@@ -2125,10 +2100,8 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
                       ? (opt.votes / widget.poll.totalVotes) * activeAngleBudget
                       : minAngle);
               if (angle >= start && angle < start + sweep) {
-                final votedIndex = _votedArrayIndex(widget.poll);
                 setState(() {
-                  _selectedIndex =
-                      _selectedIndex == i && votedIndex != i ? null : i;
+                  _selectedIndex = (_selectedIndex == i) ? null : i;
                 });
                 return;
               }
@@ -2151,7 +2124,7 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
                   ),
                 ),
 
-                // Center donut label displaying specific vote count when slice/aspirant is clicked
+                // Center donut label displaying ONLY vote count when slice is clicked
                 Container(
                   width: 66,
                   height: 66,
@@ -2169,30 +2142,20 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
                     children: [
                       if (selectedOpt != null) ...[
                         Text(
-                          selectedOpt.text,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          '${selectedOpt.votes} votes',
+                          '${selectedOpt.votes}',
                           style: TextStyle(
-                            color: selectedColor,
-                            fontSize: 11,
+                            color: selectedColor ?? Colors.white,
+                            fontSize: 16,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                         Text(
-                          '(${selectedOpt.percentage.toStringAsFixed(1)}%)',
-                          style: const TextStyle(
-                            color: Color(0xFFD0D0D0),
+                          selectedOpt.votes == 1 ? 'Vote' : 'Votes',
+                          style: TextStyle(
+                            color: selectedColor?.withOpacity(0.9) ??
+                                const Color(0xFFB8B8B8),
                             fontSize: 9,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ] else ...[
@@ -2200,7 +2163,7 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
                           '${widget.poll.totalVotes}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -2262,15 +2225,12 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
   }
 
   Widget _buildLegendItem(PollOption opt, Color color, int index) {
+    final votedIndex = _votedArrayIndex(widget.poll);
+    final isVoted = votedIndex == index;
     final isSelected = _selectedIndex == index;
 
     return GestureDetector(
       onTap: () {
-        if (widget.poll.selectedOptionId != null) {
-          setState(() => _selectedIndex = _votedArrayIndex(widget.poll));
-          widget.onAlreadyVotedTap?.call();
-          return;
-        }
         setState(() {
           _selectedIndex = (isSelected) ? null : index;
         });
@@ -2279,11 +2239,15 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.25) : Colors.transparent,
+          color: isVoted
+              ? color.withOpacity(0.28)
+              : (isSelected ? color.withOpacity(0.18) : Colors.transparent),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? color : Colors.transparent,
-            width: 1,
+            color: isVoted
+                ? color
+                : (isSelected ? color.withOpacity(0.7) : Colors.transparent),
+            width: isVoted ? 1.5 : 1,
           ),
         ),
         child: Row(
@@ -2301,24 +2265,50 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    opt.text,
-                    style: TextStyle(
-                      color:
-                          isSelected ? Colors.white : const Color(0xFFD0D0D0),
-                      fontSize: 11,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          opt.text,
+                          style: TextStyle(
+                            color: isVoted || isSelected
+                                ? Colors.white
+                                : const Color(0xFFD0D0D0),
+                            fontSize: 11,
+                            fontWeight: isVoted || isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isVoted)
+                        Container(
+                          margin: const EdgeInsets.only(left: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.35),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'VOTED',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   Text(
                     '${opt.votes} votes (${opt.percentage.toStringAsFixed(1)}%)',
                     style: TextStyle(
                       color: color,
                       fontSize: 9,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
@@ -2363,6 +2353,8 @@ class ColorfulPieChartPainter extends CustomPainter {
 
     double startAngle = -math.pi / 2;
 
+    final rect = Rect.fromCircle(center: center, radius: baseRadius);
+
     for (int i = 0; i < options.length; i++) {
       final opt = options[i];
       final sweepAngle = totalVotes <= 0
@@ -2370,10 +2362,6 @@ class ColorfulPieChartPainter extends CustomPainter {
           : (opt.votes > 0
               ? (opt.votes / totalVotes) * activeAngleBudget
               : minAngle);
-      final isSelected = selectedIndex == i;
-
-      final radius = isSelected ? baseRadius + 4 : baseRadius;
-      final rect = Rect.fromCircle(center: center, radius: radius);
 
       final paint = Paint()
         ..style = PaintingStyle.fill
@@ -2381,11 +2369,11 @@ class ColorfulPieChartPainter extends CustomPainter {
 
       canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
 
-      // Separator border
+      // Clean separator border between slices
       final borderPaint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isSelected ? 3 : 2
-        ..color = isSelected ? Colors.white : const Color(0xFF2E3035);
+        ..strokeWidth = 2
+        ..color = const Color(0xFF2E3035);
 
       canvas.drawArc(rect, startAngle, sweepAngle, true, borderPaint);
 

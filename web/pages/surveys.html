@@ -11,25 +11,38 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
   <meta name="theme-color" content="#2E3035">
+  <meta name="color-scheme" content="only light">
+  <meta name="supported-color-schemes" content="light">
   <style>
     /* IcapsQ Graphite Brand Theme */
     :root {
-      --graphite-900: #1F2023;
-      --graphite-700: #2E3035; /* brand primary */
-      --graphite-500: #6B6E76;
-      --graphite-300: #B8BAC0;
-      --graphite-50:  #F2F2F3;
+      color-scheme: only light;
+      --graphite-950: #18191B;
+      --graphite-900: #1E1F22;
+      --graphite-800: #25262A;
+      --graphite-700: #303030;
+      --graphite-600: #3E3E3E;
+      --graphite-500: #8E929B;
+      --graphite-300: #B8B8B8;
+      --graphite-100: #E5E5E5;
+      --graphite-50:  #F5F5F7;
       --white: #FFFFFF;
 
-      --charcoal: #2E3035;
-      --silver: #F2F2F3;
+      --page-bg: #303030;
+      --card-bg: #25262A;
+      --card-border: #3E3E3E;
+      --charcoal: #25262A;
+      --charcoal-elevated: #2E3035;
+      --silver: #E5E5E5;
+      --silver-muted: #B8B8B8;
+      --silver-border: #3E3E3E;
       --font-display: 'Outfit', sans-serif;
       --font-body: 'Inter', sans-serif;
     }
 
     body {
-      background: var(--silver) !important;
-      color: var(--charcoal) !important;
+      background: var(--page-bg) !important;
+      color: var(--silver) !important;
       font-family: var(--font-body) !important;
       min-height: 100vh;
       margin: 0;
@@ -47,8 +60,10 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 clamp(24px, 4vw, 64px);
-      background: var(--silver);
-      border-bottom: 2px solid var(--charcoal);
+      background: rgba(48, 48, 48, 0.96) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border) !important;
       z-index: 1000;
     }
     .ln-nav-logo {
@@ -75,8 +90,11 @@
       font-family: var(--font-display);
       font-size: 22px;
       font-weight: 800;
-      color: var(--charcoal);
+      color: var(--silver) !important;
       letter-spacing: -0.03em;
+    }
+    .ln-nav-brand .brand-q {
+      color: var(--silver-muted) !important;
     }
     .ln-nav-right {
       display: flex;
@@ -91,10 +109,10 @@
     .ln-nav-links a {
       font-size: 14px;
       font-weight: 700;
-      color: #2E3035 !important;
+      color: var(--silver-muted) !important;
       text-decoration: none;
-      opacity: 0.8 !important;
-      transition: opacity 0.2s ease, border-color 0.2s ease;
+      opacity: 0.85 !important;
+      transition: opacity 0.2s ease, border-color 0.2s ease, color 0.2s ease;
       position: relative;
       padding: 4px 0;
       border-bottom: 2px solid transparent;
@@ -102,39 +120,44 @@
     }
     .ln-nav-links a:hover {
       opacity: 1 !important;
+      color: var(--white) !important;
     }
     .ln-nav-links a.active {
       opacity: 1 !important;
       font-weight: 800;
-      color: #2E3035 !important;
-      border-bottom: 2px solid #2E3035 !important;
+      color: var(--white) !important;
+      border-bottom: 2px solid var(--white) !important;
     }
     .ln-nav-links a::after,
     .ln-nav-links a.active::after {
       display: none !important;
     }
     .ln-nav-signin {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
-      color: var(--charcoal);
+      color: var(--silver) !important;
       text-decoration: none;
-      padding: 8px 20px;
+      padding: 8px 18px;
       border-radius: 100px;
-      border: 1.5px solid var(--charcoal);
-      transition: background 0.2s, color 0.2s;
+      background: #404040 !important;
+      border: 1.5px solid #606060 !important;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
       white-space: nowrap;
       flex-shrink: 0;
     }
     .ln-nav-signin:hover {
-      background: var(--charcoal);
-      color: var(--silver);
+      background: #505050 !important;
+      border-color: #888888 !important;
+      color: var(--white) !important;
     }
+    .signin-text-desktop { display: inline; }
+    .signin-text-mobile { display: none; }
 
     /* ── Filter Pills & Search ── */
     .audience-filter-pill {
-      background: transparent;
-      border: 1.5px solid var(--charcoal);
-      color: var(--charcoal);
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      color: var(--silver-muted);
       padding: 8px 18px;
       border-radius: 100px;
       font-size: 13px;
@@ -143,20 +166,23 @@
       transition: all 0.2s ease;
     }
     .audience-filter-pill:hover {
-      background: rgba(48, 48, 48, 0.08);
+      background: #35363B;
+      color: var(--silver);
+      border-color: #555760;
     }
     .audience-filter-pill.active {
-      background: var(--charcoal);
-      color: var(--silver);
-      border-color: var(--charcoal);
+      background: var(--silver);
+      color: #303030;
+      border-color: var(--silver);
+      font-weight: 800;
     }
     .search-box {
       position: relative;
     }
     .search-input {
-      background: rgba(48, 48, 48, 0.06) !important;
-      color: var(--charcoal) !important;
-      border: 1.5px solid var(--charcoal) !important;
+      background: var(--card-bg) !important;
+      color: var(--silver) !important;
+      border: 1.5px solid var(--card-border) !important;
       border-radius: 100px !important;
       padding: 10px 16px 10px 42px !important;
       width: 100%;
@@ -164,20 +190,26 @@
       font-family: var(--font-body);
       outline: none;
       box-sizing: border-box;
-      transition: box-shadow 0.2s ease;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
     }
     .search-input::placeholder {
-      color: rgba(48, 48, 48, 0.55) !important;
+      color: var(--graphite-500) !important;
     }
     .search-input:focus {
-      box-shadow: 0 0 0 3px rgba(48, 48, 48, 0.15) !important;
+      border-color: #29B6F6 !important;
+      box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.2) !important;
     }
     .search-icon {
       position: absolute;
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--charcoal);
+      color: var(--graphite-500);
+      opacity: 0.85;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
       opacity: 0.65;
       pointer-events: none;
       display: flex;
