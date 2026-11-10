@@ -235,7 +235,7 @@ def check_vote_status(
 def check_vote_status_by_national_id(
     poll_id: str,
     request_data: VoteStatusRequest,
-    current_user: dict = Depends(get_current_user_token),
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
     db: Session = Depends(get_db),
 ):
     """Check ballot history by National ID without placing the ID in a URL."""
@@ -247,7 +247,7 @@ def check_vote_status_by_national_id(
     return get_vote_status(
         db,
         poll_id,
-        user_id=current_user["sub"],
+        user_id=current_user["sub"] if current_user else None,
         voter_key=request_data.voterKey,
         voter_id_number=request_data.voterIdNumber,
     )
@@ -268,13 +268,14 @@ def submit_vote(
     poll_id: str,
     vote_req: VoteCastRequest,
     request: Request,
-    current_user: dict = Depends(get_current_user_token),
+    current_user: Optional[dict] = Depends(get_optional_current_user_token),
     db: Session = Depends(get_db),
 ):
     """Cast a verifiable ballot, recalculate percentage distribution, and issue a cryptographic receipt."""
-    # Account identity always comes from the verified server-side token.
-    # Never accept a client-supplied account ID or downgrade to anonymous voting.
-    vote_req.userId = current_user["sub"]
+    if current_user:
+        vote_req.userId = current_user["sub"]
+    else:
+        vote_req.userId = None
     client_ip = get_observed_client_ip(request)
     if not (vote_req.voterKey and vote_req.voterKey.strip()):
         import uuid

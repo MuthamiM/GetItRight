@@ -2109,12 +2109,21 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
               angle += 2 * math.pi;
             }
 
+            final zeroCount = widget.poll.options.where((o) => o.votes == 0).length;
+            final minAngle = (widget.poll.totalVotes > 0 && zeroCount > 0 && zeroCount < widget.poll.options.length)
+                ? math.min(18.0 * (math.pi / 180.0), (2 * math.pi * 0.28) / zeroCount)
+                : 0.0;
+            final totalReservedForZero = zeroCount * minAngle;
+            final activeAngleBudget = (2 * math.pi) - totalReservedForZero;
+
             double start = -math.pi / 2;
             for (int i = 0; i < widget.poll.options.length; i++) {
               final opt = widget.poll.options[i];
-              final sweep = widget.poll.totalVotes > 0
-                  ? (opt.votes / widget.poll.totalVotes) * 2 * math.pi
-                  : (2 * math.pi / widget.poll.options.length);
+              final sweep = widget.poll.totalVotes <= 0
+                  ? (2 * math.pi / widget.poll.options.length)
+                  : (opt.votes > 0
+                      ? (opt.votes / widget.poll.totalVotes) * activeAngleBudget
+                      : minAngle);
               if (angle >= start && angle < start + sweep) {
                 final votedIndex = _votedArrayIndex(widget.poll);
                 setState(() {
@@ -2345,13 +2354,22 @@ class ColorfulPieChartPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final baseRadius = math.min(size.width / 2, size.height / 2) - 4;
 
+    final zeroCount = options.where((o) => o.votes == 0).length;
+    final minAngle = (totalVotes > 0 && zeroCount > 0 && zeroCount < options.length)
+        ? math.min(18.0 * (math.pi / 180.0), (2 * math.pi * 0.28) / zeroCount)
+        : 0.0;
+    final totalReservedForZero = zeroCount * minAngle;
+    final activeAngleBudget = (2 * math.pi) - totalReservedForZero;
+
     double startAngle = -math.pi / 2;
 
     for (int i = 0; i < options.length; i++) {
       final opt = options[i];
-      final sweepAngle = totalVotes > 0
-          ? (opt.votes / totalVotes) * 2 * math.pi
-          : (2 * math.pi / options.length);
+      final sweepAngle = totalVotes <= 0
+          ? (2 * math.pi / options.length)
+          : (opt.votes > 0
+              ? (opt.votes / totalVotes) * activeAngleBudget
+              : minAngle);
       final isSelected = selectedIndex == i;
 
       final radius = isSelected ? baseRadius + 4 : baseRadius;
