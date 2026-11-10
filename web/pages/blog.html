@@ -129,18 +129,22 @@
       color: var(--silver);
     }
 
-    /* ── Editorial Reading Layout (Just Words, No Cards) ── */
+    /* ── Editorial Reading Layout (Edge-to-Edge) ── */
+    .edge-container,
     .blog-reader-wrap {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 48px 20px 80px;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 40px clamp(24px, 4vw, 64px) 80px;
       box-sizing: border-box;
     }
 
     .blog-header {
+      width: 100%;
       margin-bottom: 40px;
       padding-bottom: 24px;
       border-bottom: 2px solid var(--charcoal);
+      box-sizing: border-box;
     }
     .blog-kicker {
       font-family: var(--font-display);
@@ -154,7 +158,7 @@
     }
     .blog-page-title {
       font-family: var(--font-display);
-      font-size: clamp(2rem, 4vw, 2.85rem);
+      font-size: clamp(2rem, 4vw, 3.2rem);
       font-weight: 900;
       color: var(--charcoal);
       letter-spacing: -0.03em;
@@ -162,26 +166,28 @@
       margin: 0 0 14px 0;
     }
     .blog-page-intro {
-      font-size: 16px;
+      font-size: 16.5px;
       color: var(--charcoal);
       opacity: 0.85;
       margin: 0;
       line-height: 1.6;
+      width: 100%;
     }
 
-    /* ── Search (Minimalist Underline Input) ── */
+    /* ── Search (Minimalist Underline Input - Edge to Edge) ── */
     .blog-search-wrap {
-      margin: 24px 0 44px;
+      margin: 24px 0 32px;
+      width: 100%;
     }
     .blog-search-input {
       width: 100%;
       background: transparent;
       color: var(--charcoal);
       border: none;
-      border-bottom: 1.5px solid var(--charcoal);
+      border-bottom: 2px solid var(--charcoal);
       border-radius: 0;
-      padding: 10px 0;
-      font-size: 15px;
+      padding: 12px 0;
+      font-size: 16px;
       font-family: var(--font-body);
       outline: none;
       box-sizing: border-box;
@@ -194,8 +200,13 @@
       border-bottom-width: 2.5px;
     }
 
-    /* ── Pure Editorial Prose (No Cards, Words Only) ── */
+    /* ── Pure Editorial Prose (Edge to Edge) ── */
+    #blog-articles-container {
+      width: 100%;
+    }
     .blog-article {
+      width: 100%;
+      box-sizing: border-box;
       margin-bottom: 56px;
       padding-bottom: 48px;
       border-bottom: 1px solid rgba(46, 48, 53, 0.18);
@@ -206,7 +217,7 @@
     }
     .article-topic {
       font-family: var(--font-display);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -216,7 +227,7 @@
     }
     .article-heading {
       font-family: var(--font-display);
-      font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+      font-size: clamp(1.5rem, 2.8vw, 2.2rem);
       font-weight: 800;
       color: var(--charcoal);
       line-height: 1.25;
@@ -224,38 +235,43 @@
       margin: 0 0 10px 0;
     }
     .article-meta {
-      font-size: 13px;
+      font-size: 13.5px;
       color: var(--charcoal);
       opacity: 0.7;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
       font-weight: 600;
     }
     .article-prose {
-      font-size: 15.5px;
+      font-size: 16px;
       color: var(--charcoal);
       line-height: 1.8;
       opacity: 0.92;
+      width: 100%;
     }
     .article-prose p {
       margin: 0 0 16px 0;
+      width: 100%;
     }
     .article-prose h3 {
       font-family: var(--font-display);
-      font-size: 17.5px;
+      font-size: 18.5px;
       font-weight: 800;
       color: var(--charcoal);
-      margin: 22px 0 8px 0;
+      margin: 24px 0 8px 0;
       letter-spacing: -0.01em;
     }
     .article-stats-summary {
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--charcoal);
-      opacity: 0.8;
-      margin: 12px 0 18px 0;
-      padding: 10px 0;
-      border-top: 1px dashed rgba(46, 48, 53, 0.2);
-      border-bottom: 1px dashed rgba(46, 48, 53, 0.2);
+      opacity: 0.85;
+      margin: 14px 0 20px 0;
+      padding: 12px 18px;
+      background: rgba(46, 48, 53, 0.05);
+      border-left: 3px solid var(--charcoal);
+      border-radius: 4px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* ── Mobile Responsive ── */
@@ -320,6 +336,7 @@
         flex-shrink: 0 !important;
         white-space: nowrap !important;
       }
+      .edge-container,
       .blog-reader-wrap {
         padding: 24px 16px 60px !important;
       }
@@ -381,8 +398,8 @@
     </div>
   </nav>
 
-  <!-- ====== EDITORIAL READING CONTAINER (JUST WORDS, NO CARDS) ====== -->
-  <main class="blog-reader-wrap">
+  <!-- ====== EDITORIAL READING CONTAINER (EDGE TO EDGE) ====== -->
+  <main class="edge-container blog-reader-wrap">
     
     <header class="blog-header">
       <div class="blog-kicker">IcapsQ Research &amp; Intelligence</div>

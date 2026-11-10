@@ -313,16 +313,21 @@
       position: relative;
       display: grid;
       place-items: center;
-      width: 160px;
-      height: 160px;
+      width: 168px;
+      height: 168px;
       border-radius: 50%;
       border: 0;
       padding: 0;
       color: inherit;
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
       flex-shrink: 0;
       cursor: pointer;
       overflow: visible;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+    }
+    .poll-vote-pie:hover {
+      transform: scale(1.03);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
     }
     .poll-vote-pie:focus-visible {
       outline: 2px solid var(--silver);
@@ -341,14 +346,17 @@
     .poll-vote-pie::before {
       content: '';
       position: absolute;
-      inset: 29%;
+      inset: 28%;
       z-index: 2;
       border-radius: 50%;
       background: var(--charcoal);
-      border: 1px solid rgba(242, 242, 243, 0.2);
+      border: 1.5px solid rgba(242, 242, 243, 0.2);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
     .poll-vote-pie.has-selection::before {
       border: 2px solid var(--option-accent);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), 0 0 16px var(--option-accent);
     }
     .poll-vote-pie-center {
       position: relative;
@@ -362,6 +370,7 @@
     .poll-pie-total {
       color: var(--silver);
       font: 900 20px/1.1 var(--font-display);
+      transition: color 0.2s ease;
     }
     .poll-pie-caption {
       color: var(--graphite-300);
@@ -377,21 +386,21 @@
       opacity: 0.72;
     }
     .poll-pie-selection-label {
-      max-width: 58px;
+      max-width: 68px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       color: var(--silver);
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 800;
     }
     .poll-pie-total.is-selection {
       color: var(--option-accent);
-      font-size: 11px;
+      font-size: 13px;
     }
     .poll-pie-selection-percent {
       color: var(--graphite-300);
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 700;
     }
     .poll-vote-options-group {
@@ -409,8 +418,8 @@
     }
     .poll-legend-item {
       display: grid;
-      grid-template-columns: 12px minmax(0, 1fr);
-      column-gap: 9px;
+      grid-template-columns: 14px minmax(0, 1fr);
+      column-gap: 10px;
       row-gap: 3px;
       min-width: 0;
       padding: 6px 8px;
@@ -437,13 +446,21 @@
       grid-row: 1 / span 2;
       width: 12px;
       height: 12px;
-      margin-top: 2px;
+      margin-top: 3px;
       border-radius: 50%;
-      background: var(--graphite-300);
+      background: var(--option-accent, var(--graphite-300));
+      box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+      flex-shrink: 0;
+    }
+    .poll-legend-item:hover .poll-legend-dot {
+      transform: scale(1.25);
+      box-shadow: 0 0 0 2px var(--silver);
     }
     .poll-legend-item.selected .poll-legend-dot {
       background: var(--option-accent);
-      box-shadow: 0 0 0 2px rgba(229, 229, 229, 0.18);
+      box-shadow: 0 0 0 2px var(--silver), 0 0 10px var(--option-accent);
+      transform: scale(1.3);
     }
     .poll-legend-label {
       overflow: hidden;
@@ -482,7 +499,7 @@
     .poll-option-name {
       display: inline-flex;
       align-items: center;
-      gap: 9px;
+      gap: 12px;
       min-width: 0;
       color: var(--silver);
       font-size: 14px;
@@ -490,21 +507,44 @@
       overflow-wrap: anywhere;
     }
     .poll-option-marker {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
       border-radius: 50%;
-      border: 2px solid var(--graphite-300);
-      background: transparent;
+      border: 2px solid var(--option-accent, var(--graphite-300));
+      background: rgba(255, 255, 255, 0.04);
       box-sizing: border-box;
-      transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .poll-option-marker::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1F2023;
+      transform: scale(0);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .poll-opt-btn:hover:not(:disabled) .poll-option-marker {
+      border-color: var(--option-accent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--option-accent, #29B6F6) 25%, transparent);
+      background: color-mix(in srgb, var(--option-accent, #29B6F6) 15%, transparent);
+      transform: scale(1.08);
     }
     .poll-opt-btn.selected .poll-option-marker,
     .poll-opt-btn.voted .poll-option-marker {
       background: var(--option-accent);
       border-color: var(--option-accent);
-      box-shadow: 0 0 0 3px rgba(229, 229, 229, 0.12);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15), 0 0 12px var(--option-accent);
+      transform: scale(1.08);
+    }
+    .poll-opt-btn.selected .poll-option-marker::after,
+    .poll-opt-btn.voted .poll-option-marker::after {
+      transform: scale(1);
     }
     .poll-opt-btn.selected {
       background: rgba(229, 229, 229, 0.06);
@@ -1174,7 +1214,12 @@
             cache: 'no-store'
           });
           if (!response.ok) {
-            serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true });
+            if (response.status === 401) {
+              localStorage.removeItem('gir_token');
+              serverVotedPolls.delete(poll.id);
+            } else {
+              serverVotedPolls.set(poll.id, { hasVoted: null, statusUnavailable: true });
+            }
             return;
           }
           const status = await response.json();
@@ -1302,15 +1347,37 @@
     function getPollPieGradient(poll) {
       const options = poll.options || [];
       const total = getPollOptionTotal(poll);
-      if (total <= 0 || options.length === 0) return 'conic-gradient(#6B6E76 0deg 360deg)';
+      if (total <= 0 || options.length === 0) {
+        if (options.length > 0) {
+          const sliceAngle = 360 / options.length;
+          const stops = options.map((option, index) => {
+            const start = index * sliceAngle;
+            const end = (index + 1) * sliceAngle;
+            const color = pollOptionColors[index % pollOptionColors.length];
+            const gap = options.length > 1 ? 1.5 : 0;
+            return gap > 0
+              ? `${color} ${start.toFixed(2)}deg ${(end - gap).toFixed(2)}deg, var(--charcoal) ${(end - gap).toFixed(2)}deg ${end.toFixed(2)}deg`
+              : `${color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`;
+          });
+          return 'conic-gradient(' + stops.join(', ') + ')';
+        }
+        return 'conic-gradient(#6B6E76 0deg 360deg)';
+      }
 
       let cursor = 0;
+      const validOptions = options.filter(opt => getPollOptionVoteCount(opt) > 0);
+      const hasMultipleSlices = validOptions.length > 1;
       const stops = options.map((option, index) => {
         const count = getPollOptionVoteCount(option);
         if (count <= 0) return '';
         const start = cursor;
         cursor += (count / total) * 360;
-        return pollOptionColors[index % pollOptionColors.length] + ' ' + start.toFixed(2) + 'deg ' + cursor.toFixed(2) + 'deg';
+        const color = pollOptionColors[index % pollOptionColors.length];
+        if (hasMultipleSlices) {
+          const gap = 1.2;
+          return `${color} ${start.toFixed(2)}deg ${(cursor - gap).toFixed(2)}deg, var(--charcoal) ${(cursor - gap).toFixed(2)}deg ${cursor.toFixed(2)}deg`;
+        }
+        return `${color} ${start.toFixed(2)}deg ${cursor.toFixed(2)}deg`;
       }).filter(Boolean);
 
       return stops.length ? 'conic-gradient(' + stops.join(', ') + ')' : 'conic-gradient(#6B6E76 0deg 360deg)';
@@ -1344,31 +1411,47 @@
       if (poll) renderPollOptionSelection(poll, pollOptionSelections.has(pollId) ? pollOptionSelections.get(pollId) : null);
     }
 
-    function handlePollPieClick(event, pollId) {
+    function handlePollPieClick(event, pollId, pieEl) {
       const poll = allPolls.find(item => item.id === pollId) || currentFilteredPolls.find(item => item.id === pollId);
       if (!poll) return;
+
+      const options = poll.options || [];
+      if (!options.length) return;
 
       if (event.detail === 0) {
         const selected = pollOptionSelections.get(pollId);
         const next = selected === undefined ? 0 : selected + 1;
-        setPollOptionSelection(pollId, next < poll.options.length ? next : null, false);
+        setPollOptionSelection(pollId, next < options.length ? next : null, false);
         return;
       }
 
-      const bounds = event.currentTarget.getBoundingClientRect();
+      const pieButton = pieEl ||
+        (event.target instanceof Element ? event.target.closest('[data-poll-pie-id]') : null) ||
+        document.getElementById(`poll-pie-${pollId}`);
+      if (!pieButton) return;
+
+      const bounds = pieButton.getBoundingClientRect();
       const dx = event.clientX - (bounds.left + bounds.width / 2);
       const dy = event.clientY - (bounds.top + bounds.height / 2);
-      if (Math.hypot(dx, dy) < bounds.width * 0.21) {
+      if (Math.hypot(dx, dy) < bounds.width * 0.24) {
         setPollOptionSelection(pollId, null, false);
         return;
       }
 
-      const total = getPollOptionTotal(poll);
-      if (total <= 0) return;
       const angle = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360;
+      const total = getPollOptionTotal(poll);
+      if (total <= 0) {
+        const sliceAngle = 360 / options.length;
+        const index = Math.floor(angle / sliceAngle);
+        if (index >= 0 && index < options.length) {
+          setPollOptionSelection(pollId, index);
+        }
+        return;
+      }
+
       let cursor = 0;
-      for (let index = 0; index < (poll.options || []).length; index++) {
-        const votes = getPollOptionVoteCount(poll.options[index]);
+      for (let index = 0; index < options.length; index++) {
+        const votes = getPollOptionVoteCount(options[index]);
         const end = cursor + votes / total * 360;
         if (votes > 0 && angle >= cursor && angle < end) {
           setPollOptionSelection(pollId, index);
@@ -1459,21 +1542,24 @@
           // A zero-vote choice has no proportional wedge. Show a temporary
           // selected-choice preview inside the pie, while keeping its stored
           // count and percentage at zero.
-          const markerSweep = 24;
+          const optionsCount = Math.max(1, (poll.options || []).length);
+          const markerSweep = total > 0 ? 24 : (360 / optionsCount);
           const markerRadius = 84;
           const markerCenter = total > 0
             ? start
-            : (selectedIndex / Math.max(1, poll.options.length)) * 360;
+            : (selectedIndex * (360 / optionsCount) + markerSweep / 2);
           const markerStart = (markerCenter - markerSweep / 2 - 90) * Math.PI / 180;
           const markerEnd = (markerCenter + markerSweep / 2 - 90) * Math.PI / 180;
           const markerStartX = 84 + markerRadius * Math.cos(markerStart);
           const markerStartY = 84 + markerRadius * Math.sin(markerStart);
           const markerEndX = 84 + markerRadius * Math.cos(markerEnd);
           const markerEndY = 84 + markerRadius * Math.sin(markerEnd);
+          const largeArc = markerSweep > 180 ? 1 : 0;
           const markerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          markerPath.setAttribute('d', `M 84 84 L ${markerStartX.toFixed(3)} ${markerStartY.toFixed(3)} A ${markerRadius} ${markerRadius} 0 0 1 ${markerEndX.toFixed(3)} ${markerEndY.toFixed(3)} Z`);
+          markerPath.setAttribute('d', markerSweep >= 359.999
+            ? `M 84 0 A 84 84 0 1 1 84 168 A 84 84 0 1 1 84 0 Z`
+            : `M 84 84 L ${markerStartX.toFixed(3)} ${markerStartY.toFixed(3)} A ${markerRadius} ${markerRadius} 0 ${largeArc} 1 ${markerEndX.toFixed(3)} ${markerEndY.toFixed(3)} Z`);
           markerPath.setAttribute('fill', color);
-          markerPath.setAttribute('fill-opacity', '0.82');
           markerPath.setAttribute('stroke', '#fff');
           markerPath.setAttribute('stroke-width', '2.5');
           markerPath.setAttribute('stroke-linejoin', 'round');
@@ -1545,7 +1631,7 @@
           }
           const pieButton = target.closest('[data-poll-pie-id]');
           if (pieButton) {
-            handlePollPieClick(event, pieButton.dataset.pollPieId);
+            handlePollPieClick(event, pieButton.dataset.pollPieId, pieButton);
             return;
           }
           const shareButton = target.closest('[data-share-poll-id]');

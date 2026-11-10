@@ -1631,37 +1631,45 @@ class PollsFeedScreenState extends State<PollsFeedScreen>
                                                                   CrossAxisAlignment
                                                                       .center,
                                                               children: [
-                                                                // Selection indicator circle / checkmark
+                                                                // Selection indicator circle with accent styling and inner radio dot
                                                                 Container(
-                                                                  width: 18,
-                                                                  height: 18,
+                                                                  width: 20,
+                                                                  height: 20,
                                                                   decoration:
                                                                       BoxDecoration(
                                                                     color: isSelected
                                                                         ? sliceColor
-                                                                        : Colors
-                                                                            .transparent,
+                                                                        : sliceColor
+                                                                            .withOpacity(0.08),
                                                                     shape: BoxShape
                                                                         .circle,
                                                                     border:
                                                                         Border
                                                                             .all(
-                                                                      color: isSelected
-                                                                          ? sliceColor
-                                                                          : sliceColor
-                                                                              .withOpacity(0.6),
-                                                                      width:
-                                                                          1.8,
+                                                                      color: sliceColor,
+                                                                      width: 2.0,
                                                                     ),
+                                                                    boxShadow: isSelected
+                                                                        ? [
+                                                                            BoxShadow(
+                                                                              color: sliceColor.withOpacity(0.4),
+                                                                              blurRadius: 8,
+                                                                              spreadRadius: 1,
+                                                                            )
+                                                                          ]
+                                                                        : null,
                                                                   ),
                                                                   child: isSelected
-                                                                      ? const Icon(
-                                                                          Icons
-                                                                              .check,
-                                                                          size:
-                                                                              12,
-                                                                          color:
-                                                                              Color(0xFF1E1E1E))
+                                                                      ? Center(
+                                                                          child: Container(
+                                                                            width: 8,
+                                                                            height: 8,
+                                                                            decoration: const BoxDecoration(
+                                                                              color: Color(0xFF1F2023),
+                                                                              shape: BoxShape.circle,
+                                                                            ),
+                                                                          ),
+                                                                        )
                                                                       : null,
                                                                 ),
                                                                 const SizedBox(
@@ -2033,15 +2041,8 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.poll.totalVotes == 0 || widget.poll.options.isEmpty) {
-      return Container(
-        height: 100,
-        alignment: Alignment.center,
-        child: const Text(
-          'Waiting for votes...',
-          style: TextStyle(color: Color(0xFFB8B8B8), fontSize: 13),
-        ),
-      );
+    if (widget.poll.options.isEmpty) {
+      return const SizedBox.shrink();
     }
 
     final selectedOpt =
@@ -2113,7 +2114,7 @@ class _InteractivePieChartWidgetState extends State<InteractivePieChartWidget> {
               final opt = widget.poll.options[i];
               final sweep = widget.poll.totalVotes > 0
                   ? (opt.votes / widget.poll.totalVotes) * 2 * math.pi
-                  : 0.0;
+                  : (2 * math.pi / widget.poll.options.length);
               if (angle >= start && angle < start + sweep) {
                 final votedIndex = _votedArrayIndex(widget.poll);
                 setState(() {
@@ -2339,7 +2340,7 @@ class ColorfulPieChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (totalVotes == 0) return;
+    if (options.isEmpty) return;
 
     final center = Offset(size.width / 2, size.height / 2);
     final baseRadius = math.min(size.width / 2, size.height / 2) - 4;
@@ -2348,7 +2349,9 @@ class ColorfulPieChartPainter extends CustomPainter {
 
     for (int i = 0; i < options.length; i++) {
       final opt = options[i];
-      final sweepAngle = (opt.votes / totalVotes) * 2 * math.pi;
+      final sweepAngle = totalVotes > 0
+          ? (opt.votes / totalVotes) * 2 * math.pi
+          : (2 * math.pi / options.length);
       final isSelected = selectedIndex == i;
 
       final radius = isSelected ? baseRadius + 4 : baseRadius;
@@ -2364,7 +2367,7 @@ class ColorfulPieChartPainter extends CustomPainter {
       final borderPaint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = isSelected ? 3 : 2
-        ..color = isSelected ? Colors.white : const Color(0xFF424242);
+        ..color = isSelected ? Colors.white : const Color(0xFF2E3035);
 
       canvas.drawArc(rect, startAngle, sweepAngle, true, borderPaint);
 

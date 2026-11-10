@@ -11,7 +11,7 @@ if not DEFAULT_DB_PATH.exists():
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IcapsQ API"
-    VERSION: str = "2.1.34"
+    VERSION: str = "2.1.35"
     API_PREFIX: str = "/api"
     ENVIRONMENT: str = "production"
 
