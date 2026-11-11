@@ -162,9 +162,17 @@
         const response = await fetch(`${window.location.origin}/api/payments/plans`, { headers: { Accept: 'application/json' } });
         const catalog = await response.json();
         if (!response.ok || !Array.isArray(catalog.plans)) throw new Error('Plan pricing is unavailable.');
+        const isHe = (window.I18n && window.I18n.currentLang === 'he') || localStorage.getItem('icapsq_lang') === 'he';
+        const ilPrices = { free: 'חינם', pro: '₪15', org: '₪29' };
         for (const plan of catalog.plans) {
           const price = document.getElementById(`price-val-${plan.key}`);
-          if (price && Number.isFinite(Number(plan.amount))) price.textContent = `KES ${Number(plan.amount).toLocaleString()}`;
+          if (price) {
+            if (isHe) {
+              price.textContent = ilPrices[plan.key] || '₪15';
+            } else if (Number.isFinite(Number(plan.amount))) {
+              price.textContent = `KES ${Number(plan.amount).toLocaleString()}`;
+            }
+          }
           for (const node of document.querySelectorAll(`[data-plan-polls="${plan.key}"]`)) {
             if (Number.isFinite(Number(plan.pollsQuota))) node.textContent = Number(plan.pollsQuota).toLocaleString();
           }
@@ -176,11 +184,15 @@
           }
         }
         if (catalog.checkoutEnabled) {
-          note.textContent = '30-day prepaid plans in KES. Pay securely through iPay with M-Pesa or card; renewals are manual.';
+          note.textContent = isHe
+            ? 'מסלולים ל-30 יום בתשלום מראש. תשלום מאובטח באמצעות כרטיס או אמצעי תשלום נתמכים; החידוש ידני.'
+            : '30-day prepaid plans in KES. Pay securely through iPay with M-Pesa or card; renewals are manual.';
           buttons.forEach(button => { button.disabled = false; });
         } else {
-          note.textContent = 'iPay M-Pesa and card checkout is being configured. Free accounts remain available.';
-          buttons.forEach(button => { button.disabled = true; button.textContent = 'Checkout unavailable'; });
+          note.textContent = isHe
+            ? 'מערכת התשלומים מוגדרת כעת. חשבונות בסיסיים ללא עלות זמינים תמיד.'
+            : 'iPay M-Pesa and card checkout is being configured. Free accounts remain available.';
+          buttons.forEach(button => { button.disabled = true; button.textContent = isHe ? 'התשלום אינו זמין כעת' : 'Checkout unavailable'; });
         }
       } catch (_) {
         note.textContent = 'Plan checkout is temporarily unavailable. Please try again later.';

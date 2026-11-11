@@ -506,10 +506,16 @@
       .then(response => response.ok ? response.json() : Promise.reject(new Error('Plan catalog unavailable')))
       .then(catalog => {
         if (!Array.isArray(catalog.plans)) return;
+        const isHe = (window.I18n && window.I18n.currentLang === 'he') || localStorage.getItem('icapsq_lang') === 'he' || document.documentElement.lang === 'he' || (document.body && document.body.classList.contains('rtl-mode'));
+        const ilPrices = { free: 'חינם', pro: '₪15', org: '₪29' };
         catalog.plans.forEach(plan => {
           const price = document.querySelector(`[data-plan-price="${plan.key}"]`);
-          if (price && plan.amount !== null && plan.amount !== undefined && Number.isFinite(Number(plan.amount))) {
-            price.textContent = `KES ${Number(plan.amount).toLocaleString()}`;
+          if (price) {
+            if (isHe) {
+              price.textContent = ilPrices[plan.key] || '₪15';
+            } else if (plan.amount !== null && plan.amount !== undefined && Number.isFinite(Number(plan.amount))) {
+              price.textContent = `KES ${Number(plan.amount).toLocaleString()}`;
+            }
           }
           for (const node of document.querySelectorAll(`[data-plan-polls="${plan.key}"]`)) {
             if (Number.isFinite(Number(plan.pollsQuota))) node.textContent = Number(plan.pollsQuota).toLocaleString();

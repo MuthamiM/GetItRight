@@ -17,6 +17,58 @@
   var lastFocusedElement;
   var snapshotTimer;
 
+  function isHebrew() {
+    try {
+      return (window.I18n && window.I18n.currentLang === 'he') ||
+             (window.IcapsQ_i18n && window.IcapsQ_i18n.currentLang === 'he') ||
+             window.localStorage.getItem('icapsq_lang') === 'he' ||
+             document.documentElement.lang === 'he';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  var i18nStrings = {
+    en: {
+      noticeTitle: 'Privacy & storage',
+      noticeCopy: 'Essential browser storage keeps sign-in and poll or survey progress working. Optional data sharing stays off unless you enable it in settings.',
+      btnEssentialOnly: 'Use essential only',
+      btnSettings: 'Settings',
+      settingsBtnTitle: 'Cookie settings',
+      settingsBtnAria: 'Open cookie settings',
+      dialogTitle: 'Cookie & storage settings',
+      dialogCopy: 'IcapsQ uses browser storage for sign-in, language and vote or survey forms. If you enable admin review, saved verification and device details are encrypted in the platform database so administrators can review fraud signals. Passwords and sign-in tokens are never copied. Turning admin review off deletes this browser snapshot.',
+      essentialLabel: 'Essential storage',
+      essentialDesc: 'Always active — supports account sessions, language and vote or survey forms. Forms may retain verification details and progress on this device; duplicate-vote checks are enforced by the server.',
+      essentialAria: 'Essential storage is always active',
+      adminReviewLabel: 'Share saved data for admin review',
+      adminReviewDesc: 'When enabled, the database receives your saved account and voter details, county and date of birth, location accuracy and capture time, device/browser details, poll/survey progress, preferences, saved drafts, cookie names and notification-read state. Exact coordinates, authentication tokens and cookie values are excluded from this browser snapshot.',
+      btnCancel: 'Cancel',
+      btnSave: 'Save settings'
+    },
+    he: {
+      noticeTitle: 'פרטיות ואחסון מקומי',
+      noticeCopy: 'אחסון מקומי חיוני שומר על הפעלת התחברות והתקדמות בסקרים ושאלונים. שיתוף נתונים אופציונלי נשאר כבוי אלא אם תפעיל אותו בהגדרות.',
+      btnEssentialOnly: 'שימוש בחיוני בלבד',
+      btnSettings: 'הגדרות',
+      settingsBtnTitle: 'הגדרות עוגיות ואחסון',
+      settingsBtnAria: 'פתיחת הגדרות עוגיות ואחסון',
+      dialogTitle: 'הגדרות עוגיות ואחסון מקומי',
+      dialogCopy: 'פלטפורמת IcapsQ משתמשת באחסון הדפדפן לצורך התחברות, שפה וטופסי סקרים או שאלונים. אם תאפשר בדיקת מנהל, פרטי האימות והמכשיר שנשמרו מוצפנים במסד הנתונים כדי שמנהלים יוכלו לבדוק אותות הונאה. סיסמאות ואסימוני התחברות לעולם אינם מועתקים. כיבוי בדיקת מנהל מוחק צילום מצב זה של הדפדפן.',
+      essentialLabel: 'אחסון חיוני',
+      essentialDesc: 'פעיל תמיד — תומך בהפעלות חשבון, שפה וטופסי סקרים או שאלונים. טפסים עשויים לשמור פרטי אימות והתקדמות במכשיר זה; בדיקות למניעת כפילויות נאכפות על ידי השרת.',
+      essentialAria: 'אחסון חיוני פעיל תמיד',
+      adminReviewLabel: 'שיתוף נתונים שמורים לבדיקת מנהל',
+      adminReviewDesc: 'כאשר מופעל, מסד הנתונים מקבל את פרטי החשבון והמצביע השמורים, מחוז ותאריך לידה, דיוק מיקום וזמן לכידה, פרטי מכשיר/דפדפן, התקדמות בסקר/שאלון, העדפות, טיוטות שמורות, שמות עוגיות ומצב קריאת הודעות. קואורדינטות מדויקות, אסימוני אימות וערכי עוגיות אינם נכללים בצילום מצב זה.',
+      btnCancel: 'ביטול',
+      btnSave: 'שמור הגדרות'
+    }
+  };
+
+  function getI18nText() {
+    return i18nStrings[isHebrew() ? 'he' : 'en'];
+  }
+
   function readPreferences() {
     try {
       var raw = window.localStorage.getItem(STORAGE_KEY);
@@ -269,6 +321,7 @@
     var style = element('style', { id: 'icapsq-cookie-notice-styles' });
     style.textContent = [
       '.icapsq-cookie-notice { position: fixed; z-index: 2147483000; left: max(66px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); width: min(360px, calc(100vw - 82px)); box-sizing: border-box; padding: 14px 16px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: #202126; color: #fff; box-shadow: 0 12px 32px rgba(0,0,0,.3); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }',
+      'html[dir="rtl"] .icapsq-cookie-notice, body.rtl-mode .icapsq-cookie-notice { direction: rtl !important; text-align: right !important; right: max(66px, env(safe-area-inset-right)) !important; left: auto !important; }',
       '.icapsq-cookie-notice[hidden], .icapsq-cookie-dialog[hidden] { display: none !important; }',
       '.icapsq-cookie-notice__title { margin: 0 0 5px; color: #fff; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }',
       '.icapsq-cookie-notice__copy { margin: 0; color: #e5e7eb; font-size: 12px; line-height: 1.45; }',
@@ -277,19 +330,23 @@
       '.icapsq-cookie-button:hover, .icapsq-cookie-button:focus-visible { outline: 2px solid #a8c7ff; outline-offset: 2px; }',
       '.icapsq-cookie-button--secondary { border-color: rgba(255,255,255,.38); background: transparent; color: #fff; }',
       '.icapsq-cookie-settings { position: fixed; z-index: 2147483647; left: max(12px, env(safe-area-inset-left)); bottom: max(12px, env(safe-area-inset-bottom)); display: grid; place-items: center; width: 38px; height: 38px; padding: 3px; border: 1px solid #303035; border-radius: 50%; background: #f5f5f6; box-shadow: 0 6px 18px rgba(0,0,0,.28); cursor: pointer; }',
+      'html[dir="rtl"] .icapsq-cookie-settings, body.rtl-mode .icapsq-cookie-settings { right: max(12px, env(safe-area-inset-right)) !important; left: auto !important; }',
       '.icapsq-cookie-settings img { display: block; width: 100%; height: 100%; object-fit: contain; }',
       '.icapsq-cookie-settings:hover, .icapsq-cookie-settings:focus-visible { outline: 2px solid #8b8d93; outline-offset: 3px; }',
       '.icapsq-cookie-dialog { position: fixed; z-index: 2147483001; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(15,16,18,.66); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }',
       '.icapsq-cookie-dialog__panel { width: min(100%, 570px); padding: 26px; border-radius: 18px; background: #fff; color: #202126; box-shadow: 0 26px 90px rgba(0,0,0,.4); }',
+      'html[dir="rtl"] .icapsq-cookie-dialog__panel, body.rtl-mode .icapsq-cookie-dialog__panel { direction: rtl !important; text-align: right !important; }',
       '.icapsq-cookie-dialog__panel h2 { margin: 0 0 10px; font-size: 20px; }',
       '.icapsq-cookie-dialog__panel p { margin: 0 0 14px; color: #53555c; font-size: 14px; line-height: 1.55; }',
       '.icapsq-cookie-category { display: flex; gap: 12px; align-items: flex-start; margin: 16px 0; padding: 14px; border: 1px solid #e2e3e7; border-radius: 12px; }',
+      'html[dir="rtl"] .icapsq-cookie-category, body.rtl-mode .icapsq-cookie-category { direction: rtl !important; text-align: right !important; }',
       '.icapsq-cookie-category input { width: 18px; height: 18px; margin-top: 2px; accent-color: #202126; }',
       '.icapsq-cookie-category strong { display: block; font-size: 14px; }',
       '.icapsq-cookie-category span { display: block; margin-top: 3px; color: #686a72; font-size: 12px; line-height: 1.45; }',
       '.icapsq-cookie-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; margin-top: 20px; }',
+      'html[dir="rtl"] .icapsq-cookie-dialog__actions, body.rtl-mode .icapsq-cookie-dialog__actions { justify-content: flex-start !important; }',
       '.icapsq-cookie-dialog__actions .icapsq-cookie-button--secondary { border-color: #babcc4; color: #303136; }',
-      '@media (max-width: 560px) { .icapsq-cookie-notice { left: max(58px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: calc(100vw - 72px); padding: 11px 12px; } .icapsq-cookie-settings { left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: 36px; height: 36px; } .icapsq-cookie-notice__actions { gap: 6px; margin-top: 8px; } .icapsq-cookie-notice__actions .icapsq-cookie-button { flex: 1 1 auto; min-height: 32px; padding: 6px 8px; } .icapsq-cookie-dialog { padding: 12px; } .icapsq-cookie-dialog__panel { padding: 20px; } }'
+      '@media (max-width: 560px) { .icapsq-cookie-notice { left: max(58px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: calc(100vw - 72px); padding: 11px 12px; } html[dir="rtl"] .icapsq-cookie-notice, body.rtl-mode .icapsq-cookie-notice { right: max(58px, env(safe-area-inset-right)) !important; left: auto !important; } .icapsq-cookie-settings { left: max(10px, env(safe-area-inset-left)); bottom: max(10px, env(safe-area-inset-bottom)); width: 36px; height: 36px; } html[dir="rtl"] .icapsq-cookie-settings, body.rtl-mode .icapsq-cookie-settings { right: max(10px, env(safe-area-inset-right)) !important; left: auto !important; } .icapsq-cookie-notice__actions { gap: 6px; margin-top: 8px; } .icapsq-cookie-notice__actions .icapsq-cookie-button { flex: 1 1 auto; min-height: 32px; padding: 6px 8px; } .icapsq-cookie-dialog { padding: 12px; } .icapsq-cookie-dialog__panel { padding: 20px; } }'
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -300,14 +357,20 @@
   }
 
   function showSettingsButton() {
-    if (document.getElementById('icapsq-cookie-settings')) return;
-    var button = element('button', {
+    var button = document.getElementById('icapsq-cookie-settings');
+    var t = getI18nText();
+    if (button) {
+      button.title = t.settingsBtnTitle;
+      button.setAttribute('aria-label', t.settingsBtnAria);
+      return;
+    }
+    button = element('button', {
       id: 'icapsq-cookie-settings',
       class: 'icapsq-cookie-settings',
       type: 'button',
       html: '<img src="/assets/images/cookie-mark.png?v=20261020-5" alt="" aria-hidden="true" draggable="false">',
-      title: 'Cookie settings',
-      'aria-label': 'Open cookie settings'
+      title: t.settingsBtnTitle,
+      'aria-label': t.settingsBtnAria
     });
     button.addEventListener('click', openPreferences);
     document.body.appendChild(button);
@@ -325,28 +388,34 @@
   function openPreferences() {
     if (activeDialog) return;
     lastFocusedElement = document.activeElement;
+    var t = getI18nText();
+    var isHe = isHebrew();
     var current = readPreferences() || { analytics: false, adminReview: false };
     var dialog = element('div', {
       class: 'icapsq-cookie-dialog',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-labelledby': 'icapsq-cookie-dialog-title'
+      'aria-labelledby': 'icapsq-cookie-dialog-title',
+      dir: isHe ? 'rtl' : 'ltr'
     });
-    var panel = element('div', { class: 'icapsq-cookie-dialog__panel' });
-    var title = element('h2', { id: 'icapsq-cookie-dialog-title', text: 'Cookie & storage settings' });
+    var panel = element('div', {
+      class: 'icapsq-cookie-dialog__panel',
+      dir: isHe ? 'rtl' : 'ltr'
+    });
+    var title = element('h2', { id: 'icapsq-cookie-dialog-title', text: t.dialogTitle });
     dialog.setAttribute('aria-describedby', 'icapsq-cookie-dialog-description');
-    var copy = element('p', { id: 'icapsq-cookie-dialog-description', text: 'IcapsQ uses browser storage for sign-in, language and vote or survey forms. If you enable admin review, saved verification and device details are encrypted in the platform database so administrators can review fraud signals. Passwords and sign-in tokens are never copied. Turning admin review off deletes this browser snapshot.' });
+    var copy = element('p', { id: 'icapsq-cookie-dialog-description', text: t.dialogCopy });
     var essential = element('div', { class: 'icapsq-cookie-category' });
-    essential.appendChild(element('input', { type: 'checkbox', checked: 'checked', disabled: 'disabled', 'aria-label': 'Essential storage is always active' }));
-    essential.appendChild(element('div', { html: '<strong>Essential storage</strong><span>Always active — supports account sessions, language and vote or survey forms. Forms may retain verification details and progress on this device; duplicate-vote checks are enforced by the server.</span>' }));
+    essential.appendChild(element('input', { type: 'checkbox', checked: 'checked', disabled: 'disabled', 'aria-label': t.essentialAria }));
+    essential.appendChild(element('div', { html: '<strong>' + t.essentialLabel + '</strong><span>' + t.essentialDesc + '</span>' }));
     var adminReview = element('label', { class: 'icapsq-cookie-category' });
     var adminReviewInput = element('input', { id: 'icapsq-admin-review-preference', type: 'checkbox' });
     adminReviewInput.checked = Boolean(current.adminReview);
     adminReview.appendChild(adminReviewInput);
-    adminReview.appendChild(element('span', { html: '<strong>Share saved data for admin review</strong><span>When enabled, the database receives your saved account and voter details, county and date of birth, location accuracy and capture time, device/browser details, poll/survey progress, preferences, saved drafts, cookie names and notification-read state. Exact coordinates, authentication tokens and cookie values are excluded from this browser snapshot.</span>' }));
+    adminReview.appendChild(element('span', { html: '<strong>' + t.adminReviewLabel + '</strong><span>' + t.adminReviewDesc + '</span>' }));
     var actions = element('div', { class: 'icapsq-cookie-dialog__actions' });
-    var closeButton = element('button', { class: 'icapsq-cookie-button icapsq-cookie-button--secondary', type: 'button', text: 'Cancel' });
-    var saveButton = element('button', { class: 'icapsq-cookie-button', type: 'button', text: 'Save settings' });
+    var closeButton = element('button', { class: 'icapsq-cookie-button icapsq-cookie-button--secondary', type: 'button', text: t.btnCancel });
+    var saveButton = element('button', { class: 'icapsq-cookie-button', type: 'button', text: t.btnSave });
 
     closeButton.addEventListener('click', closePreferences);
     saveButton.addEventListener('click', function () {
@@ -392,18 +461,21 @@
 
   function renderNotice() {
     if (readPreferences() || document.getElementById('icapsq-cookie-notice')) return;
+    var t = getI18nText();
+    var isHe = isHebrew();
     var notice = element('section', {
       id: 'icapsq-cookie-notice',
       class: 'icapsq-cookie-notice',
       role: 'region',
-      'aria-label': 'Cookie and browser storage notice',
-      'aria-live': 'polite'
+      'aria-label': t.dialogTitle,
+      'aria-live': 'polite',
+      dir: isHe ? 'rtl' : 'ltr'
     });
-    var title = element('h2', { class: 'icapsq-cookie-notice__title', text: 'Privacy & storage' });
-    var copy = element('p', { class: 'icapsq-cookie-notice__copy', text: 'Essential browser storage keeps sign-in and poll or survey progress working. Optional data sharing stays off unless you enable it in settings.' });
+    var title = element('h2', { class: 'icapsq-cookie-notice__title', text: t.noticeTitle });
+    var copy = element('p', { class: 'icapsq-cookie-notice__copy', text: t.noticeCopy });
     var actions = element('div', { class: 'icapsq-cookie-notice__actions' });
-    var essentialOnly = element('button', { class: 'icapsq-cookie-button icapsq-cookie-button--secondary', type: 'button', text: 'Use essential only' });
-    var settings = element('button', { class: 'icapsq-cookie-button', type: 'button', text: 'Settings' });
+    var essentialOnly = element('button', { class: 'icapsq-cookie-button icapsq-cookie-button--secondary', type: 'button', text: t.btnEssentialOnly });
+    var settings = element('button', { class: 'icapsq-cookie-button', type: 'button', text: t.btnSettings });
 
     essentialOnly.addEventListener('click', function () {
       savePreferences(false);
@@ -439,6 +511,24 @@
       addStyles();
       if (!preferences) renderNotice();
       else showSettingsButton();
+
+      window.addEventListener('icapsq:languageChanged', function () {
+        var btn = document.getElementById('icapsq-cookie-settings');
+        if (btn) {
+          var t = getI18nText();
+          btn.title = t.settingsBtnTitle;
+          btn.setAttribute('aria-label', t.settingsBtnAria);
+        }
+        var notice = document.getElementById('icapsq-cookie-notice');
+        if (notice) {
+          notice.remove();
+          renderNotice();
+        }
+        if (activeDialog) {
+          closePreferences();
+          openPreferences();
+        }
+      });
     }
     if (preferences && preferences.adminReview && !isAdminConsole) syncBrowserStorage();
   }

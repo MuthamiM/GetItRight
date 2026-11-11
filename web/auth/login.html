@@ -178,10 +178,32 @@
       font-weight: 700;
       text-decoration: underline;
     }
+
+    html[dir="rtl"] .auth-card, body.rtl-mode .auth-card {
+      direction: rtl !important;
+      text-align: right !important;
+    }
+    html[dir="rtl"] .auth-brand, body.rtl-mode .auth-brand {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .auth-footer, body.rtl-mode .auth-footer {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .form-input, body.rtl-mode .form-input {
+      text-align: right !important;
+    }
+    html[dir="rtl"] .auth-nav-top, body.rtl-mode .auth-nav-top {
+      direction: rtl !important;
+    }
   </style>
 </head>
 <body>
   <div class="auth-container">
+    <div class="auth-nav-top" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+      <a href="../index.html" style="font-size:13px; font-weight:700; color:var(--charcoal); text-decoration:none; opacity:0.85;">&larr; <span id="auth-back-link">דף הבית</span></a>
+      <button type="button" class="lang-switch-btn" onclick="window.I18n && window.I18n.toggleLanguage()" title="Switch language">HE | עברית</button>
+    </div>
+
     <div class="auth-brand">
       <div class="auth-brand-logo">
         <img src="../assets/images/logo.png" alt="IcapsQ Logo">
@@ -225,13 +247,36 @@
   <script>
     const API_BASE = window.location.origin + '/api';
 
+    function translateAuthMessage(msg) {
+      const isHe = (window.I18n && window.I18n.currentLang === 'he') || localStorage.getItem('icapsq_lang') === 'he';
+      if (!isHe) return msg;
+      const lower = (msg || '').toLowerCase();
+      if (lower.includes('no account') || lower.includes('no user') || lower.includes('not registered') || lower.includes('not found')) {
+        return 'לא קיים חשבון עם פרטים אלו.';
+      }
+      if (lower.includes('invalid') || lower.includes('credential') || lower.includes('password')) {
+        return 'כתובת אימייל או סיסמה שגויים.';
+      }
+      if (lower.includes('too many') || lower.includes('attempts')) {
+        return 'יותר מדי ניסיונות התחברות. אנא המתן ונסה שוב.';
+      }
+      if (lower.includes('free plan cannot access')) {
+        return 'תוכנית חינמית אינה יכולה לגשת ללוח הבקרה באינטרנט. <a href="../pricing.html?reason=upgrade_required" style="color:var(--silver);font-weight:700;text-decoration:underline;margin-right:4px;">שדרג עכשיו &larr;</a>';
+      }
+      if (lower.includes('unable to sign in') || lower.includes('please try again')) {
+        return 'לא ניתן להתחבר כעת. אנא נסה שוב מאוחר יותר.';
+      }
+      return msg;
+    }
+
     function showError(msg, isHtml = false) {
       const el = document.getElementById('auth-error');
       if (el) {
-        if (isHtml) {
-          el.innerHTML = msg;
+        const localized = translateAuthMessage(msg);
+        if (isHtml || localized.includes('<a ')) {
+          el.innerHTML = localized;
         } else {
-          el.textContent = msg;
+          el.textContent = localized;
         }
         el.style.display = 'block';
       }
@@ -248,12 +293,13 @@
     async function handleLogin(e) {
       e.preventDefault();
       clearError();
+      const isHe = (window.I18n && window.I18n.currentLang === 'he') || localStorage.getItem('icapsq_lang') === 'he';
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
       const btn = document.getElementById('login-btn');
 
       btn.disabled = true;
-      btn.textContent = "Signing In...";
+      btn.textContent = isHe ? "מתחבר..." : "Signing In...";
 
       try {
         const res = await fetch(`${API_BASE}/auth/login`, {
@@ -278,7 +324,7 @@
             localStorage.setItem('gir_user', JSON.stringify(user));
             showError('Free plan cannot access web console. <a href="../pricing.html?reason=upgrade_required" style="color:var(--silver);font-weight:700;text-decoration:underline;margin-left:4px;">Upgrade &rarr;</a>', true);
             btn.disabled = false;
-            btn.textContent = 'Sign In →';
+            btn.textContent = isHe ? '<- התחבר' : 'Sign In →';
             return;
           }
 
@@ -291,7 +337,7 @@
             if (d.includes('free plan') || d.includes('console') || d.includes('upgrade')) {
               showError('Free plan cannot access web console. <a href="../pricing.html?reason=upgrade_required" style="color:var(--silver);font-weight:700;text-decoration:underline;margin-left:4px;">Upgrade &rarr;</a>', true);
               btn.disabled = false;
-              btn.textContent = 'Sign In →';
+              btn.textContent = isHe ? '<- התחבר' : 'Sign In →';
               return;
             }
           }
@@ -311,7 +357,7 @@
       } catch (err) {
         showError(err.message || 'Unable to sign in. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Sign In →';
+        btn.textContent = isHe ? '<- התחבר' : 'Sign In →';
       }
     }
 

@@ -221,6 +221,9 @@
       this.injectStyles();
       this.injectModal();
       this.getOrAssignUserId();
+      window.addEventListener('icapsq:languageChanged', (e) => {
+        this.updateTexts(e.detail && e.detail.lang === 'he');
+      });
     },
 
     hasCompletedDemographics() {
@@ -593,18 +596,86 @@
       if (dEl) dEl.value = savedDob;
     },
 
+    updateTexts(isHe) {
+      const box = document.querySelector('.gir-modal-box');
+      if (box) {
+        box.style.direction = isHe ? 'rtl' : 'ltr';
+        box.style.textAlign = isHe ? 'right' : 'left';
+      }
+      const title = document.getElementById('gir-modal-title-text');
+      if (title) title.textContent = isHe ? 'אימות פרטי הצבעה אזרחיים' : 'Civic Verification Survey';
+      const sub = document.getElementById('gir-modal-sub-text');
+      if (sub) sub.textContent = isHe ? 'אימות פרטי מצביע ומניעת כפילויות' : 'Kenya 47 Counties Voter Verification';
+      const desc = document.getElementById('gir-modal-desc-text');
+      if (desc) desc.textContent = isHe
+        ? 'כדי להבטיח ייצוג אזורי מהימן ולמנוע כפילות בהצבעה, אנא אמת את פרטיך ואזור מגוריך.'
+        : 'To ensure genuine regional representation and prevent ballot duplication, please confirm your verification details and County of residence.';
+
+      const nameLbl = document.querySelector('label[for="gir-survey-voter-name"]');
+      if (nameLbl) nameLbl.textContent = isHe ? 'שם מלא (לפי תעודת זהות / דרכון)' : 'Full Name (as on ID / Passport)';
+      const nameInp = document.getElementById('gir-survey-voter-name');
+      if (nameInp) nameInp.style.textAlign = isHe ? 'right' : 'left';
+
+      const idLbl = document.querySelector('label[for="gir-survey-voter-id"]');
+      if (idLbl) idLbl.textContent = isHe ? 'מספר תעודת זהות · 5–12 ספרות' : 'National ID Number · 5–12 digits';
+      const idInp = document.getElementById('gir-survey-voter-id');
+      if (idInp) {
+        idInp.placeholder = isHe ? 'הזן 5–12 ספרות' : 'Enter 5–12 digits';
+        idInp.style.textAlign = isHe ? 'right' : 'left';
+      }
+
+      const countyLbl = document.querySelector('label[for="gir-survey-county"]');
+      if (countyLbl) countyLbl.textContent = isHe ? 'בחר אזור / מחוז מגורים להצבעה' : 'Select County of Residence / Voting';
+      const countySelect = document.getElementById('gir-survey-county');
+      if (countySelect) {
+        countySelect.style.textAlign = isHe ? 'right' : 'left';
+        const firstOpt = countySelect.querySelector('option[value=""]');
+        if (firstOpt) firstOpt.textContent = isHe ? '-- בחר אזור מגורים / מחוז --' : '-- Select your County --';
+      }
+
+      const dobLbl = document.querySelector('label[for="gir-survey-dob"]');
+      if (dobLbl) dobLbl.textContent = isHe ? 'תאריך לידה (DOB) · YYYY-MM-DD' : 'Date of Birth (DOB) · YYYY-MM-DD';
+      const dobInp = document.getElementById('gir-survey-dob');
+      if (dobInp) dobInp.style.textAlign = isHe ? 'right' : 'left';
+
+      const btn = document.getElementById('gir-survey-submit-btn');
+      if (btn && !btn.disabled) {
+        btn.textContent = isHe ? '<- אישור והמשך להצבעה' : 'Confirm & Proceed \u2192';
+      }
+    },
+
     openSurveyModal(config = {}) {
       const modal = document.getElementById('gir-demographics-modal');
       if (!modal) return;
 
+      const isHe = (window.I18n && window.I18n.currentLang === 'he') || localStorage.getItem('icapsq_lang') === 'he';
+      this.updateTexts(isHe);
+
       if (config.title) {
-        document.getElementById('gir-modal-title-text').textContent = config.title;
+        const titleMap = {
+          'Location Verification Required': 'נדרש אימות מיקום',
+          'Voter Verification Required': 'אימות פרטי הצבעה אזרחיים',
+          'Review Verification Details': 'בדיקת פרטי אימות'
+        };
+        document.getElementById('gir-modal-title-text').textContent = (isHe && titleMap[config.title]) || config.title;
       }
       if (config.subtitle) {
-        document.getElementById('gir-modal-sub-text').textContent = config.subtitle;
+        const subMap = {
+          'Identity & Location Verification': 'אימות פרטי מצביע ומניעת כפילויות',
+          'County and Location Check': 'בדיקת אזור ומיקום'
+        };
+        document.getElementById('gir-modal-sub-text').textContent = (isHe && subMap[config.subtitle]) || config.subtitle;
       }
       if (config.notice) {
-        document.getElementById('gir-modal-desc-text').textContent = config.notice;
+        const noticeMap = {
+          'Allow device location and turn on Location Services to continue. The selected county is checked securely; exact coordinates are hidden.':
+            'אנא אפשר גישה למיקום המכשיר והפעל שירותי מיקום כדי להמשיך. האזור הנבחר נבדק באופן מאובטח; קואורדינטות מדויקות מוסתרות.',
+          'Before casting your ballot, please verify your identity, county, and date of birth. This information is securely recorded with your vote.':
+            'לפני מסירת קולך, אנא אמת את זהותך, אזור מגוריך ותאריך הלידה. מידע זה נרשם באופן מאובטח עם הצבעתך.',
+          'The detected location does not match the selected county. Correct the county if needed, then allow location access and retry.':
+            'המיקום שזוהה אינו תואם לאזור שנבחר. תקן את האזור במידת הצורך, אפשר גישה למיקום ונסה שוב.'
+        };
+        document.getElementById('gir-modal-desc-text').textContent = (isHe && noticeMap[config.notice]) || config.notice;
       }
 
       this.acquireLocation();

@@ -436,6 +436,14 @@
   };
 
   const surveyOverrides = {
+    'SRV-KENYA-2027-01': {
+      he: {
+        title: 'מדד שירותי בריאות ורפואה ציבורית 2026',
+        description: 'הערכה לאומית מאומתת האוספת משוב ישיר מאזרחים על זמני המתנה במרפאות, זמינות תרופות חיוניות ומימון שירותי רפואה.',
+        category: 'בריאות ושירותים ציבוריים',
+        publisher: 'מכון מחקר ומודיעין ציבורי IcapsQ'
+      }
+    },
     'SV-CIVIC-001': {
       he: {
         title: 'שאלון הערכת איכות שירותי בריאות ציבוריים',
@@ -523,32 +531,62 @@
 
     /* Language Switcher Styling */
     .lang-switch-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 100px;
-      background: rgba(229, 229, 229, 0.1);
-      border: 1.5px solid rgba(229, 229, 229, 0.28);
-      color: inherit;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-      user-select: none;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      padding: 6px 14px !important;
+      border-radius: 100px !important;
+      background: rgba(229, 229, 229, 0.12) !important;
+      border: 1.5px solid rgba(229, 229, 229, 0.3) !important;
+      color: inherit !important;
+      font-family: inherit !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      text-decoration: none !important;
+      transition: all 0.2s ease !important;
+      white-space: nowrap !important;
+      user-select: none !important;
+      flex-shrink: 0 !important;
+      z-index: 1005 !important;
     }
     .lang-switch-btn:hover {
-      background: rgba(229, 229, 229, 0.22);
-      border-color: rgba(229, 229, 229, 0.5);
-      transform: translateY(-1px);
+      background: rgba(229, 229, 229, 0.24) !important;
+      border-color: rgba(229, 229, 229, 0.5) !important;
+      transform: translateY(-1px) !important;
+    }
+    .ln-nav-mobile-lang-btn {
+      display: none;
     }
     @media (max-width: 768px) {
+      .ln-nav .lang-switch-btn {
+        margin-left: auto !important;
+        margin-right: 8px !important;
+      }
+      body.rtl-mode .ln-nav .lang-switch-btn,
+      html[dir="rtl"] .ln-nav .lang-switch-btn {
+        margin-left: 8px !important;
+        margin-right: auto !important;
+      }
       .lang-switch-btn {
-        padding: 5px 9px !important;
+        padding: 5px 10px !important;
         font-size: 11.5px !important;
+        display: inline-flex !important;
+      }
+      .ln-nav-mobile-lang-btn {
+        display: block !important;
+        font-weight: 800 !important;
+        text-align: center !important;
+        padding: 11px 18px !important;
+        margin-top: 10px !important;
+        border-radius: 100px !important;
+        border: 1.5px solid rgba(229, 229, 229, 0.35) !important;
+        background: rgba(229, 229, 229, 0.08) !important;
+        color: inherit !important;
+        font-size: 14px !important;
+        text-decoration: none !important;
+        cursor: pointer !important;
       }
     }
   `;
@@ -609,7 +647,7 @@
       const label = isHe ? 'EN | English' : 'HE | עברית';
       const title = isHe ? 'Switch to English' : 'Switch to Hebrew';
 
-      document.querySelectorAll('.lang-switch-btn').forEach(btn => {
+      document.querySelectorAll('.lang-switch-btn, .ln-nav-mobile-lang-btn, [data-lang-switch]').forEach(btn => {
         btn.textContent = label;
         btn.setAttribute('title', title);
         btn.setAttribute('aria-label', title);
@@ -617,29 +655,76 @@
     },
 
     ensureSwitcherInNav() {
-      // Find navigation containers
-      const navContainer = document.querySelector('.ln-nav-right') ||
-                           document.querySelector('.ln-nav-actions') ||
-                           document.querySelector('.site-header') ||
-                           document.querySelector('.ln-nav');
+      const nav = document.querySelector('.ln-nav');
+      const navToggle = document.getElementById('navToggle') || document.querySelector('.ln-nav-toggle');
+      const navLinks = document.getElementById('navLinks') || document.querySelector('.ln-nav-links');
+      const navRight = document.querySelector('.ln-nav-right');
+      const navActions = document.querySelector('.ln-nav-actions');
 
-      if (navContainer && !document.querySelector('.lang-switch-btn')) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'lang-switch-btn';
-        btn.onclick = () => I18n.toggleLanguage();
-        this.updateSwitcherButtons();
+      // 1. Landing pages with hamburger navToggle
+      if (nav && navToggle) {
+        if (!nav.querySelector('.lang-switch-btn')) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lang-switch-btn';
+          btn.onclick = () => I18n.toggleLanguage();
+          if (navActions) {
+            nav.insertBefore(btn, navActions);
+          } else {
+            nav.insertBefore(btn, navToggle);
+          }
+        }
 
-        // Place before signin button or at the beginning of actions
-        const signin = navContainer.querySelector('.ln-nav-signin') ||
-                       navContainer.querySelector('.ln-nav-cta') ||
-                       navContainer.querySelector('.back-link');
-        if (signin) {
-          navContainer.insertBefore(btn, signin);
-        } else {
-          navContainer.appendChild(btn);
+        // Also add inside mobile drawer menu (.ln-nav-links)
+        if (navLinks && !navLinks.querySelector('.ln-nav-mobile-lang-btn')) {
+          const mobBtn = document.createElement('a');
+          mobBtn.href = 'javascript:void(0)';
+          mobBtn.className = 'ln-mobile-only ln-nav-mobile-lang-btn';
+          mobBtn.onclick = (e) => {
+            e.preventDefault();
+            I18n.toggleLanguage();
+          };
+          navLinks.appendChild(mobBtn);
+        }
+      } else if (navRight) {
+        // 2. vote.html / surveys.html with .ln-nav-right
+        if (!navRight.querySelector('.lang-switch-btn')) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lang-switch-btn';
+          btn.onclick = () => I18n.toggleLanguage();
+          const signin = navRight.querySelector('.ln-nav-signin');
+          if (signin) {
+            navRight.insertBefore(btn, signin);
+          } else {
+            navRight.appendChild(btn);
+          }
+        }
+      } else if (navActions) {
+        // 3. Any other pages with .ln-nav-actions
+        if (!document.querySelector('.lang-switch-btn')) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lang-switch-btn';
+          btn.onclick = () => I18n.toggleLanguage();
+          navActions.insertBefore(btn, navActions.firstChild);
+        }
+      } else {
+        // 4. Auth pages or standalone pages without top nav
+        const authContainer = document.querySelector('.auth-container');
+        if (authContainer && !authContainer.querySelector('.lang-switch-btn')) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'auth-lang-wrap';
+          wrapper.style.cssText = 'display:flex; justify-content:flex-end; margin-bottom:14px;';
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lang-switch-btn';
+          btn.onclick = () => I18n.toggleLanguage();
+          wrapper.appendChild(btn);
+          authContainer.insertBefore(wrapper, authContainer.firstChild);
         }
       }
+
       this.updateSwitcherButtons();
     },
 
@@ -664,13 +749,28 @@
 
     translateSurvey(survey) {
       if (!survey) return survey;
-      if (this.currentLang === 'he' && surveyOverrides[survey.id] && surveyOverrides[survey.id].he) {
-        const ov = surveyOverrides[survey.id].he;
-        return {
-          ...survey,
-          title: ov.title || survey.title,
-          description: ov.description || survey.description
-        };
+      if (this.currentLang === 'he') {
+        const sId = (survey.id || '').toUpperCase();
+        const sCode = (survey.code || '').toUpperCase();
+        const sTitle = (survey.title || '');
+        if (sId.includes('KENYA') || sCode.includes('KENYA') || sTitle.includes('Kenya National Healthcare')) {
+          return {
+            ...survey,
+            title: 'מדד שירותי בריאות ורפואה ציבורית 2026',
+            description: 'הערכה לאומית מאומתת האוספת משוב ישיר מאזרחים על זמני המתנה במרפאות, זמינות תרופות חיוניות ומימון שירותי רפואה.',
+            category: 'בריאות ושירותים ציבוריים',
+            organization: 'מכון מחקר ומודיעין ציבורי IcapsQ'
+          };
+        }
+        if (surveyOverrides[survey.id] && surveyOverrides[survey.id].he) {
+          const ov = surveyOverrides[survey.id].he;
+          return {
+            ...survey,
+            title: ov.title || survey.title,
+            description: ov.description || survey.description,
+            category: ov.category || survey.category
+          };
+        }
       }
       return survey;
     },
@@ -965,11 +1065,13 @@
           } else if (n === 'Pro' || n === 'מקצועי (Pro)') {
             nameEl.textContent = isHe ? 'מקצועי (Pro)' : 'Pro';
             if (audEl) audEl.textContent = isHe ? 'לחוקרים ולאנשי מקצוע' : 'For researchers and professionals';
+            if (priceEl) priceEl.textContent = isHe ? '₪15' : 'KES 499';
             if (periodEl) periodEl.textContent = isHe ? '/ 30 יום' : '/ 30 days';
             if (ctaEl) ctaEl.textContent = isHe ? 'בחר Pro' : 'Choose Pro';
           } else if (n === 'Organization' || n === 'ארגוני (Organization)') {
             nameEl.textContent = isHe ? 'ארגוני (Organization)' : 'Organization';
             if (audEl) audEl.textContent = isHe ? 'לצוותים המנהלים קמפיינים מרובים' : 'For teams managing multiple campaigns';
+            if (priceEl) priceEl.textContent = isHe ? '₪29' : 'KES 899';
             if (periodEl) periodEl.textContent = isHe ? '/ 30 יום' : '/ 30 days';
             if (ctaEl) ctaEl.textContent = isHe ? 'בחר ארגוני' : 'Choose Organization';
           }
@@ -997,6 +1099,17 @@
           ? 'מסלולי Pro ו-Organization משולמים מראש ל-30 יום ומתחדשים ידנית. כל המסלולים כוללים את אותם הכלים.'
           : 'Pro and Organization are prepaid for 30 days and renew manually. All plans include the same core tools.';
       }
+
+      // Explicit Currency Overrides - Strictly NO KES in Hebrew
+      document.querySelectorAll('[data-plan-price="pro"], #signup-price-pro, #price-val-pro').forEach(el => {
+        el.textContent = isHe ? '₪15' : 'KES 499';
+      });
+      document.querySelectorAll('[data-plan-price="org"], #signup-price-org, #price-val-org').forEach(el => {
+        el.textContent = isHe ? '₪29' : 'KES 899';
+      });
+      document.querySelectorAll('[data-plan-price="free"]').forEach(el => {
+        el.textContent = isHe ? 'חינם' : 'Free';
+      });
 
       // Discover / Unbeatable Section
       const discTag = document.querySelector('.ln-discover .ln-section-tag');
@@ -1073,6 +1186,84 @@
         }
       });
 
+      // Auth / Login Page (login.html)
+      const authBrandSub = document.querySelector('.auth-brand-sub');
+      if (authBrandSub) {
+        authBrandSub.textContent = isHe ? 'פורטל ניהול סקרים ומשוב' : 'Survey & Feedback Management Portal';
+      }
+      const authCardH2 = document.querySelector('.auth-card h2');
+      if (authCardH2) {
+        authCardH2.textContent = isHe ? 'כניסת ארגונים' : 'Sign In';
+      }
+      const authCardSub = document.querySelector('.auth-card .subtitle');
+      if (authCardSub) {
+        authCardSub.textContent = isHe ? 'גישה ללוח הבקרה וניתוח הנתונים של הארגון.' : 'Access your organization dashboard and polling analytics.';
+      }
+      const emailLabels = document.querySelectorAll('.form-group .form-label');
+      emailLabels.forEach(lbl => {
+        const txt = lbl.textContent.trim();
+        if (txt === 'Email Address' || txt === 'כתובת דואר אלקטרוני') {
+          lbl.textContent = isHe ? 'כתובת דואר אלקטרוני' : 'Email Address';
+        } else if (txt === 'Password' || txt === 'סיסמה') {
+          lbl.textContent = isHe ? 'סיסמה' : 'Password';
+        }
+      });
+      const loginBtn = document.getElementById('login-btn');
+      if (loginBtn && !loginBtn.disabled) {
+        loginBtn.innerHTML = isHe ? '<- התחבר' : 'Sign In &rarr;';
+      }
+      const forgotLink = document.querySelector('.forgot-link');
+      if (forgotLink) {
+        forgotLink.textContent = isHe ? 'שכחת סיסמה?' : 'Forgot password?';
+      }
+      const authFooter = document.querySelector('.auth-footer');
+      if (authFooter) {
+        const createLink = authFooter.querySelector('a[href*="signup"]');
+        if (createLink) {
+          createLink.innerHTML = isHe ? '<- פתיחת חשבון' : 'Create Account &rarr;';
+        }
+        for (const node of authFooter.childNodes) {
+          if (node.nodeType === 3 && (node.nodeValue.includes("Don't have") || node.nodeValue.includes("אין לך"))) {
+            node.nodeValue = isHe ? ' אין לך חשבון עדיין? ' : " Don't have an account? ";
+          }
+        }
+      }
+
+      // Surveys Banner (surveys.html)
+      const bannerEyebrow = document.querySelector('.page-banner-row div[style*="uppercase"]');
+      if (bannerEyebrow) {
+        bannerEyebrow.textContent = isHe ? 'השתתפות ציבורית ומוסדית' : 'Public & Institutional Participation';
+      }
+      const bannerTitle = document.querySelector('.page-banner-title');
+      if (bannerTitle) {
+        bannerTitle.textContent = isHe ? 'מחקרים ושאלוני משוב פעילים' : 'Active Surveys & Research Inquiries';
+      }
+      const bannerDesc = document.querySelector('.page-banner-desc');
+      if (bannerDesc) {
+        bannerDesc.textContent = isHe
+          ? 'שאלוני השתתפות ישירים המפורסמים על ידי מוסדות מאומתים, איגודי עובדים, מועצות בריאות ואספות אזרחיות. שתף את נקודת מבטך והעבר קישורים ישירים לקהילה שלך.'
+          : 'Direct participation surveys published by verified institutions, labor unions, healthcare boards, and civic assemblies. Share your experience and pass direct links to your community.';
+      }
+      const surveySearch = document.getElementById('survey-search-input');
+      if (surveySearch) {
+        surveySearch.placeholder = isHe ? 'חיפוש לפי נושא או מפרסם...' : 'Search by topic or publisher...';
+      }
+
+      // Global Currency Sweeper: Strictly NO KES when Hebrew is active
+      if (isHe) {
+        document.querySelectorAll('.ln-plan-price, .plan-price-num, #price-val-pro, #price-val-org, [data-plan-price], td, th, .plan-card').forEach(el => {
+          if (el.children.length === 0 || el.classList.contains('ln-plan-price') || el.classList.contains('plan-price-num')) {
+            const raw = el.textContent;
+            if (raw.includes('499') || raw.includes('pro')) {
+              el.textContent = '₪15';
+            } else if (raw.includes('899') || raw.includes('org')) {
+              el.textContent = '₪29';
+            } else if (raw.includes('KES') || raw.includes('kes')) {
+              el.textContent = raw.replace(/KES\s*/gi, '₪').replace(/\s*KES/gi, '₪');
+            }
+          }
+        });
+      }
       // Verification modal labels
       const vTitle = document.querySelector('.voter-modal-title');
       if (vTitle) vTitle.textContent = isHe ? 'אימות פרטי הצבעה אזרחיים' : 'Civic Verification Survey';
