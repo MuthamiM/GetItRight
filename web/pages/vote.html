@@ -1613,6 +1613,20 @@
     }
 
     function existingBallotMessage(status, currentChannel = 'website') {
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
+      if (isHe) {
+        if (status?.sourceChannel === 'mobile_app' && currentChannel !== 'mobile_app') {
+          return 'בסקר זה כבר נרשמה הצבעה מאפליקציית IcapsQ לנייד. השתמש באפליקציה לצפייה בבחירתך; לא ניתן להצביע שוב כאן.';
+        }
+        if (status?.sourceChannel === 'website' && currentChannel !== 'website') {
+          return 'בסקר זה כבר נרשמה הצבעה דרך האתר. השתמש באתר לצפייה בבחירתך; לא ניתן להצביע שוב כאן.';
+        }
+        return status?.sourceChannel === 'mobile_app'
+          ? 'הצבעתך כבר נרשמה באפליקציית IcapsQ לנייד. הבחירה שנרשמה נעולה ולא ניתנת לשינוי.'
+          : status?.sourceChannel === 'website'
+            ? 'הצבעתך כבר נרשמה באתר. הבחירה שנרשמה נעולה ולא ניתנת לשינוי.'
+            : 'בסקר זה כבר נרשמה הצבעה. לא ניתן להצביע פעם נוספת.';
+      }
       if (status?.sourceChannel === 'mobile_app' && currentChannel !== 'mobile_app') {
         return 'This poll already has a saved vote from the IcapsQ mobile app. Use the app to view your recorded choice; you cannot vote again here.';
       }

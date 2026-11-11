@@ -498,13 +498,14 @@
       const countiesOptions = this.counties.map(c => `<option value="${c}">${c} County</option>`).join('');
       const deviceInfo = this.getDeviceInfo();
       const assignedId = this.getOrAssignUserId();
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
 
       overlay.innerHTML = `
-        <div class="gir-modal-box">
-          <div class="gir-modal-header">
+        <div class="gir-modal-box" style="${isHe ? 'direction:rtl;text-align:right;' : ''}">
+          <div class="gir-modal-header" style="${isHe ? 'flex-direction:row;' : ''}">
             <div>
-              <h2 class="gir-modal-title" id="gir-modal-title-text">Civic Verification Survey</h2>
-              <div class="gir-modal-sub" id="gir-modal-sub-text">Kenya 47 Counties Voter Verification</div>
+              <h2 class="gir-modal-title" id="gir-modal-title-text">${isHe ? 'אימות פרטי הצבעה אזרחיים' : 'Civic Verification Survey'}</h2>
+              <div class="gir-modal-sub" id="gir-modal-sub-text">${isHe ? 'אימות פרטי מצביע ומניעת כפילויות' : 'Kenya 47 Counties Voter Verification'}</div>
             </div>
             <div style="width:36px;height:36px;border-radius:50%;background:#303030;color:#E5E5E5;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;">
               &#10003;
@@ -512,42 +513,44 @@
           </div>
 
           <div class="gir-modal-desc" id="gir-modal-desc-text" style="margin-top:12px;">
-            To ensure genuine regional representation and prevent ballot duplication, please confirm your verification details and County of residence.
+            ${isHe
+              ? 'כדי להבטיח ייצוג אזורי מהימן ולמנוע כפילות בהצבעה, אנא אמת את פרטיך ואזור מגוריך.'
+              : 'To ensure genuine regional representation and prevent ballot duplication, please confirm your verification details and County of residence.'}
           </div>
 
           <form id="gir-demographics-form" onsubmit="window.Demographics.handleSubmit(event)">
             <div class="gir-form-group">
-              <label class="gir-form-label" for="gir-survey-voter-name">Full Name (as on ID / Passport)</label>
-              <input type="text" id="gir-survey-voter-name" class="gir-form-input" required minlength="3" maxlength="100" autocomplete="name">
+              <label class="gir-form-label" for="gir-survey-voter-name">${isHe ? 'שם מלא (לפי תעודת זהות / דרכון)' : 'Full Name (as on ID / Passport)'}</label>
+              <input type="text" id="gir-survey-voter-name" class="gir-form-input" required minlength="3" maxlength="100" autocomplete="name" style="${isHe ? 'text-align:right;' : ''}">
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label" for="gir-survey-voter-id">National ID Number · 5–12 digits</label>
-              <input type="text" id="gir-survey-voter-id" class="gir-form-input" placeholder="Enter 5–12 digits" required minlength="5" maxlength="12" inputmode="numeric" pattern="[0-9]{5,12}" autocomplete="off">
+              <label class="gir-form-label" for="gir-survey-voter-id">${isHe ? 'מספר תעודת זהות · 5–12 ספרות' : 'National ID Number · 5–12 digits'}</label>
+              <input type="text" id="gir-survey-voter-id" class="gir-form-input" placeholder="${isHe ? 'הזן 5–12 ספרות' : 'Enter 5–12 digits'}" required minlength="5" maxlength="12" inputmode="numeric" pattern="[0-9]{5,12}" autocomplete="off" style="${isHe ? 'text-align:right;' : ''}">
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label" for="gir-survey-county">Select County of Residence / Voting</label>
-              <select id="gir-survey-county" class="gir-form-select" required>
-                <option value="" disabled>-- Select your County --</option>
+              <label class="gir-form-label" for="gir-survey-county">${isHe ? 'בחר אזור / מחוז מגורים להצבעה' : 'Select County of Residence / Voting'}</label>
+              <select id="gir-survey-county" class="gir-form-select" required style="${isHe ? 'text-align:right;' : ''}">
+                <option value="" disabled>${isHe ? '-- בחר אזור מגורים / מחוז --' : '-- Select your County --'}</option>
                 ${countiesOptions}
               </select>
             </div>
 
             <div class="gir-form-group">
-              <label class="gir-form-label" for="gir-survey-dob">Date of Birth (DOB) · YYYY-MM-DD</label>
-              <input type="date" id="gir-survey-dob" class="gir-form-input" required>
+              <label class="gir-form-label" for="gir-survey-dob">${isHe ? 'תאריך לידה (DOB) · YYYY-MM-DD' : 'Date of Birth (DOB) · YYYY-MM-DD'}</label>
+              <input type="date" id="gir-survey-dob" class="gir-form-input" required style="${isHe ? 'text-align:right;' : ''}">
             </div>
 
             <div class="gir-form-group">
               <div class="gir-geo-badge" id="gir-geo-status-badge">
                 <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-right:6px;"></span>
-                Checking…
+                ${isHe ? 'בודק...' : 'Checking…'}
               </div>
             </div>
 
             <button type="submit" class="gir-submit-btn" id="gir-survey-submit-btn">
-              Confirm &amp; Proceed &rarr;
+              ${isHe ? '<- אישור והמשך להצבעה' : 'Confirm &amp; Proceed &rarr;'}
             </button>
           </form>
         </div>
@@ -621,24 +624,26 @@
       const dob = document.getElementById('gir-survey-dob').value;
       const submitBtn = document.getElementById('gir-survey-submit-btn');
 
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
+
       if (!voterName || voterName.length < 3) {
-        alert('Please enter your full name (at least 3 characters).');
+        alert(isHe ? 'אנא הזן את שמך המלא (לפחות 3 תווים).' : 'Please enter your full name (at least 3 characters).');
         return;
       }
       if (!voterIdNumber || voterIdNumber.length < 5) {
-        alert('Please provide correct details: National ID must contain 5–12 numbers only.');
+        alert(isHe ? 'אנא ספק פרטים נכונים: תעודת זהות חייבת להכיל 5–12 ספרות בלבד.' : 'Please provide correct details: National ID must contain 5–12 numbers only.');
         return;
       }
       if (!/^\d{5,12}$/.test(voterIdNumber)) {
-        alert('Please provide correct details: National ID must contain 5–12 numbers only.');
+        alert(isHe ? 'אנא ספק פרטים נכונים: תעודת זהות חייבת להכיל 5–12 ספרות בלבד.' : 'Please provide correct details: National ID must contain 5–12 numbers only.');
         return;
       }
       if (!county) {
-        alert('Please select your County.');
+        alert(isHe ? 'אנא בחר את מחוז / אזור המגורים שלך.' : 'Please select your County.');
         return;
       }
       if (!dob) {
-        alert('Please enter your Date of Birth.');
+        alert(isHe ? 'אנא הזן את תאריך הלידה שלך.' : 'Please enter your Date of Birth.');
         return;
       }
 
@@ -651,17 +656,17 @@
         age--;
       }
       if (age < 18) {
-        alert('You must be 18 years or older to participate in civic polls and surveys.');
+        alert(isHe ? 'עליך להיות בן 18 ומעלה כדי להשתתף בסקרים ובמשאלי עם אזרחיים.' : 'You must be 18 years or older to participate in civic polls and surveys.');
         return;
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Checking precise location...';
+      submitBtn.textContent = isHe ? 'בודק מיקום מדויק...' : 'Checking precise location...';
       const loc = await this.acquireLocation();
       if (!loc || !Number.isFinite(loc.lat) || !Number.isFinite(loc.lng) || !Number.isFinite(loc.accuracy) || loc.accuracy <= 0 || loc.accuracy > 500) {
-        alert('Please provide correct details: allow precise device location (within 500 metres) and try again.');
+        alert(isHe ? 'אנא ספק פרטים נכונים: אפשר זיהוי מיקום מדויק של המכשיר (עד 500 מטרים) ונסה שוב.' : 'Please provide correct details: allow precise device location (within 500 metres) and try again.');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Confirm & Proceed →';
+        submitBtn.textContent = isHe ? '<- אישור והמשך להצבעה' : 'Confirm & Proceed →';
         return;
       }
 

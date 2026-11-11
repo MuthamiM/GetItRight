@@ -1494,10 +1494,14 @@
         const q = questions[currentStepIndex];
         const stepNum = currentStepIndex + 1;
 
-        progressText.textContent = `Question ${stepNum} of ${totalSteps}`;
+        const isHe = window.I18n && window.I18n.currentLang === 'he';
+        progressText.textContent = isHe ? `שאלה ${stepNum} מתוך ${totalSteps}` : `Question ${stepNum} of ${totalSteps}`;
         progressBar.style.width = `${(stepNum / totalSteps) * 100}%`;
         prevBtn.style.visibility = currentStepIndex > 0 ? 'visible' : 'hidden';
-        nextBtn.textContent = stepNum === totalSteps ? 'Submit Official Responses' : 'Next Step →';
+        prevBtn.textContent = isHe ? 'השלב הקודם ->' : '← Previous';
+        nextBtn.textContent = stepNum === totalSteps
+          ? (isHe ? 'שליחת תשובות רשמיות' : 'Submit Official Responses')
+          : (isHe ? '<- השלב הבא' : 'Next Step →');
 
         let options = [];
         try {
@@ -1546,7 +1550,7 @@
             </h4>
             ${inputHtml}
             <div id="survey-question-validation" role="alert" style="display:none; margin-top:12px; color:#ffaaaa; font-size:13px; font-weight:700;">
-              Choose an answer to continue.
+              ${isHe ? 'אנא בחר תשובה כדי להמשיך.' : 'Choose an answer to continue.'}
             </div>
           </div>
         `;
@@ -1673,10 +1677,11 @@
 
     async function executeSurveySubmission(verified = {}) {
       const nextBtn = document.getElementById('next-step-btn');
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
       clearSurveySubmissionFailure();
       if (nextBtn) {
         nextBtn.disabled = true;
-        nextBtn.textContent = 'Submitting...';
+        nextBtn.textContent = isHe ? 'שולח...' : 'Submitting...';
       }
 
       const assignedUserId = verified.userId || (window.Demographics && typeof window.Demographics.getOrAssignUserId === 'function' ? window.Demographics.getOrAssignUserId() : (localStorage.getItem('gir_assigned_user_id') || localStorage.getItem('gir_voter_key') || ''));
@@ -1702,18 +1707,18 @@
 
       const missingAnswer = answersList.some(item => item.answer == null || String(item.answer).trim() === '');
       if (missingAnswer || answersList.length !== currentSurvey.questions.length) {
-        showSurveySubmissionFailure('Please answer every survey question before submitting.');
-        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
+        showSurveySubmissionFailure(isHe ? 'אנא ענה על כל שאלות השאלון לפני ההגשה.' : 'Please answer every survey question before submitting.');
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = isHe ? 'שליחת תשובות רשמיות' : 'Submit Official Responses'; }
         return;
       }
       if (voterName.trim().length < 3 || !/^\d{5,12}$/.test(voterIdNumber) || !county || !(verified.dob || localStorage.getItem('gir_dob'))) {
-        showSurveySubmissionFailure('Please provide a valid full name, 5–12 digit National ID, county, and date of birth.');
-        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
+        showSurveySubmissionFailure(isHe ? 'אנא ספק שם מלא תקין, מספר תעודת זהות בן 5–12 ספרות, מחוז ותאריך לידה.' : 'Please provide a valid full name, 5–12 digit National ID, county, and date of birth.');
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = isHe ? 'שליחת תשובות רשמיות' : 'Submit Official Responses'; }
         return;
       }
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(accuracy) || accuracy <= 0 || accuracy > 500) {
-        showSurveySubmissionFailure('Allow precise device location (within 500 metres) and try again.');
-        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit Official Responses'; }
+        showSurveySubmissionFailure(isHe ? 'אנא אפשר זיהוי מיקום מדויק של המכשיר (עד 500 מטרים) ונסה שוב.' : 'Allow precise device location (within 500 metres) and try again.');
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = isHe ? 'שליחת תשובות רשמיות' : 'Submit Official Responses'; }
         return;
       }
 

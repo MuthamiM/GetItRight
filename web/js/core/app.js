@@ -153,10 +153,65 @@ const App = {
   },
 
   // -- Toast notifications --
+  translateToast(message) {
+    if (!message || typeof message !== 'string') return message;
+    if (!window.I18n || window.I18n.currentLang !== 'he') return message;
+
+    const lower = message.toLowerCase();
+    if (lower.includes('already voted in app') || lower.includes('choice is locked')) {
+      return 'כבר הצבעת באפליקציה. הבחירה נעולה.';
+    }
+    if (lower.includes('already has a saved vote from the icapsq mobile app') || (lower.includes('mobile app') && lower.includes('saved vote'))) {
+      return 'בסקר זה כבר נרשמה הצבעה מאפליקציית IcapsQ לנייד. השתמש באפליקציה לצפייה בבחירתך; לא ניתן להצביע שוב כאן.';
+    }
+    if (lower.includes('already has a saved vote from the website')) {
+      return 'בסקר זה כבר נרשמה הצבעה דרך האתר. השתמש באתר לצפייה בבחירתך; לא ניתן להצביע שוב כאן.';
+    }
+    if (lower.includes('already has a recorded vote') || lower.includes('already voted')) {
+      return 'בסקר זה כבר נרשמה הצבעה. לא ניתן להצביע פעם נוספת.';
+    }
+    if (lower.includes('submitting')) {
+      return 'שולח...';
+    }
+    if (lower.includes('vote recorded for') || lower.includes('vote recorded')) {
+      return 'ההצבעה נרשמה בהצלחה.';
+    }
+    if (lower.includes('vote not recorded')) {
+      return 'ההצבעה לא נרשמה. אנא נסה שוב.';
+    }
+    if (lower.includes('network error')) {
+      return 'שגיאת תקשורת ברשת. אנא נסה שוב.';
+    }
+    if (lower.includes('copied to clipboard')) {
+      return 'הקישור הועתק ללוח!';
+    }
+    if (lower.includes('failed to connect') || lower.includes('database')) {
+      return 'החיבור למסד הנתונים נכשל. אנא ודא שהשרת פעיל.';
+    }
+    if (lower.includes('ballot history could not be confirmed')) {
+      return 'לא ניתן היה לאמת את היסטוריית ההצבעה. האפשרויות נעולות למניעת כפילות.';
+    }
+    if (lower.includes('fill in all required') || lower.includes('required fields')) {
+      return 'אנא מלא את כל שדות החובה.';
+    }
+    if (lower.includes('select an answer')) {
+      return 'אנא בחר תשובה לפני המעבר לשלב הבא.';
+    }
+    if (lower.includes('survey submitted')) {
+      return 'השאלון נשלח בהצלחה!';
+    }
+    if (lower.includes('failed to submit')) {
+      return 'שליחת השאלון נכשלה. אנא נסה שוב.';
+    }
+    return message;
+  },
+
   showToast(message, type) {
     type = type || 'success';
     const container = document.getElementById('toast-container');
     if (!container) return;
+
+    message = this.translateToast(message);
 
     // Keep feedback readable on small screens: replace the current toast
     // instead of stacking duplicate notices over the page.
