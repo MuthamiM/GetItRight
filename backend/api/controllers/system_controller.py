@@ -58,11 +58,55 @@ class SystemController:
         }
 
     @staticmethod
-    def geo_currency() -> dict:
+    def geo_currency(request=None) -> dict:
+        country_code = ""
+        if request is not None:
+            country_code = (
+                request.headers.get("CF-IPCountry") or
+                request.headers.get("cf-ipcountry") or
+                request.headers.get("X-Country-Code") or
+                ""
+            ).strip().upper()
+        if country_code == "IL":
+            return {
+                "country": "Israel",
+                "countryCode": "IL",
+                "currency": "ILS",
+                "symbol": "₪",
+                "rate": 3.7,
+                "isIsrael": True,
+                "suggestedLang": "he"
+            }
         return {
             "country": "Kenya",
-            "countryCode": "KE",
+            "countryCode": country_code or "KE",
             "currency": "KES",
             "symbol": "KSh",
-            "rate": 130.0
+            "rate": 130.0,
+            "isIsrael": False,
+            "suggestedLang": "en"
+        }
+
+    @staticmethod
+    def geo_detect(request=None) -> dict:
+        country_code = ""
+        client_ip = ""
+        if request is not None:
+            country_code = (
+                request.headers.get("CF-IPCountry") or
+                request.headers.get("cf-ipcountry") or
+                request.headers.get("X-Country-Code") or
+                ""
+            ).strip().upper()
+            client_ip = (
+                request.headers.get("CF-Connecting-IP") or
+                request.headers.get("X-Real-IP") or
+                (request.client.host if request.client else "")
+            )
+        is_israel = (country_code == "IL")
+        return {
+            "countryCode": country_code or "UNKNOWN",
+            "isIsrael": is_israel,
+            "language": "he" if is_israel else "en",
+            "ip": client_ip
         }

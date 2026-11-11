@@ -1099,7 +1099,11 @@
       try {
         const res = await fetch(`${API_BASE}/surveys?live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load surveys");
-        allSurveys = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        const rawSurveys = await res.json();
+        rawSurveys.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        allSurveys = (window.I18n && typeof window.I18n.translateSurvey === 'function')
+          ? rawSurveys.map(s => window.I18n.translateSurvey(s))
+          : rawSurveys;
         await verifyCompletedSurveysWithDb();
         document.getElementById('active-surveys-pill').textContent = `${getAvailableSurveys().length} Live Surveys`;
         renderSurveys(getAvailableSurveys());
@@ -1195,6 +1199,8 @@
       const startIdx = (surveysCurrentPage - 1) * SURVEYS_PAGE_SIZE;
       const pageItems = currentFilteredSurveys.slice(startIdx, startIdx + SURVEYS_PAGE_SIZE);
 
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
+
       grid.innerHTML = pageItems.map(s => {
         const target = s.targetResponses || 1000;
         const total = s.totalResponses || 0;
@@ -1213,7 +1219,7 @@
                   </span>
                   <div>
                     <div style="font-family:var(--font-display); font-weight:800; color:var(--silver); font-size:15px; letter-spacing:-0.01em;">${escapeSurveyHtml(org)}</div>
-                    <span style="font-size:12px; color:var(--silver); opacity:0.65;">${escapeSurveyHtml(s.track || 'Public Research')} &bull; ${escapeSurveyHtml(s.id)}</span>
+                    <span style="font-size:12px; color:var(--silver); opacity:0.65;">${escapeSurveyHtml(s.track || (isHe ? 'מחקר ציבורי' : 'Public Research'))} &bull; ${escapeSurveyHtml(s.id)}</span>
                   </div>
                 </div>
 
@@ -1231,8 +1237,8 @@
               <div class="survey-progress-block" style="margin-bottom:20px;">
                 <div class="survey-progress-summary">
                   <div>
-                    <div class="survey-progress-label">Response target</div>
-                    <div class="survey-progress-count">${total.toLocaleString()} of ${target.toLocaleString()} responses</div>
+                    <div class="survey-progress-label">${isHe ? 'יעד מענה' : 'Response target'}</div>
+                    <div class="survey-progress-count">${total.toLocaleString()} ${isHe ? 'מתוך' : 'of'} ${target.toLocaleString()} ${isHe ? 'מענים' : 'responses'}</div>
                   </div>
                   <span class="survey-progress-pct" aria-label="${pct}% of response target">${pct}%</span>
                 </div>
@@ -1245,11 +1251,11 @@
             <!-- Footer Action Row -->
             <div class="card-footer-actions" style="border-top:1px solid rgba(229,229,229,0.15); padding-top:18px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
               <button class="btn-share-survey" data-share-survey-id="${escapeSurveyHtml(s.id)}">
-                <span data-icon="share"></span> Share Link
+                <span data-icon="share"></span> ${isHe ? 'שתף קישור' : 'Share Link'}
               </button>
 
               <button class="btn-take-survey" data-start-survey-id="${escapeSurveyHtml(s.id)}">
-                Take Survey &rarr;
+                ${isHe ? '&larr; התחל שאלון' : 'Take Survey &rarr;'}
               </button>
             </div>
           </div>
@@ -1273,14 +1279,16 @@
 
       pagContainer.innerHTML = `
         <div class="pagination-info-text">
-          Showing ${startIdx + 1}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)
+          ${isHe
+            ? `מציג ${startIdx + 1}–${endIdx} מתוך ${totalItems} (נותרו עוד ${remaining} לצפייה)`
+            : `Showing ${startIdx + 1}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)`}
         </div>
         <div class="pagination-actions-row">
           <button type="button" class="btn-pagination-nav" ${!hasPrev ? 'disabled' : ''} onclick="changeSurveysPage(${surveysCurrentPage - 1})">
-            &larr; Previous
+            ${isHe ? 'הקודם &rarr;' : '&larr; Previous'}
           </button>
           <button type="button" class="btn-next-remaining" ${!hasNext ? 'disabled' : ''} onclick="changeSurveysPage(${surveysCurrentPage + 1})">
-            Next (${remaining} remaining) &rarr;
+            ${isHe ? `&larr; הבא (${remaining} נותרו)` : `Next (${remaining} remaining) &rarr;`}
           </button>
         </div>
       `;
@@ -1818,7 +1826,16 @@
       document.getElementById('next-step-btn')?.addEventListener('click', handleNextStep);
       document.getElementById('prev-step-btn')?.addEventListener('click', handlePrevStep);
     }
+
+    // Hebrew i18n: re-render surveys when language changes
+    window.addEventListener('icapsq:languageChanged', () => {
+      if (window.I18n) {
+        allSurveys = allSurveys.map(s => window.I18n.translateSurvey(s));
+      }
+      renderSurveys();
+    });
   </script>
+  <script src="/js/core/i18n.js"></script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>
 </html>

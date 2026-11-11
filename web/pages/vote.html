@@ -1228,7 +1228,11 @@
       try {
         const res = await fetch(`${API_BASE}/polls?surface=web&live_refresh=20261019`, { cache: 'no-store' });
         if (!res.ok) throw new Error("Failed to load polls");
-        allPolls = (await res.json()).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        const rawPolls = await res.json();
+        rawPolls.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        allPolls = (window.I18n && typeof window.I18n.translatePoll === 'function')
+          ? rawPolls.map(p => window.I18n.translatePoll(p))
+          : rawPolls;
         await syncAccountPollStatuses();
         renderPollsFeed(allPolls);
       } catch (err) {
@@ -1338,9 +1342,10 @@
     function formatCountdown(targetDate) {
       const now = new Date();
       const diffMs = targetDate - now;
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
 
       if (diffMs <= 0) {
-        return 'Voting Closed';
+        return isHe ? 'ההצבעה נסגרה' : 'Voting Closed';
       }
 
       const totalSeconds = Math.floor(diffMs / 1000);
@@ -1351,9 +1356,13 @@
       const pad = (n) => String(n).padStart(2, '0');
 
       if (days >= 1) {
-        return `${days}d ${hours}h ${pad(minutes)}mins left`;
+        return isHe
+          ? `נותרו ${days} ימים, ${hours} שעות ו-${pad(minutes)} דק׳`
+          : `${days}d ${hours}h ${pad(minutes)}mins left`;
       } else {
-        return `${hours}h ${pad(minutes)}mins left`;
+        return isHe
+          ? `נותרו ${hours} שעות ו-${pad(minutes)} דק׳`
+          : `${hours}h ${pad(minutes)}mins left`;
       }
     }
 
@@ -1520,6 +1529,8 @@
       const inspectedIndex = inspectedPieSlice.get(poll.id);
       const inspectedOption = Number.isInteger(inspectedIndex) ? poll.options[inspectedIndex] : null;
 
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
+
       if (!inspectedOption) {
         if (pie) {
           pie.classList.remove('has-selection');
@@ -1532,10 +1543,13 @@
           totalEl.style.removeProperty('color');
         }
         if (captionEl) {
-          captionEl.textContent = 'Total Votes';
+          captionEl.textContent = isHe ? 'סה״כ קולות' : 'Total Votes';
           captionEl.style.display = '';
         }
-        if (instructionEl) instructionEl.style.display = '';
+        if (instructionEl) {
+          instructionEl.textContent = isHe ? 'לחץ על פלח' : 'Tap slice';
+          instructionEl.style.display = '';
+        }
         if (labelEl) labelEl.style.display = 'none';
         if (percentEl) percentEl.style.display = 'none';
       } else {
@@ -1553,7 +1567,7 @@
           totalEl.style.color = color;
         }
         if (captionEl) {
-          captionEl.textContent = count === 1 ? 'Vote' : 'Votes';
+          captionEl.textContent = isHe ? (count === 1 ? 'קול' : 'קולות') : (count === 1 ? 'Vote' : 'Votes');
           captionEl.style.display = '';
         }
         if (instructionEl) instructionEl.style.display = 'none';
@@ -1660,6 +1674,8 @@
       const startIdx = (pollsCurrentPage - 1) * POLLS_PAGE_SIZE;
       const pageItems = currentFilteredPolls.slice(startIdx, startIdx + POLLS_PAGE_SIZE);
 
+      const isHe = window.I18n && window.I18n.currentLang === 'he';
+
       container.innerHTML = pageItems.map(p => {
         const serverStatus = serverVotedPolls.get(p.id);
         // Only a server-confirmed ballot for the signed-in identity locks options.
@@ -1671,7 +1687,7 @@
         const optionColors = (p.options || []).map((_, index) => pollOptionColors[index % pollOptionColors.length]);
         const optionsHtml = (statusUnavailable ? `
           <div role="status" style="margin:0 0 10px;padding:9px 12px;border-radius:8px;background:rgba(229,229,229,.1);color:var(--silver);font-size:12px;">
-            Ballot history could not be confirmed. Choices are locked to prevent a duplicate. Refresh to retry.
+            ${isHe ? 'לא ניתן היה לאמת את היסטוריית ההצבעה. האפשרויות נעולות למניעת כפילות. רענן כדי לנסות שוב.' : 'Ballot history could not be confirmed. Choices are locked to prevent a duplicate. Refresh to retry.'}
           </div>` : '') + (p.options || []).map((opt, index) => {
           const selectedVote = serverStatus?.hasVoted ? serverStatus.optionIndex : null;
           const optionIndex = getPollOptionApiIndex(opt, index);
@@ -1681,11 +1697,11 @@
           const percentage = getPollOptionPercent(p, opt);
           const optionColor = optionColors[index];
           return `
-            <button type="button" class="poll-opt-btn ${votedClass}" data-vote-poll-id="${escapePollHtml(p.id)}" data-option-index="${Number(optionIndex)}" aria-disabled="${hasVoted || statusUnavailable}" title="${statusUnavailable ? 'Ballot history is unavailable. Refresh to retry.' : hasVoted ? 'You have already voted in this poll.' : ''}" style="--option-accent:${optionColor};${hasVoted || statusUnavailable ? 'cursor:not-allowed;' : ''}" ${hasVoted || statusUnavailable ? 'disabled' : ''}>
+            <button type="button" class="poll-opt-btn ${votedClass}" data-vote-poll-id="${escapePollHtml(p.id)}" data-option-index="${Number(optionIndex)}" aria-disabled="${hasVoted || statusUnavailable}" title="${statusUnavailable ? (isHe ? 'היסטוריית הצבעה אינה זמינה' : 'Ballot history is unavailable. Refresh to retry.') : hasVoted ? (isHe ? 'כבר הצבעת בסקר זה.' : 'You have already voted in this poll.') : ''}" style="--option-accent:${optionColor};${hasVoted || statusUnavailable ? 'cursor:not-allowed;' : ''}" ${hasVoted || statusUnavailable ? 'disabled' : ''}>
               <div class="poll-option-content">
                 <span class="poll-option-name option-label">
                   <span class="poll-option-marker" aria-hidden="true"></span>
-                  <span>${escapePollHtml(opt.label)}</span> ${isVotedChoice ? '<span style="font-size:11px;font-weight:800;">[Voted]</span>' : ''}
+                  <span>${escapePollHtml(opt.label)}</span> ${isVotedChoice ? `<span style="font-size:11px;font-weight:800;">${isHe ? '[הצבעת]' : '[Voted]'}</span>` : ''}
                 </span>
                 <span class="poll-option-percent option-percent">
                   ${percentage.toFixed(1)}% (${votes.toLocaleString()})
@@ -1701,7 +1717,7 @@
             <button type="button" class="poll-legend-item" data-select-poll-id="${escapePollHtml(p.id)}" data-option-index="${index}" style="--option-accent:${optionColors[index]}" aria-pressed="false">
               <span class="poll-legend-dot" aria-hidden="true"></span>
               <span class="poll-legend-label">${escapePollHtml(opt.label)}</span>
-              <span class="poll-legend-stats">${votes.toLocaleString()} votes (${percentage.toFixed(1)}%)</span>
+              <span class="poll-legend-stats">${votes.toLocaleString()} ${isHe ? (votes === 1 ? 'קול' : 'קולות') : 'votes'} (${percentage.toFixed(1)}%)</span>
             </button>
           `;
         }).join('');
@@ -1711,7 +1727,7 @@
             <div class="poll-feed-header">
               <div style="min-width:0;">
                 <span style="font-size:11px; font-weight:800; color:var(--silver); text-transform:uppercase; background:rgba(229,229,229,0.12); border:1px solid rgba(229,229,229,0.22); padding:4px 10px; border-radius:6px; margin-right:8px;">
-                  ${escapePollHtml(p.category || 'Civic')}
+                  ${escapePollHtml(p.category || (isHe ? 'אזרחי' : 'Civic'))}
                 </span>
                 <span style="font-family:var(--font-mono); font-size:11px; color:var(--silver); opacity:0.6;">${escapePollHtml(p.id)}</span>
               </div>
@@ -1733,8 +1749,8 @@
                   <div class="poll-vote-pie-center">
                     <span class="poll-pie-selection-label" style="display:none;"></span>
                     <strong class="poll-pie-total">${Number(p.totalVotes || 0).toLocaleString()}</strong>
-                    <span class="poll-pie-caption">Total Votes</span>
-                    <span class="poll-pie-instruction">Tap slice</span>
+                    <span class="poll-pie-caption">${isHe ? 'סה״כ קולות' : 'Total Votes'}</span>
+                    <span class="poll-pie-instruction">${isHe ? 'לחץ על פלח' : 'Tap slice'}</span>
                     <span class="poll-pie-selection-percent" style="display:none;"></span>
                   </div>
                 </button>
@@ -1753,10 +1769,10 @@
             <!-- Footer -->
             <div class="poll-card-footer" style="font-size:12.5px; opacity:0.9;">
               <div style="display:flex; flex-direction:column; align-items:flex-start; gap:7px;">
-                <div class="poll-turnout" aria-label="${Number(p.totalVotes || 0).toLocaleString()} votes cast">
-                  <span class="poll-turnout-label">Turnout</span>
+                <div class="poll-turnout" aria-label="${Number(p.totalVotes || 0).toLocaleString()} ${isHe ? 'קולות נמסרו' : 'votes cast'}">
+                  <span class="poll-turnout-label">${isHe ? 'אחוז הצבעה' : 'Turnout'}</span>
                   <strong class="vote-count">${Number(p.totalVotes || 0).toLocaleString()}</strong>
-                  <span class="poll-turnout-caption">votes cast</span>
+                  <span class="poll-turnout-caption">${isHe ? 'קולות נמסרו' : 'votes cast'}</span>
                 </div>
                 <div id="countdown-${escapePollHtml(p.id)}" class="poll-countdown-text" style="font-family:var(--font-mono); font-size:11.5px; color:var(--silver); opacity:0.75; font-weight:700; letter-spacing:0.02em;">
                   ${getCountdownDisplay(p)}
@@ -1764,7 +1780,7 @@
               </div>
               <div style="display:flex; gap:8px;">
                 <button class="btn-share-poll" data-share-poll-id="${escapePollHtml(p.id)}">
-                  <span data-icon="share"></span> Share Poll
+                  <span data-icon="share"></span> ${isHe ? 'שתף סקר' : 'Share Poll'}
                 </button>
               </div>
             </div>
@@ -1794,14 +1810,16 @@
 
       pagContainer.innerHTML = `
         <div class="pagination-info-text">
-          Showing ${startIdx + 1}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)
+          ${isHe
+            ? `מציג ${startIdx + 1}–${endIdx} מתוך ${totalItems} (נותרו עוד ${remaining} לצפייה)`
+            : `Showing ${startIdx + 1}–${endIdx} of ${totalItems} (${remaining} remaining to be viewed)`}
         </div>
         <div class="pagination-actions-row">
           <button type="button" class="btn-pagination-nav" ${!hasPrev ? 'disabled' : ''} onclick="changePollsPage(${pollsCurrentPage - 1})">
-            &larr; Previous
+            ${isHe ? 'הקודם &rarr;' : '&larr; Previous'}
           </button>
           <button type="button" class="btn-next-remaining" ${!hasNext ? 'disabled' : ''} onclick="changePollsPage(${pollsCurrentPage + 1})">
-            Next (${remaining} remaining) &rarr;
+            ${isHe ? `&larr; הבא (${remaining} נותרו)` : `Next (${remaining} remaining) &rarr;`}
           </button>
         </div>
       `;
@@ -2029,7 +2047,18 @@
         renderPollsFeed(filtered);
       });
     }
+
+    // Hebrew i18n: re-render polls when language changes
+    window.addEventListener('icapsq:languageChanged', () => {
+      if (window.I18n) {
+        // Re-translate poll data and re-render
+        currentFilteredPolls = currentFilteredPolls.map(p => window.I18n.translatePoll(p));
+        allPolls = allPolls.map(p => window.I18n.translatePoll(p));
+      }
+      renderPollsFeed(currentFilteredPolls, pollsCurrentPage);
+    });
   </script>
+  <script src="/js/core/i18n.js"></script>
   <script src="/js/core/privacy-preferences.js?v=20261022-1" defer></script>
 </body>
 </html>

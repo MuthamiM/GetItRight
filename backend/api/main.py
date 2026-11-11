@@ -1,6 +1,6 @@
 import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
@@ -120,9 +120,14 @@ def check_app_version(version: str = None):
 def cache_status():
     return SystemController.cache_status()
 
+@app.get("/geo/detect")
+@app.get(f"{settings.API_PREFIX}/geo/detect")
+def geo_detect(request: Request):
+    return SystemController.geo_detect(request)
+
 @app.get(f"{settings.API_PREFIX}/geo/currency")
-def geo_currency():
-    return SystemController.geo_currency()
+def geo_currency(request: Request):
+    return SystemController.geo_currency(request)
 
 # === SERVE FRONTEND STATIC FILES FROM /web ===
 WEB_DIR = Path(__file__).resolve().parent.parent.parent / "web"
