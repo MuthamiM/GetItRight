@@ -529,6 +529,94 @@
       direction: rtl !important;
     }
 
+    /* === Console Dashboard RTL Layout === */
+    html[dir="rtl"] .layout, body.rtl-mode .layout {
+      flex-direction: row-reverse !important;
+    }
+    html[dir="rtl"] .sidebar, body.rtl-mode .sidebar {
+      border-right: none !important;
+      border-left: 1px solid var(--border-color, #B8BAC0) !important;
+      text-align: right !important;
+    }
+    html[dir="rtl"] .topbar, body.rtl-mode .topbar {
+      flex-direction: row-reverse !important;
+    }
+    html[dir="rtl"] .top-actions, body.rtl-mode .top-actions {
+      flex-direction: row-reverse !important;
+    }
+    html[dir="rtl"] main, body.rtl-mode main {
+      text-align: right !important;
+    }
+    html[dir="rtl"] .data-table th,
+    body.rtl-mode .data-table th,
+    html[dir="rtl"] .data-table td,
+    body.rtl-mode .data-table td {
+      text-align: right !important;
+    }
+    html[dir="rtl"] .data-table th:last-child,
+    body.rtl-mode .data-table th:last-child,
+    html[dir="rtl"] .data-table td:last-child,
+    body.rtl-mode .data-table td:last-child {
+      text-align: left !important;
+    }
+    html[dir="rtl"] .kpis, body.rtl-mode .kpis {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .panel, body.rtl-mode .panel {
+      text-align: right !important;
+    }
+    html[dir="rtl"] .toolbar, body.rtl-mode .toolbar {
+      flex-direction: row-reverse !important;
+    }
+    html[dir="rtl"] .grid, body.rtl-mode .grid {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .upgrade-cards, body.rtl-mode .upgrade-cards {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .upgrade-card, body.rtl-mode .upgrade-card {
+      text-align: right !important;
+    }
+    html[dir="rtl"] .plan-current-card, body.rtl-mode .plan-current-card {
+      text-align: right !important;
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .plan-quotas, body.rtl-mode .plan-quotas {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .filter-btn, body.rtl-mode .filter-btn {
+      direction: rtl !important;
+    }
+    html[dir="rtl"] .notif-dropdown, body.rtl-mode .notif-dropdown {
+      right: auto !important;
+      left: 0 !important;
+      text-align: right !important;
+    }
+    html[dir="rtl"] .brand .muted, body.rtl-mode .brand .muted {
+      direction: rtl !important;
+    }
+    /* Console wizard (create.html) RTL */
+    html[dir="rtl"] .step-progress, body.rtl-mode .step-progress {
+      flex-direction: row-reverse !important;
+    }
+    html[dir="rtl"] .wizard-nav, body.rtl-mode .wizard-nav {
+      flex-direction: row-reverse !important;
+    }
+    html[dir="rtl"] .form-label, body.rtl-mode .form-label {
+      text-align: right !important;
+    }
+    /* Console lang-switch-btn override for dark topbar */
+    .top-actions .lang-switch-btn {
+      background: rgba(255,255,255,0.08) !important;
+      border-color: rgba(255,255,255,0.2) !important;
+      color: var(--text-main, #303030) !important;
+      font-size: 12px !important;
+      padding: 5px 12px !important;
+    }
+    .top-actions .lang-switch-btn:hover {
+      background: rgba(255,255,255,0.16) !important;
+    }
+
     /* Language Switcher Styling */
     .lang-switch-btn {
       display: inline-flex !important;
@@ -710,9 +798,18 @@
           navActions.insertBefore(btn, navActions.firstChild);
         }
       } else {
-        // 4. Auth pages or standalone pages without top nav
+        // 4. Console dashboard (.top-actions), creation wizard (.topbar > div), or auth pages
+        const topActions = document.querySelector('.top-actions') || document.querySelector('.topbar > div[style*="gap"]') || document.querySelector('.topbar > div');
+        if (topActions && !topActions.querySelector('.lang-switch-btn')) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lang-switch-btn';
+          btn.setAttribute('data-lang-switch', '1');
+          btn.onclick = () => I18n.toggleLanguage();
+          topActions.insertBefore(btn, topActions.firstChild);
+        }
         const authContainer = document.querySelector('.auth-container');
-        if (authContainer && !authContainer.querySelector('.lang-switch-btn')) {
+        if (!topActions && authContainer && !authContainer.querySelector('.lang-switch-btn')) {
           const wrapper = document.createElement('div');
           wrapper.className = 'auth-lang-wrap';
           wrapper.style.cssText = 'display:flex; justify-content:flex-end; margin-bottom:14px;';
@@ -1356,6 +1453,575 @@
       const sideBtn = document.querySelector('.polls-sidebar a');
       if (sideBtn) {
         sideBtn.textContent = isHe ? '<- הורד אפליקציה ל-Android' : 'Get Android Mobile App →';
+      }
+
+      // === CLIENT CONSOLE DASHBOARD (user.html) ===
+      const isConsole = window.location.pathname.includes('/console/');
+      if (isConsole) {
+        this.applyConsoleDashboardTranslations(isHe);
+      }
+    },
+
+    applyConsoleDashboardTranslations(isHe) {
+      // Topbar brand
+      const brandMuted = document.querySelector('.brand .muted');
+      if (brandMuted) {
+        const t = brandMuted.textContent.trim();
+        if (t.includes('Client Dashboard') || t.includes('לוח בקרה')) {
+          brandMuted.textContent = isHe ? '/ לוח בקרה' : '/ Client Dashboard';
+        }
+        if (t.includes('Create Survey') || t.includes('Create Poll') || t.includes('יצירת סקר') || t.includes('יצירת שאלון')) {
+          brandMuted.textContent = isHe ? '/ יצירת סקר או שאלון' : '/ Create Survey / Poll';
+        }
+      }
+
+      // Top action buttons
+      const createSurveyBtn = document.getElementById('create-survey');
+      if (createSurveyBtn) createSurveyBtn.textContent = isHe ? '+ צור שאלון' : '+ Create survey';
+      const createPollBtn = document.getElementById('create-poll');
+      if (createPollBtn) createPollBtn.textContent = isHe ? '+ צור סקר' : '+ Create poll';
+      const refreshBtn = document.getElementById('refresh');
+      if (refreshBtn) refreshBtn.textContent = isHe ? 'רענן' : 'Refresh';
+      const logoutBtn = document.getElementById('logout');
+      if (logoutBtn) logoutBtn.textContent = isHe ? 'התנתק' : 'Log out';
+
+      // Notification bell dropdown
+      const notifBellBtn = document.getElementById('notifBellBtn');
+      if (notifBellBtn) notifBellBtn.title = isHe ? 'התראות פלטפורמה' : 'Platform Notifications';
+      const notifHeader = document.querySelector('.notif-dropdown-header > span');
+      if (notifHeader) notifHeader.textContent = isHe ? 'התראות פלטפורמה' : 'Platform Notifications';
+      const notifClear = document.querySelector('.btn-clear-notifs');
+      if (notifClear) notifClear.textContent = isHe ? 'סמן הכל כנקרא' : 'Mark all read';
+      const notifEmpty = document.querySelector('.notif-empty');
+      if (notifEmpty) notifEmpty.textContent = isHe ? 'אין התראות עדיין' : 'No notifications yet';
+
+      // Sidebar
+      const sidebarH3 = document.querySelector('.sidebar > h3');
+      if (sidebarH3) sidebarH3.textContent = isHe ? 'סביבת עבודה' : 'Workspace';
+      document.querySelectorAll('.sidebar button.nav').forEach(btn => {
+        const sec = btn.getAttribute('data-section');
+        const map = {
+          overview:  { en: 'Overview',           he: 'סקירה כללית' },
+          responses: { en: 'Responses & Votes',  he: 'תגובות והצבעות' },
+          turnout:   { en: 'Turnout & Quotas',   he: 'אחוזי הצבעה ומכסות' },
+          polls:     { en: 'My polls',           he: 'הסקרים שלי' },
+          surveys:   { en: 'My surveys',         he: 'השאלונים שלי' },
+          profile:   { en: 'Profile & Plan',     he: 'פרופיל ומסלול' }
+        };
+        if (map[sec]) btn.textContent = isHe ? map[sec].he : map[sec].en;
+      });
+
+      // Overview section
+      const welcomeEl = document.getElementById('welcome');
+      if (welcomeEl) {
+        const name = (welcomeEl.textContent || '').replace(/^(Welcome, |ברוך הבא, )/, '').trim();
+        if (name) welcomeEl.textContent = isHe ? ('ברוך הבא, ' + name) : ('Welcome, ' + name);
+      }
+      const overviewDesc = document.querySelector('#overview > p.muted');
+      if (overviewDesc) {
+        const badge = overviewDesc.querySelector('.plan-overview-badge');
+        const badgeHTML = badge ? badge.outerHTML : '';
+        overviewDesc.innerHTML = (isHe
+          ? 'ביצועים בזמן אמת עבור סקרים, שאלונים והיענות אזרחים.'
+          : 'Live sovereign performance for your active polls, surveys, and citizen responses.')
+          + (badgeHTML ? (' ' + badgeHTML) : '');
+      }
+
+      // KPIs
+      const kpiMap = {
+        'kpi-polls':        { en: 'Active polls',      he: 'סקרים פעילים' },
+        'kpi-votes':        { en: 'Total poll votes',   he: 'סה״כ קולות בסקרים' },
+        'kpi-active':       { en: 'Active surveys',     he: 'שאלונים פעילים' },
+        'kpi-responses':    { en: 'Survey responses',   he: 'מענים לשאלונים' },
+        'kpi-turnout-rate': { en: 'Turnout Rate',       he: 'אחוז הצבעה' }
+      };
+      Object.entries(kpiMap).forEach(([id, labels]) => {
+        const kpiEl = document.getElementById(id);
+        if (kpiEl) {
+          const spanLabel = kpiEl.closest('.kpi')?.querySelector('span');
+          if (spanLabel) spanLabel.textContent = isHe ? labels.he : labels.en;
+        }
+      });
+      // "See details" link in turnout KPI
+      const seeDetailsDiv = document.querySelector('#kpi-turnout-rate')?.closest('.kpi')?.querySelector('div[style]');
+      if (seeDetailsDiv && (seeDetailsDiv.textContent.includes('See details') || seeDetailsDiv.textContent.includes('צפה בפרטים'))) {
+        seeDetailsDiv.innerHTML = isHe ? 'צפה בפרטים &larr;' : 'See details &rarr;';
+      }
+
+      // Charts
+      document.querySelectorAll('#overview .panel h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t === 'Responses by survey' || t === 'מענים לפי שאלון') h2.textContent = isHe ? 'מענים לפי שאלון' : 'Responses by survey';
+        if (t === 'Monthly response activity' || t === 'פעילות מענה חודשית') h2.textContent = isHe ? 'פעילות מענה חודשית' : 'Monthly response activity';
+        if (t === 'Notifications' || t === 'התראות') h2.textContent = isHe ? 'התראות' : 'Notifications';
+      });
+
+      // Recent Citizen Responses & Ballots
+      document.querySelectorAll('#overview h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t.includes('Recent Citizen') || t.includes('תגובות אזרחיות אחרונות')) {
+          h2.textContent = isHe ? 'תגובות אזרחיות אחרונות והצבעות' : 'Recent Citizen Responses & Ballots';
+        }
+      });
+      const liveFeedDesc = document.querySelector('#overview .toolbar')?.closest('.panel')?.querySelector('.muted');
+      if (liveFeedDesc && (liveFeedDesc.textContent.includes('Live feed') || liveFeedDesc.textContent.includes('עדכון חי'))) {
+        liveFeedDesc.textContent = isHe ? 'עדכון חי של הצבעות מאומתות ומענים לשאלונים בכל הקמפיינים שלך.' : 'Live feed of verified votes and survey submissions across your campaigns.';
+      }
+      document.querySelectorAll('#overview .toolbar button').forEach(btn => {
+        const t = btn.textContent.trim();
+        if (t.includes('View all responses') || t.includes('צפה בכל התגובות')) {
+          btn.innerHTML = isHe ? 'צפה בכל התגובות &larr;' : 'View all responses &rarr;';
+        }
+      });
+
+      // Loading / empty states
+      document.querySelectorAll('.empty').forEach(el => {
+        const t = el.textContent.trim();
+        const emptyMap = {
+          'Loading live data...': 'טוען נתונים חיים...',
+          'Loading recent responses...': 'טוען תגובות אחרונות...',
+          'Loading responses...': 'טוען תגובות...',
+          'Loading polls...': 'טוען סקרים...',
+          'Loading surveys...': 'טוען שאלונים...',
+          'Loading turnout analytics...': 'טוען ניתוח אחוזי הצבעה...',
+          'Loading responses grid...': 'טוען תצוגת רשת...',
+          'Loading...': 'טוען...',
+          'No response data yet.': 'אין עדיין נתוני מענה.',
+          'No notifications yet': 'אין התראות עדיין'
+        };
+        if (isHe && emptyMap[t]) el.textContent = emptyMap[t];
+        if (!isHe) {
+          const revMap = {};
+          Object.entries(emptyMap).forEach(([en, he]) => { revMap[he] = en; });
+          if (revMap[t]) el.textContent = revMap[t];
+        }
+      });
+
+      // === RESPONSES & VOTES SECTION ===
+      document.querySelectorAll('#responses h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t.includes('Responses & Verifiable') || t.includes('תגובות ופתקי הצבעה')) {
+          h2.textContent = isHe ? 'תגובות ופתקי הצבעה מאומתים' : 'Responses & Verifiable Ballots';
+        }
+      });
+      const responsesDesc = document.querySelector('#responses .muted');
+      if (responsesDesc && (responsesDesc.textContent.includes('Audit individual') || responsesDesc.textContent.includes('בדוק תגובות'))) {
+        responsesDesc.textContent = isHe ? 'בדוק תגובות אזרחיות בודדות, בדוק קבלות קריפטוגרפיות וייצא מערכי נתונים מקיפים.' : 'Audit individual citizen responses, inspect cryptographic receipts, and export comprehensive datasets.';
+      }
+
+      // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const f = btn.getAttribute('data-filter');
+        const countSpan = btn.querySelector('span');
+        const count = countSpan ? countSpan.textContent : '0';
+        if (f === 'all') btn.innerHTML = isHe ? ('הכל (<span id="count-all">' + count + '</span>)') : ('All (<span id="count-all">' + count + '</span>)');
+        if (f === 'poll') btn.innerHTML = isHe ? ('הצבעות בסקרים (<span id="count-polls">' + count + '</span>)') : ('Poll Ballots (<span id="count-polls">' + count + '</span>)');
+        if (f === 'survey') btn.innerHTML = isHe ? ('שאלונים (<span id="count-surveys">' + count + '</span>)') : ('Surveys (<span id="count-surveys">' + count + '</span>)');
+      });
+
+      // Search placeholder
+      const searchInput = document.getElementById('response-search-input');
+      if (searchInput) searchInput.placeholder = isHe ? 'חיפוש לפי קמפיין, כינוי, בחירה או מענה...' : 'Search by campaign, pseudonym, choice, or answer...';
+
+      // View toggle buttons
+      document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        const t = btn.textContent.trim();
+        if (t === 'List' || t === 'רשימה') btn.childNodes[btn.childNodes.length - 1].textContent = isHe ? '\n                    רשימה\n                  ' : '\n                    List\n                  ';
+        if (t === 'Grid' || t === 'רשת') btn.childNodes[btn.childNodes.length - 1].textContent = isHe ? '\n                    רשת\n                  ' : '\n                    Grid\n                  ';
+      });
+
+      // Table headers
+      const thMap = {
+        'Type': 'סוג',
+        'Campaign': 'קמפיין / כותרת',
+        'Campaign / Title': 'קמפיין / כותרת',
+        'Voter Details': 'פרטי מצביע',
+        'Recorded Choice / Response': 'בחירה / מענה שנרשם',
+        'Device & OS': 'מכשיר ומערכת הפעלה',
+        'Location Verification': 'אימות מיקום',
+        'Timestamp': 'חותמת זמן',
+        'Actions': 'פעולות',
+        'Campaign Title': 'כותרת קמפיין',
+        'Category / Track': 'קטגוריה / מסלול',
+        'Target Quota': 'מכסת יעד',
+        'Submissions': 'הגשות',
+        'Turnout Progress': 'התקדמות הצבעה',
+        'Status': 'סטטוס',
+        'Title': 'כותרת',
+        'Category': 'קטגוריה',
+        'Total Votes': 'סה״כ קולות',
+        'Ballots': 'פתקים',
+        'Responses': 'מענים',
+        'Questions': 'שאלות'
+      };
+      const revThMap = {};
+      Object.entries(thMap).forEach(([en, he]) => { revThMap[he] = en; });
+      document.querySelectorAll('.data-table th').forEach(th => {
+        const t = th.textContent.trim();
+        if (isHe && thMap[t]) th.textContent = thMap[t];
+        if (!isHe && revThMap[t]) th.textContent = revThMap[t];
+      });
+
+      // === TURNOUT & QUOTAS SECTION ===
+      document.querySelectorAll('#turnout h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t.includes('Turnout') || t.includes('אחוזי הצבעה')) {
+          h2.textContent = isHe ? 'ניתוח אחוזי הצבעה ומכסות' : 'Turnout & Quota Analytics';
+        }
+      });
+      const turnoutDesc = document.querySelector('#turnout .muted');
+      if (turnoutDesc && (turnoutDesc.textContent.includes('Track real-time turnout') || turnoutDesc.textContent.includes('עקוב אחר ביצועי'))) {
+        turnoutDesc.textContent = isHe ? 'עקוב אחר ביצועי אחוזי הצבעה בזמן אמת מול מכסות יעד דגימה לסקרים ושאלונים פעילים.' : 'Track real-time turnout performance against target sample quotas across your active polls and surveys.';
+      }
+      // Turnout cards
+      const turnoutVelocityH3 = document.querySelector('#turnout h3');
+      if (turnoutVelocityH3) {
+        const t = turnoutVelocityH3.textContent.trim();
+        if (t.includes('Turnout Velocity') || t.includes('קצב הצבעה')) turnoutVelocityH3.textContent = isHe ? 'קצב הצבעה ומד השתתפות' : 'Turnout Velocity & Gauge';
+      }
+      document.querySelectorAll('#turnout h3').forEach(h3 => {
+        const t = h3.textContent.trim();
+        if (t.includes('Quota Composition') || t.includes('הרכב מכסה')) h3.textContent = isHe ? 'הרכב מכסה' : 'Quota Composition';
+        if (t.includes('Campaign Performance') || t.includes('ביצועי קמפיינים')) h3.textContent = isHe ? 'ביצועי קמפיינים' : 'Campaign Performance';
+      });
+      // Turnout card subtexts
+      document.querySelectorAll('#turnout .muted').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.includes('Real-time participation rate') || t.includes('שיעור השתתפות בזמן אמת')) el.textContent = isHe ? 'שיעור השתתפות בזמן אמת ועקומת תנופה' : 'Real-time participation rate & momentum curve';
+        if (t.includes('Ballots vs surveys') || t.includes('הצבעות מול שאלונים')) el.textContent = isHe ? 'הצבעות מול שאלונים מול יתרת מכסה' : 'Ballots vs surveys vs remaining quota';
+        if (t.includes('Turnout progress across') || t.includes('התקדמות הצבעה')) el.textContent = isHe ? 'התקדמות הצבעה במסלולים הפעילים שלך' : 'Turnout progress across your active tracks';
+      });
+      // Turnout graph labels
+      document.querySelectorAll('#turnout span.muted').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.startsWith('Submissions:') || t.startsWith('הגשות:')) {
+          const strong = el.querySelector('strong');
+          const val = strong ? strong.outerHTML : '';
+          el.innerHTML = (isHe ? 'הגשות: ' : 'Submissions: ') + val;
+        }
+        if (t.startsWith('Target Quota:') || t.startsWith('מכסת יעד:')) {
+          const strong = el.querySelector('strong');
+          const val = strong ? strong.outerHTML : '';
+          el.innerHTML = (isHe ? 'מכסת יעד: ' : 'Target Quota: ') + val;
+        }
+        if (t.startsWith('Rate:') || t.startsWith('אחוז:')) {
+          const strong = el.querySelector('strong');
+          const val = strong ? strong.outerHTML : '';
+          el.innerHTML = (isHe ? 'אחוז: ' : 'Rate: ') + val;
+        }
+      });
+      // Target threshold label
+      document.querySelectorAll('#turnout span').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.includes('Target threshold') || t.includes('סף יעד')) el.innerHTML = isHe ? 'סף יעד: <strong>70%</strong>' : 'Target threshold: <strong>70%</strong>';
+        if (t === 'All campaigns' || t === 'כל הקמפיינים') el.textContent = isHe ? 'כל הקמפיינים' : 'All campaigns';
+      });
+      // Turnout badges
+      document.querySelectorAll('#turnout .plan-overview-badge').forEach(badge => {
+        const t = badge.textContent.trim();
+        if (t === 'Active' || t === 'פעיל') badge.textContent = isHe ? 'פעיל' : 'Active';
+        if (t === 'Distribution' || t === 'התפלגות') badge.textContent = isHe ? 'התפלגות' : 'Distribution';
+      });
+      const tracksCountBadge = document.getElementById('user-turnout-bars-count');
+      if (tracksCountBadge) {
+        const t = tracksCountBadge.textContent.trim();
+        const num = parseInt(t) || 0;
+        tracksCountBadge.textContent = isHe ? (num + ' מסלולים') : (num + ' Tracks');
+      }
+
+      // === POLLS SECTION ===
+      document.querySelectorAll('#polls h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t.includes('My sovereign polls') || t.includes('הסקרים הריבוניים שלי')) h2.textContent = isHe ? 'הסקרים הריבוניים שלי' : 'My sovereign polls';
+      });
+
+      // === SURVEYS SECTION ===
+      document.querySelectorAll('#surveys h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t.includes('My surveys') || t.includes('השאלונים שלי')) h2.textContent = isHe ? 'השאלונים והאינטראקציות שלי' : 'My surveys and interactions';
+      });
+
+      // === PROFILE SECTION ===
+      document.querySelectorAll('#profile h2').forEach(h2 => {
+        const t = h2.textContent.trim();
+        if (t === 'Profile Details' || t === 'פרטי פרופיל') h2.textContent = isHe ? 'פרטי פרופיל' : 'Profile Details';
+        if (t === 'Change password' || t === 'שינוי סיסמה') h2.textContent = isHe ? 'שינוי סיסמה' : 'Change password';
+        if (t.includes('My Plan') || t.includes('המסלול והמנוי')) h2.textContent = isHe ? 'המסלול והמנוי שלי' : 'My Plan & Subscription';
+      });
+      // Profile form labels
+      document.querySelectorAll('#profile label').forEach(lbl => {
+        const f = lbl.getAttribute('for');
+        if (f === 'full-name') lbl.textContent = isHe ? 'שם מלא' : 'Full name';
+        if (f === 'organization') lbl.textContent = isHe ? 'ארגון' : 'Organization';
+        if (f === 'old-password') lbl.textContent = isHe ? 'סיסמה נוכחית' : 'Current password';
+        if (f === 'new-password') lbl.textContent = isHe ? 'סיסמה חדשה' : 'New password';
+      });
+      // Profile form submit buttons
+      document.querySelectorAll('#profile form button[type="submit"]').forEach(btn => {
+        const t = btn.textContent.trim();
+        if (t === 'Save profile' || t === 'שמור פרופיל') btn.textContent = isHe ? 'שמור פרופיל' : 'Save profile';
+        if (t === 'Change password' || t === 'שנה סיסמה') btn.textContent = isHe ? 'שנה סיסמה' : 'Change password';
+      });
+      // Plan section text
+      const planSubDesc = document.querySelector('#profile .plan-current-card')?.closest('.panel')?.querySelector('p.muted');
+      if (planSubDesc && (planSubDesc.textContent.includes('All plans include') || planSubDesc.textContent.includes('כל המסלולים כוללים'))) {
+        planSubDesc.textContent = isHe ? 'כל המסלולים כוללים את אותם הכלים. השווה מגבלות פרסום סקרים ויעדי משתתפים לכל סקר.' : 'All plans include the same tools. Compare poll publishing limits and participant targets per poll.';
+      }
+      // Current Plan label
+      const planTierLabel = document.querySelector('.plan-tier-label');
+      if (planTierLabel) planTierLabel.textContent = isHe ? 'מסלול נוכחי' : 'Current Plan';
+      // Quota labels
+      document.querySelectorAll('.quota-label').forEach(el => {
+        const t = el.textContent.trim();
+        if (t === 'Participant Target Per Poll' || t === 'יעד משתתפים לסקר') el.textContent = isHe ? 'יעד משתתפים לסקר' : 'Participant Target Per Poll';
+        if (t === 'Poll Publishing Limit' || t === 'מגבלת פרסום סקרים') el.textContent = isHe ? 'מגבלת פרסום סקרים' : 'Poll Publishing Limit';
+      });
+      // Available Plans heading
+      document.querySelectorAll('#profile h3').forEach(h3 => {
+        const t = h3.textContent.trim();
+        if (t === 'Available Plans' || t === 'מסלולים זמינים') h3.textContent = isHe ? 'מסלולים זמינים' : 'Available Plans';
+      });
+      const paidPlanNote = document.querySelector('#profile .panel > p.muted:last-of-type');
+      if (paidPlanNote && (paidPlanNote.textContent.includes('Paid plans use secure') || paidPlanNote.textContent.includes('מסלולים בתשלום'))) {
+        paidPlanNote.textContent = isHe ? 'מסלולים בתשלום משולמים מראש דרך M-Pesa או כרטיס ל-30 יום. חידושים ידניים.' : 'Paid plans use secure M-Pesa or card checkout and provide 30 days of access. Renewals are manual.';
+      }
+
+      // Upgrade cards - translate dynamic content
+      document.querySelectorAll('.upgrade-card').forEach(card => {
+        const tierTag = card.querySelector('.uc-tier-tag');
+        if (tierTag) {
+          const t = tierTag.textContent.trim();
+          if (t === 'Current Plan' || t === 'מסלול נוכחי') tierTag.textContent = isHe ? 'מסלול נוכחי' : 'Current Plan';
+          if (t === 'Available Plan' || t === 'מסלול זמין') tierTag.textContent = isHe ? 'מסלול זמין' : 'Available Plan';
+        }
+        const priceEl = card.querySelector('.uc-price');
+        if (priceEl && isHe) {
+          priceEl.innerHTML = priceEl.innerHTML.replace(/KES\s*499/g, '₪15').replace(/KES\s*899/g, '₪29').replace(/Free/g, 'חינם');
+        }
+        if (priceEl && !isHe) {
+          priceEl.innerHTML = priceEl.innerHTML.replace(/₪15/g, 'KES 499').replace(/₪29/g, 'KES 899').replace(/חינם/g, 'Free');
+        }
+        const descEl = card.querySelector('.uc-desc');
+        if (descEl) {
+          const dt = descEl.textContent.trim();
+          if (isHe) {
+            descEl.textContent = dt.replace(/poll publishing limit/gi, 'מגבלת פרסום סקרים').replace(/participant target per poll/gi, 'יעד משתתפים לסקר');
+          } else {
+            descEl.textContent = dt.replace(/מגבלת פרסום סקרים/g, 'poll publishing limit').replace(/יעד משתתפים לסקר/g, 'participant target per poll');
+          }
+        }
+        // Upgrade button text
+        card.querySelectorAll('.btn-upgrade').forEach(btn => {
+          const t = btn.textContent.trim();
+          if (t === 'Active Plan' || t === 'מסלול פעיל') btn.textContent = isHe ? 'מסלול פעיל' : 'Active Plan';
+          if (t === 'Included in Tier' || t === 'כלול במסלול') btn.textContent = isHe ? 'כלול במסלול' : 'Included in Tier';
+          if (t === 'Legacy plan unavailable' || t === 'מסלול ישן לא זמין') btn.textContent = isHe ? 'מסלול ישן לא זמין' : 'Legacy plan unavailable';
+          if (t.includes('Renew') || t.includes('חדש')) {
+            const name = t.replace(/Renew\s*/, '').replace(/חדש\s*/, '').replace(/→|←/g, '').trim();
+            btn.innerHTML = isHe ? ('חדש ' + name + ' &larr;') : ('Renew ' + name + ' &rarr;');
+          }
+          if (t.includes('Upgrade to') || t.includes('שדרג ל')) {
+            const name = t.replace(/Upgrade to\s*/, '').replace(/שדרג ל-?\s*/, '').replace(/→|←/g, '').trim();
+            btn.innerHTML = isHe ? ('שדרג ל-' + name + ' &larr;') : ('Upgrade to ' + name + ' &rarr;');
+          }
+        });
+      });
+
+      // Plan checkout notice
+      const upgradeNotice = document.getElementById('upgrade-notice');
+      if (upgradeNotice) {
+        const t = upgradeNotice.textContent.trim();
+        if (t.includes('Secure checkout is available') || t.includes('תשלום מאובטח זמין')) {
+          upgradeNotice.textContent = isHe ? 'תשלום מאובטח זמין. מסלולים בתשלום ל-30 יום עם חידוש ידני.' : 'Secure checkout is available. Paid plans last 30 days and renew manually.';
+        }
+        if (t.includes('M-Pesa and card checkout is being') || t.includes('תשלום M-Pesa וכרטיס')) {
+          upgradeNotice.textContent = isHe ? 'תשלום M-Pesa וכרטיס בתהליך הגדרה. לא ניתן לשנות מסלול עד לאימות תשלום.' : 'M-Pesa and card checkout is being configured. No plan can change until a payment is verified.';
+        }
+        if (t.includes('Plan checkout is temporarily') || t.includes('תשלום מסלולים אינו זמין')) {
+          upgradeNotice.textContent = isHe ? 'תשלום מסלולים אינו זמין זמנית. לא בוצע שינוי מסלול.' : 'Plan checkout is temporarily unavailable. No plan has been changed.';
+        }
+      }
+
+      // Response Detail Modal
+      const modalTitle = document.getElementById('modalTitle');
+      if (modalTitle) {
+        const t = modalTitle.textContent.trim();
+        if (t === 'Response Verification' || t === 'אימות מענה') modalTitle.textContent = isHe ? 'אימות מענה' : 'Response Verification';
+      }
+
+      // Plan Payment Modal
+      const payModalTitle = document.querySelector('#planPaymentModal .modal-header h3');
+      if (payModalTitle) {
+        const t = payModalTitle.textContent.trim();
+        if (t.includes('Plan Upgrade') || t.includes('שדרוג מסלול')) payModalTitle.textContent = isHe ? 'שדרוג מסלול ותשלום מאובטח' : 'Plan Upgrade & Sovereign Checkout';
+      }
+
+      // Global KES sweep for Hebrew mode
+      if (isHe) {
+        document.querySelectorAll('.uc-price, .plan-quota-item, #paymentModalBody').forEach(el => {
+          if (el.innerHTML.includes('KES')) {
+            el.innerHTML = el.innerHTML.replace(/KES\s*499/g, '₪15').replace(/KES\s*899/g, '₪29').replace(/KES\s+/g, '');
+          }
+        });
+      }
+
+      // === CREATE.HTML WIZARD ===
+      const backLink = document.getElementById('btn-back-link');
+      if (backLink) {
+        backLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> ${isHe ? 'חזרה ללוח הבקרה' : 'Back to Dashboard'}`;
+      }
+      const draftAutosaveText = document.getElementById('draft-autosave-text');
+      if (draftAutosaveText) {
+        const t = draftAutosaveText.textContent.trim();
+        if (t === 'Auto-save ready' || t === 'שמירה אוטומטית מוכנה') draftAutosaveText.textContent = isHe ? 'שמירה אוטומטית מוכנה' : 'Auto-save ready';
+        if (t === 'Draft saved' || t === 'טיוטה נשמרה') draftAutosaveText.textContent = isHe ? 'טיוטה נשמרה' : 'Draft saved';
+      }
+
+      // Step labels
+      document.querySelectorAll('.step-label').forEach(lbl => {
+        const t = lbl.textContent.trim();
+        if (t === 'Type & Track' || t === 'סוג ומסלול') lbl.innerHTML = isHe ? 'סוג ומסלול' : 'Type &amp; Track';
+        if (t === 'Build Questions' || t === 'בניית שאלות') lbl.textContent = isHe ? 'בניית שאלות' : 'Build Questions';
+        if (t === 'Review & Publish' || t === 'סקירה ופרסום') lbl.innerHTML = isHe ? 'סקירה ופרסום' : 'Review &amp; Publish';
+      });
+
+      // Panel 1
+      document.querySelectorAll('#panel-1 .panel-title').forEach(el => {
+        const t = el.textContent.trim();
+        if (t === 'What would you like to create?' || t === 'מה ברצונך ליצור?') el.textContent = isHe ? 'מה ברצונך ליצור?' : 'What would you like to create?';
+        if (t === 'Start from a Template' || t === 'התחל מתבנית מוכנה') el.textContent = isHe ? 'התחל מתבנית מוכנה' : 'Start from a Template';
+      });
+      document.querySelectorAll('#panel-1 .panel-desc').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.includes('Select whether you are authoring') || t.includes('בחר האם ברצונך')) {
+          el.textContent = isHe ? 'בחר האם ברצונך לחבר שאלון רב-שלבי מקיף או סקר הצבעה חד-שלבי מיידי.' : 'Select whether you are authoring a comprehensive multi-step survey or an instant single-question ballot.';
+        }
+        if (t.includes('Select a pre-built institutional') || t.includes('בחר תבנית מוסדית')) {
+          el.textContent = isHe ? 'בחר תבנית מוסדית מוכנה מראש ממאגר הנתונים, או התחל מאפס.' : 'Select a pre-built institutional template populated from the database, or build from scratch.';
+        }
+      });
+      document.querySelectorAll('.type-card-title').forEach(el => {
+        const t = el.textContent.trim();
+        if (t === 'Multi-Step Survey' || t === 'שאלון רב-שלבי') el.textContent = isHe ? 'שאלון רב-שלבי' : 'Multi-Step Survey';
+        if (t === 'Single Poll Ballot' || t === 'סקר / משאל עם יחיד') el.textContent = isHe ? 'סקר / משאל עם יחיד' : 'Single Poll Ballot';
+        if (t === 'Start from Scratch' || t === 'התחל מאפס') el.textContent = isHe ? 'התחל מאפס' : 'Start from Scratch';
+      });
+      document.querySelectorAll('.type-card-desc').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.includes('Questionnaires supporting choice') || t.includes('שאלונים התומכים')) {
+          el.textContent = isHe ? 'שאלונים התומכים בבחירה מרובה, סולמות דירוג ושדות טקסט פתוח.' : 'Questionnaires supporting choice options, rating scales, and open free-text input fields.';
+        }
+        if (t.includes('Targeted civic referendum') || t.includes('משאל עם אזרחי ממוקד')) {
+          el.textContent = isHe ? 'משאל עם אזרחי ממוקד עם אפשרויות בחירה לספירה מיידית ברישום הריבוני.' : 'Targeted civic referendum with choice options for immediate tallying on the sovereign ledger.';
+        }
+        if (t.includes('Design custom questions') || t.includes('עצב שאלות ושדות')) {
+          el.textContent = isHe ? 'עצב שאלות ושדות מותאמים אישית מלוח חלק' : 'Design custom questions and fields from an empty canvas';
+        }
+      });
+      const wizTitleInput = document.getElementById('wizard-title');
+      if (wizTitleInput) wizTitleInput.placeholder = isHe ? 'לדוגמה: שדרוג תשתיות ושירותים קהילתיים 2026' : 'e.g. Sub-County Infrastructure & Ward Priorities 2026';
+      const titleHint = document.getElementById('title-char-hint');
+      if (titleHint) titleHint.textContent = isHe ? 'מינימום 3 תווים, מקסימום 200 תווים' : 'Min 3 characters, max 200 characters';
+      const wizDescInput = document.getElementById('wizard-desc');
+      if (wizDescInput) wizDescInput.placeholder = isHe ? 'תאר בקצרה את היעדים, היקף האוכלוסייה או ההקשר האזרחי...' : 'Briefly state objectives, precinct scope, or civic context...';
+      const descHint = document.getElementById('desc-char-hint');
+      if (descHint) descHint.textContent = isHe ? 'מינימום 5 תווים, מקסימום 2000 תווים' : 'Min 5 characters, max 2000 characters';
+      const trackCustomInput = document.getElementById('wizard-track-custom');
+      if (trackCustomInput) trackCustomInput.placeholder = isHe ? 'הזן את שם הקטגוריה' : 'Enter your category';
+      const step1Validation = document.getElementById('step1-validation-msg');
+      if (step1Validation) {
+        step1Validation.textContent = isHe ? 'נדרשת כותרת (לפחות 3 תווים) ותיאור (לפחות 5 תווים)' : 'Title (min 3 chars) and description (min 5 chars) required';
+      }
+      const btnStep1Next = document.getElementById('btn-step1-next');
+      if (btnStep1Next) {
+        btnStep1Next.innerHTML = `${isHe ? 'המשך לשאלות' : 'Continue to Questions'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
+      }
+
+      // Panel 2
+      document.querySelectorAll('#panel-2 .panel-title').forEach(el => {
+        const t = el.textContent.trim();
+        if (t === 'Questions Configuration' || t === 'הגדרת שאלות') el.textContent = isHe ? 'הגדרת שאלות' : 'Questions Configuration';
+      });
+      document.querySelectorAll('#panel-2 .panel-desc').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.includes('Configure questions, input formats') || t.includes('הגדר שאלות, פורמטים')) {
+          el.textContent = isHe ? 'הגדר שאלות, פורמטים של תשובות ואפשרויות בחירה.' : 'Configure questions, input formats, and choices.';
+        }
+      });
+      const previewHeader = document.querySelector('.preview-header');
+      if (previewHeader) {
+        previewHeader.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${isHe ? 'תצוגה מקדימה חיה של ההצבעה' : 'LIVE BALLOT PREVIEW'}`;
+      }
+      const previewQuestionsEmpty = document.querySelector('#preview-questions > div');
+      if (previewQuestionsEmpty && (previewQuestionsEmpty.textContent.includes('Add questions') || previewQuestionsEmpty.textContent.includes('הוסף שאלות'))) {
+        previewQuestionsEmpty.textContent = isHe ? 'הוסף שאלות כדי לראות תצוגה מקדימה בזמן אמת.' : 'Add questions to see real-time preview.';
+      }
+      const step2Validation = document.getElementById('step2-validation-msg');
+      if (step2Validation) {
+        step2Validation.textContent = isHe ? 'השלם את ניסוח השאלה (מינימום 3 תווים)' : 'Complete question prompt (min 3 chars)';
+      }
+      const btnStep2Next = document.getElementById('btn-step2-next');
+      if (btnStep2Next) {
+        btnStep2Next.innerHTML = `${isHe ? 'סקירה ופרסום' : 'Review & Publish'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
+      }
+
+      // Panel 3
+      document.querySelectorAll('#panel-3 .panel-title').forEach(el => {
+        const t = el.textContent.trim();
+        if (t === 'Review & Publish' || t === 'סקירה ופרסום') el.textContent = isHe ? 'סקירה ופרסום' : 'Review & Publish';
+      });
+      document.querySelectorAll('#panel-3 .panel-desc').forEach(el => {
+        const t = el.textContent.trim();
+        if (t.includes('Verify ballot parameters') || t.includes('אמת את פרמטרי ההצבעה')) {
+          el.textContent = isHe ? 'אמת את פרמטרי ההצבעה, יעדי ההשתתפות והגדרות הרישום הקריפטוגרפי.' : 'Verify ballot parameters, target response thresholds, and cryptographic Merkle ledger configuration.';
+        }
+        if (t.includes('Set an expected number') || t.includes('הגדר מספר מענים')) {
+          el.textContent = isHe ? 'הגדר מספר מענים צפוי אם ידוע לך. אין צורך להעריך את גודל הקהל.' : 'Set an expected number of responses if you know it. You do not need to estimate your audience size.';
+        }
+      });
+      const wizardTargetInput = document.getElementById('wizard-target');
+      if (wizardTargetInput) wizardTargetInput.placeholder = isHe ? 'השאר ריק אם אינו ידוע' : 'Leave blank if unknown';
+      const infoBox = document.querySelector('.info-box');
+      if (infoBox && (infoBox.textContent.includes('Public voting links') || infoBox.textContent.includes('קישורי הצבעה'))) {
+        infoBox.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${isHe ? 'קישורי הצבעה ציבוריים, טלמטריית משקיפים ורישום המרקל יופעלו מיידית עם השמירה במאגר הנתונים.' : 'Public voting links, observer telemetry, and Merkle root will be activated immediately upon DB persistence.'}`;
+      }
+      const btnPublish = document.getElementById('btn-publish');
+      if (btnPublish) {
+        btnPublish.textContent = isHe ? 'אשר ופרסם למאגר הנתונים עכשיו' : 'Confirm & Publish to Database Now';
+      }
+      document.querySelectorAll('.btn-secondary').forEach(btn => {
+        const t = btn.textContent.trim();
+        if (t === 'Back' || t === 'חזרה') {
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> ${isHe ? 'חזרה' : 'Back'}`;
+        }
+        if (t === 'Back to Edit' || t === 'חזרה לעריכה') {
+          btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> ${isHe ? 'חזרה לעריכה' : 'Back to Edit'}`;
+        }
+      });
+
+      // Form labels in create wizard
+      document.querySelectorAll('.form-label').forEach(lbl => {
+        const t = lbl.textContent.trim();
+        if (t === 'Title *' || t === 'כותרת *') lbl.textContent = isHe ? 'כותרת *' : 'Title *';
+        if (t === 'Category / Classification Track' || t === 'קטגוריה / מסלול סיווג') lbl.textContent = isHe ? 'קטגוריה / מסלול סיווג' : 'Category / Classification Track';
+        if (t === 'Description / Purpose *' || t === 'תיאור / מטרה *') lbl.textContent = isHe ? 'תיאור / מטרה *' : 'Description / Purpose *';
+        if (t === 'Target response goal (optional)' || t === 'יעד מענים (אופציונלי)') lbl.textContent = isHe ? 'יעד מענים (אופציונלי)' : 'Target response goal (optional)';
+        if (t === 'Active Duration (Hours)' || t === 'משך זמן פעיל (שעות)') lbl.textContent = isHe ? 'משך זמן פעיל (שעות)' : 'Active Duration (Hours)';
+      });
+      // Create wizard buttons
+      document.querySelectorAll('.btn-add').forEach(btn => {
+        const t = btn.textContent.trim();
+        if (t === '+ Add Question' || t === '+ הוסף שאלה') btn.textContent = isHe ? '+ הוסף שאלה' : '+ Add Question';
+      });
+
+      // Draft recovery banner
+      const draftBanner = document.getElementById('draft-recovery-banner');
+      if (draftBanner) {
+        draftBanner.querySelectorAll('button').forEach(btn => {
+          const t = btn.textContent.trim();
+          if (t === 'Discard Draft' || t === 'מחק טיוטה') btn.textContent = isHe ? 'מחק טיוטה' : 'Discard Draft';
+          if (t.includes('Continue Editing') || t.includes('המשך עריכה')) btn.innerHTML = isHe ? 'המשך עריכה &larr;' : 'Continue Editing &rarr;';
+        });
       }
     },
 

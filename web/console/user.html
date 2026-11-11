@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../favicon-180.png">
   <meta name="theme-color" content="#2E3035">
+  <script src="/js/core/i18n.js"></script>
   <style>
     /* =============================================================
        ICAPSQ — CLIENT CONSOLE DESIGN SYSTEM
@@ -2861,8 +2862,9 @@
     function renderOverviewRecentResponses() {
       const container = document.getElementById('overview-responses-container');
       if (!container) return;
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
       if (!allClientResponses.length) {
-        container.innerHTML = '<div class="empty">No citizen responses or ballots recorded yet across your campaigns.</div>';
+        container.innerHTML = `<div class="empty">${isHeMode ? 'אין עדיין תגובות אזרחיות או פתקי הצבעה שנרשמו בקמפיינים שלך.' : 'No citizen responses or ballots recorded yet across your campaigns.'}</div>`;
         renderPaginationControls({ containerId: 'overview-responses-pagination', totalItems: 0, currentPage: 1 });
         return;
       }
@@ -2880,20 +2882,20 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th style="width:85px;">Type</th>
-                <th>Campaign</th>
-                <th>Voter Details</th>
-                <th>Recorded Choice / Response</th>
-                <th>Device &amp; OS</th>
-                <th>Location Verification</th>
-                <th>Timestamp</th>
-                <th style="text-align:right;">Details</th>
+                <th style="width:85px;">${isHeMode ? 'סוג' : 'Type'}</th>
+                <th>${isHeMode ? 'קמפיין' : 'Campaign'}</th>
+                <th>${isHeMode ? 'פרטי מצביע' : 'Voter Details'}</th>
+                <th>${isHeMode ? 'בחירה / מענה שנרשם' : 'Recorded Choice / Response'}</th>
+                <th>${isHeMode ? 'מכשיר ומערכת הפעלה' : 'Device &amp; OS'}</th>
+                <th>${isHeMode ? 'אימות מיקום' : 'Location Verification'}</th>
+                <th>${isHeMode ? 'חותמת זמן' : 'Timestamp'}</th>
+                <th style="text-align:right;">${isHeMode ? 'פרטים' : 'Details'}</th>
               </tr>
             </thead>
             <tbody>
               ${pageItems.map(item => `
                 <tr>
-                  <td><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Vote' : 'Survey'}</span></td>
+                  <td><span class="type-badge ${item.type}">${item.type === 'poll' ? (isHeMode ? 'קול בסקר' : 'Poll Vote') : (isHeMode ? 'מענה לשאלון' : 'Survey')}</span></td>
                   <td><strong>${esc(item.title)}</strong></td>
                   <td>
                     <div style="font-weight:700; font-size:12.5px; color:var(--text-main);">${esc(item.voterName || 'USER@LOCATION1')}</div>
@@ -2906,12 +2908,12 @@
                     <div style="font-size:11px; color:var(--text-muted);">${esc(item.deviceOS || 'Web/Mobile OS')}</div>
                   </td>
                   <td>
-                    <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
-                    <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'}</div>
+                    <div style="font-size:12px; font-weight:700; color:var(--text-main);">${isHeMode ? `מחוז ${esc(item.county || 'Nairobi')}` : `${esc(item.county || 'Nairobi')} County`}</div>
+                    <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? (isHeMode ? `דיוק של ±${Math.round(Number(item.accuracy))} מטרים` : `±${Math.round(Number(item.accuracy))}m accuracy`) : (isHeMode ? 'מיקום מכשיר מאומת' : 'Device location verified')}</div>
                   </td>
                   <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(formatLocalExactTimestamp(item.timestamp))}</td>
                   <td style="text-align:right; white-space:nowrap;">
-                    <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
+                    <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">${isHeMode ? 'צפה' : 'View'}</button>
                   </td>
                 </tr>
               `).join('')}
@@ -2936,9 +2938,11 @@
       const tbody = document.getElementById('responses-table-body');
       if (!tbody || !gridView) return;
 
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
+
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="empty" style="text-align:center; padding:32px 16px;">No responses matching filter criteria.</td></tr>';
-        gridView.innerHTML = '<div class="empty" style="grid-column:1/-1; text-align:center; padding:32px 16px;">No responses matching filter criteria.</div>';
+        tbody.innerHTML = `<tr><td colspan="8" class="empty" style="text-align:center; padding:32px 16px;">${isHeMode ? 'לא נמצאו תגובות התואמות את קריטריוני הסינון.' : 'No responses matching filter criteria.'}</td></tr>`;
+        gridView.innerHTML = `<div class="empty" style="grid-column:1/-1; text-align:center; padding:32px 16px;">${isHeMode ? 'לא נמצאו תגובות התואמות את קריטריוני הסינון.' : 'No responses matching filter criteria.'}</div>`;
         renderPaginationControls({ containerId: 'responses-pagination', totalItems: 0, currentPage: 1 });
         return;
       }
@@ -2957,7 +2961,7 @@
         gridView.hidden = true;
         tbody.innerHTML = pageItems.map(item => `
           <tr>
-            <td><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Vote' : 'Survey'}</span></td>
+            <td><span class="type-badge ${item.type}">${item.type === 'poll' ? (isHeMode ? 'קול בסקר' : 'Poll Vote') : (isHeMode ? 'מענה לשאלון' : 'Survey')}</span></td>
             <td><strong>${esc(item.title)}</strong></td>
             <td>
               <div style="font-weight:700; font-size:12.5px; color:var(--text-main);">${esc(item.voterName || 'USER@LOCATION1')}</div>
@@ -2970,12 +2974,12 @@
               <div style="font-size:11px; color:var(--text-muted);">${esc(item.deviceOS || 'Web/Mobile OS')}</div>
             </td>
             <td>
-              <div style="font-size:12px; font-weight:700; color:var(--text-main);">${esc(item.county || 'Nairobi')} County</div>
-              <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'}</div>
+              <div style="font-size:12px; font-weight:700; color:var(--text-main);">${isHeMode ? `מחוז ${esc(item.county || 'Nairobi')}` : `${esc(item.county || 'Nairobi')} County`}</div>
+              <div style="font-size:10.5px; color:var(--text-muted);">${item.accuracy != null ? (isHeMode ? `דיוק של ±${Math.round(Number(item.accuracy))} מטרים` : `±${Math.round(Number(item.accuracy))}m accuracy`) : (isHeMode ? 'מיקום מכשיר מאומת' : 'Device location verified')}</div>
             </td>
             <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">${esc(formatLocalExactTimestamp(item.timestamp))}</td>
             <td style="text-align:right; white-space:nowrap;">
-              <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View</button>
+              <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">${isHeMode ? 'צפה' : 'View'}</button>
             </td>
           </tr>
         `).join('');
@@ -2985,14 +2989,14 @@
         gridView.innerHTML = pageItems.map(item => `
           <div class="response-card-grid-item">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey'}</span>
+              <span class="type-badge ${item.type}">${item.type === 'poll' ? (isHeMode ? 'פתק הצבעה' : 'Poll Ballot') : (isHeMode ? 'שאלון' : 'Survey')}</span>
               <span style="font-size:11px; color:var(--text-muted);">${esc(formatLocalExactTimestamp(item.timestamp))}</span>
             </div>
             <div>
               <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:var(--text-main);">${esc(item.title)}</h4>
               <div style="display:flex; flex-direction:column; gap:2px; margin-top:4px;">
                 <span style="font-size:12.5px; font-weight:700; color:var(--text-main);">${esc(item.voterName || 'USER@LOCATION1')}</span>
-                <span style="font-size:11px; font-family:monospace; color:var(--text-muted);">National ID: ${esc(item.voterIdNumber || 'ID-28491038')} &middot; <span style="font-size:10px;">UID: ${esc((item.userId || item.respondent || '').slice(0, 16))}</span></span>
+                <span style="font-size:11px; font-family:monospace; color:var(--text-muted);">${isHeMode ? 'תעודת זהות:' : 'National ID:'} ${esc(item.voterIdNumber || 'ID-28491038')} &middot; <span style="font-size:10px;">UID: ${esc((item.userId || item.respondent || '').slice(0, 16))}</span></span>
               </div>
             </div>
             <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:8px; padding:10px; font-size:12px; color:var(--text-main); max-height:80px; overflow-y:auto; word-break:break-word;">
@@ -3000,16 +3004,16 @@
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px; background:#FAFAFA; border:1px solid #EEEEEE; border-radius:6px; padding:8px;">
               <div>
-                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">Device / OS</span>
+                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">${isHeMode ? 'מכשיר / מערכת הפעלה' : 'Device / OS'}</span>
                 <span style="font-weight:600; color:var(--text-main);">${esc(item.deviceName || 'Verified Device')} &middot; ${esc(item.deviceOS || 'OS')}</span>
               </div>
               <div>
-                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">Location Verification</span>
-                <span style="font-weight:600; color:var(--text-main);">${esc(item.county || 'Nairobi')} County · device location verified</span>
+                <span style="color:var(--text-muted); display:block; font-size:10px; text-transform:uppercase; font-weight:700;">${isHeMode ? 'אימות מיקום' : 'Location Verification'}</span>
+                <span style="font-weight:600; color:var(--text-main);">${isHeMode ? `מחוז ${esc(item.county || 'Nairobi')} · מיקום מכשיר מאומת` : `${esc(item.county || 'Nairobi')} County · device location verified`}</span>
               </div>
             </div>
             <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:4px;">
-              <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">View Details</button>
+              <button type="button" class="action-btn" onclick="openResponseDetailModal(${item._index})">${isHeMode ? 'צפה בפרטים' : 'View Details'}</button>
             </div>
           </div>
         `).join('');
@@ -3029,72 +3033,75 @@
       const item = allClientResponses[index];
       if (!item) return;
 
-      document.getElementById('modalTitle').textContent = item.type === 'poll' ? 'Verified Ballot Detail' : 'Survey Response Detail';
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
+      document.getElementById('modalTitle').textContent = isHeMode
+        ? (item.type === 'poll' ? 'פרטי פתק הצבעה מאומת' : 'פרטי מענה לשאלון')
+        : (item.type === 'poll' ? 'Verified Ballot Detail' : 'Survey Response Detail');
 
       const body = document.getElementById('modalBody');
       body.innerHTML = `
         <div style="margin-bottom:16px;">
-          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Campaign Title</div>
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">${isHeMode ? 'כותרת הקמפיין' : 'Campaign Title'}</div>
           <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-top:2px;">${esc(item.title)}</div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
           <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Participation Type</div>
-            <div style="font-weight:700; margin-top:4px;"><span class="type-badge ${item.type}">${item.type === 'poll' ? 'Poll Ballot' : 'Survey Submission'}</span></div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700;">${isHeMode ? 'סוג השתתפות' : 'Participation Type'}</div>
+            <div style="font-weight:700; margin-top:4px;"><span class="type-badge ${item.type}">${item.type === 'poll' ? (isHeMode ? 'פתק הצבעה' : 'Poll Ballot') : (isHeMode ? 'הגשת שאלון' : 'Survey Submission')}</span></div>
           </div>
           <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
-          <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Recorded Timestamp (EAT)</div>
+          <div style="font-size:11px; color:var(--text-muted); font-weight:700;">${isHeMode ? 'חותמת זמן שנרשמה' : 'Recorded Timestamp'}</div>
             <div style="font-weight:700; font-size:12.5px; margin-top:4px; color:var(--text-main);">${esc(formatLocalExactTimestamp(item.timestamp))}</div>
           </div>
         </div>
 
         <div style="background:#F8F8F8; border:1.5px solid #303030; padding:14px 16px; border-radius:12px; margin-bottom:18px;">
-          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.04em; margin-bottom:8px;">Voter Identity &amp; Citizen User ID</div>
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.04em; margin-bottom:8px;">${isHeMode ? 'זהות המצביע ומזהה משתמש אזרחי' : 'Voter Identity &amp; Citizen User ID'}</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
-              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Citizen Full Name</div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">${isHeMode ? 'שם מלא של האזרח' : 'Citizen Full Name'}</div>
               <div style="font-size:14px; font-weight:800; color:var(--text-main); margin-top:2px;">${esc(item.voterName || 'USER@LOCATION1')}</div>
             </div>
             <div>
-              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">National ID / Passport</div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">${isHeMode ? 'תעודת זהות / דרכון' : 'National ID / Passport'}</div>
               <div style="font-size:13.5px; font-weight:700; font-family:monospace; color:var(--text-main); margin-top:2px;">${esc(item.voterIdNumber || 'ID-28491038')}</div>
             </div>
           </div>
           <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #D0D0D0;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Assigned Citizen User ID (Device + Location Bound)</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:600;">${isHeMode ? 'מזהה משתמש אזרחי משויך (צמוד מכשיר ומיקום)' : 'Assigned Citizen User ID (Device + Location Bound)'}</div>
             <div style="font-size:12px; font-family:monospace; font-weight:700; color:var(--charcoal); word-break:break-all; margin-top:2px;">${esc(item.userId || item.respondent || '')}</div>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;">
           <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Device &amp; OS Telemetry</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">${isHeMode ? 'מכשיר ומערכת הפעלה' : 'Device &amp; OS Telemetry'}</div>
             <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:4px;">${esc(item.deviceName || 'Verified Device')}</div>
             <div style="font-size:11.5px; color:var(--text-sub); margin-top:2px;">${esc(item.deviceOS || 'Web / Mobile OS')}</div>
           </div>
           <div style="background:#F8F8F8; border:1px solid #EBEBEB; padding:12px 14px; border-radius:10px;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Location Verification</div>
-            <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:4px;">${esc(item.county || 'Nairobi')} County</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${item.accuracy != null ? `±${Math.round(Number(item.accuracy))}m accuracy` : 'Device location verified'} · Exact coordinates hidden</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">${isHeMode ? 'אימות מיקום' : 'Location Verification'}</div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:4px;">${isHeMode ? `מחוז ${esc(item.county || 'Nairobi')}` : `${esc(item.county || 'Nairobi')} County`}</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${item.accuracy != null ? (isHeMode ? `דיוק של ±${Math.round(Number(item.accuracy))} מטרים` : `±${Math.round(Number(item.accuracy))}m accuracy`) : (isHeMode ? 'מיקום מכשיר מאומת' : 'Device location verified')}</div>
           </div>
         </div>
 
         <div style="margin-bottom:18px;">
           <div style="font-size:12px; color:var(--text-main); font-weight:800; margin-bottom:8px;">
-            ${item.type === 'poll' ? 'Vote Cast' : 'Questions & Responses Breakdown'}
+            ${item.type === 'poll' ? (isHeMode ? 'הצבעה שנמסרה' : 'Vote Cast') : (isHeMode ? 'פירוט שאלות ותשובות' : 'Questions &amp; Responses Breakdown')}
           </div>
           <div style="border:1px solid #EBEBEB; border-radius:10px; padding:14px; background:#F8F9FA; color:var(--text-main);">
             ${item.type === 'poll'
-              ? `<div style="font-size:14px; font-weight:700; color:var(--charcoal);">Selected Option: ${esc(item.choice)}</div>`
+              ? `<div style="font-size:14px; font-weight:700; color:var(--charcoal);">${isHeMode ? 'אפשרות שנבחרה:' : 'Selected Option:'} ${esc(item.choice)}</div>`
               : (Array.isArray(item.details?.answers) && item.details.answers.length
                   ? item.details.answers.map((a, i) => `
                       <div style="padding:8px 0; border-bottom:1px solid #EBEBEB;">
-                        <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Question ${i+1}: ${esc(a.questionId || 'Question')}</div>
+                        <div style="font-size:11px; color:var(--text-muted); font-weight:700;">${isHeMode ? 'שאלה' : 'Question'} ${i+1}: ${esc(a.questionId || (isHeMode ? 'שאלה' : 'Question'))}</div>
                         <div style="font-size:13.5px; font-weight:600; color:var(--text-main); margin-top:2px;">${esc(a.answer ?? a)}</div>
                       </div>
                     `).join('')
-                  : `<div style="font-size:13px; font-weight:600;">${esc(item.choice || 'No answer detail recorded.')}</div>`
+                  : `<div style="font-size:13px; font-weight:600;">${esc(item.choice || (isHeMode ? 'לא נרשמו פרטי מענה.' : 'No answer detail recorded.'))}</div>`
                 )
             }
           </div>
@@ -3102,13 +3109,13 @@
 
         <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between;">
           <div style="display:inline-flex; align-items:center; gap:6px; background:#E8F5E9; color:#2E7D32; font-size:12px; font-weight:800; padding:6px 14px; border-radius:100px;">
-            ✓ Verified & Recorded in Database
+            ✓ ${isHeMode ? 'מאומת ונרשם במאגר הנתונים' : 'Verified & Recorded in Database'}
           </div>
-          <span style="font-size:12px; color:var(--text-muted); font-weight:700;">Status: Confirmed</span>
+          <span style="font-size:12px; color:var(--text-muted); font-weight:700;">${isHeMode ? 'סטטוס: מאושר' : 'Status: Confirmed'}</span>
         </div>
 
         <div style="margin-top:22px; display:flex; justify-content:flex-end;">
-          <button type="button" class="btn-create" style="padding:9px 20px; font-size:13px;" onclick="closeResponseDetailModal()">Close</button>
+          <button type="button" class="btn-create" style="padding:9px 20px; font-size:13px;" onclick="closeResponseDetailModal()">${isHeMode ? 'סגור' : 'Close'}</button>
         </div>
       `;
 
@@ -3151,7 +3158,8 @@
 
       populateAllExportDropdowns();
 
-      document.getElementById('welcome').textContent = `Welcome, ${user.fullName}`;
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
+      document.getElementById('welcome').textContent = isHeMode ? `ברוך הבא, ${user.fullName}` : `Welcome, ${user.fullName}`;
       document.getElementById('user-name').textContent = user.fullName;
       document.getElementById('full-name').value = user.fullName || '';
       document.getElementById('organization').value = user.organization || '';
@@ -3249,6 +3257,7 @@
 
       const totalResponses = surveys.reduce((n, s) => n + (s.responses?.length || 0), 0);
       const totalPollVotes = myPolls.reduce((n, p) => n + (p.totalVotes || 0), 0);
+      totalPollVotesCached = totalPollVotes;
 
       const kpiPolls = document.getElementById('kpi-polls');
       if (kpiPolls) kpiPolls.textContent = myPolls.length;
@@ -3332,7 +3341,25 @@
         checkSavedDraftAlert();
       } catch (e) {}
 
+      if (window.I18n) {
+        window.I18n.applyTranslations();
+      }
     }
+
+    let totalPollVotesCached = 0;
+    window.addEventListener('icapsq:languageChanged', () => {
+      if (currentUser) {
+        const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
+        const welcomeEl = document.getElementById('welcome');
+        if (welcomeEl) welcomeEl.textContent = isHeMode ? `ברוך הבא, ${currentUser.fullName}` : `Welcome, ${currentUser.fullName}`;
+        try { renderOverviewRecentResponses(); } catch (_) {}
+        try { filterResponsesTable(); } catch (_) {}
+        try { renderPlanSection(currentUser, totalPollVotesCached, cachedClientPolls ? cachedClientPolls.length : 0); } catch (_) {}
+        try { renderPollsList(); } catch (_) {}
+        try { renderSurveysList(); } catch (_) {}
+        if (window.I18n) window.I18n.applyTranslations();
+      }
+    });
 
     // === PER-CLIENT NOTIFICATION ENGINE ===
     let clientNotifications = [];
@@ -3626,6 +3653,7 @@
 
     async function loadPlanCheckoutCatalog() {
       const notice = document.getElementById('upgrade-notice');
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
       try {
         const response = await fetch(`${API}/payments/plans`, { headers: { Accept: 'application/json' } });
         const catalog = await response.json();
@@ -3634,28 +3662,42 @@
         for (const item of catalog.plans) {
           const tier = PLAN_TIERS.find(value => value.key === item.key);
           if (!tier) continue;
-          if (item.key === 'free') {
-            tier.price = 'Free';
-          } else if (item.amount !== null && item.amount !== undefined && Number.isFinite(Number(item.amount))) {
-            tier.price = `KES ${Number(item.amount).toLocaleString()}`;
+          if (isHeMode) {
+            if (item.key === 'free') tier.price = 'חינם';
+            else if (item.key === 'pro') tier.price = '₪15';
+            else if (item.key === 'org') tier.price = '₪29';
+          } else {
+            if (item.key === 'free') {
+              tier.price = 'Free';
+            } else if (item.amount !== null && item.amount !== undefined && Number.isFinite(Number(item.amount))) {
+              tier.price = `KES ${Number(item.amount).toLocaleString()}`;
+            }
           }
           if (Number.isFinite(Number(item.pollsQuota))) tier.polls = Number(item.pollsQuota);
           if (Number.isFinite(Number(item.voterQuota))) tier.voters = Number(item.voterQuota);
         }
         if (notice) notice.textContent = planCheckoutEnabled
-          ? 'Secure checkout is available. Paid plans last 30 days and renew manually.'
-          : 'M-Pesa and card checkout is being configured. No plan can change until a payment is verified.';
+          ? (isHeMode ? 'תשלום מאובטח זמין. מסלולים בתשלום ל-30 יום עם חידוש ידני.' : 'Secure checkout is available. Paid plans last 30 days and renew manually.')
+          : (isHeMode ? 'תשלום מוסדר ומאובטח בתהליך הגדרה. לא ניתן לשנות מסלול עד לאימות תשלום.' : 'M-Pesa and card checkout is being configured. No plan can change until a payment is verified.');
       } catch (_) {
         planCheckoutEnabled = false;
-        if (notice) notice.textContent = 'Plan checkout is temporarily unavailable. No plan has been changed.';
+        if (notice) notice.textContent = isHeMode ? 'תשלום מסלולים אינו זמין זמנית. לא בוצע שינוי מסלול.' : 'Plan checkout is temporarily unavailable. No plan has been changed.';
       }
     }
 
     function renderPlanSection(user, totalVotes, totalPolls) {
       totalVotes = totalVotes || 0;
       totalPolls = totalPolls || 0;
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
       const plan = (user.plan || 'free').toLowerCase();
-      const planName = plan === 'election' ? 'Legacy plan' : (PLAN_TIERS.find(t => t.key === plan)?.name || 'Starter');
+      const planNameEn = plan === 'election' ? 'Legacy plan' : (PLAN_TIERS.find(t => t.key === plan)?.name || 'Starter');
+      const planNameMap = {
+        'Starter': isHeMode ? 'בסיסי (Starter)' : 'Starter',
+        'Pro': isHeMode ? 'מקצועי (Pro)' : 'Pro',
+        'Organization': isHeMode ? 'ארגוני (Organization)' : 'Organization',
+        'Legacy plan': isHeMode ? 'מסלול ישן' : 'Legacy plan'
+      };
+      const planName = planNameMap[planNameEn] || planNameEn;
       const tier = PLAN_TIERS.find(t => t.key === plan) || PLAN_TIERS[0];
       const legacyPlan = plan === 'election';
 
@@ -3670,13 +3712,17 @@
       const pollsQuota = user.pollsQuota || tier.polls;
 
       document.getElementById('plan-voter-quota').textContent = voterQuota.toLocaleString();
-      document.getElementById('plan-voter-used').textContent = `${totalVotes.toLocaleString()} used across ${totalPolls.toLocaleString()} polls`;
+      document.getElementById('plan-voter-used').textContent = isHeMode
+        ? `${totalVotes.toLocaleString()} נוצלו מתוך ${totalPolls.toLocaleString()} סקרים`
+        : `${totalVotes.toLocaleString()} used across ${totalPolls.toLocaleString()} polls`;
       const voterTargetBaseline = voterQuota * Math.max(totalPolls, 1);
       const voterPct = Math.min(100, Math.round((totalVotes / voterTargetBaseline) * 100));
       document.getElementById('plan-voter-bar').style.width = voterPct + '%';
 
       document.getElementById('plan-polls-quota').textContent = pollsQuota.toLocaleString();
-      document.getElementById('plan-polls-used').textContent = `${totalPolls} used`;
+      document.getElementById('plan-polls-used').textContent = isHeMode
+        ? `${totalPolls} נוצלו`
+        : `${totalPolls} used`;
       const pollsPct = Math.min(100, Math.round((totalPolls / pollsQuota) * 100));
       document.getElementById('plan-polls-bar').style.width = pollsPct + '%';
 
@@ -3685,25 +3731,49 @@
       container.innerHTML = PLAN_TIERS.map(t => {
         const isCurrent = t.key === plan;
         const canUpgrade = !legacyPlan && t.rank > tier.rank;
+        const tName = planNameMap[t.name] || t.name;
+        // Strictly Israeli Shekel pricing in Hebrew mode - NO KES
+        const displayPrice = isHeMode
+          ? (t.key === 'free' ? 'חינם' : (t.key === 'pro' ? '₪15' : '₪29'))
+          : t.price;
+        const displayPeriod = isHeMode ? (t.key === 'free' ? '' : '/ 30 יום') : t.period;
+        const displayDesc = isHeMode
+          ? `מגבלת פרסום: עד ${t.polls} סקרים · יעד משתתפים לסקר: ${t.voters.toLocaleString()}`
+          : `${t.polls} poll publishing limit · ${t.voters.toLocaleString()} participant target per poll`;
+        const displayFeatures = isHeMode ? [
+          `עד ${t.polls} סקרים`,
+          `יעד משתתפים לסקר: ${t.voters.toLocaleString()}`,
+          'כלי סקרים ושאלונים',
+          'קישורים ותוצאות הניתנים לשיתוף'
+        ] : t.features;
+
+        const currentLabel = isHeMode ? 'מסלול נוכחי' : 'Current Plan';
+        const availableLabel = isHeMode ? 'מסלול זמין' : 'Available Plan';
+        const legacyBtnLabel = isHeMode ? 'מסלול ישן לא זמין' : 'Legacy plan unavailable';
+        const activeBtnLabel = isHeMode ? 'מסלול פעיל' : 'Active Plan';
+        const includedBtnLabel = isHeMode ? 'כלול במסלול' : 'Included in Tier';
+        const renewBtnLabel = isHeMode ? `חדש ${esc(tName)} &larr;` : `Renew ${esc(tName)} &rarr;`;
+        const upgradeBtnLabel = isHeMode ? `שדרג ל-${esc(tName)} &larr;` : `Upgrade to ${esc(tName)} &rarr;`;
+
         return `
           <div class="upgrade-card ${isCurrent ? 'current' : ''}">
             <div>
-              <div class="uc-tier-tag">${isCurrent ? 'Current Plan' : 'Available Plan'}</div>
-              <div class="uc-name">${esc(t.name)}</div>
-              <div class="uc-price">${t.price} <span style="font-size:12px;font-weight:500;color:var(--text-muted);">${t.period}</span></div>
-              <div class="uc-desc">${t.polls} poll publishing limit · ${t.voters.toLocaleString()} participant target per poll</div>
+              <div class="uc-tier-tag">${isCurrent ? currentLabel : availableLabel}</div>
+              <div class="uc-name">${esc(tName)}</div>
+              <div class="uc-price">${displayPrice} <span style="font-size:12px;font-weight:500;color:var(--text-muted);">${displayPeriod}</span></div>
+              <div class="uc-desc">${displayDesc}</div>
               <ul class="uc-features">
-                ${t.features.map(f => `<li>${esc(f)}</li>`).join('')}
+                ${displayFeatures.map(f => `<li>${esc(f)}</li>`).join('')}
               </ul>
             </div>
             <div>
               ${legacyPlan
-                ? '<button class="btn-upgrade outline" disabled>Legacy plan unavailable</button>'
+                ? `<button class="btn-upgrade outline" disabled>${legacyBtnLabel}</button>`
                 : (isCurrent && t.key === 'free'
-                ? '<button class="btn-upgrade outline" disabled>Active Plan</button>'
+                ? `<button class="btn-upgrade outline" disabled>${activeBtnLabel}</button>`
                 : (canUpgrade || isCurrent)
-                  ? `<button class="btn-upgrade" ${planCheckoutEnabled ? '' : 'disabled'} onclick="openPlanPaymentModal('${t.key}', '${esc(user.id)}')">${isCurrent ? 'Renew' : 'Upgrade to'} ${esc(t.name)} &rarr;</button>`
-                  : '<button class="btn-upgrade outline" disabled>Included in Tier</button>'
+                  ? `<button class="btn-upgrade" ${planCheckoutEnabled ? '' : 'disabled'} onclick="openPlanPaymentModal('${t.key}', '${esc(user.id)}')">${isCurrent ? renewBtnLabel : upgradeBtnLabel}</button>`
+                  : `<button class="btn-upgrade outline" disabled>${includedBtnLabel}</button>`
               )}
             </div>
           </div>
@@ -3728,35 +3798,58 @@
     }
 
     function renderPaymentModalStep1() {
-      const { tier } = pendingUpgrade;
+      const { tier, planKey } = pendingUpgrade;
+      const isHeMode = (window.I18n && window.I18n.currentLang === 'he');
+
+      const planNameMap = {
+        'Starter': isHeMode ? 'בסיסי (Starter)' : 'Starter',
+        'Pro': isHeMode ? 'מקצועי (Pro)' : 'Pro',
+        'Organization': isHeMode ? 'ארגוני (Organization)' : 'Organization'
+      };
+      const tName = planNameMap[tier.name] || tier.name;
+      const displayPrice = isHeMode
+        ? (planKey === 'free' ? 'חינם' : (planKey === 'pro' ? '₪15' : '₪29'))
+        : tier.price;
+      const displayPeriod = isHeMode ? (planKey === 'free' ? '' : '/ 30 יום') : tier.period;
+      const displayDesc = isHeMode
+        ? `מגבלת פרסום: עד ${tier.polls} סקרים · יעד משתתפים לסקר: ${tier.voters.toLocaleString()}`
+        : `${tier.polls} poll publishing limit · ${tier.voters.toLocaleString()} participant target per poll`;
+      const displayFeatures = isHeMode ? [
+        `עד ${tier.polls} סקרים`,
+        `יעד משתתפים לסקר: ${tier.voters.toLocaleString()}`,
+        'כלי סקרים ושאלונים',
+        'קישורים ותוצאות הניתנים לשיתוף'
+      ] : tier.features;
 
       const container = document.getElementById('paymentModalBody');
       container.innerHTML = `
         <div style="margin-bottom:16px;">
-          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.06em;">Upgrade Subscription</div>
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:800; letter-spacing:0.06em;">${isHeMode ? 'שדרוג מנוי' : 'Upgrade Subscription'}</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0; font-family:'Outfit', sans-serif;">${esc(tier.name)}</h2>
-            <div style="font-size:22px; font-weight:900; color:var(--charcoal); font-family:'Outfit', sans-serif;">${tier.price} <span style="font-size:12px; font-weight:500; color:var(--text-muted);">${tier.period}</span></div>
+            <h2 style="font-size:22px; font-weight:800; color:var(--charcoal); margin:0; font-family:'Outfit', sans-serif;">${esc(tName)}</h2>
+            <div style="font-size:22px; font-weight:900; color:var(--charcoal); font-family:'Outfit', sans-serif;">${displayPrice} <span style="font-size:12px; font-weight:500; color:var(--text-muted);">${displayPeriod}</span></div>
           </div>
-          <div style="font-size:12.5px; color:var(--text-sub); margin-top:4px;">${tier.polls} poll publishing limit · ${tier.voters.toLocaleString()} participant target per poll</div>
+          <div style="font-size:12.5px; color:var(--text-sub); margin-top:4px;">${displayDesc}</div>
         </div>
 
         <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:14px; margin-bottom:18px;">
-          <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Plan Inclusions:</div>
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">${isHeMode ? 'מה כלול במסלול:' : 'Plan Inclusions:'}</div>
           <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-            ${tier.features.map(f => `<li style="font-size:12px; color:var(--text-main); display:flex; align-items:center; gap:6px;"><span style="color:var(--charcoal); font-weight:900;">✓</span> ${esc(f)}</li>`).join('')}
+            ${displayFeatures.map(f => `<li style="font-size:12px; color:var(--text-main); display:flex; align-items:center; gap:6px;"><span style="color:var(--charcoal); font-weight:900;">✓</span> ${esc(f)}</li>`).join('')}
           </ul>
         </div>
 
         <div style="background:#F8F8F8; border:1px solid #EBEBEB; border-radius:12px; padding:16px; color:var(--text-main); font-size:13px; line-height:1.5;">
-          Pay securely on iPay using M-Pesa or a card. IcapsQ does not collect or store card numbers, PINs, or CVVs. Your plan activates only after the server verifies the completed payment.
+          ${isHeMode
+            ? 'שלם באופן מאובטח באמצעות כרטיס אשראי או שיטות תשלום מוסמכות. IcapsQ אינה שומרת מספרי כרטיסי אשראי או קודי אימות. המסלול מופעל מיידית עם אישור התשלום.'
+            : 'Pay securely on iPay using M-Pesa or a card. IcapsQ does not collect or store card numbers, PINs, or CVVs. Your plan activates only after the server verifies the completed payment.'}
         </div>
 
         <div id="payment-error-msg" style="color:var(--color-red); font-size:12.5px; font-weight:600; margin-top:10px; display:none;"></div>
 
         <div style="margin-top:22px; display:flex; gap:10px; justify-content:flex-end;">
-          <button type="button" class="btn-outline" onclick="closePlanPaymentModal()">Cancel</button>
-          <button type="button" class="btn-create" id="btn-submit-payment" style="padding:11px 24px;" onclick="executeProcessPayment()">Continue to secure checkout &rarr;</button>
+          <button type="button" class="btn-outline" onclick="closePlanPaymentModal()">${isHeMode ? 'ביטול' : 'Cancel'}</button>
+          <button type="button" class="btn-create" id="btn-submit-payment" style="padding:11px 24px;" onclick="executeProcessPayment()">${isHeMode ? 'המשך לתשלום מאובטח &larr;' : 'Continue to secure checkout &rarr;'}</button>
         </div>
       `;
     }
